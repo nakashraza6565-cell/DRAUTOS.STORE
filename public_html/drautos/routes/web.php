@@ -22,21 +22,27 @@
 
     Route::get('/fix-db', function() {
         try {
-            // Supplier Ledger
+            // Run Migrations
+            Artisan::call('migrate', ['--force' => true]);
+            
+            // Clear all cache
+            Artisan::call('optimize:clear');
+
+            // Supplier Ledger Updates (Manual SQL)
             try {
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE supplier_ledgers ADD COLUMN IF NOT EXISTS payment_method VARCHAR(255) NULL AFTER category");
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE supplier_ledgers ADD COLUMN IF NOT EXISTS payment_details JSON NULL AFTER payment_method");
             } catch (\Exception $e) {}
 
-            // Customer Ledger
+            // Customer Ledger Updates (Manual SQL)
             try {
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE customer_ledgers ADD COLUMN IF NOT EXISTS payment_method VARCHAR(255) NULL AFTER category");
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE customer_ledgers ADD COLUMN IF NOT EXISTS payment_details JSON NULL AFTER payment_method");
             } catch (\Exception $e) {}
 
-            return "Database checked and updated via SQL. Please try again.";
+            return "Database Migrated and Cache Cleared! Please try opening the POS again.";
         } catch (\Exception $e) {
-            return "Error: " . $e->getMessage();
+            return "Error during fix: " . $e->getMessage();
         }
     });
     use App\Http\Controllers\CashRegisterController;

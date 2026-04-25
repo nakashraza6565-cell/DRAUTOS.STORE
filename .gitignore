@@ -8,6 +8,7 @@ public_html/revue.zip
 DRAUTOS_READY.zip
 public_html.zip
 DRAUTOS_DEPLOY_*.zip
+*.zip
 
 # Ignore large SQL dumps
 public_html/u909342762_dr.sql

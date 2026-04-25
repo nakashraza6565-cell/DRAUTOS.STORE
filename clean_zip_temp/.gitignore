@@ -1,0 +1,24 @@
+# Root .gitignore for drautos.store
+
+# Ignore built artifacts
+public_html/build_ready/
+public_html/DRAUTOS_READY.zip
+public_html/public_html_assets.zip
+public_html/revue.zip
+DRAUTOS_READY.zip
+public_html.zip
+DRAUTOS_DEPLOY_*.zip
+
+# Ignore large SQL dumps
+public_html/u909342762_dr.sql
+
+# Standard Laravel ignores (relative to public_html/drautos)
+public_html/drautos/node_modules/
+public_html/drautos/vendor/
+public_html/drautos/storage/*.zip
+public_html/drautos/.env
+
+# Recursive mess prevention
+**/build_temp/
+**/build_ready/
+deploy_staging/
