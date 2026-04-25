@@ -33,9 +33,9 @@ if ($LASTEXITCODE -eq 0) {
 }
 
 # 3. Create Production ZIP
-Write-Host "Creating Production ZIP (Excluding junk)..." -ForegroundColor Yellow
-$zipFile = "DRAUTOS_PRODUCTION.zip"
-if (Test-Path $zipFile) { Remove-Item $zipFile -Force }
+$timestamp = Get-Date -Format "yyyy-MM-dd_HHmm"
+$zipFile = "DRAUTOS_DEPLOY_$timestamp.zip"
+Write-Host "Creating Production ZIP: $zipFile" -ForegroundColor Yellow
 
 # Create a temporary staging folder to avoid zipping the zip itself
 $staging = "deploy_staging"
