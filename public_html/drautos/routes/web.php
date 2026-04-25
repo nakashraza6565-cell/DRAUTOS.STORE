@@ -102,6 +102,7 @@
     Route::get('/add-to-cart/{slug}', [CartController::class, 'addToCart'])->name('add-to-cart')->middleware('user');
     Route::post('/add-to-cart', [CartController::class, 'singleAddToCart'])->name('single-add-to-cart')->middleware('user');
     Route::get('cart-delete/{id}', [CartController::class, 'cartDelete'])->name('cart-delete');
+    Route::get('cart-clear', [CartController::class, 'cartClear'])->name('cart.clear');
     Route::post('cart-update', [CartController::class, 'cartUpdate'])->name('cart.update');
 
     Route::get('/cart', function () {

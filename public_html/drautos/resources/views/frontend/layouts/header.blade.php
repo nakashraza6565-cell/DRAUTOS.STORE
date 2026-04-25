@@ -122,7 +122,10 @@
                                             <span>Total</span>
                                             <span class="total-amount">${{number_format(Helper::totalCartPrice(),2)}}</span>
                                         </div>
-                                        <a href="{{route('checkout')}}" class="btn animate">Checkout</a>
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{route('checkout')}}" class="btn animate">Checkout</a>
+                                            <a href="{{route('cart.clear')}}" class="btn animate bg-danger text-white">Clear Cart</a>
+                                        </div>
                                     </div>
                                 </div>
                             @endauth

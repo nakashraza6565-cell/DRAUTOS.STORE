@@ -111,6 +111,12 @@ class CartController extends Controller
         return back();       
     }     
 
+    public function cartClear(){
+        Cart::where('user_id', auth()->user()->id)->where('order_id',null)->delete();
+        request()->session()->flash('success','Cart successfully cleared');
+        return back(); 
+    }
+
     public function cartUpdate(Request $request){
         // dd($request->all());
         if($request->quant){
