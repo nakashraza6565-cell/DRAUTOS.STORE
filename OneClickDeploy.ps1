@@ -42,8 +42,9 @@ $staging = "deploy_staging"
 if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
 New-Item -ItemType Directory -Path $staging | Out-Null
 
-# Copy public_html to staging, excluding node_modules and recursive build_ready
-Copy-Item -Path "public_html/*" -Destination $staging -Recurse -Exclude "node_modules","build_ready","*.zip" -Force
+# Copy public_html to staging, excluding node_modules and recursive build_ready/build_temp
+# robocopy is much more reliable for recursive exclusions on Windows
+robocopy "public_html" "$staging" /S /E /XD node_modules build_ready build_temp /XF *.zip *.sql | Out-Null
 
 # Zip the staging contents
 Compress-Archive -Path "$staging/*" -DestinationPath $zipFile -Force

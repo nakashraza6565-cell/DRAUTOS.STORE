@@ -19,3 +19,5 @@ public_html/drautos/.env
 
 # Recursive mess prevention
 **/build_temp/
+**/build_ready/
+deploy_staging/
