@@ -28,6 +28,15 @@ if ($LASTEXITCODE -ne 0) {
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "GitHub is up to date!" -ForegroundColor Green
+    
+    # Trigger Hostinger Deployment Webhook
+    Write-Host "Signal sent to Hostinger! Updating live site..." -ForegroundColor Cyan
+    try {
+        Invoke-RestMethod -Uri "https://webhooks.hostinger.com/deploy/5b809b38b6dacd37f6fd14d22283e71a" -Method Post | Out-Null
+        Write-Host "Deployment triggered successfully!" -ForegroundColor Green
+    } catch {
+        Write-Host "Warning: Could not signal Hostinger automatically, but code is pushed." -ForegroundColor Yellow
+    }
 } else {
     Write-Host "Warning: GitHub push failed, but we will proceed with the ZIP." -ForegroundColor Yellow
 }
