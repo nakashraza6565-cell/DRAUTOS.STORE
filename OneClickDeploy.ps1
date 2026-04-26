@@ -55,8 +55,10 @@ New-Item -ItemType Directory -Path $staging | Out-Null
 # robocopy is much more reliable for recursive exclusions on Windows
 robocopy "public_html" "$staging" /S /E /XD node_modules build_ready build_temp /XF *.zip *.sql | Out-Null
 
-# Zip the staging contents
-Compress-Archive -Path "$staging/*" -DestinationPath $zipFile -Force
+# Zip the staging contents using a method compatible with Linux (avoids backslash issue)
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+if (Test-Path $zipFile) { Remove-Item $zipFile }
+[System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $zipFile)
 
 # Cleanup staging
 Remove-Item $staging -Recurse -Force
