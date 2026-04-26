@@ -325,14 +325,16 @@
         /* Mobile Sidebar Fixes */
         @media (max-width: 768px) {
             .sidebar {
-                width: 0 !important;
+                width: 17rem !important;
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
                 overflow-y: auto !important;
                 -webkit-overflow-scrolling: touch !important;
                 z-index: 1050 !important;
-            }
-            .sidebar.toggled {
-                width: 16rem !important;
                 display: flex !important;
+            }
+            .sidebar.toggled, .sidebar.reveal {
+                transform: translateX(0) !important;
             }
             /* Prevent accidental closure during scroll */
             .sidebar .nav-item .nav-link {
