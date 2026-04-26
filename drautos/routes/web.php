@@ -553,7 +553,7 @@
 
         // Password Change
         Route::get('change-password', [HomeController::class, 'changePassword'])->name('user.change.password.form');
-        Route::post('change-password', [HomeController::class, 'changPasswordStore'])->name('change.password');
+        Route::post('change-password', [HomeController::class, 'changPasswordStore'])->name('user.change.password');
 
     });
 
