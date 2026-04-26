@@ -120,6 +120,14 @@
                         </div>
                         <div class="card-body">
                             <div class="form-group">
+                                <label class="small font-weight-bold text-uppercase">Destination Warehouse <span class="text-danger">*</span></label>
+                                <select name="warehouse_id" class="form-control" required>
+                                    @foreach($warehouses as $warehouse)
+                                        <option value="{{$warehouse->id}}">{{$warehouse->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label class="small font-weight-bold text-uppercase text-info">Shipping Cost (Rs.)</label>
                                 <input type="number" name="shipping_cost" id="shipping_cost" class="form-control form-control-lg font-weight-bold border-info" value="0" min="0" step="0.01">
                             </div>
