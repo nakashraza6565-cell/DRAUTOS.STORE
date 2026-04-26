@@ -1328,11 +1328,19 @@
             url: "{{route('users.store')}}", 
             type: "POST",
             data: form.serialize() + "&role=user&status=active&password=password123", 
+            dataType: "json",
             success: function(response) {
+                if (typeof response === 'string') {
+                    try { response = JSON.parse(response); } catch(e) {}
+                }
+                let user = response.user || response.data || response;
+                let name = user.name || 'Unknown';
+                let phone = user.phone || 'N/A';
+
                 // Add new option with data-type and data-balance
-                let displayText = response.name + ' (' + response.phone + ') | Bal: Rs. 0.00';
-                let newOption = new Option(displayText, response.id, true, true);
-                $(newOption).attr('data-type', response.customer_type); // Use attr for data
+                let displayText = name + ' (' + phone + ') | Bal: Rs. 0.00';
+                let newOption = new Option(displayText, user.id, true, true);
+                $(newOption).attr('data-type', user.customer_type || 'retail');
                 $(newOption).attr('data-balance', 0);
                 $('#customer-select').append(newOption).trigger('change');
                 $('#addCustomerModal').modal('hide');
