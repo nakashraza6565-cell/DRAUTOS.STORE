@@ -583,8 +583,6 @@
     .animated-pulse { animation: pulse 2s infinite; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); } 100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); } }
     
-    /* Cart Ghost Mode (POS Specific) */
-    #cart-hover-trigger { position: fixed; right: 0; top: 0; width: 15px; height: 100vh; z-index: 1035; background: transparent; }
     
     .pos-sidebar {
         position: fixed !important;
@@ -594,7 +592,7 @@
         transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
         box-shadow: -15px 0 30px rgba(0,0,0,0.3);
     }
-    .pos-sidebar.active, .pos-sidebar.hover-reveal { transform: translateX(0); }
+    .pos-sidebar.active { transform: translateX(0); }
 
     /* Aura-Spotlight Search Bar */
     .search-wrapper-sleek {
@@ -703,32 +701,16 @@
             $('#pos-overlay').addClass('active');
         }
 
-        // POS-specific Cart Hover Reveal
-        if($(window).width() > 768) {
-            if($('#cart-hover-trigger').length == 0) {
-                $('body').append('<div id="cart-hover-trigger"></div>');
-            }
-            
-            $('#cart-hover-trigger').on('mouseenter', function() { 
-                if(!$('#checkout-sidebar').hasClass('active')) {
-                    $('#checkout-sidebar').addClass('hover-reveal'); 
-                }
-            });
-            $('#checkout-sidebar').on('mouseleave', function() { 
-                $(this).removeClass('hover-reveal'); 
-            });
-        }
 
         // Toggle Cart (Sticky Mode)
         $('#toggle-cart').on('click', function() {
             $('#checkout-sidebar').toggleClass('active');
-            $('#checkout-sidebar').removeClass('hover-reveal'); // Ensure sticky overrides hover
             $('#pos-overlay').toggleClass('active');
         });
 
         // Close logic
         $('#pos-overlay, #close-sidebar').on('click', function() {
-            $('#checkout-sidebar').removeClass('active hover-reveal');
+            $('#checkout-sidebar').removeClass('active');
             $('#pos-overlay').removeClass('active');
         });
 
