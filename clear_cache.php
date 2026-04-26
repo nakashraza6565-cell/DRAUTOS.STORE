@@ -6,7 +6,8 @@
 define('LARAVEL_START', microtime(true));
 require __DIR__.'/drautos/vendor/autoload.php';
 $app = require_once __DIR__.'/drautos/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
 echo "<h1>🧹 Danyal Autos - Cache Cleaner</h1>";
 
