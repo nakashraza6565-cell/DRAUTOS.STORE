@@ -144,7 +144,7 @@ class UsersController extends Controller
             
             // Auto-generate email if missing but phone exists
             if(!$request->email && $request->phone) {
-                $request->merge(['email' => $request->phone . '@local.com']);
+                $request->merge(['email' => $request->phone . '_' . uniqid() . '@local.com']);
             } elseif(!$request->email) {
                  $request->merge(['email' => uniqid() . '@local.com']);
             }
