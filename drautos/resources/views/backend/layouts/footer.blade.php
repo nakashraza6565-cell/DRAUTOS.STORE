@@ -86,6 +86,31 @@
             $(".sidebar").removeClass("toggled");
         });
 
+        // Mobile Swipe Gesture to Open/Close Sidebar
+        var touchStartX = 0;
+        var touchEndX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            var diff = touchEndX - touchStartX;
+            // Swipe Right (Open) - Only if started near the left edge (< 40px)
+            if (diff > 50 && touchStartX < 40) {
+                $(".sidebar").addClass("reveal");
+            }
+            // Swipe Left (Close)
+            if (diff < -50) {
+                $(".sidebar").removeClass("reveal");
+            }
+        }
+
         setTimeout(function(){
           $('.alert').slideUp();
         },4000);
