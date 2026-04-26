@@ -526,12 +526,16 @@ class OrderController extends Controller
 
     // PDF generate
     public function pdf(Request $request, $id){
-        $order=Order::getAllOrder($id);
-        // return $order;
+        $order = Order::with('cart_info.product')->find($id);
+        if(!$order) {
+            return view('backend.layouts.error_custom', [
+                'message' => 'Order with ID #' . $id . ' not found or was deleted.',
+                'title' => 'Order Not Found'
+            ]);
+        }
         $file_name=$order->order_number.'-'.$order->first_name.'.pdf';
-        // return $file_name;
-        $pdf=PDF::loadview('backend.order.pdf',compact('order'));
-        return $pdf->download($file_name);
+        $pdf=PDF::loadView('backend.order.pdf',compact('order'));
+        return $pdf->stream($file_name);
     }
 
     public function sendWhatsApp($id)
@@ -565,6 +569,10 @@ class OrderController extends Controller
     public function print(Request $request, $id)
     {
         $order = Order::getAllOrder($id);
+        if(!$order) {
+            request()->session()->flash('error', 'Order not found');
+            return back();
+        }
         $type = $request->get('type', 'standard');
         
         if($type == 'thermal') {

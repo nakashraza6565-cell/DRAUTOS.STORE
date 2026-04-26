@@ -1,5 +1,5 @@
 <!-- Quick Add Product Modal -->
-<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-dark text-white">
@@ -67,45 +67,6 @@
 
 <script>
 $(document).ready(function() {
-    $('#quickAddProductForm').on('submit', function(e) {
-        e.preventDefault();
-        let $form = $(this);
-        let $btn = $form.find('button[type="submit"]');
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Creating...');
-
-        $.ajax({
-            url: "{{ route('product.store') }}",
-            type: "POST",
-            data: $form.serialize() + "&status=active",
-            success: function(response) {
-                // Assuming response is the product object
-                // Add to ALL existing and future product dropdowns
-                window.lastAddedProduct = response;
-                
-                // Add to global product dropdowns (re-rendering rows might be easier but let's try updating)
-                $('.product-select').each(function() {
-                    let newOption = new Option(response.title + ' (' + (response.sku || '') + ')', response.id, false, false);
-                    $(newOption).attr('data-cost', response.purchase_price || 0);
-                    $(this).append(newOption);
-                });
-
-                $('#addProductModal').modal('hide');
-                $form[0].reset();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Product Created',
-                    text: response.title + ' is now available for entry.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            },
-            error: function(err) {
-                $btn.prop('disabled', false).text('Create Product');
-                let msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error creating product';
-                Swal.fire('Error', msg, 'error');
-            }
-        });
-    });
+    // Modal-specific logic can go here, but submission is handled by the parent view
 });
 </script>

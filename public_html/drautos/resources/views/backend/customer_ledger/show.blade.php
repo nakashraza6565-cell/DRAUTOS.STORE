@@ -189,6 +189,80 @@
                             <option value="order">Order Correction</option>
                         </select>
                     </div>
+                    
+                    <!-- Dynamic Payment Method Section -->
+                    <div id="payment_method_section" style="display:none;" class="p-3 mb-3 bg-light rounded border">
+                        <h6 class="font-weight-bold text-primary small text-uppercase mb-3">Payment Details</h6>
+                        <div class="form-group">
+                            <label class="small font-weight-bold">Select Method</label>
+                            <div class="d-flex flex-wrap">
+                                <div class="custom-control custom-radio mr-3">
+                                    <input type="radio" id="method_cash" name="payment_method" value="cash" class="custom-control-input" checked>
+                                    <label class="custom-control-label" for="method_cash">Cash</label>
+                                </div>
+                                <div class="custom-control custom-radio mr-3">
+                                    <input type="radio" id="method_cheque" name="payment_method" value="cheque" class="custom-control-input">
+                                    <label class="custom-control-label" for="method_cheque">Cheque</label>
+                                </div>
+                                <div class="custom-control custom-radio mr-3">
+                                    <input type="radio" id="method_bank" name="payment_method" value="bank" class="custom-control-input">
+                                    <label class="custom-control-label" for="method_bank">Bank Account</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="method_wallet" name="payment_method" value="wallet" class="custom-control-input">
+                                    <label class="custom-control-label" for="method_wallet">Wallet</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specific Fields -->
+                        <div id="cheque_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-2">
+                                        <label class="small font-weight-bold">Cheque Number</label>
+                                        <input type="text" name="payment_details[cheque_no]" class="form-control form-control-sm" placeholder="Enter cheque number">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-2">
+                                        <label class="small font-weight-bold">Payee Name</label>
+                                        <input type="text" name="payment_details[payee_name]" class="form-control form-control-sm" placeholder="Name on cheque">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-2">
+                                        <label class="small font-weight-bold">Bank Name</label>
+                                        <input type="text" name="payment_details[bank_name]" class="form-control form-control-sm" placeholder="Enter bank name">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-2">
+                                        <label class="small font-weight-bold text-danger">Due Date (Clearing Date)</label>
+                                        <input type="date" name="payment_details[clearing_date]" class="form-control form-control-sm" value="{{date('Y-m-d')}}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="bank_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-2">
+                                <label class="small">Account Number / IBAN</label>
+                                <input type="text" name="payment_details[account_no]" class="form-control form-control-sm" placeholder="Enter account details">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="small">Transaction ID / Reference</label>
+                                <input type="text" name="payment_details[ref_no]" class="form-control form-control-sm" placeholder="Enter reference number">
+                            </div>
+                        </div>
+
+                        <div id="wallet_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-0">
+                                <label class="small">Wallet Name / Number (e.g. EasyPaisa)</label>
+                                <input type="text" name="payment_details[wallet_details]" class="form-control form-control-sm" placeholder="Enter wallet details">
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label>Amount (Rs.)</label>
                         <input type="number" name="amount" id="t_amount" class="form-control" step="0.01" required>
@@ -327,11 +401,29 @@
             $('#methodField').html('');
             $('#t_date').val('{{date("Y-m-d")}}');
             $('#t_type').val('debit');
-            $('#t_category').val('manual');
+            $('#t_category').val('manual').trigger('change');
             $('#t_amount').val('');
             $('#t_description').val('');
             $('#saveBtn').text('Save Transaction');
         }
+    });
+
+    // Handle Category Change (show/hide payment section)
+    $('#t_category').on('change', function() {
+        if ($(this).val() === 'payment') {
+            $('#payment_method_section').slideDown();
+        } else {
+            $('#payment_method_section').slideUp();
+        }
+    });
+
+    // Handle Payment Method Selection
+    $('input[name="payment_method"]').on('change', function() {
+        $('.payment_detail_fields').hide();
+        var selected = $(this).val();
+        if (selected === 'cheque') $('#cheque_fields').show();
+        else if (selected === 'bank') $('#bank_fields').show();
+        else if (selected === 'wallet') $('#wallet_fields').show();
     });
 
     $(document).on('click', '.dltBtn', function(e) {

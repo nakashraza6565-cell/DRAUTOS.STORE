@@ -88,6 +88,9 @@
             <a class="nav-link active" data-toggle="tab" href="#today">Due Today <span class="badge badge-primary">{{ $dueToday->count() ?? 0 }}</span></a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#grouped">Grouped by Party <span class="badge badge-secondary">New</span></a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" data-toggle="tab" href="#overdue">Overdue <span class="badge badge-danger">{{ $overdue->count() ?? 0 }}</span></a>
         </li>
         <li class="nav-item">
@@ -97,6 +100,74 @@
 
     <!-- Tab content -->
     <div class="tab-content">
+        <!-- Grouped by Party Tab -->
+        <div id="grouped" class="tab-pane fade">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-secondary text-white">
+                    <h6 class="m-0 font-weight-bold">Summary by Customer / Supplier</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        @if($groupedReminders && count($groupedReminders) > 0)
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Party Name</th>
+                                    <th>Type</th>
+                                    <th>Total Receivable</th>
+                                    <th>Total Payable</th>
+                                    <th>Net Balance</th>
+                                    <th>Reminders</th>
+                                    <th>Earliest Due</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($groupedReminders as $item)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $item->party->name ?? 'Unknown' }}</strong>
+                                        <br><small class="text-muted">{{ $item->party_type == 'App\User' ? 'Customer' : 'Supplier' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ $item->party_type == 'App\User' ? 'primary' : 'dark' }}">
+                                            {{ $item->party_type == 'App\User' ? 'Client' : 'Vendor' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-success">PKR {{ number_format($item->receivable, 2) }}</td>
+                                    <td class="text-danger">PKR {{ number_format($item->payable, 2) }}</td>
+                                    <td class="font-weight-bold {{ $item->total_amount > 0 ? 'text-success' : ($item->total_amount < 0 ? 'text-danger' : '') }}">
+                                        PKR {{ number_format(abs($item->total_amount), 2) }}
+                                        <small>{{ $item->total_amount > 0 ? '(DR)' : ($item->total_amount < 0 ? '(CR)' : '') }}</small>
+                                    </td>
+                                    <td><span class="badge badge-info">{{ $item->count }} records</span></td>
+                                    <td>{{ $item->latest_due ? \Carbon\Carbon::parse($item->latest_due)->format('d M Y') : 'N/A' }}</td>
+                                    <td>
+                                        @if($item->party_type == 'App\User')
+                                            <a href="{{ route('admin.customer-ledger.show', $item->party_id) }}" class="btn btn-sm btn-info" title="View Ledger">
+                                                <i class="fas fa-list"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.supplier-ledger.show', $item->party_id) }}" class="btn btn-sm btn-info" title="View Ledger">
+                                                <i class="fas fa-list"></i>
+                                            </a>
+                                        @endif
+                                        <button class="btn btn-sm btn-primary" onclick="alert('Grouping details coming soon! Use Ledger for full breakdown.')" title="Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @else
+                        <p class="text-center">No grouped data available</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Due Today Tab -->
         <div id="today" class="tab-pane fade show active">
             <div class="card shadow mb-4">

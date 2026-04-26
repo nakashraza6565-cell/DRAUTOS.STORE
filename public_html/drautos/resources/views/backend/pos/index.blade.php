@@ -60,9 +60,9 @@
                 <select class="form-control select2" id="customer-select">
                     <option value="1" data-type="walkin">Walk-in Customer</option>
                     @foreach($customers as $customer)
-                        <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}">
-                            {{$customer->name}} ({{$customer->phone}}) | Bal: Rs. {{number_format($customer->current_balance ?? 0, 2)}}
-                        </option>
+                    <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}">
+                        {{$customer->name}} ({{$customer->phone}}) | Bal: Rs. {{number_format($customer->current_balance ?? 0, 2)}}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -93,7 +93,7 @@
                 <div class="d-flex align-items-center" style="gap: 5px;">
                     <button class="btn btn-light btn-sm px-3" id="park-order" title="Park Order" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-pause text-muted"></i></button>
                     <button class="btn btn-light btn-sm px-3" id="clear-cart" title="Clear Cart" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-trash-alt text-danger"></i></button>
-                    <button class="btn btn-success btn-sm flex-grow-1 font-weight-bold shadow-sm animated-pulse" data-toggle="modal" data-target="#paymentModal" style="height: 38px; border-radius: 8px; font-size: 13px;">
+                    <button class="btn btn-success btn-sm flex-grow-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#paymentModal" style="height: 38px; border-radius: 8px; font-size: 13px;">
                         <i class="fas fa-check-circle mr-1"></i> CHECKOUT
                     </button>
                 </div>
@@ -101,6 +101,64 @@
         </div>
     </div>
 </div>
+
+<!-- Hidden Iframe for Printing -->
+<iframe id="print-iframe" style="display:none;"></iframe>
+
+<style>
+    .pos-sidebar {
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        z-index: 20000 !important;
+        height: 100vh !important;
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .pos-sidebar.active {
+        right: 0;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 19999 !important;
+        display: none;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    @media (max-width: 576px) {
+        .pos-sidebar {
+            width: 100% !important;
+            right: -100% !important;
+        }
+        .pos-sidebar.active {
+            right: 0 !important;
+        }
+        .container-fluid {
+            height: calc(100vh - 60px) !important;
+        }
+        .search-wrapper-sleek {
+            padding: 8px 12px !important;
+        }
+        #product-search {
+            font-size: 14px !important;
+        }
+        .btn-sm.px-4 {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            font-size: 11px !important;
+        }
+    }
+</style>
 
 <!-- Add Customer Modal -->
 <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog">
@@ -141,7 +199,7 @@
                         <select name="city" id="customer-city-select" class="form-control" style="width: 100%;">
                             <option value="">Select or Type City</option>
                             @foreach($cities as $city)
-                                <option value="{{$city}}">{{$city}}</option>
+                            <option value="{{$city}}">{{$city}}</option>
                             @endforeach
                         </select>
                     </div>
@@ -185,7 +243,7 @@
                                     <select name="cat_id" id="pos-cat-select" class="form-control" required>
                                         <option value="">Select Category</option>
                                         @foreach($categories as $cat)
-                                            <option value="{{$cat->id}}">{{$cat->title}}</option>
+                                        <option value="{{$cat->id}}">{{$cat->title}}</option>
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
@@ -203,7 +261,7 @@
                                     <select name="brand_id" id="pos-brand-select" class="form-control">
                                         <option value="">Select Brand</option>
                                         @foreach($brands as $brand)
-                                            <option value="{{$brand->id}}">{{$brand->title}}</option>
+                                        <option value="{{$brand->id}}">{{$brand->title}}</option>
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
@@ -219,7 +277,7 @@
                                     <select name="model" id="pos-model-select" class="form-control">
                                         <option value="">Select Model</option>
                                         @foreach($product_models as $m)
-                                            <option value="{{$m->name}}">{{$m->name}}</option>
+                                        <option value="{{$m->name}}">{{$m->name}}</option>
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
@@ -235,7 +293,7 @@
                                     <select name="unit" id="pos-unit-select" class="form-control">
                                         <option value="piece">Piece</option>
                                         @foreach($units as $u)
-                                            <option value="{{$u->name}}">{{$u->name}}</option>
+                                        <option value="{{$u->name}}">{{$u->name}}</option>
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
@@ -270,7 +328,7 @@
                                 <div class="input-group">
                                     <select name="suppliers[]" id="pos-supplier-select" class="form-control" multiple>
                                         @foreach($suppliers as $supplier)
-                                            <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                        <option value="{{$supplier->id}}">{{$supplier->name}}</option>
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
@@ -311,7 +369,7 @@
                             <h5 class="text-uppercase small font-weight-bold text-muted mb-1">Total Payable</h5>
                             <h2 class="font-weight-bold text-dark total-payable">Rs. 0.00</h2>
                         </div>
-                        
+
                         <div class="px-3">
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted small">Total Items</span>
@@ -333,7 +391,7 @@
                     <!-- Right Side: Payment Methods -->
                     <div class="col-md-7 p-4 bg-white">
                         <label class="font-weight-bold text-uppercase small text-muted mb-3 d-block">Select Payment Method</label>
-                        
+
                         <div class="row no-gutters mb-4" id="payment-methods-grid">
                             <div class="col-6 p-1">
                                 <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="cash">
@@ -403,20 +461,23 @@
         transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         height: 100vh !important;
     }
+
     .pos-sidebar.active {
         right: 0;
     }
+
     .sidebar-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         backdrop-filter: blur(4px);
         z-index: 19999 !important;
         display: none;
     }
+
     .sidebar-overlay.active {
         display: block;
     }
@@ -428,49 +489,110 @@
         }
     }
 
-    .cursor-pointer { cursor: pointer; }
-    .payment-option { transition: 0.2s; border: 2px solid #edf2f7 !important; border-radius: 12px !important; }
-    .payment-option:hover { border-color: #4e73df !important; background: #f8f9fc; transform: translateY(-2px); }
-    .payment-option.active { border-color: #4e73df !important; background: #f0f4ff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-    .payment-option .check-mark { position: absolute; top: 10px; right: 10px; opacity: 0; transform: scale(0.5); transition: 0.2s; }
-    .payment-option.active .check-mark { opacity: 1; transform: scale(1); }
-    
-    .bg-soft-primary { background: #e0e7ff; }
-    .bg-soft-danger { background: #fee2e2; }
-    .text-primary { color: #4e73df !important; }
-    .opacity-5 { opacity: 0.5; }
-    
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .payment-option {
+        transition: 0.2s;
+        border: 2px solid #edf2f7 !important;
+        border-radius: 12px !important;
+    }
+
+    .payment-option:hover {
+        border-color: #4e73df !important;
+        background: #f8f9fc;
+        transform: translateY(-2px);
+    }
+
+    .payment-option.active {
+        border-color: #4e73df !important;
+        background: #f0f4ff;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .payment-option .check-mark {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: 0.2s;
+    }
+
+    .payment-option.active .check-mark {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .bg-soft-primary {
+        background: #e0e7ff;
+    }
+
+    .bg-soft-danger {
+        background: #fee2e2;
+    }
+
+    .text-primary {
+        color: #4e73df !important;
+    }
+
+    .opacity-5 {
+        opacity: 0.5;
+    }
+
     /* Modern Industrial Design */
-    body { background-color: #f4f7f6; font-family: 'Segoe UI', Roboto, sans-serif; }
-    
-    .pos-main-container { background: #f4f7f6; }
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .pos-main-container {
+        background: #f4f7f6;
+    }
 
     /* Gallery Elite Grid Design */
     .product-grid-card {
         position: relative;
         border-radius: 14px;
         overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         background: #000;
         aspect-ratio: 1/1;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
+
     .product-grid-card:hover {
         transform: scale(1.04) translateY(-8px);
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
         z-index: 10;
     }
+
     .product-grid-card .glass-overlay {
         position: absolute;
-        bottom: 0; left: 0; width: 100%;
+        bottom: 0;
+        left: 0;
+        width: 100%;
         background: rgba(0, 0, 0, 0.4);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         padding: 10px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 3;
     }
+
+    .product-grid-card .elite-title {
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 11px;
+    }
+
+    .product-grid-card .elite-meta {
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 9px;
+    }
+
     .product-grid-card .price-tag-elite {
         position: absolute;
         top: 10px;
@@ -481,14 +603,15 @@
         border-radius: 8px;
         font-weight: 800;
         font-size: 11px;
-        box-shadow: 0 4px 12px rgba(78,115,223,0.4);
+        box-shadow: 0 4px 12px rgba(78, 115, 223, 0.4);
         z-index: 4;
     }
+
     .product-grid-card .stock-tag-elite {
         position: absolute;
         top: 10px;
         left: 10px;
-        background: rgba(255,255,255,0.9);
+        background: rgba(255, 255, 255, 0.9);
         color: #000;
         padding: 1px 8px;
         border-radius: 6px;
@@ -496,6 +619,7 @@
         font-weight: 700;
         z-index: 4;
     }
+
     .product-grid-card .thumbnail-elite {
         width: 100%;
         height: 100%;
@@ -503,13 +627,38 @@
         transition: transform 0.6s ease;
         opacity: 0.9;
     }
-    .product-grid-card:hover .thumbnail-elite { transform: scale(1.15); opacity: 1; }
+
+    .product-grid-card:hover .thumbnail-elite {
+        transform: scale(1.15);
+        opacity: 1;
+    }
 
     /* Ideal-Density Grid */
-    .col-xl-8-grid { flex: 0 0 12.5%; max-width: 12.5%; }
-    @media (max-width: 1600px) { .col-xl-8-grid { flex: 0 0 16.66%; max-width: 16.66%; } }
-    @media (max-width: 1200px) { .col-xl-8-grid { flex: 0 0 25%; max-width: 25%; } }
-    @media (max-width: 768px) { .col-xl-8-grid { flex: 0 0 50%; max-width: 50%; } }
+    .col-xl-8-grid {
+        flex: 0 0 12.5%;
+        max-width: 12.5%;
+    }
+
+    @media (max-width: 1600px) {
+        .col-xl-8-grid {
+            flex: 0 0 16.66%;
+            max-width: 16.66%;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .col-xl-8-grid {
+            flex: 0 0 25%;
+            max-width: 25%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .col-xl-8-grid {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
 
     .elite-title {
         color: #fff;
@@ -517,16 +666,18 @@
         font-size: 13px;
         line-height: 1.2;
         margin-bottom: 2px;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
+
     .elite-meta {
-        color: rgba(255,255,255,0.8);
+        color: rgba(255, 255, 255, 0.8);
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 700;
         line-height: 1;
     }
+
     .price-tag-elite {
         position: absolute;
         top: 6px;
@@ -538,13 +689,14 @@
         font-weight: 800;
         font-size: 11px;
         z-index: 4;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
+
     .stock-tag-elite {
         position: absolute;
         top: 6px;
         left: 6px;
-        background: rgba(255,255,255,0.95);
+        background: rgba(255, 255, 255, 0.95);
         color: #000;
         padding: 1px 7px;
         border-radius: 5px;
@@ -552,17 +704,30 @@
         font-weight: 800;
         z-index: 4;
     }
+
     .product-grid-card .glass-overlay {
         padding: 10px 12px;
-        background: rgba(15, 23, 42, 0.85); /* Slightly more opaque for larger tiles */
+        background: rgba(15, 23, 42, 0.85);
+        /* Slightly more opaque for larger tiles */
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .product-grid-card { border-radius: 14px; overflow: hidden; }
-    
-    .filter-cat { transition: 0.2s; border-bottom: 2px solid transparent !important; }
-    .filter-cat.active { color: #4e73df !important; border-bottom: 2px solid #4e73df !important; }
+
+    .product-grid-card {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .filter-cat {
+        transition: 0.2s;
+        border-bottom: 2px solid transparent !important;
+    }
+
+    .filter-cat.active {
+        color: #4e73df !important;
+        border-bottom: 2px solid #4e73df !important;
+    }
 
     .suggestion-item {
         padding: 8px 15px;
@@ -571,33 +736,98 @@
         border-bottom: 1px solid #f1f5f9;
         font-size: 13px;
     }
-    .suggestion-item:hover, .suggestion-item.active { background: #f0f7ff; color: #4e73df; padding-left: 22px; border-left: 3px solid #4e73df; }
-    .suggestion-item:last-child { border-bottom: none; }
-    .suggestion-item .match-highlight { font-weight: 800; color: #1a202c; }
-    
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    .cart-item { transition: all 0.2s ease; border-radius: 8px; margin-bottom: 8px; border: 1px solid transparent; }
-    .cart-item:hover { background: #f8fafc; border-color: #e2e8f0; }
-    
-    .animated-pulse { animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(78, 115, 223, 0); } 100% { box-shadow: 0 0 0 0 rgba(78, 115, 223, 0); } }
-    
+
+    .suggestion-item:hover,
+    .suggestion-item.active {
+        background: #f0f7ff;
+        color: #4e73df;
+        padding-left: 22px;
+        border-left: 3px solid #4e73df;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item .match-highlight {
+        font-weight: 800;
+        color: #1a202c;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .cart-item {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border: 1px solid transparent;
+    }
+
+    .cart-item:hover {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .animated-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(78, 115, 223, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(78, 115, 223, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(78, 115, 223, 0);
+        }
+    }
+
     /* Cart Ghost Mode (POS Specific) */
-    #cart-hover-trigger { position: fixed; right: 0; top: 0; width: 15px; height: 100vh; z-index: 1035; background: transparent; }
-    
+    #cart-hover-trigger {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 15px;
+        height: 100vh;
+        z-index: 1035;
+        background: transparent;
+    }
+
     .pos-sidebar {
         position: fixed !important;
-        right: 0; top: 0; height: 100vh; width: 400px;
+        right: 0;
+        top: 0;
+        height: 100vh;
+        width: 400px;
         z-index: 1040;
         transform: translateX(100%);
         transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
-        box-shadow: -15px 0 30px rgba(0,0,0,0.3);
+        box-shadow: -15px 0 30px rgba(0, 0, 0, 0.3);
     }
-    .pos-sidebar.active, .pos-sidebar.hover-reveal { transform: translateX(0); }
+
+    .pos-sidebar.active,
+    .pos-sidebar.hover-reveal {
+        transform: translateX(0);
+    }
 
     /* Aura-Spotlight Search Bar */
     .search-wrapper-sleek {
@@ -608,23 +838,36 @@
         border: 1px solid #e2e8f0;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         padding: 4px 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
+
     .search-wrapper-sleek:focus-within {
         border-color: var(--accent);
         box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.2);
         transform: translateY(-1px);
     }
+
     #product-search {
         background: transparent;
         font-weight: 500;
         letter-spacing: -0.2px;
         color: #1e293b;
     }
-    #product-search::placeholder { color: #94a3b8; font-weight: 400; }
-    
-    .search-icon-sleek { color: #94a3b8; transition: 0.3s; }
-    .search-wrapper-sleek:focus-within .search-icon-sleek { color: var(--accent); transform: scale(1.1); }
+
+    #product-search::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+
+    .search-icon-sleek {
+        color: #94a3b8;
+        transition: 0.3s;
+    }
+
+    .search-wrapper-sleek:focus-within .search-icon-sleek {
+        color: var(--accent);
+        transform: scale(1.1);
+    }
 </style>
 @endsection
 
@@ -633,24 +876,53 @@
 <style>
     .select2-dropdown {
         border: 1px solid #d1d3e2 !important;
-        box-shadow: 0 .15rem 1.75rem 0 rgba(58,59,69,.15) !important;
+        box-shadow: 0 .15rem 1.75rem 0 rgba(58, 59, 69, .15) !important;
         z-index: 100001 !important;
     }
+
     .select2-container {
         z-index: 100001 !important;
     }
+
     .swal2-container {
         z-index: 100002 !important;
     }
-    
+
     /* Sleek Modal for POS */
-    #addProductModal .modal-content { border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 1rem 3rem rgba(0,0,0,0.175); }
-    #addProductModal .modal-header { background: #4e73df; padding: 1rem 1.5rem; }
-    #addProductModal .modal-body { padding: 1.5rem; }
-    #addProductModal .form-group label { font-size: 0.75rem; color: #4e73df; text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    #addProductModal .input-group-append .btn { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0 0.35rem 0.35rem 0 !important; }
-    #addProductModal .input-group > .form-control { border-radius: 0.35rem 0 0 0.35rem !important; height: 35px !important; font-size: 0.85rem; }
+    #addProductModal .modal-content {
+        border-radius: 12px;
+        overflow: hidden;
+        border: none;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    }
+
+    #addProductModal .modal-header {
+        background: #4e73df;
+        padding: 1rem 1.5rem;
+    }
+
+    #addProductModal .modal-body {
+        padding: 1.5rem;
+    }
+
+    #addProductModal .form-group label {
+        font-size: 0.75rem;
+        color: #4e73df;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    #addProductModal .input-group-append .btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0 0.35rem 0.35rem 0 !important;
+    }
+
+    #addProductModal .input-group>.form-control {
+        border-radius: 0.35rem 0 0 0.35rem !important;
+        height: 35px !important;
+        font-size: 0.85rem;
+    }
 </style>
 @endpush
 
@@ -659,7 +931,7 @@
 <script>
     let cart = [];
     let products = [];
-    
+
     // Sales Order Integration
     window.salesOrderId = @json(session('pos_payload.sales_order_id') ?? null);
     const soPayload = @json(session('pos_payload.items') ?? null);
@@ -690,53 +962,36 @@
                     last_purchase: null,
                     so_item_id: item.so_item_id
                 };
-                
+
                 // Add to cart if not already there (though for SO we usually just push)
                 cart.push(cartItem);
             });
-            
+
             renderCart();
 
             if (soCustomerId) {
                 $('#customer-select').val(soCustomerId).trigger('change');
             }
-            
+
             // Open the sidebar automatically to show the loaded items
             $('#checkout-sidebar').addClass('active');
             $('#pos-overlay').addClass('active');
         }
 
-        // POS-specific Cart Hover Reveal
-        if($(window).width() > 768) {
-            if($('#cart-hover-trigger').length == 0) {
-                $('body').append('<div id="cart-hover-trigger"></div>');
-            }
-            
-            $('#cart-hover-trigger').on('mouseenter', function() { 
-                if(!$('#checkout-sidebar').hasClass('active')) {
-                    $('#checkout-sidebar').addClass('hover-reveal'); 
-                }
-            });
-            $('#checkout-sidebar').on('mouseleave', function() { 
-                $(this).removeClass('hover-reveal'); 
-            });
-        }
-
         // Toggle Cart (Sticky Mode)
         $('#toggle-cart').on('click', function() {
             $('#checkout-sidebar').toggleClass('active');
-            $('#checkout-sidebar').removeClass('hover-reveal'); // Ensure sticky overrides hover
             $('#pos-overlay').toggleClass('active');
         });
 
         // Close logic
         $('#pos-overlay, #close-sidebar').on('click', function() {
-            $('#checkout-sidebar').removeClass('active hover-reveal');
+            $('#checkout-sidebar').removeClass('active');
             $('#pos-overlay').removeClass('active');
         });
 
         // Create Sidebar Overlay if not exists
-        if($('.sidebar-overlay').length == 0) {
+        if ($('.sidebar-overlay').length == 0) {
             $('body').append('<div class="sidebar-overlay" id="pos-overlay"></div>');
         }
 
@@ -748,7 +1003,7 @@
         });
 
         // Initialize Select2 for Add Product Modal when it's shown
-        $('#addProductModal').on('shown.bs.modal', function () {
+        $('#addProductModal').on('shown.bs.modal', function() {
             // Move modals to body to avoid z-index issues
             $('#addCategoryModal, #addBrandModal, #addSupplierModal, #addUnitModal, #addModelModal').appendTo('body');
 
@@ -778,12 +1033,12 @@
                     url: "{{route('admin.product.search-simple')}}", // Need to create this
                     dataType: 'json',
                     delay: 250,
-                    data: function (params) {
+                    data: function(params) {
                         return {
                             q: params.term
                         };
                     },
-                    processResults: function (data) {
+                    processResults: function(data) {
                         return {
                             results: data
                         };
@@ -793,7 +1048,7 @@
             });
 
             // If an existing product is selected, warn the user
-            $('#pos-title-select').on('select2:select', function (e) {
+            $('#pos-title-select').on('select2:select', function(e) {
                 var data = e.params.data;
                 if (data.is_existing) {
                     Swal.fire({
@@ -816,7 +1071,7 @@
         $(document).on('submit', '#quickAddCategoryForm', function(e) {
             e.preventDefault();
             $.post("{{route('category.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}&is_parent=1", function(res) {
-                if(res.status == 'success') {
+                if (res.status == 'success') {
                     $('#pos-cat-select').append(new Option(res.category.title, res.category.id, false, true)).trigger('change');
                     $('#addCategoryModal').modal('hide');
                 }
@@ -826,7 +1081,7 @@
         $(document).on('submit', '#quickAddSupplierForm', function(e) {
             e.preventDefault();
             $.post("{{route('supplier.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
-                if(res.status == 'success') {
+                if (res.status == 'success') {
                     $('#pos-supplier-select').append(new Option(res.supplier.name + ' (' + (res.supplier.company_name || '') + ')', res.supplier.id, false, true)).trigger('change');
                     $('#addSupplierModal').modal('hide');
                 }
@@ -836,7 +1091,7 @@
         $(document).on('submit', '#quickAddBrandForm', function(e) {
             e.preventDefault();
             $.post("{{route('brand.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
-                if(res.status == 'success') {
+                if (res.status == 'success') {
                     $('#pos-brand-select').append(new Option(res.brand.title, res.brand.id, false, true)).trigger('change');
                     $('#addBrandModal').modal('hide');
                 }
@@ -846,7 +1101,7 @@
         $(document).on('submit', '#quickAddUnitForm', function(e) {
             e.preventDefault();
             $.post("{{route('product.store-unit')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
-                if(res.status == 'success') {
+                if (res.status == 'success') {
                     $('#pos-unit-select').append(new Option(res.unit.name, res.unit.name, false, true)).trigger('change');
                     $('#addUnitModal').modal('hide');
                 }
@@ -856,7 +1111,7 @@
         $(document).on('submit', '#quickAddModelForm', function(e) {
             e.preventDefault();
             $.post("{{route('product.store-model')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
-                if(res.status == 'success') {
+                if (res.status == 'success') {
                     $('#pos-model-select').append(new Option(res.model.name, res.model.name, false, true)).trigger('change');
                     $('#addModelModal').modal('hide');
                 }
@@ -864,7 +1119,7 @@
         });
 
         // Initialize Select2 for Add Customer Modal when it's shown
-        $('#addCustomerModal').on('shown.bs.modal', function () {
+        $('#addCustomerModal').on('shown.bs.modal', function() {
             $('#customer-city-select').select2({
                 placeholder: "Select City",
                 allowClear: true,
@@ -887,15 +1142,15 @@
             let customer_id = $(this).val();
             let balance = parseFloat($(this).find(':selected').data('balance')) || 0;
             $('#modal-ledger-balance').text('Rs. ' + balance.toFixed(2));
-            
+
             // Re-render products if pricing depends on customer type
             renderProducts();
-            
+
             // Update cart items if customer changes (prices might change)
-            if(cart.length > 0) {
+            if (cart.length > 0) {
                 cart.forEach(item => {
                     let product = products.find(p => p.id == item.id && p.item_type == item.type);
-                    if(product) {
+                    if (product) {
                         let newPrice = getPriceForCustomer(product);
                         item.base_price = newPrice;
                         item.original_price = newPrice;
@@ -918,7 +1173,7 @@
 
         // Clear Cart
         $('#clear-cart').on('click', function() {
-            if(cart.length == 0) return;
+            if (cart.length == 0) return;
             Swal.fire({
                 title: 'Clear Cart?',
                 text: "This will remove all items from the current order.",
@@ -962,7 +1217,9 @@
         if (currentFocus < 0) currentFocus = (x.length - 1);
         $(x[currentFocus]).addClass("active");
         // Scroll into view if needed
-        x[currentFocus].scrollIntoView({ block: 'nearest' });
+        x[currentFocus].scrollIntoView({
+            block: 'nearest'
+        });
     }
 
     function removeActive(x) {
@@ -975,8 +1232,8 @@
         let val = $(this).val();
         clearTimeout(searchTimer);
         currentFocus = -1; // Reset focus on input
-        
-        if(val.length > 0) {
+
+        if (val.length > 0) {
             searchTimer = setTimeout(() => {
                 fetchProducts(val, true);
             }, 150);
@@ -993,7 +1250,7 @@
     });
 
     function showSuggestions(query, matches) {
-        if(matches.length > 0) {
+        if (matches.length > 0) {
             let html = '';
             matches.slice(0, 10).forEach(m => {
                 let title = m.title;
@@ -1001,7 +1258,7 @@
                 let escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                 let regex = new RegExp('(' + escapedQuery + ')', 'gi');
                 let highlightedTitle = title.replace(regex, '<span class="match-highlight">$1</span>');
-                
+
                 html += `
                     <div class="suggestion-item d-flex align-items-center" onclick="selectSuggestion('${m.id}', '${m.item_type}')">
                         <i class="fas fa-search mr-3 text-muted" style="font-size: 11px; opacity: 0.5;"></i>
@@ -1018,7 +1275,7 @@
 
     window.selectSuggestion = function(pid, type) {
         let product = products.find(p => p.id == pid && p.item_type == type);
-        if(product) {
+        if (product) {
             $('#product-search').val(product.title);
             $('#search-suggestions').addClass('d-none');
             fetchProducts(product.title, false);
@@ -1035,19 +1292,19 @@
     });
 
     function fetchProducts(query = null, triggerSuggestions = false) {
-        if(query === null) query = $('#product-search').val();
+        if (query === null) query = $('#product-search').val();
         let cat_id = $('.filter-cat.active').data('id');
 
         $.ajax({
             url: "{{route('pos.search-products')}}",
-            data: { 
+            data: {
                 query: query,
                 cat_id: cat_id,
             },
             success: function(res) {
                 products = res;
                 renderProducts();
-                if(triggerSuggestions && query.length > 0) {
+                if (triggerSuggestions && query.length > 0) {
                     showSuggestions(query, res);
                 }
             }
@@ -1056,14 +1313,14 @@
 
     function getPriceForCustomer(product) {
         let type = $('#customer-select').find(':selected').data('type') || 'retail'; // Default to retail or base price
-        
+
         let price = parseFloat(product.price); // Default Selling Price
-        
-        if(type == 'wholesale' && product.wholesale_price) price = parseFloat(product.wholesale_price);
-        else if(type == 'retail' && product.retail_price) price = parseFloat(product.retail_price);
-        else if(type == 'walkin' && product.walkin_price) price = parseFloat(product.walkin_price);
-        else if(type == 'salesman' && product.salesman_price) price = parseFloat(product.salesman_price);
-        
+
+        if (type == 'wholesale' && product.wholesale_price) price = parseFloat(product.wholesale_price);
+        else if (type == 'retail' && product.retail_price) price = parseFloat(product.retail_price);
+        else if (type == 'walkin' && product.walkin_price) price = parseFloat(product.walkin_price);
+        else if (type == 'salesman' && product.salesman_price) price = parseFloat(product.salesman_price);
+
         return price || 0;
     }
 
@@ -1074,7 +1331,7 @@
             let itemTypeBadge = p.item_type == 'bundle' ? '<span class="badge badge-warning mb-1" style="font-size:8px; padding:1px 4px;">BUNDLE</span>' : '';
             let brandName = p.brand ? p.brand.title : 'GENERIC';
             let modelName = p.model || 'N/A';
-            
+
             html += `
                 <div class="col-xl-8-grid mb-3 px-2">
                     <div class="card product-grid-card shadow-sm cursor-pointer" onclick="addToCart(${p.id}, '${p.item_type}', event)">
@@ -1097,10 +1354,10 @@
 
     function addToCart(pid, type, event) {
         let product = products.find(p => p.id == pid && p.item_type == type);
-        if(!product) return;
-        
+        if (!product) return;
+
         let defaultPrice = getPriceForCustomer(product);
-        
+
         Swal.fire({
             title: `<span style="font-size: 16px; font-weight: 800;">${product.title}</span>`,
             html: `
@@ -1136,15 +1393,21 @@
                     Swal.showValidationMessage(`Please enter a valid quantity`);
                     return false;
                 }
-                return { qty: parseFloat(qty), price: parseFloat(price) }
+                return {
+                    qty: parseFloat(qty),
+                    price: parseFloat(price)
+                }
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                let { qty, price } = result.value;
-                let cartId = type + '-' + pid; 
+                let {
+                    qty,
+                    price
+                } = result.value;
+                let cartId = type + '-' + pid;
                 let item = cart.find(i => i.unique_id == cartId);
-                
-                if(item) {
+
+                if (item) {
                     item.qty += qty;
                     item.price = price;
                     item.original_price = Math.max(price, item.base_price);
@@ -1167,18 +1430,18 @@
                     fetchLastPurchase(cartItem);
                 }
                 renderCart();
-                
+
                 // Success Toast
                 const Toast = Swal.mixin({
-                  toast: true,
-                  position: 'top-end',
-                  showConfirmButton: false,
-                  timer: 1500,
-                  timerProgressBar: true
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
                 });
                 Toast.fire({
-                  icon: 'success',
-                  title: 'Added to cart'
+                    icon: 'success',
+                    title: 'Added to cart'
                 });
             }
         });
@@ -1186,8 +1449,8 @@
 
     function fetchLastPurchase(cartItem) {
         let customer_id = $('#customer-select').val();
-        if(!customer_id || customer_id == 1) return; // Skip walk-in
-        
+        if (!customer_id || customer_id == 1) return; // Skip walk-in
+
         $.ajax({
             url: "{{route('pos.last-purchase')}}",
             data: {
@@ -1196,10 +1459,10 @@
                 item_id: cartItem.id
             },
             success: function(res) {
-                if(res.found) {
+                if (res.found) {
                     cartItem.last_purchase = `Bought ${res.quantity} at Rs.${res.price} on ${res.date}`;
                     renderCart();
-                    
+
                     Swal.fire({
                         title: 'Purchase History Found!',
                         html: `<b>Customer previously bought this item.</b><br><br>
@@ -1226,7 +1489,7 @@
         let p = parseFloat(val);
         p = isNaN(p) ? 0 : p;
         cart[index].price = p;
-        
+
         // If the new price is higher than the customer's pricing strategy base price,
         // we override the original_price so there is no negative discount.
         // If it's lower, we keep the base_price as original so it reflects as a discount.
@@ -1235,7 +1498,7 @@
         } else {
             cart[index].original_price = cart[index].base_price;
         }
-        
+
         renderCart();
     };
 
@@ -1248,8 +1511,8 @@
         let html = '';
         let subtotal = 0;
         let totalDiscount = 0;
-        
-        if(cart.length == 0) {
+
+        if (cart.length == 0) {
             $('#cart-items').html('<div class="text-center py-5 text-muted"><i class="fas fa-shopping-basket fa-3x mb-3 opacity-2"></i><p>Current order is empty</p></div>');
             updateSummary(0, 0, 0);
             return;
@@ -1307,7 +1570,7 @@
         $('.total-payable').text('Rs. ' + total.toFixed(2));
 
         // Update Toggle Badge
-        if(count > 0) {
+        if (count > 0) {
             $('#cart-badge').text(count).show();
             $('#toggle-cart').addClass('animated-pulse');
         } else {
@@ -1319,7 +1582,7 @@
     $('.payment-option').on('click', function() {
         $('.payment-option').removeClass('active');
         $(this).addClass('active');
-        
+
         let method = $(this).data('method');
         if (method === 'credit') {
             $('#amount-received').val(0).trigger('input');
@@ -1335,7 +1598,7 @@
     $('#amount-received').on('input', function() {
         let total = parseFloat($('#total-val').text().replace('Rs. ', ''));
         let received = parseFloat($(this).val()) || 0;
-        
+
         if (received > 0 && received < total) {
             $('#partial-info').show();
         } else {
@@ -1346,9 +1609,9 @@
     $('#save-customer-btn').on('click', function() {
         let form = $('#add-customer-form');
         $.ajax({
-            url: "{{route('users.store')}}", 
+            url: "{{route('users.store')}}",
             type: "POST",
-            data: form.serialize() + "&role=user&status=active&password=password123", 
+            data: form.serialize() + "&role=user&status=active&password=password123",
             success: function(response) {
                 // Add new option with data-type and data-balance
                 let displayText = response.name + ' (' + response.phone + ') | Bal: Rs. 0.00';
@@ -1361,13 +1624,13 @@
                 Swal.fire('Success', 'Customer Added', 'success');
             },
             error: function(err) {
-               console.log(err);
-               let errorMsg = 'Failed to add customer';
-               if(err.status === 422) {
-                   let errors = err.responseJSON.errors;
-                   errorMsg = Object.values(errors).flat().join('\n');
-               }
-               Swal.fire('Error', errorMsg, 'error');
+                console.log(err);
+                let errorMsg = 'Failed to add customer';
+                if (err.status === 422) {
+                    let errors = err.responseJSON.errors;
+                    errorMsg = Object.values(errors).flat().join('\n');
+                }
+                Swal.fire('Error', errorMsg, 'error');
             }
         });
     });
@@ -1376,7 +1639,7 @@
     $('#save-product-btn').on('click', function() {
         var $btn = $(this);
         var formData = $('#add-product-form').serialize();
-        
+
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> SAVING...');
 
         $.ajax({
@@ -1402,7 +1665,7 @@
     });
 
     $('#complete-order').on('click', function() {
-        if(cart.length == 0) {
+        if (cart.length == 0) {
             Swal.fire('Error', 'Cart is empty!', 'error');
             return;
         }
@@ -1410,8 +1673,8 @@
         let customer_id = $('#customer-select').val();
         let total_amount = parseFloat($('#total-val').text().replace('Rs. ', ''));
         let payment_method = $('.payment-option.active').data('method');
-        
-        if(!payment_method) {
+
+        if (!payment_method) {
             Swal.fire('Error', 'Please select a payment method!', 'warning');
             return;
         }
@@ -1440,13 +1703,13 @@
             type: "POST",
             data: payload,
             success: function(response) {
-                    if(response.status == 'success') {
-                        // Handle Printing via hidden iframe
-                        if(response.thermal_url) {
-                            $('#print-iframe').attr('src', response.thermal_url);
-                        }
+                if (response.status == 'success') {
+                    // Handle Printing via hidden iframe
+                    if (response.thermal_url) {
+                        $('#print-iframe').attr('src', response.thermal_url);
+                    }
 
-                        if(response.wa_sent) {
+                    if (response.wa_sent) {
 
                         Swal.fire({
                             title: 'Success!',
@@ -1472,13 +1735,13 @@
             },
             error: function(err) {
                 console.log(err);
-                if(err.status === 422) {
-                     let errors = err.responseJSON.errors;
-                     let msg = '';
-                     $.each(errors, function(key, value) {
-                         msg += value[0] + '\n';
-                     });
-                     alert('Validation Error:\n' + msg);
+                if (err.status === 422) {
+                    let errors = err.responseJSON.errors;
+                    let msg = '';
+                    $.each(errors, function(key, value) {
+                        msg += value[0] + '\n';
+                    });
+                    alert('Validation Error:\n' + msg);
                 } else {
                     alert('Something went wrong! Check console.');
                 }

@@ -19,6 +19,8 @@
     use \UniSharp\LaravelFilemanager\Lfm;
     use App\Http\Controllers\Auth\ResetPasswordController;
     use Illuminate\Support\Facades\Schema;
+    use App\Http\Controllers\CashRegisterController;
+    use App\Http\Controllers\CustomerLedgerController;
 
     Route::get('/fix-db', function() {
         try {
@@ -40,13 +42,23 @@
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE customer_ledgers ADD COLUMN IF NOT EXISTS payment_details JSON NULL AFTER payment_method");
             } catch (\Exception $e) {}
 
-            return "Database Migrated and Cache Cleared! Please try opening the POS again.";
+            // Inventory Incoming Updates
+            try {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_incoming', 'shipping_cost')) {
+                    \Illuminate\Support\Facades\Schema::table('inventory_incoming', function($table) {
+                        $table->decimal('shipping_cost', 15, 2)->default(0)->after('received_date');
+                    });
+                }
+            } catch (\Exception $e) {
+                return "Error adding column: " . $e->getMessage();
+            }
+
+            return "Database Fixed Successfully! You can now try to save the entry again.";
         } catch (\Exception $e) {
             return "Error during fix: " . $e->getMessage();
         }
     });
-    use App\Http\Controllers\CashRegisterController;
-    use App\Http\Controllers\CustomerLedgerController;
+
     /*
     |--------------------------------------------------------------------------
     | Web Routes
@@ -425,7 +437,10 @@
             Route::post('/{inventoryIncoming}/verify', 'InventoryIncomingController@verify')->name('inventory-incoming.verify');
             Route::post('/{inventoryIncoming}/complete', 'InventoryIncomingController@complete')->name('inventory-incoming.complete');
             Route::get('/{inventoryIncoming}/thermal', 'InventoryIncomingController@thermalPrint')->name('inventory-incoming.thermal');
+            Route::get('/{inventoryIncoming}/pdf', 'InventoryIncomingController@generatePDF')->name('inventory-incoming.pdf');
             Route::post('/item/{id}/update', 'InventoryIncomingController@updateItem')->name('inventory-incoming.item.update');
+            Route::get('/{inventoryIncoming}/edit', 'InventoryIncomingController@edit')->name('inventory-incoming.edit');
+            Route::put('/{inventoryIncoming}/update', 'InventoryIncomingController@update')->name('inventory-incoming.update');
             Route::get('/search/products', 'InventoryIncomingController@searchProducts')->name('inventory-incoming.search-products');
         });
 

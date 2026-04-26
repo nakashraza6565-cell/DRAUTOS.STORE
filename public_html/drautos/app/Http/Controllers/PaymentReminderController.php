@@ -25,11 +25,13 @@ class PaymentReminderController extends Controller
         // Reminders due today
         $dueToday = PaymentReminder::with('party')
             ->dueToday()
+            ->orderBy('party_id')
             ->get();
             
         // Overdue reminders
         $overdue = PaymentReminder::with('party')
             ->overdue()
+            ->orderBy('party_id')
             ->get();
             
         // Upcoming (All future)
@@ -37,6 +39,7 @@ class PaymentReminderController extends Controller
             ->where('due_date', '>', $today)
             ->whereIn('status', ['pending', 'partially_paid'])
             ->orderBy('due_date', 'asc')
+            ->orderBy('party_id')
             ->get();
 
         // Calculate totals for today
@@ -52,9 +55,32 @@ class PaymentReminderController extends Controller
         $customers = User::whereIn('role', ['customer', 'user'])->get();
         $suppliers = Supplier::all();
 
+        // Grouped by Party (all pending/overdue)
+        $groupedReminders = PaymentReminder::with('party')
+            ->whereIn('status', ['pending', 'partially_paid'])
+            ->get()
+            ->groupBy(function($r) {
+                return $r->party_type . '-' . $r->party_id;
+            })->map(function($group) {
+                $first = $group->first();
+                return (object)[
+                    'party' => $first->party,
+                    'party_type' => $first->party_type,
+                    'party_id' => $first->party_id,
+                    'total_amount' => $group->where('type', 'receivable')->sum(function($r) { return $r->amount - $r->paid_amount; }) - 
+                                     $group->where('type', 'payable')->sum(function($r) { return $r->amount - $r->paid_amount; }),
+                    'receivable' => $group->where('type', 'receivable')->sum(function($r) { return $r->amount - $r->paid_amount; }),
+                    'payable' => $group->where('type', 'payable')->sum(function($r) { return $r->amount - $r->paid_amount; }),
+                    'count' => $group->count(),
+                    'latest_due' => $group->min('due_date'),
+                ];
+            })->sortByDesc(function($item) {
+                return abs($item->total_amount);
+            });
+
         return view('backend.payment-reminders.index', compact(
             'dueToday', 'overdue', 'upcoming', 'receivablesToday', 'payablesToday',
-            'customers', 'suppliers'
+            'customers', 'suppliers', 'groupedReminders'
         ));
     }
 

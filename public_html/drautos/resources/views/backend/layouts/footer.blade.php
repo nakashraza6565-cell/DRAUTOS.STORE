@@ -72,32 +72,48 @@
 
   <script>
     $(document).ready(function() {
-        // Project-wide Ghost Sidebar Logic
-        $(".sidebar").addClass("sidebar-ghost-mode");
-        if($('#sidebar-hover-trigger').length == 0) {
-            $('body').append('<div id="sidebar-hover-trigger"></div>');
-        }
+        // Mobile Swipe Support
+        let touchstartX = 0;
+        let touchendX = 0;
         
-        // Hover to reveal
-        $('#sidebar-hover-trigger').on('mouseenter', function() {
-            $(".sidebar").addClass("reveal");
-        });
+        function checkDirection() {
+            if (touchendX < touchstartX - 80) { // Swipe Left (Close)
+                if (!$('.sidebar').hasClass('hidden')) {
+                    $('.sidebar').addClass('hidden');
+                    $('#wrapper').addClass('sidebar-hidden');
+                    localStorage.setItem('sidebar_state', 'hidden');
+                }
+            }
+            if (touchendX > touchstartX + 80) { // Swipe Right (Open)
+                if ($('.sidebar').hasClass('hidden')) {
+                    $('.sidebar').removeClass('hidden');
+                    $('#wrapper').removeClass('sidebar-hidden');
+                    localStorage.setItem('sidebar_state', 'visible');
+                }
+            }
+        }
 
-        // Hide when leaving
-        $(".sidebar").on('mouseleave', function() {
-            $(this).removeClass("reveal");
-        });
+        document.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, {passive: true});
 
-        // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles
-        $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').on('click', function(e) {
+        document.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            checkDirection();
+        }, {passive: true});
+
+        // Initial mobile check
+        if ($(window).width() < 768) {
+            $(".sidebar").addClass("hidden");
+            $("#wrapper").addClass("sidebar-hidden");
+        }
+
+        // Full Drawer Toggle Logic
+        $('#sidebarToggle, #sidebarToggleTop').on('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            $(".sidebar").toggleClass("reveal");
-            // Prevent SB Admin 2 from adding 'toggled' class which resizes content
-            $("body").removeClass("sidebar-toggled");
-            $(".sidebar").removeClass("toggled");
+            $(".sidebar").toggleClass("hidden");
+            $("#wrapper").toggleClass("sidebar-hidden");
         });
-
         setTimeout(function(){
           $('.alert').slideUp();
         },4000);

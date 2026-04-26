@@ -40,10 +40,9 @@ class InventoryIncomingController extends Controller
     {
         $suppliers = Supplier::where('status', 'active')->get();
         $warehouses = Warehouse::where('status', 'active')->get();
-        $products = Product::where('status', 'active')->get();
         $packaging_items = \App\Models\PackagingItem::all();
 
-        return view('backend.inventory.incoming.create', compact('suppliers', 'warehouses', 'products', 'packaging_items'));
+        return view('backend.inventory.incoming.create', compact('suppliers', 'warehouses', 'packaging_items'));
     }
 
     /**
@@ -110,40 +109,16 @@ class InventoryIncomingController extends Controller
                     'batch_number' => $item['batch_number'] ?? null,
                     'barcode_printed' => false,
                 ]);
-
-                // Update product stock and purchase price
-                $product = Product::find($item['product_id']);
-                $product->stock += $item['quantity'];
-                $product->purchase_price = $item['unit_cost'];
-                
-                if ($request->warehouse_id) {
-                    $product->warehouse_id = $request->warehouse_id;
-                }
-                $product->save();
-
-                // Deduct packaging stock
-                if (!empty($item['packaging_item_id']) && !empty($item['packaging_quantity'])) {
-                    $pkgItem = \App\Models\PackagingItem::find($item['packaging_item_id']);
-                    if ($pkgItem) {
-                        $pkgItem->stock -= $item['packaging_quantity'];
-                        $pkgItem->save();
-                    }
-                }
             }
 
-            // Auto-Post to Ledger if requested
-            if ($request->has('post_to_ledger') && $incoming->supplier_id) {
-                $this->performVerification($incoming);
-            }
 
             DB::commit();
-
-            session()->flash('success', 'Incoming goods entry created successfully.' . ($request->has('post_to_ledger') ? ' Posted to supplier ledger.' : ''));
-            return redirect()->route('inventory-incoming.show', $incoming->id);
+            session()->flash('success', 'Incoming goods record created as ' . $incoming->status . '.');
+            return redirect()->route('inventory-incoming.index');
 
         } catch (\Exception $e) {
             DB::rollback();
-            session()->flash('error', 'Error creating entry: ' . $e->getMessage());
+            session()->flash('error', 'Error creating entry: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
             return back()->withInput();
         }
     }
@@ -153,9 +128,34 @@ class InventoryIncomingController extends Controller
      */
     protected function performVerification(InventoryIncoming $inventoryIncoming)
     {
-        $inventoryIncoming->update(['status' => 'verified']);
+        // 1. Update product stock ONLY if status is pending
+        if ($inventoryIncoming->status == 'pending') {
+            $inventoryIncoming->update(['status' => 'verified']);
 
-        // Record in Supplier Ledger
+            foreach ($inventoryIncoming->items as $item) {
+                // Update product stock and purchase price
+                $product = Product::find($item->product_id);
+                if ($product) {
+                    $product->stock += $item->quantity;
+                    $product->purchase_price = $item->unit_cost;
+                    if ($inventoryIncoming->warehouse_id) {
+                        $product->warehouse_id = $inventoryIncoming->warehouse_id;
+                    }
+                    $product->save();
+                }
+
+                // Deduct packaging stock
+                if (!empty($item->packaging_item_id) && !empty($item->packaging_quantity)) {
+                    $pkgItem = \App\Models\PackagingItem::find($item->packaging_item_id);
+                    if ($pkgItem) {
+                        $pkgItem->stock -= $item->packaging_quantity;
+                        $pkgItem->save();
+                    }
+                }
+            }
+        }
+
+        // 2. Record in Supplier Ledger if missing
         if ($inventoryIncoming->supplier_id && $inventoryIncoming->total_cost > 0) {
             $exists = \App\Models\SupplierLedger::where('supplier_id', $inventoryIncoming->supplier_id)
                 ->where('reference_id', $inventoryIncoming->id)
@@ -251,10 +251,105 @@ class InventoryIncomingController extends Controller
      */
     public function complete(InventoryIncoming $inventoryIncoming)
     {
-        $inventoryIncoming->update(['status' => 'completed']);
+        DB::beginTransaction();
+        try {
+            $this->performVerification($inventoryIncoming);
+            $inventoryIncoming->update(['status' => 'completed']);
+            DB::commit();
+            session()->flash('success', 'Incoming goods verified and marked as completed successfully');
+        } catch (\Exception $e) {
+            DB::rollback();
+            session()->flash('error', 'Error completing: ' . $e->getMessage());
+        }
 
-        session()->flash('success', 'Incoming goods completed successfully');
         return back();
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(InventoryIncoming $inventoryIncoming)
+    {
+        if ($inventoryIncoming->status != 'pending') {
+            session()->flash('error', 'Only pending records can be edited.');
+            return redirect()->route('inventory-incoming.index');
+        }
+
+        $inventoryIncoming->load(['items.product', 'supplier', 'warehouse']);
+        $suppliers = Supplier::where('status', 'active')->orderBy('name')->get();
+        $warehouses = Warehouse::where('status', 'active')->orderBy('name')->get();
+
+        return view('backend.inventory.incoming.edit', compact('inventoryIncoming', 'suppliers', 'warehouses'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, InventoryIncoming $inventoryIncoming)
+    {
+        if ($inventoryIncoming->status != 'pending') {
+            session()->flash('error', 'Only pending records can be edited.');
+            return redirect()->route('inventory-incoming.index');
+        }
+
+        $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'received_date' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit_cost' => 'required|numeric|min:0',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $inventoryIncoming->update([
+                'supplier_id' => $request->supplier_id,
+                'received_date' => $request->received_date,
+                'invoice_number' => $request->invoice_number,
+                'warehouse_id' => $request->warehouse_id,
+                'notes' => $request->notes,
+                'shipping_cost' => $request->shipping_cost ?? 0,
+            ]);
+
+            // Replace items: Delete old and create new
+            $inventoryIncoming->items()->delete();
+
+            foreach ($request->items as $item) {
+                $pkgMaterialCostTotal = 0;
+                if (!empty($item['packaging_item_id'])) {
+                    $pkgItem = \App\Models\PackagingItem::find($item['packaging_item_id']);
+                    if ($pkgItem) {
+                        $pkgMaterialCostTotal = ($pkgItem->cost * ($item['packaging_quantity'] ?? 0));
+                    }
+                }
+
+                $itemTotalCost = ($item['quantity'] * $item['unit_cost']) + ($item['packaging_cost'] ?? 0) + $pkgMaterialCostTotal;
+                
+                InventoryIncomingItem::create([
+                    'inventory_incoming_id' => $inventoryIncoming->id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_cost' => $item['unit_cost'],
+                    'total_cost' => $itemTotalCost,
+                    'packaging_item_id' => $item['packaging_item_id'] ?? null,
+                    'packaging_quantity' => $item['packaging_quantity'] ?? 0,
+                    'packaging_cost' => $item['packaging_cost'] ?? 0,
+                    'batch_number' => $item['batch_number'] ?? null,
+                    'barcode_printed' => false,
+                ]);
+            }
+
+
+            DB::commit();
+            session()->flash('success', 'Incoming goods record updated successfully.');
+            return redirect()->route('inventory-incoming.index');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            session()->flash('error', 'Error updating entry: ' . $e->getMessage());
+            return back()->withInput();
+        }
     }
 
     /**
@@ -302,7 +397,7 @@ class InventoryIncomingController extends Controller
     public function updateItem(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:0.01',
             'unit_cost' => 'required|numeric|min:0'
         ]);
 
@@ -362,5 +457,23 @@ class InventoryIncomingController extends Controller
             DB::rollback();
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }
+    }
+    /**
+     * Generate PDF for incoming goods
+     */
+    public function generatePDF(InventoryIncoming $inventoryIncoming)
+    {
+        if (!$inventoryIncoming || !$inventoryIncoming->exists) {
+            return view('backend.layouts.error_custom', [
+                'message' => 'Incoming goods record not found or was deleted.',
+                'title' => 'Record Not Found'
+            ]);
+        }
+        $inventoryIncoming->load(['supplier', 'warehouse', 'receiver', 'items.product']);
+        
+        $file_name = 'INCOMING-' . $inventoryIncoming->reference_number . '.pdf';
+        
+        $pdf = \PDF::loadView('backend.inventory.incoming.pdf', compact('inventoryIncoming'));
+        return $pdf->stream($file_name);
     }
 }

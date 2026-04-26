@@ -74,19 +74,36 @@ class PurchaseOrderController extends Controller
                 ]);
             }
 
-            // --- Handle Payment Reminder for Supplier ---
+            // --- Handle Customer Based Payment Reminder for Supplier ---
             $pending_amount = $total_amount - $paid_amount;
             if ($pending_amount > 0) {
-                \App\Models\PaymentReminder::create([
-                    'type' => 'payable',
-                    'party_type' => 'App\\Models\\Supplier',
-                    'party_id' => $request->supplier_id,
-                    'reference_number' => $po_number,
-                    'amount' => $pending_amount,
-                    'due_date' => $request->due_date ?: now()->addDays(7),
-                    'status' => 'pending',
-                    'notes' => 'Generated from Purchase Order ' . $po_number
-                ]);
+                $existingReminder = \App\Models\PaymentReminder::where('party_type', 'App\\Models\\Supplier')
+                    ->where('party_id', $request->supplier_id)
+                    ->whereIn('status', ['pending', 'partially_paid'])
+                    ->where('type', 'payable')
+                    ->first();
+
+                if ($existingReminder) {
+                    // Update existing consolidated reminder
+                    $existingReminder->amount += $pending_amount;
+                    $existingReminder->notes = ($existingReminder->notes ? $existingReminder->notes . "\n" : "") . "Added Purchase Order " . $po_number;
+                    if ($request->due_date) {
+                        $existingReminder->due_date = $request->due_date;
+                    }
+                    $existingReminder->save();
+                } else {
+                    // Create new consolidated reminder
+                    \App\Models\PaymentReminder::create([
+                        'type' => 'payable',
+                        'party_type' => 'App\\Models\\Supplier',
+                        'party_id' => $request->supplier_id,
+                        'reference_number' => 'SUPPLIER-BAL',
+                        'amount' => $pending_amount,
+                        'due_date' => $request->due_date ?: now()->addDays(7),
+                        'status' => 'pending',
+                        'notes' => 'Generated from Purchase Order ' . $po_number
+                    ]);
+                }
 
                 // Update supplier current balance
                 $supplier = Supplier::find($request->supplier_id);

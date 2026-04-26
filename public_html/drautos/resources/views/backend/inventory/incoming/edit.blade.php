@@ -2,8 +2,9 @@
 
 @section('main-content')
 <div class="container-fluid p-0">
-    <form action="{{route('inventory-incoming.store')}}" method="POST" id="incoming-form">
+    <form action="{{route('inventory-incoming.update', $inventoryIncoming->id)}}" method="POST" id="incoming-form">
         @csrf
+        @method('PUT')
 
         @if($errors->any())
             <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
@@ -35,9 +36,9 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-truck-loading mr-2"></i> Add Incoming Goods
+                            <i class="fas fa-edit mr-2"></i> Edit Incoming Goods: {{$inventoryIncoming->reference_number}}
                         </h5>
-                        <div class="small text-muted mt-1">Consolidate multiple items and sync to supplier ledger.</div>
+                        <div class="small text-muted mt-1">Update draft details and items.</div>
                     </div>
                     <div class="d-flex align-items-center" style="gap: 20px;">
                         <div class="text-right">
@@ -139,19 +140,19 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <label class="small font-weight-bold text-uppercase text-info">Shipping Cost (Rs.)</label>
-                                <input type="number" name="shipping_cost" id="shipping_cost" class="form-control form-control-lg font-weight-bold border-info" value="0" min="0" step="0.01">
+                                <input type="number" name="shipping_cost" id="shipping_cost" class="form-control form-control-lg font-weight-bold border-info" value="{{$inventoryIncoming->shipping_cost}}" min="0" step="0.01">
                             </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold text-uppercase">Received Date</label>
-                                <input type="date" name="received_date" class="form-control" value="{{date('Y-m-d')}}" required>
+                                <input type="date" name="received_date" class="form-control" value="{{$inventoryIncoming->received_date->format('Y-m-d')}}" required>
                             </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold text-uppercase">Invoice # (Handwritten)</label>
-                                <input type="text" name="invoice_number" class="form-control" placeholder="e.g. INV-2024-001">
+                                <input type="text" name="invoice_number" class="form-control" value="{{$inventoryIncoming->invoice_number}}" placeholder="e.g. INV-2024-001">
                             </div>
                             <div class="form-group mb-0">
                                 <label class="small font-weight-bold text-uppercase">Internal Note</label>
-                                <textarea name="notes" class="form-control" rows="3" placeholder="Add any special notes about this shipment..."></textarea>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Add any special notes about this shipment...">{{$inventoryIncoming->notes}}</textarea>
                             </div>
                         </div>
                     </div>
@@ -177,10 +178,28 @@
 let itemIndex = 0;
 
 $(document).ready(function() {
-    $('.select2').select2({ theme: 'bootstrap4' });
-    
-    // Add first row automatically
-    addItemRow();
+    // Initialize Select2 for main supplier
+    $('#supplier_id').select2({ theme: 'bootstrap4', width: '100%' }).trigger('change');
+
+    // Inject existing items
+    @foreach($inventoryIncoming->items as $item)
+        addItemRow({
+            id: {{ $item->product_id }},
+            title: {!! json_encode($item->product->title) !!},
+            sku: {!! json_encode($item->product->sku) !!},
+            qty: {{ $item->quantity }},
+            cost: {{ $item->unit_cost }},
+            total: {{ $item->total_cost }},
+            pkg_id: "{{ $item->packaging_item_id }}",
+            pkg_qty: {{ $item->packaging_quantity }},
+            pkg_cost: {{ $item->packaging_cost }}
+        });
+    @endforeach
+
+    // Add empty row if none
+    if ($('#items-container tr').length === 0) {
+        addItemRow();
+    }
 
     $('#supplier_id').on('change', function() {
         let $opt = $(this).find(':selected');
@@ -222,7 +241,7 @@ function addItemRow(product = null) {
             <td class="align-middle border-0">
                 <div class="d-flex align-items-center">
                     <select name="items[${itemIndex}][product_id]" class="form-control select2-ajax product-select" required>
-                        <option value="">Search by Name/SKU/Barcode</option>
+                        ${product ? `<option value="${product.id}" selected>${product.title} (${product.sku})</option>` : '<option value="">Search by Name/SKU/Barcode</option>'}
                     </select>
                     <button type="button" class="btn btn-link btn-sm text-primary p-0 ml-2" data-toggle="modal" data-target="#addProductModal" title="Quick Add Product">
                         <i class="fas fa-plus"></i>
@@ -243,11 +262,11 @@ function addItemRow(product = null) {
                     <select name="items[${itemIndex}][packaging_item_id]" class="form-control form-control-sm mb-1">
                         <option value="">None</option>
                         @foreach($packaging_items as $pkg)
-                            <option value="{{$pkg->id}}">{{$pkg->name}}</option>
+                            <option value="{{$pkg->id}}" ${product && product.pkg_id == "{{$pkg->id}}" ? 'selected' : ''}>{{$pkg->name}}</option>
                         @endforeach
                     </select>
                     <label class="small font-weight-bold">Additional Cost</label>
-                    <input type="number" step="0.01" name="items[${itemIndex}][packaging_cost]" class="form-control form-control-sm pkg-cost-input" value="0">
+                    <input type="number" step="0.01" name="items[${itemIndex}][packaging_cost]" class="form-control form-control-sm pkg-cost-input" value="${product ? product.pkg_cost : 0}">
                 </div>
             </td>
             <td class="align-middle border-0 text-right">

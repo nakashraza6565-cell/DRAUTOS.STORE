@@ -75,21 +75,85 @@ class CustomerLedgerController extends Controller
             'type' => 'required|in:credit,debit',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string',
-            'category' => 'required|in:manual,payment,order,return'
+            'category' => 'required|in:manual,payment,order,return',
+            'payment_method' => 'nullable|string',
+            'payment_details' => 'nullable|array'
         ]);
 
+        DB::beginTransaction();
         try {
-            CustomerLedger::record(
-                $validated['user_id'],
-                $validated['transaction_date'],
-                $validated['type'],
-                $validated['category'],
-                $validated['description'],
-                $validated['amount']
+            // Auto-fix database schema if columns are missing
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('customer_ledgers', 'payment_method')) {
+                \Illuminate\Support\Facades\Schema::table('customer_ledgers', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('payment_method')->nullable()->after('category');
+                    $table->text('payment_details')->nullable()->after('payment_method');
+                });
+            }
+
+            $ledger = CustomerLedger::record(
+                $request->user_id,
+                $request->transaction_date,
+                $request->type,
+                $request->category,
+                $request->description,
+                $request->amount,
+                null,
+                $request->payment_method,
+                $request->payment_details
             );
 
+            // If it's a cheque, create record in Cheque Management and Payment Reminder
+            if ($request->payment_method == 'cheque' && isset($request->payment_details['cheque_no'])) {
+                $details = $request->payment_details;
+                
+                // Create Cheque
+                $cheque = \App\Models\Cheque::create([
+                    'type' => ($request->type == 'credit' ? 'received' : 'issued'), // For customer, credit usually means they paid us (received)
+                    'cheque_number' => $details['cheque_no'],
+                    'amount' => $request->amount,
+                    'cheque_date' => $request->transaction_date,
+                    'clearing_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'party_type' => 'App\User',
+                    'party_id' => $request->user_id,
+                    'bank_name' => $details['bank_name'] ?? 'N/A',
+                    'status' => 'pending',
+                    'notes' => 'Generated from Customer Ledger. ' . $request->description,
+                    'reference_number' => 'CLEDGER-' . $ledger->id,
+                    'created_by' => auth()->id()
+                ]);
+
+                // Create Task for Calendar
+                \App\Models\Task::create([
+                    'title' => ($request->type == 'credit' ? '💰 Cheque Received: #' : '💸 Cheque Issued: #') . $details['cheque_no'],
+                    'description' => "Customer cheque for amount PKR " . number_format($request->amount, 2) . ". Description: " . $request->description,
+                    'start_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'end_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'priority' => 'high',
+                    'status' => 'pending',
+                    'task_type' => 'cheque',
+                    'related_type' => 'App\Models\Cheque',
+                    'related_id' => $cheque->id,
+                    'created_by' => auth()->id(),
+                    'color' => ($request->type == 'credit' ? '#28a745' : '#dc3545') // Green for receipt, Red for payment
+                ]);
+
+                // Create Payment Reminder
+                \App\Models\PaymentReminder::create([
+                    'type' => ($request->type == 'credit' ? 'receivable' : 'payable'),
+                    'party_type' => 'App\User',
+                    'party_id' => $request->user_id,
+                    'reference_number' => 'CHQ-' . $details['cheque_no'],
+                    'amount' => $request->amount,
+                    'due_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'status' => 'pending',
+                    'notes' => 'Customer cheque clearing reminder: ' . $details['cheque_no']
+                ]);
+            }
+
+            DB::commit();
             return redirect()->back()->with('success', 'Transaction recorded successfully');
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }

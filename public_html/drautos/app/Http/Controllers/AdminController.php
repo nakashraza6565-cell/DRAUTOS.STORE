@@ -413,22 +413,36 @@ class AdminController extends Controller
             }
         }
 
-        // Partial Payment Logic: Create Reminder & Update Balance
+        // Customer Based Reminder Logic: Consolidate reminders for the same customer
         if ($pending_amount > 0 && $user) {
-            \App\Models\PaymentReminder::create([
-                'type' => 'receivable',
-                'party_type' => 'App\\User',
-                'party_id' => $user->id,
-                'reference_number' => $order_number,
-                'amount' => $pending_amount,
-                'due_date' => $request->due_date ? \Carbon\Carbon::parse($request->due_date) : now()->addDays(7),
-                'status' => 'pending',
-                'notes' => 'Generated from POS Order ' . $order_number
-            ]);
+            $existingReminder = \App\Models\PaymentReminder::where('party_type', 'App\\User')
+                ->where('party_id', $user->id)
+                ->whereIn('status', ['pending', 'partially_paid'])
+                ->where('type', 'receivable')
+                ->first();
 
-            // Balance is now handled via CustomerLedger::record hooks
-            // $user->current_balance += $pending_amount;
-            // $user->save();
+            if ($existingReminder) {
+                // Update existing reminder
+                $existingReminder->amount += $pending_amount;
+                $existingReminder->notes = ($existingReminder->notes ? $existingReminder->notes . "\n" : "") . "Added POS Order " . $order_number;
+                // Keep the original due date as it's the oldest debt, or update if user provided one
+                if ($request->due_date) {
+                    $existingReminder->due_date = \Carbon\Carbon::parse($request->due_date);
+                }
+                $existingReminder->save();
+            } else {
+                // Create new consolidated reminder
+                \App\Models\PaymentReminder::create([
+                    'type' => 'receivable',
+                    'party_type' => 'App\\User',
+                    'party_id' => $user->id,
+                    'reference_number' => 'CUSTOMER-BAL',
+                    'amount' => $pending_amount,
+                    'due_date' => $request->due_date ? \Carbon\Carbon::parse($request->due_date) : now()->addDays(7),
+                    'status' => 'pending',
+                    'notes' => 'Generated from POS Order ' . $order_number
+                ]);
+            }
         }
 
         // Save Cart Items & Update Stock

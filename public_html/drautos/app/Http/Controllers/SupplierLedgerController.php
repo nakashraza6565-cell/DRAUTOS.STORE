@@ -72,16 +72,17 @@ class SupplierLedgerController extends Controller
             'payment_details' => 'nullable|array'
         ]);
 
+        DB::beginTransaction();
         try {
             // Auto-fix database schema if columns are missing
             if (!\Illuminate\Support\Facades\Schema::hasColumn('supplier_ledgers', 'payment_method')) {
                 \Illuminate\Support\Facades\Schema::table('supplier_ledgers', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('payment_method')->nullable()->after('category');
-                    $table->text('payment_details')->nullable()->after('payment_method'); // Using text instead of json for better compatibility
+                    $table->text('payment_details')->nullable()->after('payment_method');
                 });
             }
 
-            SupplierLedger::record(
+            $ledger = SupplierLedger::record(
                 $request->supplier_id,
                 $request->transaction_date,
                 $request->type,
@@ -93,8 +94,58 @@ class SupplierLedgerController extends Controller
                 $request->payment_details
             );
 
+            // If it's a cheque, create record in Cheque Management and Payment Reminder
+            if ($request->payment_method == 'cheque' && isset($request->payment_details['cheque_no'])) {
+                $details = $request->payment_details;
+                
+                // Create Cheque
+                $cheque = \App\Models\Cheque::create([
+                    'type' => ($request->type == 'credit' ? 'issued' : 'received'),
+                    'cheque_number' => $details['cheque_no'],
+                    'amount' => $request->amount,
+                    'cheque_date' => $request->transaction_date,
+                    'clearing_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'party_type' => 'App\Models\Supplier',
+                    'party_id' => $request->supplier_id,
+                    'bank_name' => $details['bank_name'] ?? 'N/A',
+                    'status' => 'pending',
+                    'notes' => 'Generated from Supplier Ledger. ' . $request->description,
+                    'reference_number' => 'LEDGER-' . $ledger->id,
+                    'created_by' => auth()->id()
+                ]);
+
+                // Create Task for Calendar
+                \App\Models\Task::create([
+                    'title' => ($request->type == 'credit' ? '💸 Cheque Issued: #' : '💰 Cheque Received: #') . $details['cheque_no'],
+                    'description' => "Cheque for amount PKR " . number_format($request->amount, 2) . ". Description: " . $request->description,
+                    'start_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'end_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'priority' => 'high',
+                    'status' => 'pending',
+                    'task_type' => 'cheque',
+                    'related_type' => 'App\Models\Cheque',
+                    'related_id' => $cheque->id,
+                    'created_by' => auth()->id(),
+                    'color' => ($request->type == 'credit' ? '#dc3545' : '#28a745') // Red for payment, Green for receipt
+                ]);
+
+                // Create Payment Reminder
+                \App\Models\PaymentReminder::create([
+                    'type' => ($request->type == 'credit' ? 'payable' : 'receivable'),
+                    'party_type' => 'App\Models\Supplier',
+                    'party_id' => $request->supplier_id,
+                    'reference_number' => 'CHQ-' . $details['cheque_no'],
+                    'amount' => $request->amount,
+                    'due_date' => $details['clearing_date'] ?? $request->transaction_date,
+                    'status' => 'pending',
+                    'notes' => 'Cheque clearing reminder: ' . $details['cheque_no']
+                ]);
+            }
+
+            DB::commit();
             return redirect()->back()->with('success', 'Transaction recorded successfully');
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
