@@ -223,7 +223,7 @@ $(document).ready(function() {
         let cost = tr.find('[data-field="unit_cost"] .edit-input').val();
 
         $.ajax({
-            url: "{{ url('admin/inventory-incoming/item') }}/" + id + "/update",
+            url: "/admin/inventory-incoming/item/" + id + "/update",
             type: "POST",
             data: {
                 quantity: qty,

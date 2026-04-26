@@ -60,9 +60,6 @@
                             <i class="fas fa-print"></i>
                         </a>
                         @if($entry->status == 'pending')
-                        <a href="{{route('inventory-incoming.edit',$entry->id)}}" class="btn btn-primary btn-sm" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </a>
                         <form method="POST" action="{{route('inventory-incoming.verify',$entry->id)}}" style="display:inline;">
                           @csrf
                           <button class="btn btn-primary btn-sm" title="Verify"><i class="fas fa-check"></i></button>

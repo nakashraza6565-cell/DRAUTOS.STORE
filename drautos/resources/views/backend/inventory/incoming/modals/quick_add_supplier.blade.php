@@ -1,5 +1,5 @@
 <!-- Quick Add Supplier Modal -->
-<div class="modal" id="addSupplierModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="addSupplierModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-primary text-white">

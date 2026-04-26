@@ -30,8 +30,6 @@
       <!-- End of Main Content -->
       @include('backend.layouts.footer')
 
-  @stack('modals')
-
 </body>
 
 </html>

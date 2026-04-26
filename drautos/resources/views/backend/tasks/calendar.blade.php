@@ -138,42 +138,11 @@ function addTask(date = null) {
 }
 
 function viewTask(taskId) {
-    const event = window.calendarObj.getEventById(taskId);
-    if (!event) return;
-
-    const props = event.extendedProps;
-    let icon = 'info';
-    if (props.task_type === 'cheque') icon = 'money-bill-alt';
-    
+    // Show task details
     Swal.fire({
-        title: event.title,
-        html: `
-            <div class="text-left">
-                <p><strong>Status:</strong> <span class="badge badge-${props.status === 'completed' ? 'success' : 'warning'}">${props.status.toUpperCase()}</span></p>
-                <p><strong>Priority:</strong> <span class="badge badge-${props.priority === 'urgent' || props.priority === 'high' ? 'danger' : 'info'}">${props.priority.toUpperCase()}</span></p>
-                <p><strong>Description:</strong><br>${props.description || 'No description'}</p>
-                <p><strong>Start:</strong> ${event.start.toLocaleString()}</p>
-                ${event.end ? `<p><strong>End:</strong> ${event.end.toLocaleString()}</p>` : ''}
-            </div>
-        `,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Mark as Completed',
-        cancelButtonText: 'Close',
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-            if (props.status === 'completed') return;
-            return $.ajax({
-                url: `/admin/tasks/${taskId}/complete`,
-                method: 'POST',
-                data: { _token: '{{ csrf_token() }}' }
-            });
-        }
-    }).then((result) => {
-        if (result.isConfirmed && props.status !== 'completed') {
-            Swal.fire('Completed!', 'Task has been marked as completed.', 'success');
-            window.calendarObj.refetchEvents();
-        }
+        title: 'Task Details',
+        text: 'Loading...',
+        icon: 'info'
     });
 }
 </script>

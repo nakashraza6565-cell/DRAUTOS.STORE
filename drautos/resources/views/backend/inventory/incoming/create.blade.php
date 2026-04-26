@@ -5,30 +5,6 @@
     <form action="{{route('inventory-incoming.store')}}" method="POST" id="incoming-form">
         @csrf
 
-        @if($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
-                <strong><i class="fas fa-exclamation-triangle mr-1"></i> Please fix the following errors:</strong>
-                <ul class="mb-0 mt-2">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        @endif
-
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show mx-4 mt-3" role="alert">
-                <strong><i class="fas fa-bug mr-1"></i> System Error:</strong>
-                <div class="mt-2 small">{{ session('error') }}</div>
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        @endif
-
         {{-- STICKY TOOLBAR --}}
         <div class="sticky-top bg-white border-bottom shadow-sm mb-4" style="z-index: 1020; top: 0;">
             <div class="container-fluid py-3">
@@ -82,6 +58,12 @@
                                         </div>
                                     </div>
                                     
+                                    <div class="custom-control custom-switch mt-3">
+                                        <input type="checkbox" name="post_to_ledger" class="custom-control-input" id="post_to_ledger" checked>
+                                        <label class="custom-control-label font-weight-bold text-primary cursor-pointer" for="post_to_ledger">
+                                            <i class="fas fa-file-invoice-dollar mr-1"></i> Automatically Record to Supplier Ledger
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="col-md-5" id="supplier-info-card" style="display:none;">
                                     <div class="p-3 border rounded bg-light d-flex justify-content-between align-items-center">
@@ -161,6 +143,9 @@
     </form>
 </div>
 
+{{-- MODALS --}}
+@include('backend.inventory.incoming.modals.quick_add_supplier')
+@include('backend.inventory.incoming.modals.quick_add_product')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -194,7 +179,7 @@ $(document).ready(function() {
         $('#supplier-info-card').fadeIn();
     });
 
-    $(document).on('input', '.qty-input, .cost-input, .pkg-cost-input, #shipping_cost', function() {
+    $(document).on('input', '.qty-input, .cost-input, #shipping_cost', function() {
         updateGrandTotal();
     });
 });
@@ -204,8 +189,7 @@ function updateGrandTotal() {
     $('.item-row').each(function() {
         let qty = parseFloat($(this).find('.qty-input').val()) || 0;
         let cost = parseFloat($(this).find('.cost-input').val()) || 0;
-        let pkgCost = parseFloat($(this).find('.pkg-cost-input').val()) || 0;
-        let total = (qty * cost) + pkgCost;
+        let total = qty * cost;
         $(this).find('.row-total-display').text('Rs. ' + total.toFixed(2));
         itemsTotal += total;
     });
@@ -221,8 +205,13 @@ function addItemRow(product = null) {
         <tr class="item-row">
             <td class="align-middle border-0">
                 <div class="d-flex align-items-center">
-                    <select name="items[${itemIndex}][product_id]" class="form-control select2-ajax product-select" required>
-                        <option value="">Search by Name/SKU/Barcode</option>
+                    <select name="items[${itemIndex}][product_id]" class="form-control select2-dynamic product-select" required>
+                        <option value="">Select Product</option>
+                        @foreach($products as $p)
+                            <option value="{{$p->id}}" data-cost="{{$p->purchase_price}}" ${product && product.id == {{$p->id}} ? 'selected' : ''}>
+                                {{$p->title}} ({{$p->sku}})
+                            </option>
+                        @endforeach
                     </select>
                     <button type="button" class="btn btn-link btn-sm text-primary p-0 ml-2" data-toggle="modal" data-target="#addProductModal" title="Quick Add Product">
                         <i class="fas fa-plus"></i>
@@ -247,7 +236,7 @@ function addItemRow(product = null) {
                         @endforeach
                     </select>
                     <label class="small font-weight-bold">Additional Cost</label>
-                    <input type="number" step="0.01" name="items[${itemIndex}][packaging_cost]" class="form-control form-control-sm pkg-cost-input" value="0">
+                    <input type="number" step="0.01" name="items[${itemIndex}][packaging_cost]" class="form-control form-control-sm" value="0">
                 </div>
             </td>
             <td class="align-middle border-0 text-right">
@@ -262,38 +251,14 @@ function addItemRow(product = null) {
     let $html = $(html);
     $('#items-container').append($html);
     
-    $html.find('.select2-ajax').select2({ 
-        theme: 'bootstrap4',
-        ajax: {
-            url: "{{route('inventory-incoming.search-products')}}",
-            dataType: 'json',
-            delay: 250,
-            data: function (params) {
-                return {
-                    q: params.term
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: $.map(data, function (item) {
-                        return {
-                            text: item.title + ' (' + item.sku + ')',
-                            id: item.id,
-                            cost: item.purchase_price
-                        }
-                    })
-                };
-            },
-            cache: true
-        },
-        minimumInputLength: 1,
-        placeholder: 'Search by Name/SKU/Barcode'
-    }).on('select2:select', function(e) {
-        let data = e.params.data;
+    $html.find('.select2-dynamic').select2({ theme: 'bootstrap4' });
+    
+    $html.find('.product-select').on('change', function() {
+        let cost = $(this).find(':selected').data('cost');
         let $row = $(this).closest('.item-row');
-        if(data.cost) {
-            $row.find('.current-cost-info').html('<i class="fas fa-info-circle mr-1"></i> Prev Cost: Rs. ' + parseFloat(data.cost).toFixed(2));
-            $row.find('.cost-input').val(data.cost);
+        if(cost) {
+            $row.find('.current-cost-info').html('<i class="fas fa-info-circle mr-1"></i> Prev Cost: Rs. ' + parseFloat(cost).toFixed(2));
+            $row.find('.cost-input').val(cost);
         } else {
             $row.find('.current-cost-info').empty();
         }
@@ -312,55 +277,6 @@ function addItemRow(product = null) {
     itemIndex++;
     updateGrandTotal();
 }
-
-// Quick Add Handlers for Incoming Goods
-$(document).on('submit', '#quickAddSupplierForm', function(e) {
-    e.preventDefault();
-    let $form = $(this);
-    let $btn = $form.find('button[type="submit"]');
-    $btn.prop('disabled', true).text('Saving...');
-
-    $.post("{{route('supplier.quick-store')}}", $form.serialize() + "&_token={{csrf_token()}}", function(res) {
-        if (res.status == 'success') {
-            $('#supplier_id').append(new Option(res.supplier.name + ' (' + res.supplier.phone + ')', res.supplier.id, true, true)).trigger('change');
-            $('#addSupplierModal').modal('hide');
-            $form[0].reset();
-            Swal.fire('Success', 'Supplier added successfully', 'success');
-        }
-    }).always(function() {
-        $btn.prop('disabled', false).text('Create Supplier');
-    });
-});
-
-$(document).on('submit', '#quickAddProductForm', function(e) {
-    e.preventDefault();
-    let $form = $(this);
-    let $btn = $form.find('button[type="submit"]');
-    $btn.prop('disabled', true).text('Creating...');
-
-    $.post("{{route('product.quick-store')}}", $form.serialize() + "&_token={{csrf_token()}}&status=active", function(res) {
-        if (res.status == 'success') {
-            $('#addProductModal').modal('hide');
-            $form[0].reset();
-            Swal.fire({
-                icon: 'success',
-                title: 'Product Created',
-                text: res.product.title + ' is now available for entry. Simply type the name in any row.',
-                timer: 3000
-            });
-        }
-    }).fail(function(err) {
-        let msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error creating product';
-        Swal.fire('Error', msg, 'error');
-    }).always(function() {
-        $btn.prop('disabled', false).text('Create Product');
-    });
-});
 </script>
 @endpush
 @endsection
-
-@push('modals')
-@include('backend.inventory.incoming.modals.quick_add_supplier')
-@include('backend.inventory.incoming.modals.quick_add_product')
-@endpush

@@ -10,6 +10,7 @@
         "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --config=node_modules/laravel-mix/setup/webpack.config.js"
     },
     "devDependencies": {
+        "@vue/compiler-sfc": "^3.5.33",
         "axios": "^0.21",
         "bootstrap": "^5.3.3",
         "cross-env": "^7.0.3",
@@ -21,7 +22,7 @@
         "sass": "^1.20.1",
         "sass-loader": "^8.0.0",
         "vue": "^3.5.13",
-        "vue-loader": "^16.2.0",
+        "vue-loader": "^17.4.2",
         "vue-template-compiler": "^0.1.0"
     },
     "dependencies": {

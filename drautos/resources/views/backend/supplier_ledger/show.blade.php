@@ -137,11 +137,8 @@
                                 <td class="text-right font-weight-bold">Rs. {{number_format($item->balance, 2)}}</td>
                                 <td class="text-center">
                                     @if($item->category == 'purchase' && $item->reference_id)
-                                        <a href="{{route('inventory-incoming.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:25px; width:25px; padding:0" title="View Detail">
-                                            <i class="fas fa-eye" style="font-size: 10px;"></i>
-                                        </a>
-                                        <a href="{{route('inventory-incoming.pdf', $item->reference_id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:25px; width:25px; padding:0" title="View PDF Receipt">
-                                            <i class="fas fa-file-pdf" style="font-size: 10px;"></i>
+                                        <a href="{{route('purchase-orders.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:25px; width:25px; padding:0" title="View Purchase Order">
+                                            <i class="fas fa-file-invoice" style="font-size: 10px;"></i>
                                         </a>
                                     @endif
                                     <button class="btn btn-primary btn-sm rounded-circle editBtn" 
@@ -234,31 +231,13 @@
 
                         <!-- Specific Fields -->
                         <div id="cheque_fields" class="payment_detail_fields" style="display:none;">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group mb-2">
-                                        <label class="small font-weight-bold">Cheque Number</label>
-                                        <input type="text" name="payment_details[cheque_no]" class="form-control form-control-sm" placeholder="Enter cheque number">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-2">
-                                        <label class="small font-weight-bold">Payee Name</label>
-                                        <input type="text" name="payment_details[payee_name]" class="form-control form-control-sm" placeholder="Name on cheque">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-2">
-                                        <label class="small font-weight-bold">Bank Name</label>
-                                        <input type="text" name="payment_details[bank_name]" class="form-control form-control-sm" placeholder="Enter bank name">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group mb-2">
-                                        <label class="small font-weight-bold text-danger">Due Date (Clearing Date)</label>
-                                        <input type="date" name="payment_details[clearing_date]" class="form-control form-control-sm" value="{{date('Y-m-d')}}">
-                                    </div>
-                                </div>
+                            <div class="form-group mb-2">
+                                <label class="small">Cheque Number</label>
+                                <input type="text" name="payment_details[cheque_no]" class="form-control form-control-sm" placeholder="Enter cheque number">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="small">Bank Name</label>
+                                <input type="text" name="payment_details[bank_name]" class="form-control form-control-sm" placeholder="Enter bank name">
                             </div>
                         </div>
 
