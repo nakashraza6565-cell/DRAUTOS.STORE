@@ -80,34 +80,49 @@
         $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').on('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            $(".sidebar").toggleClass("reveal");
-            // Prevent SB Admin 2 from adding 'toggled' class which resizes content
-            $("body").removeClass("sidebar-toggled");
-            $(".sidebar").removeClass("toggled");
+            if($(window).width() <= 768) {
+                $(".sidebar").toggleClass("reveal toggled");
+                $("body").toggleClass("sidebar-toggled");
+            } else {
+                $(".sidebar").toggleClass("reveal");
+                $("body").removeClass("sidebar-toggled");
+                $(".sidebar").removeClass("toggled");
+            }
         });
 
-        // Mobile Swipe Gesture to Open/Close Sidebar
+        // Robust Mobile & iPad Swipe Gesture to Open/Close Sidebar
         var touchStartX = 0;
+        var touchStartY = 0;
         var touchEndX = 0;
+        var touchEndY = 0;
 
         document.addEventListener('touchstart', function(e) {
             touchStartX = e.changedTouches[0].screenX;
-        }, false);
+            touchStartY = e.changedTouches[0].screenY;
+        }, {passive: true});
 
         document.addEventListener('touchend', function(e) {
             touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
             handleSwipe();
-        }, false);
+        }, {passive: true});
 
         function handleSwipe() {
-            var diff = touchEndX - touchStartX;
-            // Swipe Right (Open) - Only if started near the left edge (< 40px)
-            if (diff > 50 && touchStartX < 40) {
-                $(".sidebar").addClass("reveal");
+            var diffX = touchEndX - touchStartX;
+            var diffY = Math.abs(touchEndY - touchStartY);
+            
+            // Ignore if it was mostly a vertical scroll
+            if (diffY > 60 || Math.abs(diffX) < 50) return;
+
+            // Swipe Right (Open) - Allowed if started within 100px of left edge (better for iPads with cases)
+            if (diffX > 50 && touchStartX < 100) {
+                $(".sidebar").addClass("reveal toggled");
+                if($(window).width() <= 768) $("body").addClass("sidebar-toggled");
             }
             // Swipe Left (Close)
-            if (diff < -50) {
-                $(".sidebar").removeClass("reveal");
+            if (diffX < -50) {
+                $(".sidebar").removeClass("reveal toggled");
+                $("body").removeClass("sidebar-toggled");
             }
         }
 
