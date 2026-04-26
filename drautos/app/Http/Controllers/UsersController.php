@@ -135,19 +135,15 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         // Handle POS/AJAX requests keys
-        if($request->ajax() || !$request->has('password')) {
-            $request->merge([
-                'role' => $request->input('role', 'user'),
-                'status' => $request->input('status', 'active'),
-                'password' => $request->input('password', '123456'), // Default password
-            ]);
+        if(!$request->has('role')) $request->merge(['role' => 'user']);
+        if(!$request->has('status')) $request->merge(['status' => 'active']);
+        if(!$request->has('password')) $request->merge(['password' => '123456']); // Default password
             
-            // Auto-generate email if missing but phone exists
-            if(!$request->email && $request->phone) {
-                $request->merge(['email' => $request->phone . '_' . uniqid() . '@local.com']);
-            } elseif(!$request->email) {
-                 $request->merge(['email' => uniqid() . '@local.com']);
-            }
+        // Auto-generate email if missing
+        if(empty($request->email) && !empty($request->phone)) {
+            $request->merge(['email' => $request->phone . '_' . uniqid() . '@local.com']);
+        } elseif(empty($request->email)) {
+            $request->merge(['email' => uniqid() . '@local.com']);
         }
 
         $this->validate($request,
