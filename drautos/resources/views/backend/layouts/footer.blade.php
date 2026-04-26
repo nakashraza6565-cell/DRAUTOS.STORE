@@ -73,7 +73,8 @@
   <script>
     $(document).ready(function() {
         // Project-wide Ghost Sidebar Logic
-        // Ghost mode and hover to reveal are removed as per user request
+        $(".sidebar").addClass("sidebar-ghost-mode");
+        // Hover to reveal is removed as per user request
 
         // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles
         $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').on('click', function(e) {
