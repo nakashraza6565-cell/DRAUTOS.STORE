@@ -5,6 +5,17 @@
     <form action="{{route('inventory-incoming.store')}}" method="POST" id="incoming-form">
         @csrf
 
+        @include('backend.layouts.notification')
+        @if($errors->any())
+            <div class="alert alert-danger mx-4 mt-3">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         {{-- STICKY TOOLBAR --}}
         <div class="sticky-top bg-white border-bottom shadow-sm mb-4" style="z-index: 1020; top: 0;">
             <div class="container-fluid py-3">
