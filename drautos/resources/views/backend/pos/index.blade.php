@@ -125,10 +125,7 @@
                             <option value="walkin">Walk-in Customer</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" name="email" class="form-control">
-                    </div>
+
                     <div class="form-group">
                         <label>Phone</label>
                         <input type="text" name="phone" class="form-control">
