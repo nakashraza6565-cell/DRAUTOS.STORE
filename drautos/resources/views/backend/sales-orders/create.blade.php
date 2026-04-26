@@ -13,7 +13,12 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="user_id" class="col-form-label">Customer <span class="text-danger">*</span></label>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="user_id" class="col-form-label font-weight-bold mb-0">Customer <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-link btn-sm p-0 text-primary font-weight-bold" data-toggle="modal" data-target="#addCustomerModal">
+                                <i class="fas fa-plus-circle"></i> New Customer
+                            </button>
+                        </div>
                         <select name="user_id" id="user_id" class="form-control select2" required>
                             <option value="">--Select Customer--</option>
                             @foreach($customers as $customer)
@@ -119,6 +124,50 @@
                 <a href="{{route('sales-orders.index')}}" class="btn btn-secondary px-4 ml-2">Back</a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" style="z-index: 9999;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold">Add New Customer</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body bg-light">
+                <form id="add-customer-form">
+                    @csrf
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Customer Type</label>
+                        <select name="customer_type" class="form-control">
+                            <option value="retail">Retail Customer</option>
+                            <option value="wholesale">Wholesale Customer</option>
+                            <option value="salesman">Salesman</option>
+                            <option value="walkin">Walk-in Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Phone</label>
+                        <input type="text" name="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="small font-weight-bold">Address</label>
+                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-light">
+                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4 shadow" id="save-customer-btn">Save Customer</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -553,6 +602,49 @@
                     let msg = err.responseJSON ? err.responseJSON.message : 'Error adding product';
                     Swal.fire('Error', msg, 'error');
                     $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> SAVE PRODUCT');
+                }
+            });
+        });
+        $('#save-customer-btn').on('click', function() {
+            let form = $('#add-customer-form');
+            let $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+            
+            $.ajax({
+                url: "{{route('users.store')}}", 
+                type: "POST",
+                data: form.serialize() + "&role=user&status=active&password=password123", 
+                dataType: "json",
+                success: function(response) {
+                    if (typeof response === 'string') {
+                        try { response = JSON.parse(response); } catch(e) {}
+                    }
+                    let user = response.user || response.data || response;
+                    let name = user.name || 'Unknown';
+                    let phone = user.phone || 'N/A';
+                    let balance = 0.00;
+
+                    let displayText = name + ' (' + phone + ')';
+                    let newOption = new Option(displayText, user.id, true, true);
+                    $(newOption).attr('data-phone', phone);
+                    $(newOption).attr('data-balance', balance.toFixed(2));
+                    $(newOption).attr('data-name', name);
+                    
+                    $('#user_id').append(newOption).trigger('change');
+                    $('#addCustomerModal').modal('hide');
+                    form[0].reset();
+                    Swal.fire('Success', 'Customer Added Successfully!', 'success');
+                    $btn.prop('disabled', false).html('Save Customer');
+                },
+                error: function(err) {
+                   console.log(err);
+                   let errorMsg = 'Failed to add customer';
+                   if(err.status === 422) {
+                       let errors = err.responseJSON.errors;
+                       errorMsg = Object.values(errors).flat().join('\n');
+                   }
+                   Swal.fire('Error', errorMsg, 'error');
+                   $btn.prop('disabled', false).html('Save Customer');
                 }
             });
         });
