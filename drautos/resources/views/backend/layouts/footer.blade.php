@@ -84,6 +84,14 @@
             $("body").toggleClass("sidebar-toggled");
         });
 
+        // Auto-expand sidebar if a submenu is clicked while minimized
+        $('.sidebar .nav-link.collapsed').on('click', function() {
+            if ($('body').hasClass('sidebar-toggled')) {
+                $(".sidebar").removeClass("toggled").addClass("reveal");
+                $("body").removeClass("sidebar-toggled");
+            }
+        });
+
         // Robust Mobile & iPad Swipe Gesture to Open/Close Sidebar
         var touchStartX = 0;
         var touchStartY = 0;
