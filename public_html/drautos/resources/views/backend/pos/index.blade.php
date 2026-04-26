@@ -3,9 +3,6 @@
 @section('title', 'POS || Danyal Autos')
 
 @section('main-content')
-<div style="background: #1cc88a; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 18px; z-index: 9999; position: relative; border-radius: 8px; margin: 10px;">
-    ✅ DEPLOYMENT SUCCESSFUL: POS IS UPDATED!
-</div>
 
 <div style="position: relative; z-index: 999999;">
     @include('backend.layouts.notification')
