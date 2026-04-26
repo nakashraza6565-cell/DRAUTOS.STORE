@@ -84,8 +84,8 @@
             $("body").toggleClass("sidebar-toggled");
         });
 
-        // Auto-expand sidebar if a submenu is clicked while minimized
-        $('.sidebar .nav-link.collapsed').on('click', function() {
+        // Auto-expand sidebar if any dropdown menu is clicked while minimized
+        $('.sidebar .nav-link[data-toggle="collapse"]').on('click', function() {
             if ($('body').hasClass('sidebar-toggled')) {
                 $(".sidebar").removeClass("toggled").addClass("reveal");
                 $("body").removeClass("sidebar-toggled");
