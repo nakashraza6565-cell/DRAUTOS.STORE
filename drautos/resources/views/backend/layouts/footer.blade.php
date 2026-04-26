@@ -77,17 +77,11 @@
         // Hover to reveal is removed as per user request
 
         // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles
-        $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').on('click', function(e) {
+        $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').off('click').on('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
-            if($(window).width() <= 768) {
-                $(".sidebar").toggleClass("reveal toggled");
-                $("body").toggleClass("sidebar-toggled");
-            } else {
-                $(".sidebar").toggleClass("reveal");
-                $("body").removeClass("sidebar-toggled");
-                $(".sidebar").removeClass("toggled");
-            }
+            e.stopImmediatePropagation();
+            $(".sidebar").toggleClass("reveal toggled");
+            $("body").toggleClass("sidebar-toggled");
         });
 
         // Robust Mobile & iPad Swipe Gesture to Open/Close Sidebar
@@ -117,7 +111,7 @@
             // Swipe Right (Open) - Allowed if started within 100px of left edge (better for iPads with cases)
             if (diffX > 50 && touchStartX < 100) {
                 $(".sidebar").addClass("reveal toggled");
-                if($(window).width() <= 768) $("body").addClass("sidebar-toggled");
+                $("body").addClass("sidebar-toggled");
             }
             // Swipe Left (Close)
             if (diffX < -50) {
