@@ -134,7 +134,7 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        // Handle POS/AJAX requests keys
+        dd('REACHED_STORE', $request->all());
         if(!$request->has('role')) $request->merge(['role' => 'user']);
         if(!$request->has('status')) $request->merge(['status' => 'active']);
         if(!$request->has('password')) $request->merge(['password' => '123456']); // Default password
