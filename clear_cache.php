@@ -32,6 +32,12 @@ try {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
     echo "✅<br>";
 
+    if(function_exists('opcache_reset')) {
+        echo "Resetting PHP OPcache... ";
+        opcache_reset();
+        echo "✅<br>";
+    }
+
     echo "<h2>🚀 All caches cleared!</h2>";
     echo "<p>Please refresh your site now. You should see the <b>Red Bar</b> if the files were updated.</p>";
     

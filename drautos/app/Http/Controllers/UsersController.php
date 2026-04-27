@@ -135,7 +135,7 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         if($request->ajax()) {
-             return response()->json(['message' => 'REACHED_STORE_SUCCESSFULLY', 'data' => $request->all()]);
+             return response()->json(['message' => 'V3_REACHED_STORE_SUCCESSFULLY', 'time' => '2026-04-27 08:38', 'data' => $request->all()]);
         }
             
         // Auto-generate email if missing
