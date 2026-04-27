@@ -159,7 +159,12 @@
                     </div>
                     <div class="form-group">
                         <label class="small font-weight-bold">City</label>
-                        <input type="text" name="city" class="form-control">
+                        <select name="city" id="pos-city-select" class="form-control">
+                            <option value="">Select or Type City</option>
+                            @foreach($cities as $c)
+                                <option value="{{$c}}">{{$c}}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="small font-weight-bold">Address</label>
@@ -483,6 +488,17 @@
         }
 
         // --- Quick Add Product Logic ---
+
+        // Initialize Select2 for Add Customer Modal
+        $('#addCustomerModal').on('shown.bs.modal', function() {
+            $('#pos-city-select').select2({
+                placeholder: "Select or Type City",
+                allowClear: true,
+                tags: true,
+                width: '100%',
+                dropdownParent: $('#addCustomerModal')
+            });
+        });
 
         // Initialize Select2 for Add Product Modal
         $('#addProductModal').on('shown.bs.modal', function() {

@@ -60,9 +60,11 @@ class SalesOrderController extends Controller
         $suppliers = \App\Models\Supplier::where('status', 'active')->get();
         $units = \App\Models\Unit::orderBy('name')->get();
         
+        $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city')->sort()->values();
+        
         $selectedUserId = $request->get('user_id');
         
-        return view('backend.sales-orders.create', compact('customers', 'products', 'categories', 'brands', 'product_models', 'suppliers', 'units', 'selectedUserId'));
+        return view('backend.sales-orders.create', compact('customers', 'products', 'categories', 'brands', 'product_models', 'suppliers', 'units', 'selectedUserId', 'cities'));
     }
 
     public function store(Request $request)
