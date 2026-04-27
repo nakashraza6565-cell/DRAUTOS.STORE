@@ -646,6 +646,13 @@
                    if(err.status === 422) {
                        let errors = err.responseJSON.errors;
                        errorMsg = Object.values(errors).flat().join('\n');
+                   } else if(err.responseJSON && err.responseJSON.message) {
+                       errorMsg = err.responseJSON.message;
+                   } else if(err.responseText) {
+                       // Truncate response text to avoid huge HTML dumps
+                       errorMsg = "Server Error: " + err.responseText.substring(0, 150);
+                   } else {
+                       errorMsg = "Server Error " + err.status;
                    }
                    Swal.fire('Error', errorMsg, 'error');
                    $btn.prop('disabled', false).html('Save Customer');
