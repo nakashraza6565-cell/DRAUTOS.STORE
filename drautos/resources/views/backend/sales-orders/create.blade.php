@@ -158,6 +158,10 @@
                         <input type="text" name="phone" class="form-control">
                     </div>
                     <div class="form-group">
+                        <label class="small font-weight-bold">City</label>
+                        <input type="text" name="city" class="form-control">
+                    </div>
+                    <div class="form-group">
                         <label class="small font-weight-bold">Address</label>
                         <textarea name="address" class="form-control" rows="2"></textarea>
                     </div>
