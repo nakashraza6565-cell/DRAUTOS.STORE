@@ -1322,7 +1322,7 @@
     $('#save-customer-btn').on('click', function() {
         let form = $('#add-customer-form');
         $.ajax({
-            url: "/direct-user-store", 
+            url: "{{route('users.direct-store')}}", 
             type: "POST",
             data: form.serialize() + "&role=user&status=active&password=password123", 
             dataType: "json",
