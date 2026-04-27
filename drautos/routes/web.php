@@ -20,31 +20,6 @@
     use App\Http\Controllers\Auth\ResetPasswordController;
     use Illuminate\Support\Facades\Schema;
 
-    Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
-
-    Route::get('/force-clear', function() {
-        try {
-            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-            \Illuminate\Support\Facades\Artisan::call('view:clear');
-            \Illuminate\Support\Facades\Artisan::call('route:clear');
-            \Illuminate\Support\Facades\Artisan::call('config:clear');
-            \Illuminate\Support\Facades\Artisan::call('cache:clear');
-            
-            $opcache = false;
-            if(function_exists('opcache_reset')) {
-                opcache_reset();
-                $opcache = true;
-            }
-            
-            return "<h1>🚀 System Refreshed!</h1>
-                    <p>Laravel Cache Cleared: ✅</p>
-                    <p>PHP OPcache Reset: " . ($opcache ? "✅" : "❌ (Not supported on this server)") . "</p>
-                    <p><a href='/admin/sales-orders/create'>Click here to go back and try adding the customer now.</a></p>";
-        } catch (\Exception $e) {
-            return "Error: " . $e->getMessage();
-        }
-    });
-
     Route::get('/fix-db', function() {
         try {
             // Run Migrations
@@ -188,6 +163,21 @@
 
     Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function () {
         Route::get('/', [AdminController::class, 'index'])->name('admin');
+        
+        // Debug & Fix Routes (Secure)
+        Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
+        Route::get('/force-clear', function() {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+                \Illuminate\Support\Facades\Artisan::call('route:clear');
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                if(function_exists('opcache_reset')) { opcache_reset(); }
+                return "System Refreshed! <a href='/admin'>Back to Dashboard</a>";
+            } catch (\Exception $e) { return "Error: " . $e->getMessage(); }
+        });
+
         Route::get('/file-manager', function () {
             return view('backend.layouts.file-manager');
         })->name('file-manager');

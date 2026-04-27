@@ -665,11 +665,11 @@
                    } else if(err.responseJSON && err.responseJSON.message) {
                        errorMsg = err.responseJSON.message;
                    } else if(err.responseText) {
-                       errorMsg = "Server Response: " + err.responseText.substring(0, 150);
+                       errorMsg = "Server Error: " + err.responseText.substring(0, 150);
                    } else {
                        errorMsg = "HTTP Status: " + err.status;
                    }
-                   Swal.fire('System Error', errorMsg, 'error');
+                   Swal.fire('Error', errorMsg, 'error');
                    $btn.prop('disabled', false).html('Save Customer');
                 }
             });
