@@ -134,9 +134,9 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        if($request->ajax()) {
-             return response()->json(['message' => 'V3_REACHED_STORE_SUCCESSFULLY', 'time' => '2026-04-27 08:38', 'data' => $request->all()]);
-        }
+        if(!$request->has('role')) $request->merge(['role' => 'user']);
+        if(!$request->has('status')) $request->merge(['status' => 'active']);
+        if(!$request->has('password')) $request->merge(['password' => '123456']); // Default password
             
         // Auto-generate email if missing
         if(empty($request->email) && !empty($request->phone)) {

@@ -631,7 +631,7 @@
             $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
             
             $.ajax({
-                url: "{{route('users.store')}}", 
+                url: "/direct-user-store", 
                 type: "POST",
                 data: form.serialize() + "&role=user&status=active&password=password123", 
                 dataType: "json",

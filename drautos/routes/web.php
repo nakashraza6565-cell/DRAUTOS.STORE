@@ -20,6 +20,8 @@
     use App\Http\Controllers\Auth\ResetPasswordController;
     use Illuminate\Support\Facades\Schema;
 
+    Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
+
     Route::get('/force-clear', function() {
         try {
             \Illuminate\Support\Facades\Artisan::call('optimize:clear');
