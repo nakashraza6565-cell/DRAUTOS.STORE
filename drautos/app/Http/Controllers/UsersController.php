@@ -168,19 +168,27 @@ class UsersController extends Controller
         $data['password']=Hash::make($request->password);
 
         // dd($data);
-        $status=User::create($data);
-        // dd($status);
-        if($request->ajax()) {
-            return response()->json($status);
-        }
+        try {
+            $status = User::create($data);
+            
+            if($request->ajax()) {
+                return response()->json(['status' => 'success', 'user' => $status]);
+            }
 
-        if($status){
-            request()->session()->flash('success','Successfully added user');
+            if($status){
+                request()->session()->flash('success','Successfully added user');
+            }
+            else{
+                request()->session()->flash('error','Error occurred while adding user');
+            }
+            return redirect()->route('users.index');
+
+        } catch (\Exception $e) {
+            if($request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            }
+            return back()->with('error', $e->getMessage());
         }
-        else{
-            request()->session()->flash('error','Error occurred while adding user');
-        }
-        return redirect()->route('users.index');
 
     }
 
