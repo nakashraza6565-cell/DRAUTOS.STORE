@@ -658,19 +658,18 @@
                 },
                 error: function(err) {
                    console.log(err);
-                   let errorMsg = 'Failed to add customer';
+                   let errorMsg = 'Unknown Error';
                    if(err.status === 422) {
                        let errors = err.responseJSON.errors;
                        errorMsg = Object.values(errors).flat().join('\n');
                    } else if(err.responseJSON && err.responseJSON.message) {
                        errorMsg = err.responseJSON.message;
                    } else if(err.responseText) {
-                       // Truncate response text to avoid huge HTML dumps
-                       errorMsg = "Server Error: " + err.responseText.substring(0, 150);
+                       errorMsg = "Server Response: " + err.responseText.substring(0, 150);
                    } else {
-                       errorMsg = "Server Error " + err.status;
+                       errorMsg = "HTTP Status: " + err.status;
                    }
-                   Swal.fire('Error', errorMsg, 'error');
+                   Swal.fire('System Error', errorMsg, 'error');
                    $btn.prop('disabled', false).html('Save Customer');
                 }
             });
