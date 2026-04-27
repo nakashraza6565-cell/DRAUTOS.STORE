@@ -20,6 +20,8 @@
     use App\Http\Controllers\Auth\ResetPasswordController;
     use Illuminate\Support\Facades\Schema;
 
+    Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
+
     Route::get('/fix-db', function() {
         try {
             // Run Migrations
@@ -165,7 +167,6 @@
         Route::get('/', [AdminController::class, 'index'])->name('admin');
         
         // Debug & Fix Routes (Secure)
-        Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
         Route::get('/force-clear', function() {
             try {
                 \Illuminate\Support\Facades\Artisan::call('optimize:clear');
