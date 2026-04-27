@@ -273,6 +273,7 @@
         Route::post('sales-orders/{id}/fulfill', 'SalesOrderController@fulfill')->name('sales-orders.fulfill');
         Route::post('sales-orders/{id}/toggle-priority', 'SalesOrderController@togglePriority')->name('sales-orders.toggle-priority');
         Route::post('sales-orders/{id}/add-item', 'SalesOrderController@addItem')->name('sales-orders.add-item');
+        Route::post('sales-orders/item/{itemId}/update-price', 'SalesOrderController@updateItemPrice')->name('sales-orders.update-item-price');
         Route::delete('sales-orders/{id}/remove-item/{itemId}', 'SalesOrderController@removeItem')->name('sales-orders.remove-item');
         Route::get('sales-orders/pending-items/{userId}', 'SalesOrderController@getPendingItems')->name('sales-orders.pending-items');
         Route::get('sales-orders/get-price', 'SalesOrderController@getCustomerPrice')->name('sales-orders.get-price');

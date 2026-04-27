@@ -163,8 +163,16 @@
                                     <span class="badge badge-success">FULFILLED</span>
                                 @endif
                             </td>
-                            <td class="text-right align-middle">Rs. {{number_format($item->price, 2)}}</td>
-                            <td class="text-right align-middle font-weight-bold">Rs. {{number_format($item->price * $item->quantity, 2)}}</td>
+                            <td class="text-right align-middle">
+                                <div class="input-group input-group-sm ml-auto" style="width:120px;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text px-1" style="font-size:10px;">Rs</span>
+                                    </div>
+                                    <input type="number" step="0.01" class="form-control form-control-sm text-right item-price-input" 
+                                           data-id="{{$item->id}}" value="{{$item->price}}">
+                                </div>
+                            </td>
+                            <td class="text-right align-middle font-weight-bold" id="item-total-{{$item->id}}">Rs. {{number_format($item->price * $item->quantity, 2)}}</td>
                             <td class="text-center align-middle">
                                 @if($remaining > 0)
                                     <button type="button" class="btn btn-danger btn-sm" 
@@ -509,6 +517,47 @@ $(document).ready(function() {
             if(res.status == 'success') {
                 $('#qp-model-select').append(new Option(res.model.name, res.model.name, false, true)).trigger('change');
                 $('#addModelModal').modal('hide');
+            }
+        });
+    });
+
+    // Update Item Price AJAX
+    $(document).on('change', '.item-price-input', function() {
+        let $input = $(this);
+        let itemId = $input.data('id');
+        let newPrice = $input.val();
+        let $row = $input.closest('tr');
+
+        $input.addClass('border-warning');
+
+        $.ajax({
+            url: "/admin/sales-orders/item/" + itemId + "/update-price",
+            type: 'POST',
+            data: {
+                _token: "{{csrf_token()}}",
+                price: newPrice
+            },
+            success: function(res) {
+                if (res.status === 'success') {
+                    $input.removeClass('border-warning').addClass('border-success');
+                    setTimeout(() => $input.removeClass('border-success'), 2000);
+                    
+                    // Update item total display
+                    $('#item-total-' + itemId).text('Rs. ' + parseFloat(res.item_total).toLocaleString(undefined, {minimumFractionDigits: 2}));
+                    
+                    // Update grand total display
+                    $('#grand-total-display').text('Rs. ' + parseFloat(res.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2}));
+                    
+                    Swal.fire({
+                        icon: 'success', title: 'Price Updated', toast: true,
+                        position: 'top-end', showConfirmButton: false, timer: 2000
+                    });
+                }
+            },
+            error: function(err) {
+                $input.removeClass('border-warning').addClass('border-danger');
+                let msg = err.responseJSON ? err.responseJSON.message : 'Error updating price';
+                Swal.fire('Error', msg, 'error');
             }
         });
     });

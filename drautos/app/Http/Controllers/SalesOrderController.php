@@ -320,6 +320,33 @@ class SalesOrderController extends Controller
         return back()->with('success', 'Item removed from order');
     }
 
+    public function updateItemPrice(Request $request, $itemId)
+    {
+        try {
+            $item = SalesOrderItem::findOrFail($itemId);
+            $salesOrder = SalesOrder::findOrFail($item->sales_order_id);
+            
+            $item->price = $request->price;
+            $item->save();
+
+            // Recalculate order total
+            $salesOrder->total_amount = $salesOrder->items()->sum(DB::raw('quantity * price'));
+            $salesOrder->save();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Price updated successfully',
+                'total_amount' => $salesOrder->total_amount,
+                'item_total' => $item->price * $item->quantity
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error updating price: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function destroy($id)
     {
         $salesOrder = SalesOrder::findOrFail($id);
