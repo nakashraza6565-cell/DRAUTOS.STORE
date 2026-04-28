@@ -18,6 +18,31 @@
         </div>
     </div>
 
+    <!-- Quick Actions Section -->
+    <div class="mb-4">
+        <h6 class="font-weight-700 text-uppercase small text-muted mb-3">Quick Actions</h6>
+        <div class="row no-gutters" style="gap:12px;">
+            <div class="col">
+                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-plus-circle text-primary mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-primary">New Order</span>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-list-ul text-warning mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-warning">History</span>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-cog text-info mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-info">Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Highlight Cards Row -->
     <div class="row">
         <!-- Balance Pending Card -->
@@ -77,31 +102,6 @@
                         <div class="stat-value">{{$stats['pending_orders']}} <small class="font-weight-normal text-muted">/ {{$stats['total_orders']}} total</small></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions Section -->
-    <div class="mb-4">
-        <h6 class="font-weight-700 text-uppercase small text-muted mb-3">Quick Actions</h6>
-        <div class="row no-gutters" style="gap:12px;">
-            <div class="col">
-                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-plus-circle text-primary mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-primary">New Order</span>
-                </a>
-            </div>
-            <div class="col">
-                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-list-ul text-warning mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-warning">History</span>
-                </a>
-            </div>
-            <div class="col">
-                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-cog text-info mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-info">Settings</span>
-                </a>
             </div>
         </div>
     </div>
