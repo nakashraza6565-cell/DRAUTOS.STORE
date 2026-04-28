@@ -109,8 +109,10 @@
                             @if($product->photo)
                                 @php
                                   $photo=explode(',',$product->photo);
+                                  $src = $photo[0];
+                                  if(!Str::startsWith($src, ['http', '/'])) $src = '/' . $src;
                                 @endphp
-                                <img src="{{$photo[0]}}" class="img-fluid zoom rounded" style="max-width:60px" alt="{{$product->photo}}">
+                                <img src="{{$src}}" class="img-fluid zoom rounded" style="max-width:60px" alt="Product Photo">
                             @else
                                 <img src="{{asset('backend/img/thumbnail-default.jpg')}}" class="img-fluid rounded" style="max-width:60px" alt="default">
                             @endif
@@ -175,15 +177,17 @@
       var currentProductId = null;
 
       function initDirectPhotoUpload() {
-          $('.photo-upload-btn').on('click', function() {
+          $(document).on('click', '.photo-upload-btn', function() {
               currentProductId = $(this).data('id');
               // Trigger LFM
-              window.open('/laravel-filemanager?type=image', 'FileManager', 'width=900,height=600');
+              var route_prefix = "/laravel-filemanager";
+              window.open(route_prefix + '?type=image', 'FileManager', 'width=900,height=600');
               
               // Define one-time callback
               window.SetUrl = function (items) {
                   var file_path = items.map(function (item) {
-                      return item.url;
+                      // Get relative path if possible to keep it clean
+                      return item.url.replace(window.location.origin, '');
                   }).join(',');
 
                   if(currentProductId && file_path) {
