@@ -443,14 +443,17 @@ class HomeController extends Controller
         $query = $request->get('query');
         
         // Products
+        $keywords = explode(' ', $query);
         $products = Product::where('status', 'active')
-            ->where(function($q) use ($query) {
-                $q->where('title', 'LIKE', "%{$query}%")
-                  ->orWhere('barcode', 'LIKE', "%{$query}%")
-                  ->orWhere('sku', 'LIKE', "%{$query}%")
-                  ->orWhereHas('brand', function($b) use ($query) {
-                      $b->where('title', 'LIKE', "%{$query}%");
-                  });
+            ->where(function($q) use ($keywords) {
+                foreach($keywords as $word) {
+                    $q->orWhere('title', 'LIKE', "%{$word}%")
+                      ->orWhere('barcode', 'LIKE', "%{$word}%")
+                      ->orWhere('sku', 'LIKE', "%{$word}%")
+                      ->orWhereHas('brand', function($b) use ($word) {
+                          $b->where('title', 'LIKE', "%{$word}%");
+                      });
+                }
             })
             ->limit(20)
             ->get();
