@@ -1,9 +1,9 @@
 @extends('user.layouts.master')
 @section('title','Order Products || ' . (Settings::first()->title ?? 'Auto Store'))
 @push('styles')
-    <!-- TensorFlow.js for Visual Search -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+    <!-- Heavy scripts deferred to prevent blocking -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet" defer></script>
 @endpush
 @section('main-content')
 
@@ -46,9 +46,6 @@
 
                 <!-- Products Grid -->
                 <div id="products-grid" class="row m-0 p-3 overflow-auto flex-grow-1 custom-scrollbar">
-                    <div class="col-12 text-center py-5">
-                        <div class="spinner-border text-primary" role="status"></div>
-                    </div>
                 </div>
             </div>
 
@@ -339,11 +336,12 @@
 @push('scripts')
 <script>
     let cart = [];
-    let products = [];
+    let initialProducts = {!! json_encode($products) !!};
+    let products = initialProducts;
     const customerType = "{{ auth()->user()->customer_type ?? 'retail' }}";
 
     $(document).ready(function() {
-        fetchProducts('');
+        renderProducts(); // Render immediately with pre-fetched data
         
         // Sidebar Toggles
         $('#toggle-cart, #close-sidebar, #sidebar-overlay').on('click', function() {
@@ -358,6 +356,10 @@
         
         if(val.length < 2) {
             $('#search-suggestions').addClass('d-none');
+            if(val.length == 0) {
+                products = initialProducts;
+                renderProducts();
+            }
             return;
         }
 

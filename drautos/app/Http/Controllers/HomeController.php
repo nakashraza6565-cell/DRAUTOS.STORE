@@ -453,13 +453,20 @@ class HomeController extends Controller
         $categories = Category::where('status', 'active')->get();
         $user = auth()->user();
         $balance = $user->current_balance ?? 0;
-        $recent_ledger = CustomerLedger::where('user_id', $user->id)
-            ->orderBy('transaction_date', 'desc')
-            ->orderBy('id', 'desc')
-            ->limit(10)
-            ->get();
+        
+        // Pre-fetch initial products for instant load
+        $initial_products = Product::where('status', 'active')->limit(24)->get();
+        foreach($initial_products as $p) $p->item_type = 'product';
+        
+        $initial_bundles = Bundle::where('status', 'active')->limit(12)->get();
+        foreach($initial_bundles as $b) {
+            $b->title = $b->name;
+            $b->item_type = 'bundle';
+        }
+        
+        $products = $initial_products->concat($initial_bundles);
             
-        return view('user.pos.index', compact('categories', 'balance', 'recent_ledger'));
+        return view('user.pos.index', compact('categories', 'balance', 'products'));
     }
 
     public function searchProducts(Request $request) {
