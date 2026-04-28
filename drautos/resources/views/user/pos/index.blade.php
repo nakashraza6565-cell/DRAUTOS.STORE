@@ -7,9 +7,15 @@
     <!-- Mobile Search & Cart Trigger -->
     <div class="pos-header shadow-sm bg-white p-3 d-flex align-items-center sticky-top" style="z-index: 1000; height: 75px;">
         <div class="flex-grow-1 mr-3">
-            <div class="search-box-premium d-flex align-items-center px-3 py-2 rounded-pill" style="background: #f1f5f9; border: 1.5px solid #e2e8f0;">
-                <i class="fas fa-search text-muted mr-2"></i>
-                <input type="text" id="product-search" class="form-control border-0 bg-transparent p-0 shadow-none" placeholder="Search by name or SKU..." style="font-size: 14px; font-weight: 500;" autofocus autocomplete="off">
+            <div class="search-box-premium d-flex align-items-center px-3 py-2 rounded-pill position-relative" style="background: #f1f5f9; border: 1.5px solid #e2e8f0;">
+                <i class="fas fa-search text-muted mr-2" id="search-icon"></i>
+                <i class="fas fa-spinner fa-spin text-primary mr-2 d-none" id="search-spinner"></i>
+                <input type="text" id="product-search" class="form-control border-0 bg-transparent p-0 shadow-none" placeholder="Search name, SKU, or brand..." style="font-size: 14px; font-weight: 500;" autofocus autocomplete="off">
+                
+                <!-- Intelligent Suggestions Dropdown -->
+                <div id="search-suggestions" class="position-absolute shadow-lg rounded-lg d-none" 
+                     style="top: 110%; left: 0; width: 100%; background: #fff; z-index: 2000; max-height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px !important;">
+                </div>
             </div>
         </div>
         <div class="cart-trigger position-relative" id="toggle-cart">
@@ -232,6 +238,44 @@
         font-size: 10px;
         color: var(--primary);
     }
+    .cart-btn {
+        transition: transform 0.2s;
+    }
+    .cart-btn:active { transform: scale(0.9); }
+
+    /* Suggestion Styling */
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        border-bottom: 1px solid #f1f5f9;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .suggestion-item:hover { background: #f8fafc; }
+    .suggestion-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 12px;
+    }
+    .suggestion-item .info h6 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .suggestion-item .info span {
+        font-size: 11px;
+        color: #64748b;
+    }
+    .suggestion-item .price {
+        margin-left: auto;
+        font-weight: 800;
+        font-size: 12px;
+        color: #059669;
+    }
 </style>
 
 @endsection
@@ -251,9 +295,64 @@
         });
     });
 
+    let searchTimer;
     $('#product-search').on('input', function() {
-        fetchProducts($(this).val());
+        let val = $(this).val();
+        clearTimeout(searchTimer);
+        
+        if(val.length < 2) {
+            $('#search-suggestions').addClass('d-none');
+            return;
+        }
+
+        $('#search-icon').addClass('d-none');
+        $('#search-spinner').removeClass('d-none');
+
+        searchTimer = setTimeout(() => {
+            fetchProducts(val);
+        }, 300); // 300ms debounce
     });
+
+    // Hide suggestions when clicking outside
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('.search-box-premium').length) {
+            $('#search-suggestions').addClass('d-none');
+        }
+    });
+
+    function renderSuggestions(data) {
+        let html = '';
+        if(data.length > 0) {
+            data.slice(0, 10).forEach(p => { // Show top 10
+                let price = getPriceForCustomer(p);
+                let img = p.photo ? p.photo.split(',')[0] : '{{asset('backend/img/thumbnail-default.jpg')}}';
+                if(!img.startsWith('http')) img = '/' + img;
+                
+                html += `
+                    <div class="suggestion-item" onclick="selectSuggestion(${p.id}, '${p.item_type}')">
+                        <img src="${img}">
+                        <div class="info">
+                            <h6>${p.title}</h6>
+                            <span>${p.sku || 'No SKU'}</span>
+                        </div>
+                        <div class="price">Rs. ${price.toLocaleString()}</div>
+                    </div>
+                `;
+            });
+            $('#search-suggestions').html(html).removeClass('d-none');
+        } else {
+            $('#search-suggestions').html('<div class="p-3 text-center small text-muted">No products match your search</div>').removeClass('d-none');
+        }
+        $('#search-spinner').addClass('d-none');
+        $('#search-icon').removeClass('d-none');
+    }
+
+    function selectSuggestion(pid, type) {
+        addToCart(pid, type);
+        $('#search-suggestions').addClass('d-none');
+        $('#product-search').val('');
+        renderProducts(); // Refresh the background grid too
+    }
 
     $('.filter-cat').on('click', function() {
         $('.filter-cat').removeClass('active');
@@ -268,6 +367,7 @@
             success: function(res) {
                 products = res;
                 renderProducts();
+                if(query.length >= 2) renderSuggestions(res);
             }
         });
     }

@@ -447,7 +447,10 @@ class HomeController extends Controller
             ->where(function($q) use ($query) {
                 $q->where('title', 'LIKE', "%{$query}%")
                   ->orWhere('barcode', 'LIKE', "%{$query}%")
-                  ->orWhere('sku', 'LIKE', "%{$query}%");
+                  ->orWhere('sku', 'LIKE', "%{$query}%")
+                  ->orWhereHas('brand', function($b) use ($query) {
+                      $b->where('title', 'LIKE', "%{$query}%");
+                  });
             })
             ->limit(20)
             ->get();
