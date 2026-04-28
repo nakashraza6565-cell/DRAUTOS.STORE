@@ -72,14 +72,15 @@
     Route::get('storage-link',[AdminController::class,'storageLink'])->name('storage.link');
 
 
-    Auth::routes(['register' => true]);
+    Auth::routes(['register' => false]);
 
-    Route::get('user/login', [FrontendController::class, 'login'])->name('login.form');
-    Route::post('user/login', [FrontendController::class, 'loginSubmit'])->name('login.submit');
+    // Route::get('user/login', [FrontendController::class, 'login'])->name('login.form');
+    // Route::post('user/login', [FrontendController::class, 'loginSubmit'])->name('login.submit');
     Route::get('user/logout', [FrontendController::class, 'logout'])->name('user.logout');
 
     Route::get('/register', [FrontendController::class, 'register'])->name('register');
     Route::post('/register', [FrontendController::class, 'registerSubmit'])->name('register.submit');
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
    
     // Reset password
     Route::get('password/reset', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
