@@ -318,8 +318,7 @@
         margin-bottom: 20px;
         position: relative;
     }
-
-
+</style>
 
 <!-- Visual Scan Overlay -->
 <div id="visual-scan-overlay">
