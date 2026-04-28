@@ -489,22 +489,35 @@ class HomeController extends Controller
     }
 
     public function searchProducts(Request $request) {
-        $query = $request->get('query');
-        
+        $query = trim($request->get('query'));
+        if (empty($query)) return response()->json([]);
+
+        $keywords = array_filter(explode(' ', $query), function($word) {
+            return strlen($word) >= 2;
+        });
+
         // Products
-        $keywords = explode(' ', $query);
         $products = Product::where('status', 'active')
-            ->where(function($q) use ($keywords) {
-                foreach($keywords as $word) {
-                    $q->orWhere('title', 'LIKE', "%{$word}%")
-                      ->orWhere('barcode', 'LIKE', "%{$word}%")
-                      ->orWhere('sku', 'LIKE', "%{$word}%")
-                      ->orWhereHas('brand', function($b) use ($word) {
-                          $b->where('title', 'LIKE', "%{$word}%");
-                      });
+            ->where(function($q) use ($query, $keywords) {
+                // Priority 1: Exact phrase match
+                $q->where('title', 'LIKE', "%{$query}%")
+                  ->orWhere('sku', 'LIKE', "%{$query}%")
+                  ->orWhere('barcode', 'LIKE', "%{$query}%");
+                
+                // Priority 2: All keywords present (AND logic)
+                if (count($keywords) > 1) {
+                    $q->orWhere(function($sq) use ($keywords) {
+                        foreach($keywords as $word) {
+                            $sq->where(function($inner) use ($word) {
+                                $inner->where('title', 'LIKE', "%{$word}%")
+                                      ->orWhere('sku', 'LIKE', "%{$word}%")
+                                      ->orWhere('barcode', 'LIKE', "%{$word}%");
+                            });
+                        }
+                    });
                 }
             })
-            ->limit(20)
+            ->limit(40)
             ->get();
             
         // Bundles
