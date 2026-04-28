@@ -854,8 +854,7 @@
     $(document).ready(function() {
         // Clear payload from session so it doesn't reappear on reload
         @if(session('pos_payload'))
-        @php session() - > forget('pos_payload');
-        @endphp
+        @php session()->forget('pos_payload'); @endphp
         @endif
 
         // Auto-load items if coming from Sales Order
