@@ -105,7 +105,7 @@
 
                             @else
                             <p class="text-center p-5">
-                                You need to <a href="{{route('login.form')}}" style="color:rgb(54, 54, 204)">Login</a> OR <a style="color:blue" href="{{route('register.form')}}">Register</a> for comment.
+                                You need to <a href="{{route('login')}}" style="color:rgb(54, 54, 204)">Login</a> OR <a style="color:blue" href="{{route('register')}}">Register</a> for comment.
 
                             </p>
 

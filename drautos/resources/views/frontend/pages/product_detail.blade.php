@@ -84,7 +84,7 @@
                                                 @auth
 												<p class="price"><span class="discount">${{number_format($after_discount,2)}}</span><s>${{number_format($product_detail->price,2)}}</s> </p>
                                                 @else
-                                                <p class="price">Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login to see</a></p>
+                                                <p class="price">Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login to see</a></p>
                                                 @endauth
 												<p class="description">{!!($product_detail->summary)!!}</p>
 											</div>
@@ -220,7 +220,7 @@
 																</form>
 																@else 
 																<p class="text-center p-5">
-																	You need to <a href="{{route('login.form')}}" style="color:rgb(54, 54, 204)">Login</a> OR <a style="color:blue" href="{{route('register.form')}}">Register</a>
+																	You need to <a href="{{route('login')}}" style="color:rgb(54, 54, 204)">Login</a> OR <a style="color:blue" href="{{route('register')}}">Register</a>
 
 																</p>
 																<!--/ End Form -->
@@ -337,7 +337,7 @@
                                             <span class="old">${{number_format($data->price,2)}}</span>
                                             <span>${{number_format($after_discount,2)}}</span>
                                             @else
-                                            <span>Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login</a></span>
+                                            <span>Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login</a></span>
                                             @endauth
                                         </div>
                                       
@@ -405,7 +405,7 @@
                             @auth
                             <h3>${{number_format($product_detail->price, 2)}}</h3>
                             @else
-                            <h3>Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login to see</a></h3>
+                            <h3>Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login to see</a></h3>
                             @endauth
                             <div class="quickview-peragraph">
                                 <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Mollitia iste laborum ad impedit pariatur esse optio tempora sint ullam autem deleniti nam in quos qui nemo ipsum numquam.</p>

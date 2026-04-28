@@ -102,7 +102,7 @@
                                                 @auth
                                                 <p class="price"><del class="text-muted">${{number_format($product->price,2)}}</del>   ${{number_format($org,2)}}  </p>
                                                 @else
-                                                <p class="price">Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login</a></p>
+                                                <p class="price">Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login</a></p>
                                                 @endauth
 
                                             </div>
@@ -197,7 +197,7 @@
                                                 <span>${{number_format($after_discount,2)}}</span>
                                                 <del style="padding-left:4%;">${{number_format($product->price,2)}}</del>
                                                 @else
-                                                <span>Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login to see</a></span>
+                                                <span>Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login to see</a></span>
                                                 @endauth
                                             </div>
                                         </div>
@@ -293,7 +293,7 @@
                                             @auth
                                             <h3><small><del class="text-muted">${{number_format($product->price,2)}}</del></small>    ${{number_format($after_discount,2)}}  </h3>
                                             @else
-                                            <h3>Price: <a href="{{route('login.form')}}" style="color: #f59e0b;">Login to see</a></h3>
+                                            <h3>Price: <a href="{{route('login')}}" style="color: #f59e0b;">Login to see</a></h3>
                                             @endauth
                                             <div class="quickview-peragraph">
                                                 <p>{!! html_entity_decode($product->summary) !!}</p>
