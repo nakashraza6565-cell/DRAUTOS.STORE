@@ -38,7 +38,14 @@ class LoginController extends Controller
      */
 
     public function credentials(Request $request){
-        return ['email'=>$request->email,'password'=>$request->password,'status'=>'active','role'=>'admin'];
+        $identity = $request->email;
+        $field = filter_var($identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        
+        return [
+            $field     => $identity,
+            'password' => $request->password,
+            'status'   => 'active'
+        ];
     }
     public function __construct()
     {

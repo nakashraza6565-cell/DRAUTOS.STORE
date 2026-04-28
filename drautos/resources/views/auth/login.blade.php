@@ -138,13 +138,15 @@
             <h1>Danyal Autos</h1>
             <p>Customer Access Portal</p>
         </div>
+        
+        @include('backend.layouts.notification')
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="form-group mb-4">
-                <label>Email Address</label>
-                <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                       name="email" value="{{ old('email') }}" placeholder="name@example.com" required autofocus>
+                <label>Email or Mobile Number</label>
+                <input type="text" class="form-control @error('email') is-invalid @enderror" 
+                       name="email" value="{{ old('email') }}" placeholder="Email or 03XXXXXXXXX" required autofocus>
                 @error('email')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
