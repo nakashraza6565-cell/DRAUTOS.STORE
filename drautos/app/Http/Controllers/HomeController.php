@@ -99,8 +99,21 @@ class HomeController extends Controller
 
     // Order
     public function orderIndex(){
-        $orders=Order::orderBy('id','DESC')->where('user_id',auth()->user()->id)->paginate(5000);
-        return view('user.order.index')->with('orders',$orders);
+        $user_id = auth()->user()->id;
+        
+        // "Delivered" module: Finalized Orders
+        $orders = Order::where('user_id', $user_id)
+                      ->orderBy('id', 'DESC')
+                      ->paginate(5000);
+
+        // "Pending" module: Sales Orders (Quotes/Bookings)
+        $sales_orders = SalesOrder::where('user_id', $user_id)
+                                 ->orderBy('id', 'DESC')
+                                 ->get();
+
+        return view('user.order.index')
+                ->with('orders', $orders)
+                ->with('sales_orders', $sales_orders);
     }
     public function userOrderDelete($id)
     {
@@ -133,6 +146,18 @@ class HomeController extends Controller
             return redirect()->route('user.order.index')->with('error', 'Order not found or access denied');
         }
         return view('user.order.show')->with('order', $order);
+    }
+
+    public function salesOrderShow($id)
+    {
+        $salesOrder = SalesOrder::with(['items.product.brand', 'user', 'staff'])
+                               ->where('user_id', auth()->user()->id)
+                               ->where('id', $id)
+                               ->first();
+        if (!$salesOrder) {
+            return redirect()->route('user.order.index')->with('error', 'Pending order not found or access denied');
+        }
+        return view('user.order.sales_order_show')->with('salesOrder', $salesOrder);
     }
     // Product Review
     public function productReviewIndex(){

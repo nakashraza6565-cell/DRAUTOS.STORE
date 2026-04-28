@@ -1,149 +1,149 @@
 @extends('user.layouts.master')
 
 @section('main-content')
- <!-- DataTales Example -->
- <div class="card shadow mb-4">
-     <div class="row">
-         <div class="col-md-12">
-            @include('user.layouts.notification')
-         </div>
-     </div>
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary float-left">Order Lists</h6>
+<div class="container-fluid px-3 py-4">
+    <!-- Header Section -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h3 class="h4 font-weight-bold text-gray-800 mb-0">My Orders</h3>
+        <a href="{{route('user.online-order')}}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+            <i class="fas fa-plus mr-1"></i> New Order
+        </a>
     </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        @if(count($orders)>0)
-        <table class="table table-bordered" id="order-dataTable" width="100%" cellspacing="0">
-          <thead>
-            <tr>
-              <th>S.N.</th>
-              <th>Order No.</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Quantity</th>
-              <th>Charge</th>
-              <th>Total Amount</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <tr>
-              <th>S.N.</th>
-              <th>Order No.</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Quantity</th>
-              <th>Charge</th>
-              <th>Total Amount</th>
-              <th>Status</th>
-              <th>Action</th>
-              </tr>
-          </tfoot>
-          <tbody>
-            @foreach($orders as $order)
-                <tr>
-                    <td>{{$loop->iteration}}</td>
-                    <td><strong>{{$order->order_number}}</strong></td>
-                    <td>{{$order->first_name}} {{$order->last_name}}</td>
-                    <td>{{$order->email}}</td>
-                    <td>{{$order->quantity}}</td>
-                    <td>${{number_format($order->shipping->price ?? 0, 2)}}</td>
-                    <td>${{number_format($order->total_amount,2)}}</td>
-                    <td>
-                        @if($order->status=='new')
-                          <span class="badge badge-primary text-capitalize">{{$order->status}}</span>
-                        @elseif($order->status=='process')
-                          <span class="badge badge-warning text-capitalize">{{$order->status}}</span>
-                        @elseif($order->status=='delivered')
-                          <span class="badge badge-success text-capitalize">{{$order->status}}</span>
-                        @else
-                          <span class="badge badge-danger text-capitalize">{{$order->status}}</span>
-                        @endif
-                    </td>
-                    <td>
-                        <a href="{{route('user.order.show',$order->id)}}" class="btn btn-primary btn-sm" title="view"><i class="fas fa-eye"></i> View</a>
-                        @if($order->status == 'delivered')
-                            <a href="{{route('user.returns.create', $order->id)}}" class="btn btn-warning btn-sm" title="Return/Claim"><i class="fas fa-undo"></i> Return/Claim</a>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-          </tbody>
-        </table>
-        <span style="float:right">{{$orders->links()}}</span>
-        @else
-          <h6 class="text-center">No orders found!!! Please order some products</h6>
-        @endif
-      </div>
+
+    @include('user.layouts.notification')
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-pills mb-4 bg-white p-2 rounded-pill shadow-sm" id="orderTabs" role="tablist">
+        <li class="nav-item flex-fill" role="presentation">
+            <a class="nav-link active rounded-pill text-center font-weight-bold" id="pending-tab" data-toggle="pill" href="#pending" role="tab">
+                <i class="fas fa-clock mr-1"></i> Pending
+                <span class="badge badge-light ml-1">{{count($sales_orders)}}</span>
+            </a>
+        </li>
+        <li class="nav-item flex-fill" role="presentation">
+            <a class="nav-link rounded-pill text-center font-weight-bold" id="delivered-tab" data-toggle="pill" href="#delivered" role="tab">
+                <i class="fas fa-check-circle mr-1"></i> Delivered
+                <span class="badge badge-light ml-1">{{$orders->total()}}</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="orderTabsContent">
+        <!-- Pending Orders (Sales Orders) -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            @if(count($sales_orders) > 0)
+                <div class="row">
+                    @foreach($sales_orders as $so)
+                    <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        <div class="card border-left-warning shadow-sm h-100 py-2 ripple-card" onclick="window.location='{{route('user.sales-order.show', $so->id)}}'">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                            {{$so->order_number}}
+                                        </div>
+                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                            Rs. {{number_format($so->total_amount, 2)}}
+                                        </div>
+                                        <div class="text-xs text-muted mt-2">
+                                            <i class="fas fa-calendar-alt mr-1"></i> {{$so->created_at->format('d M, Y')}}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="badge badge-warning p-2 px-3 rounded-pill text-capitalize">
+                                            {{str_replace('_', ' ', $so->status)}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-5">
+                    <img src="https://illustrations.popsy.co/amber/waiting-list.svg" style="max-width: 150px;" class="mb-4">
+                    <h6 class="text-gray-500">No pending orders yet.</h6>
+                </div>
+            @endif
+        </div>
+
+        <!-- Delivered Orders (Finalized Orders) -->
+        <div class="tab-pane fade" id="delivered" role="tabpanel">
+            @if(count($orders) > 0)
+                <div class="row">
+                    @foreach($orders as $order)
+                    <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        <div class="card border-left-success shadow-sm h-100 py-2 ripple-card" onclick="window.location='{{route('user.order.show', $order->id)}}'">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                            {{$order->order_number}}
+                                        </div>
+                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                            Rs. {{number_format($order->total_amount, 2)}}
+                                        </div>
+                                        <div class="text-xs text-muted mt-2">
+                                            <i class="fas fa-calendar-alt mr-1"></i> {{$order->created_at->format('d M, Y')}}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        @php
+                                            $statusClass = 'badge-success';
+                                            if($order->status == 'new') $statusClass = 'badge-primary';
+                                            if($order->status == 'process') $statusClass = 'badge-warning';
+                                            if($order->status == 'cancel') $statusClass = 'badge-danger';
+                                        @endphp
+                                        <div class="badge {{$statusClass}} p-2 px-3 rounded-pill text-capitalize">
+                                            {{$order->status}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <div class="mt-4">
+                    {{$orders->links()}}
+                </div>
+            @else
+                <div class="text-center py-5">
+                    <img src="https://illustrations.popsy.co/amber/delivery-service.svg" style="max-width: 150px;" class="mb-4">
+                    <h6 class="text-gray-500">No delivered orders found.</h6>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 @endsection
 
 @push('styles')
-  <link href="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" />
-  <style>
-      div.dataTables_wrapper div.dataTables_paginate{
-          display: none;
-      }
-  </style>
-@endpush
-
-@push('scripts')
-
-  <!-- Page level plugins -->
-  <script src="{{asset('backend/vendor/datatables/jquery.dataTables.min.js')}}"></script>
-  <script src="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
-
-  <!-- Page level custom scripts -->
-  <script src="{{asset('backend/js/demo/datatables-demo.js')}}"></script>
-  <script>
-
-      $('#order-dataTable').DataTable( {
-            "columnDefs":[
-                {
-                    "orderable":false,
-                    "targets":[8]
-                }
-            ]
-        } );
-
-        // Sweet alert
-
-        function deleteData(id){
-
-        }
-  </script>
-  <script>
-      $(document).ready(function(){
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-          $('.dltBtn').click(function(e){
-            var form=$(this).closest('form');
-              var dataID=$(this).data('id');
-              // alert(dataID);
-              e.preventDefault();
-              swal({
-                    title: "Are you sure?",
-                    text: "Once deleted, you will not be able to recover this data!",
-                    icon: "warning",
-                    buttons: true,
-                    dangerMode: true,
-                })
-                .then((willDelete) => {
-                    if (willDelete) {
-                       form.submit();
-                    } else {
-                        swal("Your data is safe!");
-                    }
-                });
-          })
-      })
-  </script>
+<style>
+    .nav-pills .nav-link {
+        color: #4e73df;
+        transition: all 0.3s ease;
+    }
+    .nav-pills .nav-link.active {
+        background-color: #4e73df;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(78, 115, 223, 0.2);
+    }
+    .ripple-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 12px;
+    }
+    .ripple-card:active {
+        transform: scale(0.98);
+    }
+    .ripple-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+    }
+    .badge {
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+</style>
 @endpush

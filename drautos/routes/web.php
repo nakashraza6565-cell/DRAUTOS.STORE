@@ -542,8 +542,9 @@
         Route::get('/profile', [HomeController::class, 'profile'])->name('user.setting');
         Route::post('/profile/{id}', [HomeController::class, 'profileUpdate'])->name('user-profile-update');
         //  Order
-        Route::get('/order', "HomeController@orderIndex")->name('user.order.index');
-        Route::get('/order/show/{id}', "HomeController@orderShow")->name('user.order.show');
+        Route::get('/order', [HomeController::class, 'orderIndex'])->name('user.order.index');
+        Route::get('/sales-order/{id}', [HomeController::class, 'salesOrderShow'])->name('user.sales-order.show');
+        Route::get('/order/show/{id}', [HomeController::class, 'orderShow'])->name('user.order.show');
         Route::delete('/order/delete/{id}', [HomeController::class, 'userOrderDelete'])->name('user.order.delete');
         // Product Review
         Route::get('/user-review', [HomeController::class, 'productReviewIndex'])->name('user.productreview.index');
