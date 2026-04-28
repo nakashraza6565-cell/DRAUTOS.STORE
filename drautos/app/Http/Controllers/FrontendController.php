@@ -389,7 +389,7 @@ class FrontendController extends Controller
     }
 
     public function register(){
-        return view('frontend.pages.register');
+        return view('auth.register');
     }
     public function registerSubmit(Request $request){
         $this->validate($request,[
