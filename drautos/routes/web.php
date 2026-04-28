@@ -538,7 +538,7 @@
     Route::group(['prefix' => '/user', 'middleware' => ['user']], function () {
         Route::get('/', [HomeController::class, 'index'])->name('user');
         // Profile
-        Route::get('/profile', [HomeController::class, 'profile'])->name('user-profile');
+        Route::get('/profile', [HomeController::class, 'profile'])->name('user.setting');
         Route::post('/profile/{id}', [HomeController::class, 'profileUpdate'])->name('user-profile-update');
         //  Order
         Route::get('/order', "HomeController@orderIndex")->name('user.order.index');

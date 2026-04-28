@@ -34,7 +34,7 @@
               <p class="mb-0 font-weight-800 text-primary small">{{Auth()->user()->name}}</p>
               <p class="mb-0 text-muted extra-small" style="font-size:0.65rem;">{{Auth()->user()->email}}</p>
           </div>
-          <a class="dropdown-item py-2 px-4" href="{{route('user-profile')}}">
+          <a class="dropdown-item py-2 px-4" href="{{route('user.setting')}}">
             <i class="fas fa-user fa-sm fa-fw mr-3 text-gray-400"></i>
             My Profile
           </a>
