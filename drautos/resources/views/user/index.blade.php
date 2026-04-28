@@ -111,9 +111,8 @@
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px;">
-                <div class="card-header bg-white border-0 py-4 d-flex align-items-center justify-content-between">
+                <div class="card-header bg-white border-0 py-4">
                     <h6 class="m-0 font-weight-800 text-primary small uppercase" style="letter-spacing: 1px;">Balance History Trend</h6>
-                    <a href="{{ route('user.ledger') }}" class="btn btn-light btn-sm rounded-pill px-3 font-weight-700 extra-small">Full Ledger <i class="fas fa-chevron-right ml-1"></i></a>
                 </div>
                 <div class="card-body">
                     <div class="chart-area" style="height: 300px; position: relative;">
