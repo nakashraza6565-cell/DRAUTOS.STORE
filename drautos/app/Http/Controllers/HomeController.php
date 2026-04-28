@@ -519,7 +519,7 @@ class HomeController extends Controller
 
         $user = auth()->user();
 
-        return \DB::transaction(function () use ($data, $user) {
+        $order = \DB::transaction(function () use ($data, $user) {
             // Create Order
             $order_number = 'ORD-' . strtoupper(Str::random(10));
             
@@ -546,7 +546,7 @@ class HomeController extends Controller
             
             $order->save();
 
-            // Ledger Integration: Add to account debt immediately
+            // Ledger Integration
             CustomerLedger::record(
                 $user->id,
                 now(),
@@ -557,7 +557,7 @@ class HomeController extends Controller
                 $order->id
             );
 
-            // Create Payment Reminder for the unpaid balance (Online orders are COD)
+            // Create Payment Reminder
             \App\Models\PaymentReminder::create([
                 'type' => 'receivable',
                 'party_type' => 'App\\User',
@@ -603,35 +603,36 @@ class HomeController extends Controller
                 $cart->save();
             }
 
-            // WhatsApp Notification with PDF Invoice
-            try {
-                if ($order->phone && $order->phone != '0000000000') {
-                    // Load relations required by the PDF view
-                    $order->load('cart_info.product', 'cart_info.bundle', 'user', 'shipping');
-                    $this->whatsapp->sendOrderNotification($order);
-                }
-            } catch (\Exception $e) {
-                \Log::error('Failed to send Online WhatsApp: ' . $e->getMessage());
-            }
-
-            // Notify Admins
-            try {
-                $admins = User::where('role', 'admin')->get();
-                $details = [
-                    'title' => 'New Online order created by ' . $user->name,
-                    'actionURL' => route('order.show', $order->id),
-                    'fas' => 'fa-shopping-cart'
-                ];
-                Notification::send($admins, new StatusNotification($details));
-            } catch (\Exception $e) {
-                \Log::error('Failed to notify admins of online order: ' . $e->getMessage());
-            }
-
-            return response()->json([
-                'status'   => 'success',
-                'message'  => 'Order placed successfully',
-                'order_id' => $order->id
-            ]);
+            return $order;
         });
+
+        // WhatsApp Notification (Outside Transaction)
+        try {
+            if ($order->phone && $order->phone != '0000000000') {
+                $order->load('cart_info.product', 'cart_info.bundle', 'user', 'shipping');
+                $this->whatsapp->sendOrderNotification($order);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send Online WhatsApp: ' . $e->getMessage());
+        }
+
+        // Notify Admins
+        try {
+            $admins = User::where('role', 'admin')->get();
+            $details = [
+                'title' => 'New Online order created by ' . $user->name,
+                'actionURL' => route('order.show', $order->id),
+                'fas' => 'fa-shopping-cart'
+            ];
+            Notification::send($admins, new StatusNotification($details));
+        } catch (\Exception $e) {
+            \Log::error('Failed to notify admins of online order: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => 'Order placed successfully',
+            'order_id' => $order->id
+        ]);
     }
 }

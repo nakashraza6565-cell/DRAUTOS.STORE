@@ -420,6 +420,9 @@
                 products = res;
                 renderProducts();
                 if(query.length >= 2) renderSuggestions(res);
+            },
+            error: function() {
+                $('#products-grid').html('<div class="col-12 text-center py-5 text-danger"><i class="fas fa-exclamation-triangle fa-2x mb-2"></i><br>Failed to load products. Please refresh.</div>');
             }
         });
     }
@@ -598,19 +601,20 @@
                                 title: 'Success!',
                                 text: 'Order placed! Sending invoice to your WhatsApp...',
                                 icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
+                                timer: 3000
                             }).then(() => {
                                 window.location.href = "{{ route('user.order.index') }}";
                             });
                         } else {
-                            Swal.fire('Error', res.message, 'error');
                             btn.prop('disabled', false).html('PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
+                            Swal.fire('Error', res.message || 'Submission failed', 'error');
                         }
                     },
-                    error: function() {
-                        Swal.fire('Error', 'Something went wrong!', 'error');
+                    error: function(xhr) {
                         btn.prop('disabled', false).html('PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
+                        let msg = 'Internal server error. Please try again.';
+                        if(xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                        Swal.fire('Error', msg, 'error');
                     }
                 });
             }
