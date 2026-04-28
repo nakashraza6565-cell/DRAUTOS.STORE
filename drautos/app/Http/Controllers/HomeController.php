@@ -81,7 +81,21 @@ class HomeController extends Controller
             ->limit(10)
             ->get();
 
-        return view('user.index', compact('orders', 'stats', 'recent_ledger'));
+        // Graph data: Ledger Balance Trend
+        $full_ledger = CustomerLedger::where('user_id', $user_id)
+                                    ->orderBy('transaction_date', 'asc')
+                                    ->get();
+        $balanceHistory = [];
+        $graphLabels = [];
+        $runningBalance = 0;
+        foreach ($full_ledger as $item) {
+            if ($item->type == 'debit') $runningBalance += $item->amount;
+            else $runningBalance -= $item->amount;
+            $balanceHistory[] = (float)$runningBalance;
+            $graphLabels[] = date('d M', strtotime($item->transaction_date));
+        }
+
+        return view('user.index', compact('orders', 'stats', 'recent_ledger', 'balanceHistory', 'graphLabels'));
     }
 
     public function profile(){
