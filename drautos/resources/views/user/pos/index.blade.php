@@ -143,6 +143,10 @@
         .pos-sidebar.active {
             transform: translateX(0);
         }
+        /* Fix bottom blocking */
+        .pos-sidebar .border-top {
+            padding-bottom: 85px !important;
+        }
         .pos-overlay {
             position: fixed;
             top: 0;
