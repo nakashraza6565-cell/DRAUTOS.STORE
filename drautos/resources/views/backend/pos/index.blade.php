@@ -1247,13 +1247,18 @@
             let brandName = p.brand ? p.brand.title : 'GENERIC';
             let modelName = p.model || 'N/A';
 
+            let photoSrc = p.photo ? p.photo.split(',')[0] : '{{asset('backend/img/thumbnail-default.jpg')}}';
+            if (photoSrc && !photoSrc.startsWith('http') && !photoSrc.startsWith('/')) {
+                photoSrc = '/' + photoSrc;
+            }
+
             html += `
                 <div class="col-xl-8-grid mb-3 px-2">
                     <div class="card product-grid-card shadow-sm cursor-pointer" onclick="addToCart(${p.id}, '${p.item_type}', event)">
                         <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
                         <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
                         
-                        <img src="${p.photo ? p.photo.split(',')[0] : '{{asset('backend/img/thumbnail-default.jpg')}}'}" class="thumbnail-elite">
+                        <img src="${photoSrc}" class="thumbnail-elite">
                         
                         <div class="glass-overlay">
                             ${itemTypeBadge}
