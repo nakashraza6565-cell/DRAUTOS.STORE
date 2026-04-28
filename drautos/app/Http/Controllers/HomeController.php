@@ -436,7 +436,15 @@ class HomeController extends Controller
 
     public function onlineOrder() {
         $categories = Category::where('status', 'active')->get();
-        return view('user.pos.index', compact('categories'));
+        $user = auth()->user();
+        $balance = $user->current_balance ?? 0;
+        $recent_ledger = CustomerLedger::where('user_id', $user->id)
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit(10)
+            ->get();
+            
+        return view('user.pos.index', compact('categories', 'balance', 'recent_ledger'));
     }
 
     public function searchProducts(Request $request) {
