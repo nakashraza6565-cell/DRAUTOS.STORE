@@ -178,17 +178,6 @@
         color: #059669;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    .stock-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: rgba(0,0,0,0.5);
-        color: #fff;
-        padding: 2px 8px;
-        border-radius: 6px;
-        font-size: 9px;
-        font-weight: 700;
-    }
     .product-info {
         padding: 12px;
     }
@@ -311,7 +300,6 @@
                     <div class="product-premium-card shadow-sm h-100" onclick="addToCart(${p.id}, '${p.item_type}')">
                         <div class="product-img-wrapper">
                             <img src="${img}" class="product-img" loading="lazy">
-                            <div class="stock-badge ${p.stock <= 0 ? 'bg-danger' : ''}">${p.stock} In Stock</div>
                             <div class="price-badge">Rs. ${displayPrice.toLocaleString()}</div>
                         </div>
                         <div class="product-info">
