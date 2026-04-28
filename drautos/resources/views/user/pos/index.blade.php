@@ -366,8 +366,17 @@
         $('#search-spinner').removeClass('d-none');
 
         searchTimer = setTimeout(() => {
-            fetchProducts(val);
+            // Fetch for suggestions only, do NOT update grid while typing
+            fetchProducts(val, false);
         }, 300); // 300ms debounce
+    });
+
+    $('#product-search').on('keydown', function(e) {
+        if (e.keyCode == 13) { // Enter
+            e.preventDefault();
+            $('#search-suggestions').addClass('d-none');
+            fetchProducts($(this).val(), true);
+        }
     });
 
     // Hide suggestions when clicking outside
@@ -405,21 +414,27 @@
     }
 
     function selectSuggestion(pid, type) {
-        addToCart(pid, type);
-        $('#search-suggestions').addClass('d-none');
-        $('#product-search').val('');
-        renderProducts(); // Refresh the background grid too
+        let product = products.find(p => p.id == pid && p.item_type == type);
+        if (product) {
+            $('#product-search').val(product.title);
+            $('#search-suggestions').addClass('d-none');
+            // Update the grid to show matching products
+            renderProducts();
+            addToCart(pid, type);
+        }
     }
 
 
 
-    function fetchProducts(query) {
+    function fetchProducts(query, updateGrid = true) {
         $.ajax({
             url: "{{ route('user.online-order.search') }}",
             data: { query: query },
             success: function(res) {
                 products = res;
-                renderProducts();
+                if(updateGrid) {
+                    renderProducts();
+                }
                 if(query.length >= 2) renderSuggestions(res);
             },
             error: function() {
