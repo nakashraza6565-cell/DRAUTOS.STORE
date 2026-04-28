@@ -448,14 +448,18 @@
 
         filtered.forEach(p => {
             let displayPrice = getPriceForCustomer(p);
-            let img = p.photo ? p.photo.split(',')[0] : '{{asset('backend/img/thumbnail-default.jpg')}}';
-            if(!img.startsWith('http')) img = '/' + img;
+            let img = p.photo ? p.photo.split(',')[0].trim() : '';
+            if (!img) {
+                img = "{{asset('backend/img/thumbnail-default.jpg')}}";
+            } else if (!img.startsWith('http') && !img.startsWith('/')) {
+                img = '/' + img;
+            }
 
             html += `
                 <div class="col-6 col-md-4 col-xl-3 product-grid-item">
                     <div class="product-premium-card shadow-sm h-100" onclick="addToCart(${p.id}, '${p.item_type}')">
                         <div class="product-img-wrapper">
-                            <img src="${img}" class="product-img" loading="lazy">
+                            <img src="${img}" class="product-img" loading="lazy" onerror="this.src='{{asset('backend/img/thumbnail-default.jpg')}}'">
                             <div class="price-badge">Rs. ${displayPrice.toLocaleString()}</div>
                         </div>
                         <div class="product-info">

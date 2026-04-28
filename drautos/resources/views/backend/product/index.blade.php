@@ -186,8 +186,8 @@
               // Define one-time callback
               window.SetUrl = function (items) {
                   var file_path = items.map(function (item) {
-                      // Get relative path if possible to keep it clean
-                      return item.url.replace(window.location.origin, '');
+                      // Robust regex to strip protocol and domain, leaving the absolute path (e.g., /storage/...)
+                      return item.url.replace(/^https?:\/\/[^\/]+/, '');
                   }).join(',');
 
                   if(currentProductId && file_path) {
