@@ -1,170 +1,166 @@
 @extends('user.layouts.master')
 
-@section('title','Order Detail')
-
 @section('main-content')
-<div class="card">
-<h5 class="card-header">Order       <a href="{{route('order.pdf',$order->id)}}" class=" btn btn-sm btn-primary shadow-sm float-right"><i class="fas fa-download fa-sm text-white-50"></i> Generate PDF</a>
-  </h5>
-  <div class="card-body">
-    @if($order)
-    <table class="table table-striped table-hover">
-      <thead>
-        <tr>
-            <th>S.N.</th>
-            <th>Order No.</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Quantity</th>
-            <th>Charge</th>
-            <th>Total Amount</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-            <td>1</td>
-            <td><strong>{{$order->order_number}}</strong></td>
-            <td>{{$order->first_name}} {{$order->last_name}}</td>
-            <td>{{$order->email}}</td>
-            <td>{{$order->quantity}}</td>
-            <td>${{number_format($order->shipping->price ?? 0, 2)}}</td>
-            <td>${{number_format($order->total_amount,2)}}</td>
-            <td>
-                @if($order->status=='new')
-                    <span class="badge badge-primary text-capitalize">{{$order->status}}</span>
-                @elseif($order->status=='process')
-                    <span class="badge badge-warning text-capitalize">{{$order->status}}</span>
-                @elseif($order->status=='delivered')
-                    <span class="badge badge-success text-capitalize">{{$order->status}}</span>
-                @else
-                    <span class="badge badge-danger text-capitalize">{{$order->status}}</span>
-                @endif
-            </td>
-            <td>
-                @if($order->status != 'process' && $order->status != 'delivered' && $order->status != 'cancel')
-                <form method="POST" action="{{route('user.order.delete',[$order->id])}}">
-                  @csrf
-                  @method('delete')
-                      <button class="btn btn-danger btn-sm dltBtn" data-id={{$order->id}} style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                </form>
-                @else
-                <span class="text-muted">No Action</span>
-                @endif
-            </td>
+<div class="container-fluid px-3 py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <a href="{{route('user.order.index')}}" class="text-primary font-weight-bold">
+            <i class="fas fa-arrow-left mr-1"></i> Back
+        </a>
+        <a href="{{route('order.pdf',$order->id)}}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            <i class="fas fa-file-pdf mr-1"></i> PDF Invoice
+        </a>
+    </div>
 
-        </tr>
-      </tbody>
-    </table>
-
-    <section class="confirmation_part section_padding">
-      <div class="order_boxes">
-        <div class="row">
-          <div class="col-lg-6 col-lx-4">
-            <div class="order-info">
-              <h4 class="text-center pb-4">ORDER INFORMATION</h4>
-              <table class="table">
-                    <tr class="">
-                        <td>Order Number</td>
-                        <td> : {{$order->order_number}}</td>
-                    </tr>
-                    <tr>
-                        <td>Order Date</td>
-                        <td> : {{$order->created_at->format('D d M, Y')}} at {{$order->created_at->format('g : i a')}} </td>
-                    </tr>
-                    <tr>
-                        <td>Quantity</td>
-                        <td> : {{$order->quantity}}</td>
-                    </tr>
-                    <tr>
-                        <td>Order Status</td>
-                        <td> : {{$order->status}}</td>
-                    </tr>
-                    <tr>
-                      @php
-                          $shipping_charge=DB::table('shippings')->where('id',$order->shipping_id)->pluck('price');
-                      @endphp
-                        <td>Shipping Charge</td>
-                        <td> :${{number_format($order->shipping->price ?? 0, 2)}}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Amount</td>
-                        <td> : $ {{number_format($order->total_amount,2)}}</td>
-                    </tr>
-                    <tr>
-                      <td>Payment Method</td>
-                      <td> : @if($order->payment_method=='cod') Cash on Delivery @else Paypal @endif</td>
-                    </tr>
-                    <tr>
-                        <td>Payment Status</td>
-                        <td> : {{$order->payment_status}}</td>
-                    </tr>
-              </table>
+    <!-- Status Banner -->
+    <div class="card shadow-sm border-0 rounded-lg mb-4 overflow-hidden">
+        @php
+            $bgClass = 'bg-primary';
+            $icon = 'fa-shopping-bag';
+            if($order->status == 'delivered') { $bgClass = 'bg-success'; $icon = 'fa-check-circle'; }
+            if($order->status == 'process') { $bgClass = 'bg-warning'; $icon = 'fa-sync-alt'; }
+            if($order->status == 'cancel') { $bgClass = 'bg-danger'; $icon = 'fa-times-circle'; }
+        @endphp
+        <div class="card-body {{$bgClass}} text-white py-4">
+            <div class="d-flex align-items-center">
+                <i class="fas {{$icon}} fa-3x opacity-50 mr-4"></i>
+                <div>
+                    <h5 class="font-weight-bold mb-1 text-uppercase letter-spacing-1">Order {{$order->status}}</h5>
+                    <p class="small mb-0 opacity-80">Order #{{$order->order_number}}</p>
+                </div>
             </div>
-          </div>
-
-          <div class="col-lg-6 col-lx-4">
-            <div class="shipping-info">
-              <h4 class="text-center pb-4">SHIPPING INFORMATION</h4>
-              <table class="table">
-                    <tr class="">
-                        <td>Full Name</td>
-                        <td> : {{$order->first_name}} {{$order->last_name}}</td>
-                    </tr>
-                    <tr>
-                        <td>Email</td>
-                        <td> : {{$order->email}}</td>
-                    </tr>
-                    <tr>
-                        <td>Phone No.</td>
-                        <td> : {{$order->phone}}</td>
-                    </tr>
-                    <tr>
-                        <td>Address</td>
-                        <td> : {{$order->address1}}, {{$order->address2}}</td>
-                    </tr>
-                    <tr>
-                        <td>Country</td>
-                        <td> : {{$order->country}}</td>
-                    </tr>
-                    <tr>
-                        <td>Post Code</td>
-                        <td> : {{$order->post_code}}</td>
-                    </tr>
-                    @if($order->courier_company)
-                    <tr>
-                        <td>Courier Company</td>
-                        <td> : {{$order->courier_company}}</td>
-                    </tr>
-                    @endif
-                    @if($order->courier_number)
-                    <tr>
-                        <td>Courier Number</td>
-                        <td> : {{$order->courier_number}}</td>
-                    </tr>
-                    @endif
-              </table>
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
+    </div>
+
+    <!-- Tracking Section (Only if available) -->
+    @if($order->courier_number || $order->courier_company)
+    <div class="card shadow-sm border-0 rounded-lg mb-4">
+        <div class="card-body">
+            <h6 class="font-weight-bold text-gray-800 mb-3"><i class="fas fa-truck mr-2 text-primary"></i> Shipment Tracking</h6>
+            <div class="row">
+                @if($order->courier_company)
+                <div class="col-6 border-right">
+                    <div class="text-xs text-muted text-uppercase mb-1">Courier</div>
+                    <div class="small font-weight-bold">{{$order->courier_company}}</div>
+                </div>
+                @endif
+                @if($order->courier_number)
+                <div class="col-6 pl-4">
+                    <div class="text-xs text-muted text-uppercase mb-1">Tracking ID</div>
+                    <div class="small font-weight-bold">{{$order->courier_number}}</div>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
     @endif
 
-  </div>
+    <!-- Product List -->
+    <h6 class="font-weight-bold text-gray-800 mb-3 ml-1">Order Items ({{$order->cart_info->count()}})</h6>
+    @foreach($order->cart_info as $item)
+    <div class="card shadow-sm border-0 rounded-lg mb-2">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center">
+                @if($item->product)
+                    @php $photo = explode(',', $item->product->photo); @endphp
+                    <div class="mr-3">
+                        <img src="{{$photo[0] ?? asset('backend/img/thumbnail-default.jpg')}}" 
+                             class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="font-weight-bold text-gray-800 small">{{$item->product->title}}</div>
+                        <div class="text-xs text-muted">
+                            {{$item->quantity}} × Rs. {{number_format($item->price, 2)}}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-weight-bold text-gray-800 small">Rs. {{number_format($item->amount, 2)}}</div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endforeach
+
+    <!-- Bill Summary -->
+    <div class="card shadow-sm border-0 rounded-lg mt-4">
+        <div class="card-body">
+            <h6 class="font-weight-bold text-gray-800 mb-3">Order Summary</h6>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">Subtotal</span>
+                <span class="font-weight-bold small">Rs. {{number_format($order->sub_total, 2)}}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted small">Shipping</span>
+                <span class="font-weight-bold small">Rs. {{number_format($order->delivery_charge, 2)}}</span>
+            </div>
+            @if($order->coupon)
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-success small font-weight-bold">Coupon</span>
+                <span class="text-success font-weight-bold small">-Rs. {{number_format($order->coupon, 2)}}</span>
+            </div>
+            @endif
+            <hr class="my-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-gray-800 font-weight-bold">Total Bill</span>
+                <span class="h5 mb-0 font-weight-bold text-primary">Rs. {{number_format($order->total_amount, 2)}}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shipping & Payment Info -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-lg mb-3">
+                <div class="card-body">
+                    <h6 class="font-weight-bold text-gray-800 mb-3">Delivery Address</h6>
+                    <p class="small text-muted mb-0">
+                        {{$order->first_name}} {{$order->last_name}}<br>
+                        {{$order->address1}} {{$order->address2}}<br>
+                        {{$order->country}}, {{$order->post_code}}<br>
+                        <i class="fas fa-phone-alt mr-1 mt-2"></i> {{$order->phone}}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-body">
+                    <h6 class="font-weight-bold text-gray-800 mb-3">Payment Info</h6>
+                    <div class="d-flex align-items-center">
+                        <div class="badge badge-light p-2 mr-2">
+                            <i class="fas fa-money-check-alt text-primary"></i>
+                        </div>
+                        <div class="small">
+                            <div class="font-weight-bold text-uppercase">{{str_replace('cod', 'Cash on Delivery', $order->payment_method)}}</div>
+                            <div class="text-muted text-capitalize">{{$order->payment_status}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Footer (Cancel only if new) -->
+    @if($order->status == 'new')
+    <div class="mt-5 text-center">
+        <form method="POST" action="{{route('user.order.delete',[$order->id])}}">
+            @csrf
+            @method('delete')
+            <button type="submit" class="btn btn-link text-danger text-decoration-none small dltBtn">
+                <i class="fas fa-trash-alt mr-1"></i> Cancel Order
+            </button>
+        </form>
+    </div>
+    @endif
 </div>
 @endsection
 
 @push('styles')
 <style>
-    .order-info,.shipping-info{
-        background:#ECECEC;
-        padding:20px;
-    }
-    .order-info h4,.shipping-info h4{
-        text-decoration: underline;
-    }
-
+    .letter-spacing-1 { letter-spacing: 1px; }
+    .opacity-50 { opacity: 0.5; }
+    .opacity-80 { opacity: 0.8; }
+    .card { border-radius: 15px; }
 </style>
 @endpush

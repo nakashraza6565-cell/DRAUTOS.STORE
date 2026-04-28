@@ -142,7 +142,10 @@ class HomeController extends Controller
 
     public function orderShow($id)
     {
-        $order = Order::where('user_id', auth()->user()->id)->where('id', $id)->first();
+        $order = Order::with(['cart_info.product', 'shipping'])
+                      ->where('user_id', auth()->user()->id)
+                      ->where('id', $id)
+                      ->first();
         if (!$order) {
             return redirect()->route('user.order.index')->with('error', 'Order not found or access denied');
         }
