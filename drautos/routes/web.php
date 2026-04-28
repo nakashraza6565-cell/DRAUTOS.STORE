@@ -174,8 +174,9 @@
                 \Illuminate\Support\Facades\Artisan::call('route:clear');
                 \Illuminate\Support\Facades\Artisan::call('config:clear');
                 \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                \Illuminate\Support\Facades\Artisan::call('clear-compiled');
                 if(function_exists('opcache_reset')) { opcache_reset(); }
-                return "System Refreshed! <a href='/admin'>Back to Dashboard</a>";
+                return "<h1>System Refreshed!</h1><p>The UI theme has been updated. Please refresh your browser (Ctrl+F5) or use Incognito mode to see the changes.</p><a href='/admin'>Back to Dashboard</a>";
             } catch (\Exception $e) { return "Error: " . $e->getMessage(); }
         });
 
