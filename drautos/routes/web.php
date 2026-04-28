@@ -72,14 +72,14 @@
     Route::get('storage-link',[AdminController::class,'storageLink'])->name('storage.link');
 
 
-    // Premium Login & Register Routes (Defined early to avoid conflicts)
-    Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login');
-    Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login.form');
-    Route::get('/register', 'FrontendController@register')->name('register');
-    Route::get('/register', 'FrontendController@register')->name('register.form');
-    Route::post('/register', 'FrontendController@registerSubmit')->name('register.submit');
-
     Auth::routes(['register' => false]);
+
+    // Premium Login & Register Routes (Defined after Auth::routes to ensure precedence)
+    Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login');
+    Route::get('/auth/login', 'Auth\LoginController@showLoginForm')->name('login.form');
+    Route::get('/register', 'FrontendController@register')->name('register');
+    Route::get('/auth/register', 'FrontendController@register')->name('register.form');
+    Route::post('/register', 'FrontendController@registerSubmit')->name('register.submit');
 
     // Route::get('user/login', [FrontendController::class, 'login'])->name('login.form');
     // Route::post('user/login', [FrontendController::class, 'loginSubmit'])->name('login.submit');
