@@ -22,6 +22,7 @@ use App\Models\CustomerLedger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\StatusNotification;
+use App\Models\SalesOrder;
 
 class HomeController extends Controller
 {
