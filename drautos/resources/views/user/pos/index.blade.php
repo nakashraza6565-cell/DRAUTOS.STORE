@@ -29,20 +29,12 @@
                 </div>
             </div>
         </div>
-        <div class="d-flex align-items-center ml-auto">
-            <!-- Balance Card -->
-            <div class="ledger-trigger mr-3 text-right cursor-pointer" data-toggle="modal" data-target="#ledgerModal">
-                <div class="small text-muted font-weight-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.5px;">Your Balance</div>
-                <div class="font-weight-800 text-dark" style="font-size: 15px;">Rs. {{ number_format($balance, 2) }}</div>
-            </div>
-
             <div class="cart-trigger position-relative" id="toggle-cart">
                 <div class="cart-btn rounded-circle d-flex align-items-center justify-content-center bg-primary shadow-lg" style="width: 48px; height: 48px; cursor: pointer;">
                     <i class="fas fa-shopping-cart text-white"></i>
                     <span class="badge badge-danger position-absolute" id="cart-badge" style="top: -5px; right: -5px; border-radius: 50%; font-size: 10px; border: 2px solid #fff;">0</span>
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="container-fluid h-100 p-0">
@@ -330,62 +322,7 @@
         position: relative;
     }
 
-    /* Ledger Styling */
-    .ledger-item {
-        border-radius: 12px;
-        background: #f8fafc;
-        padding: 12px 15px;
-        margin-bottom: 10px;
-        border: 1px solid #e2e8f0;
-    }
-    .ledger-item.debit { border-left: 4px solid #ef4444; }
-    .ledger-item.credit { border-left: 4px solid #10b981; }
-</style>
 
-<!-- Ledger Modal -->
-<div class="modal fade" id="ledgerModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm-full" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title font-weight-800">Account Ledger</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="bg-primary text-white p-3 rounded-lg mb-4 text-center">
-                    <div class="small opacity-75">Current Balance</div>
-                    <h3 class="font-weight-bold m-0">Rs. {{ number_format($balance, 2) }}</h3>
-                </div>
-                
-                <h6 class="font-weight-800 mb-3" style="font-size: 13px;">Recent Transactions</h6>
-                <div class="ledger-list custom-scrollbar" style="max-height: 400px; overflow-y: auto;">
-                    @forelse($recent_ledger as $item)
-                        <div class="ledger-item {{ $item->type }}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="small font-weight-bold text-dark">{{ $item->description }}</div>
-                                    <div class="extra-small text-muted">{{ date('d M, Y', strtotime($item->transaction_date)) }}</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="font-weight-800 {{ $item->type == 'debit' ? 'text-danger' : 'text-success' }}">
-                                        {{ $item->type == 'debit' ? '-' : '+' }} Rs. {{ number_format($item->amount, 2) }}
-                                    </div>
-                                    <div class="extra-small text-muted">Bal: {{ number_format($item->running_balance, 2) }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center py-4 text-muted small">No recent transactions found</div>
-                    @endforelse
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <a href="{{ route('user.ledger') }}" class="btn btn-light btn-block font-weight-700 rounded-pill">VIEW FULL LEDGER</a>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Visual Scan Overlay -->
 <div id="visual-scan-overlay">
