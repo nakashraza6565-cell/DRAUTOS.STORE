@@ -75,7 +75,13 @@ class HomeController extends Controller
             'total_amount' => (clone $query)->sum('total_amount')
         ];
 
-        return view('user.index', compact('orders', 'stats'));
+        $recent_ledger = CustomerLedger::where('user_id', $user_id)
+            ->orderBy('transaction_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('user.index', compact('orders', 'stats', 'recent_ledger'));
     }
 
     public function profile(){

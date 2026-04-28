@@ -22,17 +22,44 @@
     <div class="row">
         <!-- Balance Pending Card -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
-                <div class="card-body stat-card text-white">
-                    <div class="stat-icon bg-white text-primary">
-                        <i class="fas fa-wallet"></i>
+            <a href="{{ route('user.ledger') }}" class="card h-100 border-0 text-decoration-none transition-all hover-lift" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px;">
+                <div class="card-body text-white">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="stat-icon bg-white text-primary mr-3">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label text-white-50 uppercase small font-weight-700" style="letter-spacing: 0.5px;">Outstanding Balance</div>
+                            <div class="stat-value text-white h3 font-weight-900 mb-0">Rs. {{number_format($stats['total_pending'], 2)}}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="stat-label text-white-50">Outstanding Balance</div>
-                        <div class="stat-value text-white">Rs. {{number_format($stats['total_pending'], 2)}}</div>
+
+                    <!-- Mini Ledger Preview -->
+                    <div class="ledger-preview mt-3 pt-3 border-top border-secondary">
+                        <h6 class="extra-small text-white-50 font-weight-700 text-uppercase mb-2" style="letter-spacing: 1px;">Recent Transactions</h6>
+                        <div class="transaction-list" style="max-height: 200px; overflow-y: auto;">
+                            @forelse($recent_ledger as $item)
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                                    <div style="flex: 1;">
+                                        <div class="extra-small font-weight-600 text-white truncate-text">{{ $item->description }}</div>
+                                        <div class="extra-small text-white-50">{{ date('d M', strtotime($item->transaction_date)) }}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="extra-small font-weight-800 {{ $item->type == 'debit' ? 'text-danger' : 'text-success' }}">
+                                            {{ $item->type == 'debit' ? '-' : '+' }} {{ number_format($item->amount, 0) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-2 text-white-50 extra-small">No recent activity</div>
+                            @endforelse
+                        </div>
+                        <div class="text-center mt-2">
+                            <span class="extra-small font-weight-700 text-primary-soft" style="color: #60a5fa;">Tap to view full ledger <i class="fas fa-chevron-right ml-1"></i></span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Orders Status Card -->
@@ -140,6 +167,18 @@
     .mobile-order-card:active {
         transform: scale(0.98);
     }
+    .truncate-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    .hover-lift { transition: transform 0.2s, box-shadow 0.2s; }
+    .hover-lift:active { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important; }
+    
+    /* Scrollbar for mini list */
+    .transaction-list::-webkit-scrollbar { width: 3px; }
+    .transaction-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 </style>
 @endpush
 
