@@ -1121,6 +1121,10 @@
             e.preventDefault();
             if (currentFocus > -1) {
                 if (x) x[currentFocus].click();
+            } else {
+                // Pressing Enter without selecting a specific suggestion now triggers the grid update
+                $('#search-suggestions').addClass('d-none');
+                fetchProducts($(this).val(), false, true);
             }
         }
     });
@@ -1150,11 +1154,13 @@
 
         if (val.length > 0) {
             searchTimer = setTimeout(() => {
-                fetchProducts(val, true);
+                // Fetch for suggestions only, do NOT update grid while typing
+                fetchProducts(val, true, false);
             }, 150);
         } else {
             $('#search-suggestions').addClass('d-none');
-            fetchProducts('', false);
+            // Clear search results and reset grid to default
+            fetchProducts('', false, true);
         }
     });
 
@@ -1193,7 +1199,9 @@
         if (product) {
             $('#product-search').val(product.title);
             $('#search-suggestions').addClass('d-none');
-            fetchProducts(product.title, false);
+            // Now update the grid to show the selected product
+            fetchProducts(product.title, false, true);
+            // Optionally add to cart - keeping original behavior
             addToCart(pid, type);
         }
     };
@@ -1206,7 +1214,7 @@
         fetchProducts();
     });
 
-    function fetchProducts(query = null, triggerSuggestions = false) {
+    function fetchProducts(query = null, triggerSuggestions = false, updateGrid = true) {
         if (query === null) query = $('#product-search').val();
         let cat_id = $('.filter-cat.active').data('id');
 
@@ -1218,7 +1226,9 @@
             },
             success: function(res) {
                 products = res;
-                renderProducts();
+                if (updateGrid) {
+                    renderProducts();
+                }
                 if (triggerSuggestions && query.length > 0) {
                     showSuggestions(query, res);
                 }
