@@ -35,10 +35,10 @@
     </li>
 
     <!--Orders -->
-    <li class="nav-item {{Request::routeIs('user.order.*') ? 'active' : ''}}">
+    <li class="nav-item {{Request::routeIs('user.order.*') || Request::routeIs('user.sales-order.*') ? 'active' : ''}}">
         <a class="nav-link" href="{{route('user.order.index')}}">
             <i class="fas fa-history"></i>
-            <span>Order History</span>
+            <span>My Orders</span>
         </a>
     </li>
 
