@@ -22,9 +22,9 @@
     <div class="row">
         <!-- Balance Pending Card -->
         <div class="col-md-6 mb-4">
-            <a href="{{ route('user.ledger') }}" class="card h-100 border-0 text-decoration-none transition-all hover-lift" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px;">
+            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px; overflow: hidden;">
                 <div class="card-body text-white">
-                    <div class="d-flex align-items-center mb-4">
+                    <div class="d-flex align-items-center mb-4 cursor-pointer" onclick="window.location.href='{{ route('user.ledger') }}'">
                         <div class="stat-icon bg-white text-primary mr-3">
                             <i class="fas fa-wallet"></i>
                         </div>
@@ -32,19 +32,20 @@
                             <div class="stat-label text-white-50 uppercase small font-weight-700" style="letter-spacing: 0.5px;">Outstanding Balance</div>
                             <div class="stat-value text-white h3 font-weight-900 mb-0">Rs. {{number_format($stats['total_pending'], 2)}}</div>
                         </div>
+                        <i class="fas fa-chevron-right ml-auto text-white-50 small"></i>
                     </div>
 
                     <!-- Mini Ledger Preview -->
                     <div class="ledger-preview mt-3 pt-3 border-top border-secondary">
                         <h6 class="extra-small text-white-50 font-weight-700 text-uppercase mb-2" style="letter-spacing: 1px;">Recent Transactions</h6>
-                        <div class="transaction-list" style="max-height: 200px; overflow-y: auto;">
+                        <div class="transaction-list custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
                             @forelse($recent_ledger as $item)
                                 <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-                                    <div style="flex: 1;">
+                                    <div style="flex: 1; overflow: hidden;">
                                         <div class="extra-small font-weight-600 text-white truncate-text">{{ $item->description }}</div>
                                         <div class="extra-small text-white-50">{{ date('d M', strtotime($item->transaction_date)) }}</div>
                                     </div>
-                                    <div class="text-right">
+                                    <div class="text-right ml-2">
                                         <div class="extra-small font-weight-800 {{ $item->type == 'debit' ? 'text-danger' : 'text-success' }}">
                                             {{ $item->type == 'debit' ? '-' : '+' }} {{ number_format($item->amount, 0) }}
                                         </div>
@@ -55,13 +56,13 @@
                             @endforelse
                         </div>
                         <div class="text-center mt-3">
-                            <a href="{{ route('user.ledger.pdf') }}" class="btn btn-primary btn-sm rounded-pill px-3 font-weight-700" style="font-size: 10px; background: #3b82f6; border: none;">
+                            <a href="{{ route('user.ledger.pdf') }}" class="btn btn-primary btn-sm rounded-pill px-3 font-weight-700" style="font-size: 10px; background: #3b82f6; border: none; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
                                 <i class="fas fa-file-pdf mr-1"></i> DOWNLOAD PDF STATEMENT
                             </a>
                         </div>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
 
         <!-- Orders Status Card -->
