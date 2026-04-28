@@ -72,17 +72,18 @@
     Route::get('storage-link',[AdminController::class,'storageLink'])->name('storage.link');
 
 
+    // Premium Login & Register Routes (Defined early to avoid conflicts)
+    Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login');
+    Route::get('/login', 'Auth\LoginController@showLoginForm')->name('login.form');
+    Route::get('/register', 'FrontendController@register')->name('register');
+    Route::get('/register', 'FrontendController@register')->name('register.form');
+    Route::post('/register', 'FrontendController@registerSubmit')->name('register.submit');
+
     Auth::routes(['register' => false]);
 
     // Route::get('user/login', [FrontendController::class, 'login'])->name('login.form');
     // Route::post('user/login', [FrontendController::class, 'loginSubmit'])->name('login.submit');
-    Route::get('user/logout', [FrontendController::class, 'logout'])->name('user.logout');
-
-    Route::get('/register', [FrontendController::class, 'register'])->name('register');
-    Route::get('/register', [FrontendController::class, 'register'])->name('register.form');
-    Route::post('/register', [FrontendController::class, 'registerSubmit'])->name('register.submit');
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
+    Route::get('user/logout', 'FrontendController@logout')->name('user.logout');
    
     // Reset password
     Route::get('password/reset', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
