@@ -79,8 +79,10 @@
     Route::get('user/logout', [FrontendController::class, 'logout'])->name('user.logout');
 
     Route::get('/register', [FrontendController::class, 'register'])->name('register');
+    Route::get('/register', [FrontendController::class, 'register'])->name('register.form');
     Route::post('/register', [FrontendController::class, 'registerSubmit'])->name('register.submit');
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
    
     // Reset password
     Route::get('password/reset', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
