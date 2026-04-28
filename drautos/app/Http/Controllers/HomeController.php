@@ -440,6 +440,15 @@ class HomeController extends Controller
         return view('user.ledger.index', compact('ledger', 'user', 'graphLabels', 'balanceHistory'));
     }
 
+    public function ledgerPDF()
+    {
+        $userId = auth()->user()->id;
+        $user = auth()->user();
+        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        $pdf = \PDF::loadView('backend.customer_ledger.pdf', compact('user', 'ledger'));
+        return $pdf->download('ledger-' . $user->name . '-' . date('Y-m-d') . '.pdf');
+    }
+
     public function onlineOrder() {
         $categories = Category::where('status', 'active')->get();
         $user = auth()->user();

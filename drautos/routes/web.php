@@ -581,6 +581,7 @@ Route::group(['prefix' => '/user', 'middleware' => ['user']], function () {
 
     // Ledger
     Route::get('/ledger', [HomeController::class, 'ledger'])->name('user.ledger');
+    Route::get('/ledger/pdf', [HomeController::class, 'ledgerPDF'])->name('user.ledger.pdf');
 
     // Password Change
     Route::get('change-password', [HomeController::class, 'changePassword'])->name('user.change.password.form');

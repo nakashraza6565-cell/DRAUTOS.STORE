@@ -54,8 +54,10 @@
                                 <div class="text-center py-2 text-white-50 extra-small">No recent activity</div>
                             @endforelse
                         </div>
-                        <div class="text-center mt-2">
-                            <span class="extra-small font-weight-700 text-primary-soft" style="color: #60a5fa;">Tap to view full ledger <i class="fas fa-chevron-right ml-1"></i></span>
+                        <div class="text-center mt-3">
+                            <a href="{{ route('user.ledger.pdf') }}" class="btn btn-primary btn-sm rounded-pill px-3 font-weight-700" style="font-size: 10px; background: #3b82f6; border: none;">
+                                <i class="fas fa-file-pdf mr-1"></i> DOWNLOAD PDF STATEMENT
+                            </a>
                         </div>
                     </div>
                 </div>
