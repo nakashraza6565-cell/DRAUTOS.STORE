@@ -42,13 +42,7 @@
             <!-- Left: Catalog -->
             <div class="col-12 col-lg-8 p-0 h-100 d-flex flex-column catalog-container">
                 
-                <!-- Horizontal Categories -->
-                <div class="categories-strip px-3 py-3 d-flex overflow-auto no-scrollbar" style="gap: 10px; background: #fff; border-bottom: 1px solid #f1f5f9;">
-                    <button class="btn btn-sm btn-white px-4 py-2 rounded-pill shadow-sm border filter-cat active" data-id="all" style="font-weight: 700; font-size: 12px; white-space: nowrap;">All Items</button>
-                    @foreach($categories as $cat)
-                        <button class="btn btn-sm btn-white px-4 py-2 rounded-pill shadow-sm border filter-cat text-nowrap" data-id="{{$cat->id}}" style="font-weight: 700; font-size: 12px;">{{$cat->title}}</button>
-                    @endforeach
-                </div>
+
 
                 <!-- Products Grid -->
                 <div id="products-grid" class="row m-0 p-3 overflow-auto flex-grow-1 custom-scrollbar">
@@ -411,11 +405,7 @@
         renderProducts(); // Refresh the background grid too
     }
 
-    $('.filter-cat').on('click', function() {
-        $('.filter-cat').removeClass('active');
-        $(this).addClass('active');
-        renderProducts();
-    });
+
 
     function fetchProducts(query) {
         $.ajax({
@@ -439,7 +429,7 @@
     }
 
     function renderProducts() {
-        let catId = $('.filter-cat.active').data('id');
+        let catId = 'all';
         let html = '';
         
         let filtered = products;
