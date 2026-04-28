@@ -1,5 +1,10 @@
 @extends('user.layouts.master')
 @section('title','Order Products || ' . (Settings::first()->title ?? 'Auto Store'))
+@push('styles')
+    <!-- TensorFlow.js for Visual Search -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+@endpush
 @section('main-content')
 
 <div class="pos-wrapper overflow-hidden" style="height: calc(100vh - 70px); background: #f8fafc; position: relative;">
@@ -11,6 +16,12 @@
                 <i class="fas fa-search text-muted mr-2" id="search-icon"></i>
                 <i class="fas fa-spinner fa-spin text-primary mr-2 d-none" id="search-spinner"></i>
                 <input type="text" id="product-search" class="form-control border-0 bg-transparent p-0 shadow-none" placeholder="Search name, SKU, or brand..." style="font-size: 14px; font-weight: 500;" autofocus autocomplete="off">
+                
+                <!-- Visual Search Button -->
+                <button type="button" id="visual-search-btn" class="btn btn-link p-0 text-primary ml-2" title="Search by Image">
+                    <i class="fas fa-camera fa-lg"></i>
+                </button>
+                <input type="file" id="visual-search-input" class="d-none" accept="image/*">
                 
                 <!-- Intelligent Suggestions Dropdown -->
                 <div id="search-suggestions" class="position-absolute shadow-lg rounded-lg d-none" 
@@ -276,7 +287,53 @@
         font-size: 12px;
         color: #059669;
     }
+
+    /* Visual Search Scanning Animation */
+    #visual-scan-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        z-index: 9999;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+    .scanner-line {
+        width: 80%;
+        height: 2px;
+        background: #3b82f6;
+        box-shadow: 0 0 15px #3b82f6;
+        position: absolute;
+        top: 0;
+        animation: scan 2s infinite ease-in-out;
+    }
+    @keyframes scan {
+        0% { top: 20%; }
+        50% { top: 80%; }
+        100% { top: 20%; }
+    }
+    #scanned-img-preview {
+        width: 250px;
+        height: 250px;
+        object-fit: cover;
+        border-radius: 20px;
+        border: 4px solid #fff;
+        margin-bottom: 20px;
+        position: relative;
+    }
 </style>
+
+<!-- Visual Scan Overlay -->
+<div id="visual-scan-overlay">
+    <div class="position-relative">
+        <img id="scanned-img-preview" src="">
+        <div class="scanner-line"></div>
+    </div>
+    <h5 class="font-weight-bold mb-1">AI Visual Matching...</h5>
+    <p class="small opacity-75" id="scan-status">Identifying car part...</p>
+</div>
 
 @endsection
 
@@ -563,6 +620,62 @@
                 });
             }
         });
+    });
+
+    // --- Visual Search Logic ---
+    let mobileNetModel = null;
+
+    $('#visual-search-btn').on('click', function() {
+        $('#visual-search-input').click();
+    });
+
+    $('#visual-search-input').on('change', async function(e) {
+        if (!e.target.files || !e.target.files[0]) return;
+        
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = async function(event) {
+            $('#scanned-img-preview').attr('src', event.target.result);
+            $('#visual-scan-overlay').css('display', 'flex');
+            $('#scan-status').text('Loading AI Model...');
+
+            try {
+                // Load model if not loaded
+                if (!mobileNetModel) {
+                    mobileNetModel = await mobilenet.load();
+                }
+
+                $('#scan-status').text('Analyzing image patterns...');
+                
+                // Create temp image element for TF
+                const imgElement = document.createElement('img');
+                imgElement.src = event.target.result;
+                
+                imgElement.onload = async () => {
+                    const predictions = await mobileNetModel.classify(imgElement);
+                    
+                    if (predictions && predictions.length > 0) {
+                        // Get the most relevant keyword
+                        let keyword = predictions[0].className.split(',')[0];
+                        $('#scan-status').text('Found: ' + keyword);
+                        
+                        setTimeout(() => {
+                            $('#visual-scan-overlay').fadeOut();
+                            $('#product-search').val(keyword).trigger('input');
+                        }, 1000);
+                    } else {
+                        $('#scan-status').text('Could not identify part. Try another angle.');
+                        setTimeout(() => $('#visual-scan-overlay').fadeOut(), 2000);
+                    }
+                };
+            } catch (err) {
+                console.error(err);
+                $('#scan-status').text('AI Error. Switching to manual search.');
+                setTimeout(() => $('#visual-scan-overlay').fadeOut(), 2000);
+            }
+        };
+        reader.readAsDataURL(file);
     });
 </script>
 @endpush
