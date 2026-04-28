@@ -53,18 +53,23 @@
                 <div class="flex-grow-1">
                     <div class="font-weight-bold text-gray-800 small">{{$item->product->title}}</div>
                     <div class="text-xs text-muted">
-                        {{$item->quantity}} {{$item->product->unit}} × Rs. {{number_format($item->price, 2)}}
+                        Total ordered: {{$item->quantity}} {{$item->product->unit}}
+                    </div>
+                    <div class="text-xs font-weight-bold mt-1">
+                        @if($item->delivered_quantity >= $item->quantity)
+                            <span class="text-success"><i class="fas fa-check-circle mr-1"></i> Fully Fulfilled</span>
+                        @elseif($item->delivered_quantity > 0)
+                            <span class="text-info"><i class="fas fa-truck-loading mr-1"></i> Fulfilled: {{$item->delivered_quantity}} / {{$item->quantity}}</span>
+                        @else
+                            <span class="text-warning"><i class="fas fa-clock mr-1"></i> Pending Fulfillment</span>
+                        @endif
                     </div>
                 </div>
                 <div class="text-right">
                     <div class="font-weight-bold text-gray-800 small">Rs. {{number_format($item->quantity * $item->price, 2)}}</div>
-                    <div class="text-xs">
-                        @if($item->status == 'pending')
-                            <span class="text-warning">Pending</span>
-                        @elseif($item->status == 'delivered')
-                            <span class="text-success">Delivered</span>
-                        @else
-                            <span class="text-muted">{{ucfirst($item->status)}}</span>
+                    <div class="text-xs mt-1">
+                        @if($item->delivered_quantity < $item->quantity)
+                             <span class="badge badge-warning-soft" style="background: #fffbeb; color: #b45309;">Outstanding: {{$item->quantity - $item->delivered_quantity}}</span>
                         @endif
                     </div>
                 </div>

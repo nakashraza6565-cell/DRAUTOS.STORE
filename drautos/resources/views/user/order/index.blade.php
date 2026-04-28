@@ -17,22 +17,51 @@
         <li class="nav-item flex-fill" role="presentation">
             <a class="nav-link active rounded-pill text-center font-weight-bold" id="pending-tab" data-toggle="pill" href="#pending" role="tab">
                 <i class="fas fa-clock mr-1"></i> Pending
-                <span class="badge badge-light ml-1">{{count($sales_orders)}}</span>
+                <span class="badge badge-light ml-1">{{count($sales_orders) + count($pending_online)}}</span>
             </a>
         </li>
         <li class="nav-item flex-fill" role="presentation">
             <a class="nav-link rounded-pill text-center font-weight-bold" id="delivered-tab" data-toggle="pill" href="#delivered" role="tab">
                 <i class="fas fa-check-circle mr-1"></i> Delivered
-                <span class="badge badge-light ml-1">{{$orders->total()}}</span>
+                <span class="badge badge-light ml-1">{{$delivered_orders->total()}}</span>
             </a>
         </li>
     </ul>
 
     <div class="tab-content" id="orderTabsContent">
-        <!-- Pending Orders (Sales Orders) -->
+        <!-- Pending Orders -->
         <div class="tab-pane fade show active" id="pending" role="tabpanel">
-            @if(count($sales_orders) > 0)
+            @if(count($sales_orders) > 0 || count($pending_online) > 0)
                 <div class="row">
+                    <!-- Online Pending Orders -->
+                    @foreach($pending_online as $order)
+                    <div class="col-12 col-md-6 col-lg-4 mb-3">
+                        <div class="card border-left-primary shadow-sm h-100 py-2 ripple-card" onclick="window.location='{{route('user.order.show', $order->id)}}'">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            {{$order->order_number}} <span class="badge badge-primary-soft ml-1" style="background: #e0e7ff; color: #4338ca;">Online</span>
+                                        </div>
+                                        <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                            Rs. {{number_format($order->total_amount, 2)}}
+                                        </div>
+                                        <div class="text-xs text-muted mt-2">
+                                            <i class="fas fa-calendar-alt mr-1"></i> {{$order->created_at->format('d M, Y')}}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="badge badge-info p-2 px-3 rounded-pill text-capitalize">
+                                            {{$order->status}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+
+                    <!-- Admin Sales Orders -->
                     @foreach($sales_orders as $so)
                     <div class="col-12 col-md-6 col-lg-4 mb-3">
                         <div class="card border-left-warning shadow-sm h-100 py-2 ripple-card" onclick="window.location='{{route('user.sales-order.show', $so->id)}}'">
@@ -40,7 +69,7 @@
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
                                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            {{$so->order_number}}
+                                            {{$so->order_number}} <span class="badge badge-warning-soft ml-1" style="background: #fef3c7; color: #92400e;">Booking</span>
                                         </div>
                                         <div class="h6 mb-0 font-weight-bold text-gray-800">
                                             Rs. {{number_format($so->total_amount, 2)}}
@@ -68,11 +97,11 @@
             @endif
         </div>
 
-        <!-- Delivered Orders (Finalized Orders) -->
+        <!-- Delivered Orders -->
         <div class="tab-pane fade" id="delivered" role="tabpanel">
-            @if(count($orders) > 0)
+            @if(count($delivered_orders) > 0)
                 <div class="row">
-                    @foreach($orders as $order)
+                    @foreach($delivered_orders as $order)
                     <div class="col-12 col-md-6 col-lg-4 mb-3">
                         <div class="card border-left-success shadow-sm h-100 py-2 ripple-card" onclick="window.location='{{route('user.order.show', $order->id)}}'">
                             <div class="card-body">
@@ -89,13 +118,7 @@
                                         </div>
                                     </div>
                                     <div class="col-auto">
-                                        @php
-                                            $statusClass = 'badge-success';
-                                            if($order->status == 'new') $statusClass = 'badge-primary';
-                                            if($order->status == 'process') $statusClass = 'badge-warning';
-                                            if($order->status == 'cancel') $statusClass = 'badge-danger';
-                                        @endphp
-                                        <div class="badge {{$statusClass}} p-2 px-3 rounded-pill text-capitalize">
+                                        <div class="badge badge-success p-2 px-3 rounded-pill text-capitalize">
                                             {{$order->status}}
                                         </div>
                                     </div>
@@ -106,7 +129,7 @@
                     @endforeach
                 </div>
                 <div class="mt-4">
-                    {{$orders->links()}}
+                    {{$delivered_orders->links()}}
                 </div>
             @else
                 <div class="text-center py-5">

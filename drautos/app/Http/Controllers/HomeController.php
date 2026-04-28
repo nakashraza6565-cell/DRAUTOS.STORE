@@ -108,19 +108,24 @@ class HomeController extends Controller
     public function orderIndex(){
         $user_id = auth()->user()->id;
         
-        // "Delivered" module: Finalized Orders
-        $orders = Order::where('user_id', $user_id)
+        // "Delivered" tab: Finalized Orders
+        $delivered_orders = Order::where('user_id', $user_id)
+                      ->where('status', 'delivered')
                       ->orderBy('id', 'DESC')
-                      ->paginate(5000);
+                      ->paginate(20, ['*'], 'delivered_page');
 
-        // "Pending" module: Sales Orders (Quotes/Bookings)
+        // "Pending" tab: Active Orders (Online) + Sales Orders (Admin)
+        $pending_online = Order::where('user_id', $user_id)
+                               ->whereNotIn('status', ['delivered', 'cancel'])
+                               ->orderBy('id', 'DESC')
+                               ->get();
+
         $sales_orders = SalesOrder::where('user_id', $user_id)
+                                 ->where('status', '!=', 'completed')
                                  ->orderBy('id', 'DESC')
                                  ->get();
 
-        return view('user.order.index')
-                ->with('orders', $orders)
-                ->with('sales_orders', $sales_orders);
+        return view('user.order.index', compact('delivered_orders', 'pending_online', 'sales_orders'));
     }
     public function userOrderDelete($id)
     {
