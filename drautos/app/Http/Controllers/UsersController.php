@@ -170,7 +170,9 @@ class UsersController extends Controller
         try {
             $status = User::create($data);
             
-            if($request->ajax()) {
+            if($request->ajax() || $request->expectsJson() || $request->header('X-Requested-With') == 'XMLHttpRequest') {
+                // Ensure no garbage output before JSON
+                if (ob_get_length()) ob_clean();
                 return response()->json(['status' => 'success', 'user' => $status]);
             }
 
@@ -183,7 +185,8 @@ class UsersController extends Controller
             return redirect()->route('users.index');
 
         } catch (\Exception $e) {
-            if($request->ajax()) {
+            if($request->ajax() || $request->expectsJson() || $request->header('X-Requested-With') == 'XMLHttpRequest') {
+                if (ob_get_length()) ob_clean();
                 return response()->json([
                     'status' => 'error', 
                     'message' => 'DATABASE_ERROR: ' . $e->getMessage(),

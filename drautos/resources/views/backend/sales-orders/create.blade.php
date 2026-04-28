@@ -633,6 +633,7 @@
             $.ajax({
                 url: "{{route('users.direct-store')}}", 
                 type: "POST",
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 data: form.serialize() + "&role=user&status=active&password=password123", 
                 dataType: "json",
                 success: function(response) {
