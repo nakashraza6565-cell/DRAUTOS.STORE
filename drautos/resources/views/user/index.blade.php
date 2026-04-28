@@ -18,36 +18,10 @@
         </div>
     </div>
 
-    <!-- Quick Actions Section -->
-    <div class="mb-4">
-        <h6 class="font-weight-700 text-uppercase small text-muted mb-3">Quick Actions</h6>
-        <div class="row no-gutters" style="gap:12px;">
-            <div class="col">
-                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-plus-circle text-primary mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-primary">New Order</span>
-                </a>
-            </div>
-            <div class="col">
-                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-list-ul text-warning mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-warning">History</span>
-                </a>
-            </div>
-            <div class="col">
-                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-cog text-info mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-info">Settings</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Highlight Cards Row -->
+    <!-- Outstanding Balance Window -->
     <div class="row">
-        <!-- Balance Pending Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px; overflow: hidden;">
+        <div class="col-12 mb-4">
+            <div class="card border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px; overflow: hidden;">
                 <div class="card-body text-white">
                     <div class="d-flex align-items-center mb-4 cursor-pointer" onclick="window.location.href='{{ route('user.ledger') }}'">
                         <div class="stat-icon bg-white text-primary mr-3">
@@ -89,17 +63,44 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Orders Status Card -->
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-body stat-card">
-                    <div class="stat-icon bg-light text-warning">
+    <!-- Quick Actions Section -->
+    <div class="mb-4">
+        <h6 class="font-weight-700 text-uppercase small text-muted mb-3">Quick Actions</h6>
+        <div class="row no-gutters" style="gap:12px;">
+            <div class="col">
+                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-plus-circle text-primary mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-primary">New Order</span>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-list-ul text-warning mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-warning">History</span>
+                </a>
+            </div>
+            <div class="col">
+                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
+                    <i class="fas fa-cog text-info mb-2 fa-lg"></i>
+                    <span class="small font-weight-700 text-info">Settings</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Status Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-body stat-card d-flex align-items-center py-3">
+                    <div class="stat-icon bg-light text-warning mr-3" style="width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-shipping-fast"></i>
                     </div>
                     <div>
-                        <div class="stat-label">In-Process Orders</div>
-                        <div class="stat-value">{{$stats['pending_orders']}} <small class="font-weight-normal text-muted">/ {{$stats['total_orders']}} total</small></div>
+                        <div class="stat-label small text-muted font-weight-600">In-Process Orders</div>
+                        <div class="stat-value font-weight-800" style="font-size: 1.1rem;">{{$stats['pending_orders']}} <small class="font-weight-normal text-muted">/ {{$stats['total_orders']}} total</small></div>
                     </div>
                 </div>
             </div>
