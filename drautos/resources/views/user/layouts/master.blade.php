@@ -30,6 +30,26 @@
       <!-- End of Main Content -->
       @include('user.layouts.footer')
 
+      <!-- Mobile Bottom Navigation -->
+      <nav class="mobile-nav">
+          <a href="{{route('user')}}" class="nav-item-mobile {{Request::is('user') ? 'active' : ''}}">
+              <i class="fas fa-home"></i>
+              <span>Home</span>
+          </a>
+          <a href="{{route('user.order.index')}}" class="nav-item-mobile {{Request::is('user/order*') ? 'active' : ''}}">
+              <i class="fas fa-box"></i>
+              <span>Orders</span>
+          </a>
+          <a href="{{route('user.online-order')}}" class="nav-item-mobile {{Request::is('user/online-order*') ? 'active' : ''}}">
+              <i class="fas fa-shopping-bag"></i>
+              <span>Order</span>
+          </a>
+          <a href="{{route('user.setting')}}" class="nav-item-mobile {{Request::is('user/setting*') ? 'active' : ''}}">
+              <i class="fas fa-user-circle"></i>
+              <span>Profile</span>
+          </a>
+      </nav>
+
 </body>
 
 </html>

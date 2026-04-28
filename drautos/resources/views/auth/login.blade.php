@@ -2,82 +2,187 @@
 <html lang="en">
 
 <head>
-  <title>Dr Auto Parts || Login Page</title>
-  @include('backend.layouts.head')
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Dr Auto Parts || Login</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{asset('backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
+    <link href="{{asset('backend/css/sb-admin-2.min.css')}}" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
 
+        .login-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .form-group label {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #475569;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control {
+            border-radius: 12px !important;
+            height: 55px !important;
+            border: 1.5px solid #e2e8f0 !important;
+            padding: 0 20px !important;
+            font-weight: 500 !important;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        .btn-login {
+            background: #3b82f6;
+            color: white;
+            border-radius: 12px;
+            height: 55px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-login:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4);
+            color: white;
+        }
+
+        .invalid-feedback {
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .remember-me label {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .forgot-link {
+            font-size: 0.85rem;
+            color: #3b82f6;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 30px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+    </style>
 </head>
 
-<body class="bg-gradient-primary">
+<body>
 
-  <div class="container">
-
-    <!-- Outer Row -->
-    <div class="row justify-content-center">
-
-      <div class="col-xl-10 col-lg-12 col-md-9 mt-5">
-
-        <div class="card o-hidden border-0 shadow-lg my-5">
-          <div class="card-body p-0">
-            <!-- Nested Row within Card Body -->
-            <div class="row">
-              <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-              <div class="col-lg-6">
-                <div class="p-5">
-                  <div class="text-center">
-                    <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
-                  </div>
-                  <form class="user"  method="POST" action="{{ route('login') }}">
-                    @csrf
-                    <div class="form-group">
-                      <input type="email" class="form-control form-control-user @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" id="exampleInputEmail" aria-describedby="emailHelp" placeholder="Enter Email Address..."  required autocomplete="email" autofocus>
-                        @error('email')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="form-group">
-                      <input type="password" class="form-control form-control-user @error('password') is-invalid @enderror" id="exampleInputPassword" placeholder="Password"  name="password" required autocomplete="current-password">
-                         @error('password')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    
-                    </div>
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                            <label class="form-check-label" for="remember">
-                                {{ __('Remember Me') }}
-                            </label>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-user btn-block">
-                      Login
-                    </button>
-                  </form>
-                  <hr>
-                   
-                  <div class="text-center">
-                    @if (Route::has('password.request'))
-                        <a class="btn btn-link small" href="{{ route('password.request') }}">
-                            {{ __('Forgot Your Password?') }}
-                        </a>
-                    @endif
-                  </div>
-                </div>
-              </div>
+    <div class="login-card shadow-lg">
+        <div class="login-header">
+            <div class="mb-4">
+                <i class="fas fa-tools fa-3x text-primary"></i>
             </div>
-          </div>
+            <h1>Danyal Autos</h1>
+            <p>Customer Access Portal</p>
         </div>
 
-      </div>
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+            <div class="form-group mb-4">
+                <label>Email Address</label>
+                <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                       name="email" value="{{ old('email') }}" placeholder="name@example.com" required autofocus>
+                @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
 
+            <div class="form-group mb-3">
+                <label>Password</label>
+                <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                       name="password" placeholder="Enter your password" required>
+                @error('password')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            <div class="remember-me">
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <label class="custom-control-label" for="remember">Remember Me</label>
+                </div>
+                @if (Route::has('password.request'))
+                    <a class="forgot-link" href="{{ route('password.request') }}">Forgot?</a>
+                @endif
+            </div>
+
+            <button type="submit" class="btn btn-login">
+                Sign In <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </form>
+
+        <div class="footer-text">
+            &copy; {{ date('Y') }} Dr Auto Parts. All rights reserved.
+        </div>
     </div>
 
-  </div>
 </body>
-
 </html>
+
