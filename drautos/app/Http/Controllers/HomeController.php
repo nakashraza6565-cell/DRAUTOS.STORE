@@ -363,7 +363,8 @@ class HomeController extends Controller
             'type' => 'required|in:return,claim',
             'reason' => 'required|string',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.bundle_id' => 'nullable|exists:bundles,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.notes' => 'nullable|string',
         ]);
@@ -382,28 +383,34 @@ class HomeController extends Controller
                 'order_id' => $order->id,
                 'customer_id' => $order->user_id,
                 'return_date' => now(),
-                'total_return_amount' => 0, // Will update after approval or if price known
+                'total_return_amount' => 0,
                 'reason' => $validated['reason'],
                 'type' => $validated['type'],
                 'status' => 'pending',
-                'processed_by' => null, // Not yet processed
+                'processed_by' => null,
             ]);
 
             $totalAmount = 0;
             foreach ($validated['items'] as $itemData) {
                 // Find matching cart item to get price
-                $cartItem = $order->cart_info->where('product_id', $itemData['product_id'])->first();
+                if (!empty($itemData['product_id'])) {
+                    $cartItem = $order->cart_info->where('product_id', $itemData['product_id'])->first();
+                } else {
+                    $cartItem = $order->cart_info->where('bundle_id', $itemData['bundle_id'])->first();
+                }
+                
                 $unitPrice = $cartItem ? $cartItem->price : 0;
                 $totalPrice = $unitPrice * $itemData['quantity'];
                 $totalAmount += $totalPrice;
 
                 SaleReturnItem::create([
                     'sale_return_id' => $return->id,
-                    'product_id' => $itemData['product_id'],
+                    'product_id' => $itemData['product_id'] ?? null,
+                    'bundle_id' => $itemData['bundle_id'] ?? null,
                     'quantity' => $itemData['quantity'],
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
-                    'condition' => 'good', // default
+                    'condition' => 'good',
                     'notes' => $itemData['notes'] ?? null,
                 ]);
             }
