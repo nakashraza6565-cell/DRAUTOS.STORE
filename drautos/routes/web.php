@@ -178,15 +178,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/force-clear', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-            \Illuminate\Support\Facades\Artisan::call('view:clear');
-            \Illuminate\Support\Facades\Artisan::call('route:clear');
-            \Illuminate\Support\Facades\Artisan::call('config:clear');
-            \Illuminate\Support\Facades\Artisan::call('cache:clear');
-            \Illuminate\Support\Facades\Artisan::call('clear-compiled');
-            if (function_exists('opcache_reset')) {
-                opcache_reset();
-            }
-            return "<h1>System Refreshed!</h1><p>The UI theme has been updated. Please refresh your browser (Ctrl+F5) or use Incognito mode to see the changes.</p><a href='/admin'>Back to Dashboard</a>";
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            return "<h1>System Refreshed & Migrated!</h1><p>Cache cleared and database updated. Please hard refresh your browser.</p><a href='/admin'>Back to Dashboard</a>";
         } catch (\Exception $e) {
             return "Error: " . $e->getMessage();
         }
