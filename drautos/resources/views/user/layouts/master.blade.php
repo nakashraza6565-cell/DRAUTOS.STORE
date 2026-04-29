@@ -41,8 +41,12 @@
               <span>Orders</span>
           </a>
           <a href="{{route('user.online-order')}}" class="nav-item-mobile {{Request::is('user/online-order*') ? 'active' : ''}}">
-              <i class="fas fa-shopping-bag"></i>
-              <span>Order</span>
+              <i class="fas fa-cart-plus"></i>
+              <span>New</span>
+          </a>
+          <a href="{{route('user.returns.index')}}" class="nav-item-mobile {{Request::is('user/returns*') ? 'active' : ''}}">
+              <i class="fas fa-undo-alt"></i>
+              <span>Returns</span>
           </a>
           <a href="{{route('user.setting')}}" class="nav-item-mobile {{Request::is('user/setting*') ? 'active' : ''}}">
               <i class="fas fa-user-circle"></i>
