@@ -32,6 +32,15 @@
                       <h5 class="card-title text-left"><small><i class="fas fa-user"></i> {{$profile->name}}</small></h5>
                       <p class="card-text text-left"><small><i class="fas fa-envelope"></i> {{$profile->email}}</small></p>
 
+                      <div class="mt-4">
+                        <a class="btn btn-outline-danger btn-block btn-sm rounded-pill font-weight-bold" href="{{ route('logout') }}"
+                            onclick="event.preventDefault(); document.getElementById('logout-form-profile').submit();">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </a>
+                        <form id="logout-form-profile" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                      </div>
                     </div>
                   </div>
             </div>
