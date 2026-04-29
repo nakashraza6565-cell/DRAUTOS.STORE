@@ -1,129 +1,124 @@
 @extends('user.layouts.master')
 @section('title','Returns & Claims || ' . (Settings::first()->title ?? 'Auto Store'))
 @section('main-content')
-<div class="container-fluid">
+<div class="container-fluid px-2 py-3">
     @include('user.layouts.notification')
     
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Returns & Claims</h1>
+    <!-- Modern Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 px-1">
         <div>
-            <button class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#newReturnModal">
-                <i class="fas fa-plus fa-sm text-white-50"></i> New Return / Claim
-            </button>
+            <h5 class="font-weight-bold text-gray-800 mb-0">Returns & Claims</h5>
+            <p class="text-muted small mb-0">Track your return requests</p>
         </div>
+        <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-toggle="modal" data-target="#newReturnModal">
+            <i class="fas fa-plus mr-1"></i> New
+        </button>
     </div>
-    <p class="text-muted">You can request a return or claim for products from your previous orders.</p>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Your Requests</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover" id="returns-dataTable" width="100%" cellspacing="0">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>ID</th>
-                            <th>Order No.</th>
-                            <th>Type</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Reason</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($returns as $return)
-                            <tr>
-                                <td>{{$loop->iteration}}</td>
-                                <td><strong>{{$return->return_number}}</strong></td>
-                                <td>{{$return->order->order_number}}</td>
-                                <td>
-                                    @if($return->type == 'claim')
-                                        <span class="badge badge-warning">Claim</span>
-                                    @else
-                                        <span class="badge badge-info">Return</span>
-                                    @endif
-                                </td>
-                                <td>{{$return->created_at->format('M d, Y')}}</td>
-                                <td>Rs. {{number_format($return->total_return_amount, 2)}}</td>
-                                <td>
-                                    @if($return->status == 'pending')
-                                        <span class="badge badge-secondary">Pending</span>
-                                    @elseif($return->status == 'approved')
-                                        <span class="badge badge-success">Approved</span>
-                                    @elseif($return->status == 'rejected')
-                                        <span class="badge badge-danger">Rejected</span>
-                                    @else
-                                        <span class="badge badge-primary">{{$return->status}}</span>
-                                    @endif
-                                </td>
-                                <td>{{Str::limit($return->reason, 30)}}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-5">
-                                    <h5 class="text-muted">No return or claim requests found.</h5>
-                                    <p>Go to "My Orders" and select an order to initiate a return or claim.</p>
-                                    <a href="{{route('user.order.index')}}" class="btn btn-primary btn-sm">View My Orders</a>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                <div class="mt-3">
-                    {{$returns->links()}}
+    <!-- Request Cards -->
+    <div class="returns-list">
+        @forelse($returns as $return)
+            <div class="card border-0 shadow-sm rounded-20 mb-3 ripple-card">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <span class="text-xs font-weight-bold text-uppercase text-muted">ID: {{$return->return_number}}</span>
+                            <div class="font-weight-bold text-gray-800">Order #{{$return->order->order_number ?? 'N/A'}}</div>
+                        </div>
+                        @if($return->type == 'claim')
+                            <span class="badge badge-warning-soft px-3 py-1 rounded-pill" style="background: #fef3c7; color: #92400e;">Warranty Claim</span>
+                        @else
+                            <span class="badge badge-info-soft px-3 py-1 rounded-pill" style="background: #e0f2fe; color: #0369a1;">Product Return</span>
+                        @endif
+                    </div>
+
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col">
+                            <div class="text-xs text-muted mb-1"><i class="fas fa-calendar-alt mr-1"></i> {{$return->created_at->format('M d, Y')}}</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">Rs. {{number_format($return->total_return_amount, 0)}}</div>
+                        </div>
+                        <div class="col-auto text-right">
+                            @if($return->status == 'pending')
+                                <div class="badge badge-secondary px-3 py-1 rounded-pill text-capitalize">Pending</div>
+                            @elseif($return->status == 'approved')
+                                <div class="badge badge-success px-3 py-1 rounded-pill text-capitalize">Approved</div>
+                            @elseif($return->status == 'rejected')
+                                <div class="badge badge-danger px-3 py-1 rounded-pill text-capitalize">Rejected</div>
+                            @else
+                                <div class="badge badge-primary px-3 py-1 rounded-pill text-capitalize">{{$return->status}}</div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-2 rounded-12 small text-muted">
+                        <i class="fas fa-comment-dots mr-1"></i> {{Str::limit($return->reason, 60)}}
+                    </div>
                 </div>
             </div>
-        </div>
+        @empty
+            <div class="text-center py-5">
+                <img src="https://illustrations.popsy.co/amber/waiting-list.svg" style="max-width: 150px;" class="mb-4">
+                <h5 class="text-muted">No requests found.</h5>
+                <p class="small text-muted mb-4 px-4">You can initiate a return or claim for products from your delivered orders.</p>
+                <button class="btn btn-primary rounded-pill px-4" data-toggle="modal" data-target="#newReturnModal">
+                    Start a Return
+                </button>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="mt-4 px-1">
+        {{$returns->links()}}
     </div>
 </div>
 
 <!-- Modal to select order -->
-<div class="modal fade" id="newReturnModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Select Order for Return/Claim</h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+<div class="modal fade" id="newReturnModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title font-weight-bold">Select Order</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-info small">
-                    <i class="fas fa-info-circle mr-1"></i> Only <strong>Delivered</strong> orders are eligible for returns or warranty claims.
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover" id="delivered-orders-table">
-                        <thead>
-                            <tr>
-                                <th>Order #</th>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($deliveredOrders as $order)
-                                <tr>
-                                    <td>{{$order->order_number}}</td>
-                                    <td>{{$order->created_at->format('d M Y')}}</td>
-                                    <td>Rs. {{number_format($order->total_amount, 2)}}</td>
-                                    <td>
-                                        <a href="{{route('user.returns.create', $order->id)}}" class="btn btn-primary btn-sm">
-                                            Select
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">No delivered orders found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <div class="modal-body px-4 pb-4">
+                <p class="text-muted small mb-4">Choose a delivered order to start a return or claim.</p>
+                
+                <div class="order-selection-list">
+                    @forelse($deliveredOrders as $order)
+                        <div class="card border bg-white mb-2 rounded-16 hover-shadow" style="cursor: pointer;" 
+                             onclick="window.location='{{route('user.returns.create', $order->id)}}'">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="font-weight-bold text-gray-800">#{{$order->order_number}}</div>
+                                        <div class="text-xs text-muted">{{$order->created_at->format('d M Y')}} • Rs. {{number_format($order->total_amount, 0)}}</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle text-gray-300 fa-3x mb-3"></i>
+                            <p class="text-muted small">No delivered orders available for return.</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .rounded-20 { border-radius: 20px !important; }
+    .rounded-16 { border-radius: 16px !important; }
+    .rounded-12 { border-radius: 12px !important; }
+    .text-xs { font-size: 0.7rem; }
+    .ripple-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .ripple-card:active { transform: scale(0.98); }
+    .hover-shadow:hover { border-color: var(--primary) !important; background: #f8fbff !important; }
+    .modal-dialog-centered { margin: 1rem; }
+</style>
+@endpush
