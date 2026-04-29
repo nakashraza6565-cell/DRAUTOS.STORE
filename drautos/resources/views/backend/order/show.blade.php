@@ -120,10 +120,29 @@
                     @endforeach
                 </tbody>
                 <tfoot class="bg-light font-weight-bold">
+                    @php
+                        $gross_subtotal = 0;
+                        $item_discounts = 0;
+                        foreach($order->cart_info as $ci) {
+                            $actual_price = $ci->product->price ?? $ci->price;
+                            if($actual_price > $ci->price) {
+                                $gross_subtotal += ($actual_price * $ci->quantity);
+                                $item_discounts += ($actual_price - $ci->price) * $ci->quantity;
+                            } else {
+                                $gross_subtotal += ($ci->price * $ci->quantity);
+                            }
+                        }
+                    @endphp
                     <tr>
-                        <td colspan="4" class="text-right">Sub Total:</td>
-                        <td class="text-right">Rs. {{number_format($order->sub_total, 2)}}</td>
+                        <td colspan="4" class="text-right">Sub Total (Gross):</td>
+                        <td class="text-right">Rs. {{number_format($gross_subtotal, 2)}}</td>
                     </tr>
+                    @if($item_discounts > 0)
+                    <tr>
+                        <td colspan="4" class="text-right text-info">Item Discounts:</td>
+                        <td class="text-right text-info">- Rs. {{number_format($item_discounts, 2)}}</td>
+                    </tr>
+                    @endif
                     <tr>
                         <td colspan="4" class="text-right">Shipping Charge:</td>
                         <td class="text-right">Rs. {{number_format($order->shipping->price ?? 0, 2)}}</td>

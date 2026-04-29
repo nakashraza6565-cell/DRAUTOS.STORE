@@ -188,30 +188,33 @@
             <em>Please include the Order # with your payment.</em>
         </div>
         
-        <table class="totals-table">
-            <tr>
-                <td class="label">Sub Total</td>
-                <td class="value">Rs. {{ number_format($order->sub_total, 2) }}</td>
-            </tr>
-            @if($order->coupon > 0)
-            <tr>
-                <td class="label">Discount</td>
-                <td class="value">- Rs. {{ number_format($order->coupon, 2) }}</td>
-            </tr>
-            @endif
-            @php 
-                $item_discount = 0;
+            @php
+                $gross_subtotal = 0;
+                $item_discounts = 0;
                 foreach($order->cart_info as $ci) {
-                    $actual = $ci->product->price ?? $ci->price;
-                    if($actual > $ci->price) {
-                        $item_discount += ($actual - $ci->price) * $ci->quantity;
+                    $actual_price = $ci->product->price ?? $ci->price;
+                    if($actual_price > $ci->price) {
+                        $gross_subtotal += ($actual_price * $ci->quantity);
+                        $item_discounts += ($actual_price - $ci->price) * $ci->quantity;
+                    } else {
+                        $gross_subtotal += ($ci->price * $ci->quantity);
                     }
                 }
             @endphp
-            @if($item_discount > 0)
+            <tr>
+                <td class="label">Sub Total</td>
+                <td class="value">Rs. {{ number_format($gross_subtotal, 2) }}</td>
+            </tr>
+            @if($item_discounts > 0)
             <tr>
                 <td class="label">Item Discounts</td>
-                <td class="value">- Rs. {{ number_format($item_discount, 2) }}</td>
+                <td class="value">- Rs. {{ number_format($item_discounts, 2) }}</td>
+            </tr>
+            @endif
+            @if($order->coupon > 0)
+            <tr>
+                <td class="label">Coupon Discount</td>
+                <td class="value">- Rs. {{ number_format($order->coupon, 2) }}</td>
             </tr>
             @endif
             @if($order->shipping && $order->shipping->price > 0)
