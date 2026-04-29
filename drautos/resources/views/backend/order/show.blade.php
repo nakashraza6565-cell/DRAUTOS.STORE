@@ -110,8 +110,16 @@
                     <tr>
                         <td>{{$i++}}</td>
                         <td>
-                            <div class="font-weight-bold">{{$cart->product->title ?? 'Deleted Product'}}</div>
-                            <small class="text-muted">SKU: {{$cart->product->sku ?? 'N/A'}}</small>
+                            <div class="font-weight-bold">
+                                @if($cart->product)
+                                    {{$cart->product->title}}
+                                @elseif($cart->bundle)
+                                    <span class="text-primary">[BUNDLE]</span> {{$cart->bundle->name}}
+                                @else
+                                    Deleted Item
+                                @endif
+                            </div>
+                            <small class="text-muted">SKU: {{ $cart->product->sku ?? ($cart->bundle->sku ?? 'N/A') }}</small>
                         </td>
                         <td class="text-center">{{$cart->quantity}}</td>
                         <td class="text-right">Rs. {{number_format($cart->price, 2)}}</td>

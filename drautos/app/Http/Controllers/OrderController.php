@@ -226,7 +226,7 @@ class OrderController extends Controller
      */
     public function show($id)
     {
-        $order = Order::with(['cart_info.product', 'shipping'])->find($id);
+        $order = Order::with(['cart_info.product', 'cart_info.bundle', 'shipping'])->find($id);
         if (!$order) {
             request()->session()->flash('error', 'Order not found');
             return redirect()->route('order.index');

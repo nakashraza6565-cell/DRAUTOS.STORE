@@ -196,6 +196,8 @@
                                 @if($item->product)
                                     @if($item->product->model) MODEL: {{ $item->product->model }} @endif
                                     @if($item->product->sku) | SKU: {{ $item->product->sku }} @endif
+                                @elseif($item->bundle && $item->bundle->sku)
+                                    SKU: {{ $item->bundle->sku }}
                                 @endif
                             </span>
                             <span class="item-details"><br>UNIT PRICE: {{ number_format($item->price, 0) }}</span>

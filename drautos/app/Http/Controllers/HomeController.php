@@ -122,15 +122,9 @@ class HomeController extends Controller
     public function orderIndex(){
         $user_id = auth()->user()->id;
         
-        // "Delivered" tab: Finalized Orders
-        $delivered_orders = Order::where('user_id', $user_id)
-                      ->where('status', 'delivered')
-                      ->orderBy('id', 'DESC')
-                      ->paginate(20, ['*'], 'delivered_page');
-
-        // "Pending" tab: Active Orders (Online) + Sales Orders (Admin)
-        $pending_online = Order::where('user_id', $user_id)
-                               ->whereNotIn('status', ['delivered', 'cancel'])
+        // "Booking" tab: Sales Orders + New Online Orders
+        $booking_online = Order::where('user_id', $user_id)
+                               ->where('status', 'new')
                                ->orderBy('id', 'DESC')
                                ->get();
 
@@ -139,7 +133,24 @@ class HomeController extends Controller
                                  ->orderBy('id', 'DESC')
                                  ->get();
 
-        return view('user.order.index', compact('delivered_orders', 'pending_online', 'sales_orders'));
+        // "Pending" tab: Processing Online Orders
+        $pending_online = Order::where('user_id', $user_id)
+                               ->where('status', 'process')
+                               ->orderBy('id', 'DESC')
+                               ->get();
+
+        // "Delivered" tab: Finalized Orders
+        $delivered_orders = Order::where('user_id', $user_id)
+                      ->where('status', 'delivered')
+                      ->orderBy('id', 'DESC')
+                      ->paginate(20, ['*'], 'delivered_page');
+
+        return view('user.order.index')->with([
+            'booking_online' => $booking_online,
+            'sales_orders' => $sales_orders,
+            'pending_online' => $pending_online,
+            'delivered_orders' => $delivered_orders
+        ]);
     }
     public function userOrderDelete($id)
     {

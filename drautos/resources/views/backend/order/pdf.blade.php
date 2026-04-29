@@ -144,19 +144,23 @@
                     <div style="margin-top:2px;">
                     @if($cart->product && $cart->product->sku)
                         <span class="item-meta">SKU: {{ $cart->product->sku }}</span>
+                    @elseif($cart->bundle && $cart->bundle->sku)
+                        <span class="item-meta">SKU: {{ $cart->bundle->sku }}</span>
                     @endif
+
                     @if($cart->product && $cart->product->brand)
                         <span class="item-meta">Brand: {{ $cart->product->brand->title }}</span>
                     @endif
+
                     @if($cart->product && $cart->product->model)
                         <span class="item-meta">Model: {{ $cart->product->model }}</span>
                     @endif
                     </div>
                 </td>
-                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ $cart->product->unit ?? '' }}</span></td>
+                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ optional($cart->product)->unit ?? '' }}</span></td>
                 <td class="text-right">
                     @php
-                        $dbBasePrice = $cart->product->price ?? $cart->price;
+                        $dbBasePrice = ($cart->product->price ?? ($cart->bundle->price ?? $cart->price));
                         $soldPrice = $cart->price;
                         $discount = 0;
                         
@@ -192,7 +196,7 @@
                 $gross_subtotal = 0;
                 $item_discounts = 0;
                 foreach($order->cart_info as $ci) {
-                    $actual_price = $ci->product->price ?? $ci->price;
+                    $actual_price = $ci->product->price ?? ($ci->bundle->price ?? $ci->price);
                     if($actual_price > $ci->price) {
                         $gross_subtotal += ($actual_price * $ci->quantity);
                         $item_discounts += ($actual_price - $ci->price) * $ci->quantity;
