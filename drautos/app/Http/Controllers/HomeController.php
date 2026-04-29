@@ -122,20 +122,15 @@ class HomeController extends Controller
     public function orderIndex(){
         $user_id = auth()->user()->id;
         
-        // "Booking" tab: Sales Orders + New Online Orders
-        $booking_online = Order::where('user_id', $user_id)
-                               ->where('status', 'new')
-                               ->orderBy('id', 'DESC')
-                               ->get();
-
+        // "Booking" tab: Admin-generated Sales Orders (Active/Partial)
         $sales_orders = SalesOrder::where('user_id', $user_id)
-                                 ->where('status', '!=', 'completed')
+                                 ->whereIn('status', ['pending', 'partial'])
                                  ->orderBy('id', 'DESC')
                                  ->get();
 
-        // "Pending" tab: Processing Online Orders
-        $pending_online = Order::where('user_id', $user_id)
-                               ->where('status', 'process')
+        // "Pending" tab: Online Orders (New, Saved, or Pushed from SO)
+        $pending_orders = Order::where('user_id', $user_id)
+                               ->whereIn('status', ['new', 'process'])
                                ->orderBy('id', 'DESC')
                                ->get();
 
@@ -146,9 +141,8 @@ class HomeController extends Controller
                       ->paginate(20, ['*'], 'delivered_page');
 
         return view('user.order.index')->with([
-            'booking_online' => $booking_online,
             'sales_orders' => $sales_orders,
-            'pending_online' => $pending_online,
+            'pending_orders' => $pending_orders,
             'delivered_orders' => $delivered_orders
         ]);
     }
