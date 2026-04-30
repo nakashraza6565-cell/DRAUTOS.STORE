@@ -80,13 +80,38 @@
                     </div>
 
                     <div class="row">
+                        <!-- INITIAL STOCK -->
+                        <div class="col-md-6 mb-4">
+                            <label class="premium-label">INITIAL STOCK <span class="text-danger">*</span></label>
+                            <input type="number" name="stock" class="premium-input form-control" value="0" required>
+                        </div>
+                        
+                        <!-- PURCHASE PRICE -->
                         <div class="col-md-6 mb-4">
                             <label class="premium-label">PURCHASE PRICE</label>
                             <input type="number" name="purchase_price" step="0.01" class="premium-input form-control" placeholder="0.00">
                         </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- SELLING PRICE -->
                         <div class="col-md-6 mb-4">
-                            <label class="premium-label">RETAIL PRICE</label>
-                            <input type="number" name="price" step="0.01" class="premium-input form-control" placeholder="0.00">
+                            <label class="premium-label">SELLING PRICE <span class="text-danger">*</span></label>
+                            <input type="number" name="price" step="0.01" class="premium-input form-control" placeholder="0.00" required>
+                        </div>
+
+                        <!-- PRIMARY SUPPLIER -->
+                        <div class="col-md-6 mb-4">
+                            <label class="premium-label">PRIMARY SUPPLIER</label>
+                            <select name="supplier_id" id="qa-supplier-select" class="premium-input form-control">
+                                <option value="">Select Supplier(s)</option>
+                                @foreach(\App\Models\Supplier::where('status','active')->get() as $supplier)
+                                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                @endforeach
+                            </select>
+                            <button type="button" class="btn-action-plus mt-2" style="background: #22d3ee;" data-toggle="modal" data-target="#addSupplierModal">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
