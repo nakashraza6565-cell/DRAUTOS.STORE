@@ -61,6 +61,50 @@
             .topbar, .sidebar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
         }
 
+        /* Mobile Modal Optimizations */
+        @media (max-width: 768px) {
+            .modal-dialog {
+                margin: 0.5rem !important;
+                display: flex !important;
+                align-items: center !important;
+                min-height: calc(100% - 1rem) !important;
+            }
+            .modal-content {
+                max-height: 90vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                border-radius: 20px !important;
+            }
+            .modal-body {
+                overflow-y: auto !important;
+                flex: 1 1 auto !important;
+                padding: 15px !important;
+            }
+            .modal-footer {
+                position: sticky !important;
+                bottom: 0 !important;
+                background: #fff !important;
+                z-index: 10 !important;
+                border-top: 1px solid #f1f5f9 !important;
+                padding: 10px 15px !important;
+                display: flex !important;
+                gap: 10px !important;
+            }
+            .modal-footer .btn {
+                flex: 1 !important;
+                margin: 0 !important;
+                padding: 12px !important;
+                font-size: 0.9rem !important;
+            }
+            .form-group label {
+                font-size: 0.75rem !important;
+                margin-bottom: 4px !important;
+            }
+            .form-control {
+                height: 45px !important;
+            }
+        }
+
         /* Admin App Launcher Improvements */
         #adminAppLauncher {
             display: none;
