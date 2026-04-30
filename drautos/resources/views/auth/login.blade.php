@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Dr Auto Parts || Login</title>
+    <title>Danyal Autos Co. || Login</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{asset('backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
@@ -181,7 +181,7 @@
         </form>
 
         <div class="footer-text">
-            &copy; {{ date('Y') }} Dr Auto Parts. All rights reserved.
+            &copy; {{ date('Y') }} Danyal Autos Co.. All rights reserved.
         </div>
     </div>
 

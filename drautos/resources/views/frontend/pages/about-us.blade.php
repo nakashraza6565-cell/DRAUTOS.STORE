@@ -1,6 +1,6 @@
 @extends('frontend.layouts.master')
 
-@section('title','Dr Auto Parts || About Us')
+@section('title','Danyal Autos Co. || About Us')
 
 @section('main-content')
 
@@ -30,7 +30,7 @@
 							@php
 								$settings=DB::table('settings')->get();
 							@endphp
-							<h3>Welcome To <span>Dr Auto Parts</span></h3>
+							<h3>Welcome To <span>Danyal Autos Co.</span></h3>
 							<p>@foreach($settings as $data) {{$data->description}} @endforeach</p>
 							<div class="button">
 							

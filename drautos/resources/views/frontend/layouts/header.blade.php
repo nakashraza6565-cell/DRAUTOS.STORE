@@ -42,7 +42,7 @@
                     <div class="logo">
                         <a href="{{route('home')}}">
                             <h3 class="font-weight-bold" style="color: #1e293b; letter-spacing: -1px;">
-                                <span class="bg-warning text-dark px-2 rounded mr-1" style="box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);"><i class="fas fa-car-side"></i> DrAutos</span>Store
+                                <span class="bg-warning text-dark px-2 rounded mr-1" style="box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);"><i class="fas fa-car-side"></i> Danyal Autos</span> Co.
                             </h3>
                         </a>
                     </div>

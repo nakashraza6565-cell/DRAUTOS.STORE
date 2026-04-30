@@ -1,6 +1,6 @@
 @extends('backend.layouts.master')
 
-@section('title','Dr Auto Parts || Banner Create')
+@section('title','Danyal Autos Co. || Banner Create')
 
 @section('main-content')
 

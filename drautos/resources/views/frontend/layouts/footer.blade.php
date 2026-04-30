@@ -74,7 +74,7 @@
 					<div class="row">
 						<div class="col-lg-6 col-12">
 							<div class="left">
-								<p>Copyright © {{date('Y')}} Dr Auto Parts - All Rights Reserved.</p>
+								<p>Copyright © {{date('Y')}} Danyal Autos Co. - All Rights Reserved.</p>
 							</div>
 						</div>
 						

@@ -1,5 +1,5 @@
 @extends('frontend.layouts.master')
-@section('title','Dr Auto Parts || HOME PAGE')
+@section('title','Danyal Autos Co. || HOME PAGE')
 @section('main-content')
 <!-- Slider Area -->
 @if(count($banners)>0)

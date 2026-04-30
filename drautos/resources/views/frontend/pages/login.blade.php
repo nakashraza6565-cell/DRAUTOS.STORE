@@ -1,6 +1,6 @@
 @extends('frontend.layouts.master')
 
-@section('title','Dr Auto Parts || Login Page')
+@section('title','Danyal Autos Co. || Login Page')
 
 @section('main-content')
     <!-- Breadcrumbs -->

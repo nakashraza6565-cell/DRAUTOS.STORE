@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Dr Auto Parts || Register</title>
+    <title>Danyal Autos Co. || Register</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{asset('backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
@@ -127,7 +127,7 @@
                 <i class="fas fa-user-plus fa-3x text-primary"></i>
             </div>
             <h1>Create Account</h1>
-            <p>Join the Dr Auto Parts family</p>
+            <p>Join the Danyal Autos Co. family</p>
         </div>
 
         @if(session('pending_approval'))

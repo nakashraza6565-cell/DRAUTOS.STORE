@@ -1,6 +1,6 @@
 @extends('frontend.layouts.master')
 
-@section('title','Dr Auto Parts || Order Track Page')
+@section('title','Danyal Autos Co. || Order Track Page')
 
 @section('main-content')
     <!-- Breadcrumbs -->

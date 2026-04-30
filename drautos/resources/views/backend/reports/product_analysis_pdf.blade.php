@@ -167,7 +167,7 @@
     @endif
 
     <div class="footer">
-        <p>© {{ date('Y') }} DrAutosStore - All Rights Reserved</p>
+        <p>© {{ date('Y') }} Danyal Autos Co. - All Rights Reserved</p>
     </div>
 </body>
 </html>

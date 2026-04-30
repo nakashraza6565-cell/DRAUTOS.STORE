@@ -14,7 +14,7 @@
 	<meta property="og:image" content="{{$product_detail->photo}}">
 	<meta property="og:description" content="{{$product_detail->description}}">
 @endsection
-@section('title','Dr Auto Parts || PRODUCT DETAIL')
+@section('title','Danyal Autos Co. || PRODUCT DETAIL')
 @section('main-content')
 
 		<!-- Breadcrumbs -->

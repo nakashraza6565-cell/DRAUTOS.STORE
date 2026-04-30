@@ -1,5 +1,5 @@
 @extends('backend.layouts.master')
-@section('title','Dr Auto Parts || All Notifications')
+@section('title','Danyal Autos Co. || All Notifications')
 @section('main-content')
 <div class="card">
     <div class="row">

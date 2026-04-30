@@ -1,6 +1,6 @@
 @extends('frontend.layouts.master')
 
-@section('title','Dr Auto Parts || Register Page')
+@section('title','Danyal Autos Co. || Register Page')
 
 @section('main-content')
 	<!-- Breadcrumbs -->
@@ -27,7 +27,7 @@
                 <div class="col-lg-6 col-md-10 col-12 mx-auto">
                     <div class="login shadow-lg p-5" style="background: #fff; border-radius: 24px; border: 1px solid #f1f5f9;">
                         <div class="text-center mb-4">
-                            <h2 class="font-weight-bold display-4 mb-2" style="font-size: 28px; color: #1e293b;">Join DrAutos</h2>
+                            <h2 class="font-weight-bold display-4 mb-2" style="font-size: 28px; color: #1e293b;">Join Danyal Autos Co.</h2>
                             <p class="text-muted">Create your account to start shopping auto parts</p>
                         </div>
 
