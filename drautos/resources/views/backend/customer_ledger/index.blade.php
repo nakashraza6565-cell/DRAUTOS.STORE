@@ -26,7 +26,7 @@
             </form>
 
             <div class="table-responsive">
-                <table class="table table-bordered" width="100%" cellspacing="0">
+                <table class="table table-bordered responsive-table-to-cards" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -40,22 +40,22 @@
                     <tbody>
                         @forelse($customers as $customer)
                             <tr>
-                                <td>{{$customer->name}}</td>
-                                <td>{{$customer->phone}}</td>
-                                <td>{{$customer->city ?? 'N/A'}}</td>
-                                <td><span class="badge badge-info text-capitalize">{{$customer->customer_type ?? 'Retail'}}</span></td>
-                                <td class="{{$customer->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
+                                <td data-title="Customer Name">{{$customer->name}}</td>
+                                <td data-title="Phone">{{$customer->phone}}</td>
+                                <td data-title="City">{{$customer->city ?? 'N/A'}}</td>
+                                <td data-title="Type"><span class="badge badge-info text-capitalize">{{$customer->customer_type ?? 'Retail'}}</span></td>
+                                <td data-title="Balance" class="{{$customer->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
                                     Rs. {{number_format($customer->current_balance, 2)}}
                                 </td>
-                                <td>
-                                    <a href="{{route('admin.customer-ledger.show', $customer->id)}}" class="btn btn-primary btn-sm">
+                                <td data-title="Actions">
+                                    <a href="{{route('admin.customer-ledger.show', $customer->id)}}" class="btn btn-primary btn-sm btn-block btn-md-inline">
                                         <i class="fas fa-eye"></i> View Ledger
                                     </a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">No customers found.</td>
+                                <td colspan="6" class="text-center py-5 text-muted">No customers found.</td>
                             </tr>
                         @endforelse
                     </tbody>
