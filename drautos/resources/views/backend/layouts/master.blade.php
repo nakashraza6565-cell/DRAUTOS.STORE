@@ -95,6 +95,7 @@
               <div class="launcher-icon" style="background: #d946ef;"><i class="fas fa-tags text-white"></i></div>
               <span class="launcher-label">Categories</span>
           </a>
+          @endcan
       </div>
 
       <div class="launcher-section-title">Manufacturing & HR</div>
