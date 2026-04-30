@@ -100,7 +100,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-sm" width="100%" cellspacing="0">
+                <table class="table table-bordered table-sm responsive-table-to-cards" width="100%" cellspacing="0">
                     <thead class="bg-gray-100">
                         <tr>
                             <th>Date</th>
@@ -115,36 +115,38 @@
                     <tbody>
                         @foreach($ledger as $item)
                             <tr>
-                                <td>{{$item->transaction_date->format('Y-m-d')}}</td>
-                                <td>{{$item->description}}</td>
-                                <td><span class="badge badge-light">{{$item->category}}</span></td>
-                                <td class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
-                                <td class="text-right text-success">{{$item->type == 'credit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
-                                <td class="text-right font-weight-bold">Rs. {{number_format($item->balance, 2)}}</td>
-                                <td class="text-center">
-                                    @if($item->category == 'order' && $item->reference_id)
-                                        <a href="{{route('order.pdf', $item->reference_id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:25px; width:25px; padding:0" title="View Order PDF">
-                                            <i class="fas fa-file-pdf" style="font-size: 10px;"></i>
-                                        </a>
-                                    @endif
-                                    <button class="btn btn-primary btn-sm rounded-circle editBtn" 
-                                            style="height:25px; width:25px; padding:0" 
-                                            title="Edit Transaction"
-                                            data-id="{{$item->id}}"
-                                            data-date="{{$item->transaction_date->format('Y-m-d')}}"
-                                            data-type="{{$item->type}}"
-                                            data-category="{{$item->category}}"
-                                            data-amount="{{$item->amount}}"
-                                            data-description="{{$item->description}}">
-                                        <i class="fas fa-edit" style="font-size: 10px;"></i>
-                                    </button>
-                                    <form method="POST" action="{{ route('admin.customer-ledger.destroy', $item->id) }}" style="display:inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm rounded-circle dltBtn" style="height:25px; width:25px; padding:0" title="Delete & Reverse Balance">
-                                            <i class="fas fa-trash-alt" style="font-size: 10px;"></i>
+                                <td data-title="Date">{{$item->transaction_date->format('Y-m-d')}}</td>
+                                <td data-title="Description">{{$item->description}}</td>
+                                <td data-title="Category"><span class="badge badge-light">{{$item->category}}</span></td>
+                                <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
+                                <td data-title="Credit (-)" class="text-right text-success">{{$item->type == 'credit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
+                                <td data-title="Balance" class="text-right font-weight-bold">Rs. {{number_format($item->balance, 2)}}</td>
+                                <td data-title="Action" class="text-center">
+                                    <div class="d-flex justify-content-end" style="gap: 5px;">
+                                        @if($item->category == 'order' && $item->reference_id)
+                                            <a href="{{route('order.pdf', $item->reference_id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Order PDF">
+                                                <i class="fas fa-file-pdf" style="font-size: 12px;"></i>
+                                            </a>
+                                        @endif
+                                        <button class="btn btn-primary btn-sm rounded-circle editBtn" 
+                                                style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" 
+                                                title="Edit Transaction"
+                                                data-id="{{$item->id}}"
+                                                data-date="{{$item->transaction_date->format('Y-m-d')}}"
+                                                data-type="{{$item->type}}"
+                                                data-category="{{$item->category}}"
+                                                data-amount="{{$item->amount}}"
+                                                data-description="{{$item->description}}">
+                                            <i class="fas fa-edit" style="font-size: 12px;"></i>
                                         </button>
-                                    </form>
+                                        <form method="POST" action="{{ route('admin.customer-ledger.destroy', $item->id) }}" style="display:inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm rounded-circle dltBtn" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Delete & Reverse Balance">
+                                                <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
