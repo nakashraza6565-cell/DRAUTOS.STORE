@@ -61,6 +61,89 @@
             .topbar, .sidebar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
         }
 
+        /* Admin App Launcher Improvements */
+        #adminAppLauncher {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 999999;
+            padding: 40px 25px;
+            overflow-y: auto;
+        }
+        #adminAppLauncher.active {
+            display: block !important;
+            animation: fadeIn 0.4s ease;
+        }
+        .launcher-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        .launcher-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none !important;
+            transition: transform 0.2s ease;
+        }
+        .launcher-item:active {
+            transform: scale(0.9);
+        }
+        .launcher-icon {
+            width: 65px;
+            height: 65px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .launcher-label {
+            color: #f8fafc;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+        .launcher-section-title {
+            color: #94a3b8;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+        .launcher-close {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255,255,255,0.1);
+            border: 0;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .card {
             border: 1px solid rgba(0,0,0,0.03) !important;
             border-radius: var(--radius-xl) !important;
@@ -625,24 +708,25 @@
             }
             .responsive-table-to-cards td {
                 display: flex !important;
-                justify-content: justify !important;
+                justify-content: space-between !important;
                 align-items: center !important;
-                padding: 0.75rem 0 !important;
-                border: 0 !important;
-                border-bottom: 1px solid rgba(0,0,0,0.02) !important;
-                font-size: 0.9rem !important;
                 text-align: right !important;
+                border: none !important;
+                border-bottom: 1px solid #f1f5f9 !important;
+                padding: 12px 16px !important;
+                font-size: 0.9rem !important;
             }
-            .responsive-table-to-cards td:last-child { border-bottom: 0 !important; }
+            .responsive-table-to-cards td:last-child {
+                border-bottom: 0 !important;
+            }
             .responsive-table-to-cards td::before {
                 content: attr(data-title);
-                float: left !important;
-                font-weight: 700 !important;
-                color: #64748b !important;
+                font-weight: 800 !important;
                 text-transform: uppercase !important;
-                font-size: 0.7rem !important;
-                letter-spacing: 0.5px !important;
-                margin-right: auto !important;
+                font-size: 0.75rem !important;
+                color: #64748b !important;
+                flex-shrink: 0 !important;
+                margin-right: 1rem !important;
                 text-align: left !important;
             }
             
