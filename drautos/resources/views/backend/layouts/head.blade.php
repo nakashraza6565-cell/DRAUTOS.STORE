@@ -609,7 +609,49 @@
             .dropdown-menu { width: 90% !important; margin: 10px 5% !important; border-radius: 20px !important; }
         }
     </style>
-    <!-- UI Version: 1.0.3 -->
+    <style>
+        /* Universal Mobile Card Table System */
+        @media (max-width: 768px) {
+            .responsive-table-to-cards { border: 0 !important; }
+            .responsive-table-to-cards thead { display: none !important; }
+            .responsive-table-to-cards tr {
+                display: block !important;
+                margin-bottom: 1.5rem !important;
+                background: #fff !important;
+                border-radius: 20px !important;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+                padding: 1rem !important;
+                border: 1px solid rgba(0,0,0,0.03) !important;
+            }
+            .responsive-table-to-cards td {
+                display: flex !important;
+                justify-content: justify !important;
+                align-items: center !important;
+                padding: 0.75rem 0 !important;
+                border: 0 !important;
+                border-bottom: 1px solid rgba(0,0,0,0.02) !important;
+                font-size: 0.9rem !important;
+                text-align: right !important;
+            }
+            .responsive-table-to-cards td:last-child { border-bottom: 0 !important; }
+            .responsive-table-to-cards td::before {
+                content: attr(data-title);
+                float: left !important;
+                font-weight: 700 !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                font-size: 0.7rem !important;
+                letter-spacing: 0.5px !important;
+                margin-right: auto !important;
+                text-align: left !important;
+            }
+            
+            /* Global Form Mobile Optimization */
+            .card-body form .row > [class*="col-"] { margin-bottom: 1rem !important; }
+            .topbar { position: sticky !important; top: 0 !important; z-index: 1000 !important; }
+        }
+    </style>
+    <!-- UI Version: 1.0.5 -->
     @stack('styles')
   
 </head>

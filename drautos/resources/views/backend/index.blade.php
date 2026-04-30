@@ -237,7 +237,7 @@
             </div>
             <div class="modal-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0" style="font-size: 0.95rem;">
+                    <table class="table table-hover mb-0 responsive-table-to-cards" style="font-size: 0.95rem;">
                         <thead class="bg-light">
                             <tr>
                                 <th class="px-4 py-3 border-0">STAFF MEMBER</th>
@@ -252,13 +252,13 @@
                                     $record = $today_attendance->where('user_id', $member->id)->first();
                                 @endphp
                             <tr style="border-bottom: 1px solid rgba(0,0,0,0.03);">
-                                <td class="px-4 py-3 align-middle">
+                                <td class="px-4 py-3 align-middle" data-title="Staff Member">
                                     <div class="font-weight-bold text-gray-800">{{ $member->name }}</div>
                                 </td>
-                                <td class="py-3 align-middle text-muted text-capitalize">
+                                <td class="py-3 align-middle text-muted text-capitalize" data-title="Role">
                                     {{ $member->role }}
                                 </td>
-                                <td class="py-3 align-middle text-center">
+                                <td class="py-3 align-middle text-center" data-title="Status">
                                     @if($record)
                                         @if($record->clock_out)
                                             <span class="badge badge-secondary px-3 py-2" style="border-radius: 8px;">Checked Out</span>
@@ -269,12 +269,12 @@
                                         <span class="badge badge-danger px-3 py-2" style="border-radius: 8px;">Absent / Not Marked</span>
                                     @endif
                                 </td>
-                                <td class="pr-4 py-3 align-middle text-right">
+                                <td class="pr-4 py-3 align-middle text-right" data-title="Action">
                                     @if(!$record)
                                         <form action="{{ route('attendance.checkin') }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="staff_id" value="{{ $member->id }}">
-                                            <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3 shadow-sm" style="border-radius: 8px;">
+                                            <button type="submit" class="btn btn-sm btn-success font-weight-bold px-3 shadow-sm w-100 w-md-auto" style="border-radius: 8px;">
                                                 <i class="fas fa-check-circle mr-1"></i> Mark Present
                                             </button>
                                         </form>
@@ -282,12 +282,12 @@
                                         <form action="{{ route('attendance.checkout') }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="staff_id" value="{{ $member->id }}">
-                                            <button type="submit" class="btn btn-sm btn-warning font-weight-bold px-3 shadow-sm" style="border-radius: 8px;">
+                                            <button type="submit" class="btn btn-sm btn-warning font-weight-bold px-3 shadow-sm w-100 w-md-auto" style="border-radius: 8px;">
                                                 <i class="fas fa-door-open mr-1"></i> Check Out
                                             </button>
                                         </form>
                                     @else
-                                        <button class="btn btn-sm btn-light font-weight-bold px-3 text-muted" disabled style="border-radius: 8px;">
+                                        <button class="btn btn-sm btn-light font-weight-bold px-3 text-muted w-100 w-md-auto" disabled style="border-radius: 8px;">
                                             Completed
                                         </button>
                                     @endif

@@ -61,7 +61,7 @@
       </form>
       <div class="table-responsive">
         @if(count($orders)>0)
-        <table class="table table-bordered" id="order-dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered responsive-table-to-cards" id="order-dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>S.N.</th>
@@ -71,20 +71,11 @@
               <th>Action & Status</th>
             </tr>
           </thead>
-          <tfoot>
-            <tr>
-              <th>S.N.</th>
-              <th>Customer Name</th>
-              <th>Customer City</th>
-              <th>Assigned Staff</th>
-              <th>Action & Status</th>
-              </tr>
-          </tfoot>
           <tbody>
             @foreach($orders as $order)  
                 <tr>
-                    <td>{{$loop->iteration}}</td>
-                    <td>
+                    <td data-title="S.N.">{{$loop->iteration}}</td>
+                    <td data-title="Customer">
                         <div class="font-weight-bold">{{$order->first_name}} {{$order->last_name}}</div>
                         <div class="d-flex align-items-center">
                             <small class="text-muted mr-2">{{$order->order_number}}</small>
@@ -96,17 +87,17 @@
                         </div>
                         <small class="text-muted">{{$order->phone}}</small>
                     </td>
-                    <td>
+                    <td data-title="City">
                         {{$order->user->city ?? (Str::contains($order->address1, 'POS') ? 'POS Counter' : $order->address1)}}
                     </td>
-                    <td>
+                    <td data-title="Staff">
                         @if($order->staff)
                             <span class="badge badge-success">{{$order->staff->name}}</span>
                         @else
                             <span class="badge badge-secondary text-white">Unassigned</span>
                         @endif
                     </td>
-                    <td>
+                    <td data-title="Status & Actions">
                         <div class="mb-2">
                             <form action="{{route('order.update', $order->id)}}" method="POST" class="status-update-form">
                                 @csrf
@@ -124,24 +115,24 @@
                                 </select>
                             </form>
                         </div>
-                        <div class="d-flex flex-wrap">
+                        <div class="d-flex flex-wrap justify-content-end">
                             <form method="POST" action="{{route('order.toggle-pin', $order->id)}}" style="display:inline-block">
                                 @csrf
-                                <button type="submit" class="btn btn-{{$order->pinned ? 'info' : 'outline-secondary'}} btn-sm mr-1 mb-1" style="height:25px; width:25px;border-radius:50%; font-size: 10px;" data-toggle="tooltip" title="{{$order->pinned ? 'Unpin' : 'Pin'}}" data-placement="bottom">
+                                <button type="submit" class="btn btn-{{$order->pinned ? 'info' : 'outline-secondary'}} btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="{{$order->pinned ? 'Unpin' : 'Pin'}}" data-placement="bottom">
                                     <i class="fas fa-thumbtack"></i>
                                 </button>
                             </form>
-                            <a href="{{route('order.show',$order->id)}}" class="btn btn-warning btn-sm mr-1 mb-1" style="height:25px; width:25px;border-radius:50%; font-size: 10px;" data-toggle="tooltip" title="view" data-placement="bottom"><i class="fas fa-eye"></i></a>
-                            <a href="{{route('returns.sale.create',$order->id)}}" class="btn btn-dark btn-sm mr-1 mb-1" style="height:25px; width:25px;border-radius:50%; font-size: 10px;" data-toggle="tooltip" title="Refund" data-placement="bottom"><i class="fas fa-undo"></i></a>
+                            <a href="{{route('order.show',$order->id)}}" class="btn btn-warning btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="view" data-placement="bottom"><i class="fas fa-eye"></i></a>
+                            <a href="{{route('returns.sale.create',$order->id)}}" class="btn btn-dark btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="Refund" data-placement="bottom"><i class="fas fa-undo"></i></a>
                             @if($order->status == 'delivered')
-                                <button class="btn btn-secondary btn-sm mr-1 mb-1" style="height:25px; width:25px;border-radius:50%;opacity:0.5;cursor:not-allowed; font-size: 10px;" disabled data-toggle="tooltip" title="Cannot edit delivered order" data-placement="bottom"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%;opacity:0.5;cursor:not-allowed; font-size: 11px;" disabled><i class="fas fa-edit"></i></button>
                             @else
-                                <a href="{{route('order.edit',$order->id)}}" class="btn btn-primary btn-sm mr-1 mb-1" style="height:25px; width:25px;border-radius:50%; font-size: 10px;" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
+                                <a href="{{route('order.edit',$order->id)}}" class="btn btn-primary btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
                             @endif
                             <form method="POST" action="{{route('order.destroy',[$order->id])}}">
                               @csrf 
                               @method('delete')
-                                  <button class="btn btn-danger btn-sm dltBtn" data-id={{$order->id}} style="height:25px; width:25px;border-radius:50%; font-size: 10px;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                  <button class="btn btn-danger btn-sm dltBtn" data-id={{$order->id}} style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             </form>
                         </div>
                     </td>
