@@ -13,32 +13,15 @@
       <a href="{{route('product.create')}}" class="btn btn-primary btn-sm float-right" data-toggle="tooltip" data-placement="bottom" title="Add User"><i class="fas fa-plus"></i> Add Product</a>
     </div>
     <div class="card-body">
-      <!-- Filters -->
+      <!-- Simple Sleek Search -->
       <form action="{{route('product.index')}}" method="GET" class="mb-4">
-          <div class="row align-items-end">
-              <div class="col-md-3">
-                  <label class="small font-weight-bold">Search Title</label>
-                  <input type="text" name="title" class="form-control" placeholder="Enter title..." value="{{request('title')}}">
-              </div>
-              <div class="col-md-2">
-                  <label class="small font-weight-bold">Max Price</label>
-                  <input type="number" name="price" class="form-control" placeholder="Max price..." value="{{request('price')}}">
-              </div>
-              <div class="col-md-3">
-                  <label class="small font-weight-bold">Category</label>
-                  <select name="cat_id" class="form-control">
-                      <option value="">-- All Categories --</option>
-                      @foreach($categories as $cat)
-                          <option value="{{$cat->id}}" {{request('cat_id')==$cat->id ? 'selected' : ''}}>{{$cat->title}}</option>
-                      @endforeach
-                  </select>
-              </div>
-              <div class="col-md-2">
-                  <button type="submit" class="btn btn-primary btn-block">Filter</button>
-              </div>
-              <div class="col-md-2">
-                  <a href="{{route('product.index')}}" class="btn btn-secondary btn-block">Reset</a>
-              </div>
+          <div class="search-wrapper-sleek d-flex align-items-center px-3 shadow-sm border" style="background: #fff; border-radius: 100px; height: 50px;">
+              <i class="fas fa-search text-muted mr-3"></i>
+              <input type="text" name="title" class="form-control border-0 shadow-none p-0 bg-transparent" placeholder="Search products by title or SKU..." value="{{request('title')}}" style="font-weight: 500;">
+              @if(request('title'))
+                <a href="{{route('product.index')}}" class="text-danger ml-3" title="Clear Search"><i class="fas fa-times-circle"></i></a>
+              @endif
+              <button type="submit" class="btn btn-primary ml-3 px-4 d-none d-md-block" style="border-radius: 100px;">Search</button>
           </div>
       </form>
       <div class="table-responsive">
