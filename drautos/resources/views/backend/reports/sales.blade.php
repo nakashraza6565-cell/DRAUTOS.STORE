@@ -88,7 +88,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-hover" id="salesTable" width="100%" cellspacing="0">
+                <table class="table table-bordered table-hover responsive-table-to-cards" id="salesTable" width="100%" cellspacing="0">
                     <thead class="thead-light">
                         <tr>
                             <th>Order #</th>
@@ -101,11 +101,11 @@
                     <tbody>
                         @foreach($recentSales as $sale)
                         <tr>
-                            <td>{{$sale->order_number}}</td>
-                            <td>{{$sale->user->name ?? $sale->first_name}}</td>
-                            <td>{{$sale->created_at->format('d M Y')}}</td>
-                            <td>Rs. {{number_format($sale->total_amount, 2)}}</td>
-                            <td>
+                            <td data-title="Order #">{{$sale->order_number}}</td>
+                            <td data-title="Customer">{{$sale->user->name ?? $sale->first_name}}</td>
+                            <td data-title="Date">{{$sale->created_at->format('d M Y')}}</td>
+                            <td data-title="Amount" class="font-weight-bold">Rs. {{number_format($sale->total_amount, 2)}}</td>
+                            <td data-title="Status">
                                 <span class="badge badge-{{($sale->status=='delivered') ? 'success' : 'warning'}}">{{strtoupper($sale->status)}}</span>
                             </td>
                         </tr>
