@@ -6,10 +6,9 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-lg-5 col-md-6 col-12">
-						<!-- Single Widget -->
 						<div class="single-footer about">
-							<div class="logo">
-								<a href="index.html"><img src="{{asset('backend/img/logo2.png')}}" alt="#"></a>
+							<div class="logo mb-3">
+								<a href="{{route('home')}}"><h3 class="text-white font-weight-bold">Danyal Autos <span class="text-warning">Co.</span></h3></a>
 							</div>
 							@php
 								$settings=DB::table('settings')->get();
