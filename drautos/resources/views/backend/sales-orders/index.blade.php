@@ -110,7 +110,7 @@
     <div class="card-body">
         <div class="table-responsive">
             @if(count($salesOrders) > 0)
-            <table class="table table-bordered table-hover" id="order-dataTable" width="100%" cellspacing="0">
+            <table class="table table-bordered table-hover responsive-table-to-cards" id="order-dataTable" width="100%" cellspacing="0">
                 <thead class="thead-light">
                     <tr>
                         <th>#</th>
@@ -139,8 +139,8 @@
                         $barColor         = $deliveryPct >= 75 ? '#1cc88a' : ($deliveryPct >= 40 ? '#f6c23e' : '#f97316');
                     @endphp
                     <tr style="{{ $order->is_priority ? 'border-left: 4px solid #f97316; background: #fffbf7;' : '' }}">
-                        <td>{{$loop->iteration}}</td>
-                        <td style="text-align:center; vertical-align:middle;">
+                        <td data-title="S.N.">{{$loop->iteration}}</td>
+                        <td data-title="Priority" style="text-align:center; vertical-align:middle;">
                             <form method="POST" action="{{route('sales-orders.toggle-priority', $order->id)}}" style="display:inline;">
                                 @csrf
                                 <button type="submit" class="btn btn-link p-0 border-0" title="{{$order->is_priority ? 'Remove Priority' : 'Mark as Priority'}}" style="font-size:1.3rem; line-height:1; background:none;">
@@ -152,12 +152,12 @@
                                 </button>
                             </form>
                         </td>
-                        <td><span class="font-weight-bold">{{$order->order_number}}</span></td>
-                        <td>
+                        <td data-title="Order #"><span class="font-weight-bold">{{$order->order_number}}</span></td>
+                        <td data-title="Customer">
                             <div class="font-weight-bold">{{$order->user->name ?? 'Guest'}}</div>
                             <small class="text-muted">{{$order->user->phone ?? ''}}</small>
                         </td>
-                        <td>
+                        <td data-title="City">
                             @if($order->user && $order->user->city)
                                 <span class="badge badge-light border">
                                     <i class="fas fa-map-marker-alt text-danger mr-1"></i>{{$order->user->city}}
@@ -166,33 +166,33 @@
                                 <span class="text-muted small">—</span>
                             @endif
                         </td>
-                        <td>
+                        <td data-title="Staff">
                             @if($order->staff)
                                 <span class="badge badge-success">{{$order->staff->name}}</span>
                             @else
                                 <span class="badge badge-secondary text-white">Unassigned</span>
                             @endif
                         </td>
-                        <td class="text-center">
+                        <td data-title="Items" class="text-center">
                             <span class="ghost-ticker" data-tip="Total: Rs. {{ number_format($totalAmount, 0) }}">
-                                <span class="badge badge-secondary">{{$totalItems}}</span>
+                                <span class="badge badge-secondary px-3">{{$totalItems}}</span>
                             </span>
                         </td>
-                        <td class="text-center">
+                        <td data-title="Pending" class="text-center">
                             @if($pendingVarieties > 0)
                                 <span class="ghost-ticker" data-tip="Pending: Rs. {{ number_format($pendingAmount, 0) }}">
-                                    <span class="badge badge-warning font-weight-bold" style="font-size:0.85rem;">{{$pendingVarieties}}</span>
+                                    <span class="badge badge-warning font-weight-bold px-3" style="font-size:0.85rem;">{{$pendingVarieties}}</span>
                                 </span>
                             @else
-                                <span class="badge badge-success"><i class="fas fa-check"></i></span>
+                                <span class="badge badge-success px-3"><i class="fas fa-check"></i></span>
                             @endif
                         </td>
-                        <td class="text-center">
+                        <td data-title="Status" class="text-center">
                             @if($order->status=='pending')
                                 <span class="badge badge-warning">Pending</span>
                             @elseif($order->status=='partially_delivered')
                                 <span class="badge badge-info d-block mb-1">Partial</span>
-                                <div class="so-progress-track" title="{{$deliveryPct}}% delivered (Rs. {{ number_format($deliveredAmount,0) }} of Rs. {{ number_format($totalAmount,0) }})">
+                                <div class="so-progress-track mx-auto mx-md-auto ml-auto" title="{{$deliveryPct}}% delivered (Rs. {{ number_format($deliveredAmount,0) }} of Rs. {{ number_format($totalAmount,0) }})">
                                     <div class="so-progress-bar" style="width:{{$deliveryPct}}%; background:{{$barColor}};" data-width="{{$deliveryPct}}"></div>
                                     <span class="so-progress-label">{{$deliveryPct}}%</span>
                                 </div>
@@ -204,21 +204,23 @@
                                 <span class="badge badge-danger">{{$order->status}}</span>
                             @endif
                         </td>
-                        <td>
+                        <td data-title="Date">
                             <div>{{$order->created_at->format('d M Y')}}</div>
                             <small class="text-muted">{{$order->created_at->format('h:i A')}}</small>
                         </td>
-                        <td class="text-center">
-                            <a href="{{route('sales-orders.show', $order->id)}}" class="btn btn-warning btn-sm" style="height:30px;width:30px;border-radius:50%;padding:0;line-height:30px;" title="View">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <form method="POST" action="{{route('sales-orders.destroy', [$order->id])}}" class="d-inline">
-                                @csrf
-                                @method('delete')
-                                <button class="btn btn-danger btn-sm dltBtn" data-id="{{$order->id}}" style="height:30px;width:30px;border-radius:50%;padding:0;line-height:30px;" title="Delete">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </form>
+                        <td data-title="Actions" class="text-center">
+                            <div class="d-flex justify-content-end justify-content-md-center">
+                                <a href="{{route('sales-orders.show', $order->id)}}" class="btn btn-warning btn-sm mr-1" style="height:32px;width:32px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <form method="POST" action="{{route('sales-orders.destroy', [$order->id])}}" class="d-inline">
+                                    @csrf
+                                    @method('delete')
+                                    <button class="btn btn-danger btn-sm dltBtn" data-id="{{$order->id}}" style="height:32px;width:32px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;" title="Delete">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
