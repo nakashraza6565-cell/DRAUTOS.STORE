@@ -103,29 +103,50 @@
             .form-control {
                 height: 45px !important;
             }
-            /* DataTables Mobile Polish */
-            .dataTables_wrapper .dataTables_length, 
-            .dataTables_wrapper .dataTables_filter {
-                text-align: left !important;
-                margin-bottom: 10px !important;
-            }
-            .dataTables_wrapper .dataTables_filter input {
-                width: 100% !important;
-                margin-left: 0 !important;
-                border-radius: 10px !important;
-                height: 40px !important;
-            }
-            .dataTables_wrapper .dataTables_length select {
-                border-radius: 10px !important;
-                height: 40px !important;
-                padding: 5px 10px !important;
-            }
-            .card-header .btn {
-                float: none !important;
-                display: block !important;
-                width: 100% !important;
-                margin-top: 10px !important;
-                padding: 10px !important;
+            /* Refined Mobile Card Table System */
+            @media (max-width: 768px) {
+                .responsive-table-to-cards {
+                    border: 0 !important;
+                }
+                .responsive-table-to-cards tr {
+                    display: block !important;
+                    margin-bottom: 20px !important;
+                    background: #fff !important;
+                    border-radius: 18px !important;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+                    padding: 10px !important;
+                    border: 1px solid rgba(0,0,0,0.04) !important;
+                }
+                .responsive-table-to-cards td {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    padding: 12px 10px !important;
+                    border-bottom: 1px solid #f8fafc !important;
+                }
+                .responsive-table-to-cards td:last-child {
+                    border-bottom: 0 !important;
+                }
+                .responsive-table-to-cards td::before {
+                    content: attr(data-title);
+                    font-weight: 800 !important;
+                    text-transform: uppercase !important;
+                    font-size: 0.65rem !important;
+                    color: #94a3b8 !important;
+                    letter-spacing: 1px !important;
+                    text-align: left !important;
+                    width: 35% !important;
+                }
+                .responsive-table-to-cards td > * {
+                    width: 65% !important;
+                    text-align: right !important;
+                    justify-content: flex-end !important;
+                    display: flex !important;
+                }
+                /* Special handling for product info which has multiple lines */
+                .responsive-table-to-cards td[data-title="Product"] > * {
+                    flex-direction: column !important;
+                }
             }
 
         /* Admin App Launcher Improvements */
@@ -544,8 +565,32 @@
             }
             .premium-panel .panel-header .btn {
                 align-self: flex-start !important;
+            /* DataTables Mobile Polish */
+            @media (max-width: 768px) {
+                .dataTables_wrapper .dataTables_length, 
+                .dataTables_wrapper .dataTables_filter {
+                    text-align: left !important;
+                    margin-bottom: 10px !important;
+                }
+                .dataTables_wrapper .dataTables_filter input {
+                    width: 100% !important;
+                    margin-left: 0 !important;
+                    border-radius: 10px !important;
+                    height: 40px !important;
+                }
+                .dataTables_wrapper .dataTables_length select {
+                    border-radius: 10px !important;
+                    height: 40px !important;
+                    padding: 5px 10px !important;
+                }
+                .card-header .btn {
+                    float: none !important;
+                    display: block !important;
+                    width: 100% !important;
+                    margin-top: 10px !important;
+                    padding: 10px !important;
+                }
             }
-        }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */
         .swal2-container, .swal2-popup, .alert, .toast, .dropdown-menu, .modal, .dropdown-list {
