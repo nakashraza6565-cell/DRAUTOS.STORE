@@ -165,6 +165,7 @@
 {{-- MODALS --}}
 @include('backend.inventory.incoming.modals.quick_add_supplier')
 @include('backend.inventory.incoming.modals.quick_add_product')
+@include('backend.product.partials.modals')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -296,6 +297,57 @@ function addItemRow(product = null) {
     itemIndex++;
     updateGrandTotal();
 }
+
+// Sub-Modal AJAX Handlers (For Category, Brand, Model, Unit)
+$(document).on('submit', '#quickAddCategoryForm', function(e) {
+    e.preventDefault();
+    $.post("{{route('category.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}&is_parent=1", function(res) {
+        if(res.status == 'success') {
+            $('#qa-cat-select').append(new Option(res.category.title, res.category.id, false, true)).trigger('change');
+            $('#addCategoryModal').modal('hide');
+        }
+    });
+});
+
+$(document).on('submit', '#quickAddBrandForm', function(e) {
+    e.preventDefault();
+    $.post("{{route('brand.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+        if(res.status == 'success') {
+            $('#qa-brand-select').append(new Option(res.brand.title, res.brand.id, false, true)).trigger('change');
+            $('#addBrandModal').modal('hide');
+        }
+    });
+});
+
+$(document).on('submit', '#quickAddUnitForm', function(e) {
+    e.preventDefault();
+    $.post("{{route('product.store-unit')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+        if(res.status == 'success') {
+            $('#qa-unit-select').append(new Option(res.unit.name, res.unit.name, false, true)).trigger('change');
+            $('#addUnitModal').modal('hide');
+        }
+    });
+});
+
+$(document).on('submit', '#quickAddModelForm', function(e) {
+    e.preventDefault();
+    $.post("{{route('product.store-model')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+        if(res.status == 'success') {
+            $('#qa-model-select').append(new Option(res.model.name, res.model.name, false, true)).trigger('change');
+            $('#addModelModal').modal('hide');
+        }
+    });
+});
+
+$(document).on('submit', '#quickAddSupplierForm', function(e) {
+    e.preventDefault();
+    $.post("{{route('supplier.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+        if(res.status == 'success') {
+            $('#supplier_id').append(new Option(res.supplier.name + ' (' + (res.supplier.phone || '') + ')', res.supplier.id, false, true)).trigger('change');
+            $('#addSupplierModal').modal('hide');
+        }
+    });
+});
 </script>
 @endpush
 @endsection
