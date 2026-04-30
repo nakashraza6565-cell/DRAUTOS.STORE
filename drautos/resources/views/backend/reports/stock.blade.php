@@ -57,7 +57,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                        <table class="table table-bordered table-sm table-hover" id="stockTable">
+                        <table class="table table-bordered table-sm table-hover responsive-table-to-cards" id="stockTable">
                             <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                                 <tr>
                                     <th>Product</th>
@@ -71,12 +71,12 @@
                             <tbody>
                                 @foreach($products as $product)
                                 <tr>
-                                    <td>{{$product->title}}</td>
-                                    <td>{{$product->sku}}</td>
-                                    <td>{{$product->cat_info->title ?? 'N/A'}}</td>
-                                    <td class="font-weight-bold {{$product->stock < 5 ? 'text-danger' : ''}}">{{$product->stock}}</td>
-                                    <td>Rs. {{number_format($product->stock * ($product->purchase_price ?? 0), 2)}}</td>
-                                    <td>
+                                    <td data-title="Product">{{$product->title}}</td>
+                                    <td data-title="SKU">{{$product->sku}}</td>
+                                    <td data-title="Category">{{$product->cat_info->title ?? 'N/A'}}</td>
+                                    <td data-title="Quantity" class="font-weight-bold {{$product->stock < 5 ? 'text-danger' : ''}}">{{$product->stock}}</td>
+                                    <td data-title="Value">Rs. {{number_format($product->stock * ($product->purchase_price ?? 0), 2)}}</td>
+                                    <td data-title="Status">
                                         @if($product->stock <= 0)
                                             <span class="badge badge-danger">Out of Stock</span>
                                         @elseif($product->stock < 5)
