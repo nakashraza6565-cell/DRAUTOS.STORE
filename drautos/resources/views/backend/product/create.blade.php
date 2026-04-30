@@ -62,19 +62,25 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group mb-4">
-                                        <label class="premium-label">INITIAL RETAIL PRICE <span class="text-danger">*</span></label>
+                                        <label class="premium-label">PURCHASE PRICE</label>
+                                        <input type="number" step="0.01" name="purchase_price" placeholder="0.00" value="{{old('purchase_price')}}" class="premium-input form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group mb-4">
+                                        <label class="premium-label">RETAIL PRICE (SELLING) <span class="text-danger">*</span></label>
                                         <input type="number" step="0.01" name="price" placeholder="Selling price" value="{{old('price')}}" class="premium-input form-control" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group mb-4">
                                         <label class="premium-label">INITIAL STOCK <span class="text-danger">*</span></label>
                                         <input type="number" name="stock" placeholder="0" value="{{old('stock')}}" class="premium-input form-control" required>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group mb-4">
                                         <label class="premium-label">UNIT / PACKAGING <span class="text-danger">*</span></label>
                                         <div class="input-group">
