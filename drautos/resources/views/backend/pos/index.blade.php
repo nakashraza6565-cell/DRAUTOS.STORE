@@ -10,23 +10,20 @@
         <!-- Left: Product Selection -->
         <div class="col-12 p-3 h-100 d-flex flex-column pos-main-container" style="background: #f4f7f6;">
             <!-- Aura-Spotlight Header -->
-            <div class="d-flex align-items-center mb-4 mt-1" style="gap: 15px;">
-                <div class="flex-grow-1">
-                    <div class="search-wrapper-sleek d-flex align-items-center">
-                        <i class="fas fa-search search-icon-sleek mr-2"></i>
-                        <input type="text" id="product-search" class="form-control border-0 shadow-none p-0" placeholder="Search products, SKU or scan barcode..." style="height: 38px; font-size: 15px;" autofocus autocomplete="off">
-                        <!-- Google Style Suggestions -->
-                        <div id="search-suggestions" class="position-absolute shadow-lg bg-white w-100 rounded-bottom d-none" style="top: 48px; left:0; z-index: 2000; border: 1px solid #e2e8f0; border-radius: 16px !important; overflow: hidden;">
-                        </div>
+            <div class="pos-header-wrap d-flex flex-wrap align-items-center mb-3 mt-1" style="gap: 10px;">
+                <div class="flex-grow-1 min-width-mobile-100">
+                    <div class="search-wrapper-sleek d-flex align-items-center px-3" style="background: #fff; border-radius: 100px; border: 1px solid #e2e8f0; height: 45px;">
+                        <i class="fas fa-search search-icon-sleek mr-2 text-muted"></i>
+                        <input type="text" id="product-search" class="form-control border-0 shadow-none p-0 bg-transparent" placeholder="Search products, SKU..." style="font-size: 14px;" autofocus autocomplete="off">
                     </div>
                 </div>
-                <div class="d-flex align-items-center" style="gap: 10px;">
-                    <button type="button" data-toggle="modal" data-target="#addProductModal" class="btn btn-white btn-sm px-4 shadow-sm border" style="border-radius: 100px; font-weight: 700; color: #475569; height: 40px; display: flex; align-items: center;">
-                        <i class="fas fa-plus-circle mr-2 text-primary"></i> NEW ITEM
+                <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
+                    <button type="button" data-toggle="modal" data-target="#addProductModal" class="btn btn-white btn-sm px-3 shadow-sm border d-flex align-items-center justify-content-center" style="border-radius: 100px; font-weight: 700; color: #475569; height: 45px; min-width: 45px;">
+                        <i class="fas fa-plus text-primary mr-md-2"></i> <span class="d-none d-md-inline">NEW ITEM</span>
                     </button>
-                    <button class="btn btn-primary btn-sm px-4 shadow-primary position-relative" id="toggle-cart" style="border-radius: 100px; font-weight: 700; height: 40px; background-color: var(--primary) !important; border-color: var(--primary) !important; color: #fff !important;">
-                        <i class="fas fa-shopping-bag mr-2"></i> VIEW CART
-                        <span class="badge badge-danger position-absolute" id="cart-badge" style="top: -5px; right: 10px; font-size: 10px; border: 2px solid #fff;">0</span>
+                    <button class="btn btn-primary btn-sm px-3 shadow-primary position-relative d-flex align-items-center justify-content-center" id="toggle-cart" style="border-radius: 100px; font-weight: 700; height: 45px; background-color: #f97316 !important; border-color: #f97316 !important; color: #fff !important; min-width: 45px;">
+                        <i class="fas fa-shopping-basket mr-md-2"></i> <span class="d-none d-md-inline">CART</span>
+                        <span class="badge badge-danger position-absolute" id="cart-badge" style="top: -5px; right: 5px; font-size: 10px; border: 2px solid #fff;">0</span>
                     </button>
                 </div>
             </div>

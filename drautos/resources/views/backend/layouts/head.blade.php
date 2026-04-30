@@ -103,6 +103,9 @@
             .form-control {
                 height: 45px !important;
             }
+            .min-width-mobile-100 {
+                min-width: 100% !important;
+            }
         }
 
         /* Admin App Launcher Improvements */
