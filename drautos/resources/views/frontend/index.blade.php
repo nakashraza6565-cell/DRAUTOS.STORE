@@ -11,15 +11,15 @@
         </ol>
         <div class="carousel-inner" role="listbox">
             @foreach($banners as $key=>$banner)
-                <div class="carousel-item {{(($key==0)? 'active' : '')}}">
-                    <div class="slider-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.2) 100%); z-index: 1;"></div>
-                    <img class="first-slide" src="{{$banner->photo}}" alt="Banner" style="object-fit: cover; height: 550px;">
-                    <div class="carousel-caption d-none d-md-block text-left" style="z-index: 2; bottom: 30%;">
-                        <h1 class="wow fadeInDown font-weight-bold display-4 text-white" style="text-shadow: 0 4px 10px rgba(0,0,0,0.3);">{{$banner->title}}</h1>
-                        <div class="description-box my-4" style="max-width: 600px;">
-                            <p class="lead text-white-50" style="font-size: 20px;">{!! html_entity_decode($banner->description) !!}</p>
+                <div class="carousel-item {{(($key==0)? 'active' : '')}}" style="background: #111827;">
+                    <div class="slider-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(17, 24, 39, 0.8) 0%, rgba(17, 24, 39, 0.3) 100%); z-index: 1;"></div>
+                    <img class="first-slide" src="{{$banner->photo}}" alt="Banner" style="object-fit: cover; width: 100%; min-height: 400px; height: auto; max-height: 550px;">
+                    <div class="carousel-caption text-left" style="z-index: 2; bottom: 20%; left: 10%; right: 10%;">
+                        <h1 class="wow fadeInDown font-weight-bold text-white" style="text-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 2.5rem;">{{$banner->title}}</h1>
+                        <div class="description-box my-3" style="max-width: 600px;">
+                            <p class="text-white-50" style="font-size: 16px;">{!! html_entity_decode($banner->description) !!}</p>
                         </div>
-                        <a class="btn btn-lg font-weight-bold px-5 py-3 wow fadeInUpBig" href="{{route('product-grids')}}" role="button" style="background: #f59e0b; color: #1e293b; border-radius: 12px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);">
+                        <a class="btn btn-lg font-weight-bold px-4 py-3 wow fadeInUpBig" href="{{route('product-grids')}}" role="button" style="background: #f59e0b !important; color: #111827 !important; border-radius: 12px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); font-size: 14px; border: none !important;">
                             SHOP NOW <i class="fas fa-arrow-right ml-2"></i>
                         </a>
                     </div>

@@ -1,32 +1,32 @@
 <header class="header shop">
     <!-- Topbar -->
-    <div class="topbar py-2" style="background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.1);">
+    <div class="topbar py-2" style="background: #111827; border-bottom: 1px solid rgba(255,255,255,0.1);">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-5 col-md-12 col-12">
                     <!-- Top Left -->
                     <div class="top-left">
-                        <ul class="list-main d-flex align-items-center mb-0" style="gap: 20px;">
-                            <li class="text-white small"><i class="ti-headphone-alt mr-2 text-warning"></i> +923042000274</li>
-                            <li class="text-white small"><i class="ti-email mr-2 text-warning"></i> support@danyalautos.com</li>
+                        <ul class="list-main d-flex align-items-center mb-0" style="gap: 15px; flex-wrap: wrap;">
+                            <li class="text-white" style="font-size: 12px;"><i class="ti-headphone-alt mr-1 text-warning"></i> +923042000274</li>
+                            <li class="text-white" style="font-size: 12px;"><i class="ti-email mr-1 text-warning"></i> support@danyalautos.com</li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-lg-7 col-md-12 col-12">
                     <!-- Top Right -->
                     <div class="right-content">
-                        <ul class="list-main d-flex align-items-center justify-content-end mb-0" style="gap: 15px;">
+                        <ul class="list-main d-flex align-items-center justify-content-end mb-0" style="gap: 10px;">
                             <li class="d-none d-lg-block small"><i class="ti-location-pin text-warning mr-1"></i> <a href="{{route('contact')}}" class="text-white">Store location</a></li>
                             @auth 
                                 @if(Auth::user()->role == 'admin')
-                                    <li><a href="{{route('admin')}}" class="btn btn-sm btn-warning font-weight-bold px-3 py-1 text-dark" style="border-radius: 6px;"><i class="ti-user mr-1"></i> Dashboard</a></li>
+                                    <li><a href="{{route('admin')}}" class="btn btn-sm btn-warning font-weight-bold px-3 py-1 text-dark" style="border-radius: 6px; color: #111827 !important; background: #f59e0b !important; border: none !important;"><i class="ti-user mr-1"></i> Dashboard</a></li>
                                 @else 
-                                    <li><a href="{{route('user')}}" class="btn btn-sm btn-warning font-weight-bold px-3 py-1 text-dark" style="border-radius: 6px;"><i class="ti-user mr-1"></i> Dashboard</a></li>
+                                    <li><a href="{{route('user')}}" class="btn btn-sm btn-warning font-weight-bold px-3 py-1 text-dark" style="border-radius: 6px; color: #111827 !important; background: #f59e0b !important; border: none !important;"><i class="ti-user mr-1"></i> Dashboard</a></li>
                                 @endif
-                                <li><a href="{{route('user.logout')}}" class="btn btn-sm btn-outline-light font-weight-bold px-3 py-1" style="border-radius: 6px; font-size: 11px;"><i class="ti-power-off mr-1"></i> Logout</a></li>
+                                <li><a href="{{route('user.logout')}}" class="btn btn-sm btn-outline-light font-weight-bold px-3 py-1" style="border-radius: 6px; font-size: 11px; color: #fff !important; border-color: rgba(255,255,255,0.5) !important;"><i class="ti-power-off mr-1"></i> Logout</a></li>
                             @else
-                                <li><a href="{{route('login')}}" class="btn btn-sm btn-warning font-weight-bold px-3 py-1 text-dark" style="border-radius: 6px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);"><i class="ti-power-off mr-1"></i> Login</a></li>
-                                <li class="d-none d-sm-block"><a href="{{route('register')}}" class="btn btn-sm btn-outline-light font-weight-bold px-3 py-1" style="border-radius: 6px;">Register</a></li>
+                                <li><a href="{{route('login')}}" class="btn btn-sm btn-warning font-weight-bold px-4 py-2" style="border-radius: 8px; color: #111827 !important; background: #f59e0b !important; border: none !important; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); text-transform: uppercase; letter-spacing: 1px; font-size: 12px;"><i class="ti-power-off mr-1"></i> Login</a></li>
+                                <li class="d-none d-sm-block"><a href="{{route('register')}}" class="btn btn-sm btn-outline-light font-weight-bold px-3 py-1" style="border-radius: 6px; color: #fff !important; border-color: rgba(255,255,255,0.5) !important;">Register</a></li>
                             @endauth
                         </ul>
                     </div>
