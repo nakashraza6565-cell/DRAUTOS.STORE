@@ -100,7 +100,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-sm responsive-table-to-cards" width="100%" cellspacing="0">
+                <table class="table table-bordered table-sm ledger-table-to-cards" width="100%" cellspacing="0">
                     <thead class="bg-gray-100">
                         <tr>
                             <th>Date</th>
@@ -115,7 +115,7 @@
                     <tbody>
                         @foreach($ledger as $item)
                             <tr>
-                                <td data-title="Date">{{$item->transaction_date->format('Y-m-d')}}</td>
+                                <td data-title="Date" data-balance="Rs. {{number_format($item->balance, 2)}}">{{$item->transaction_date->format('Y-m-d')}}</td>
                                 <td data-title="Description">{{$item->description}}</td>
                                 <td data-title="Category"><span class="badge badge-light">{{$item->category}}</span></td>
                                 <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>

@@ -591,6 +591,71 @@
                     padding: 10px !important;
                 }
             }
+
+            /* Specialized Ledger Card System */
+            @media (max-width: 768px) {
+                .ledger-table-to-cards tr {
+                    display: flex !important;
+                    flex-direction: column !important;
+                    margin-bottom: 15px !important;
+                    background: #fff !important;
+                    border-radius: 15px !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+                    padding: 0 !important;
+                    overflow: hidden !important;
+                    border: 1px solid #edf2f7 !important;
+                }
+                .ledger-table-to-cards td {
+                    display: block !important;
+                    width: 100% !important;
+                    padding: 10px 15px !important;
+                    border: 0 !important;
+                    text-align: left !important;
+                }
+                .ledger-table-to-cards td[data-title="Date"] {
+                    background: #f8fafc !important;
+                    font-weight: bold !important;
+                    color: #475569 !important;
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                    border-bottom: 1px solid #edf2f7 !important;
+                }
+                .ledger-table-to-cards td[data-title="Date"]::after {
+                    content: "Balance: " attr(data-balance);
+                    font-size: 0.85rem !important;
+                    color: #1e293b !important;
+                }
+                .ledger-table-to-cards td[data-title="Date"]::before,
+                .ledger-table-to-cards td[data-title="Balance"] {
+                    display: none !important;
+                }
+                .ledger-table-to-cards td[data-title="Description"] {
+                    padding-top: 15px !important;
+                    font-size: 0.95rem !important;
+                    color: #334155 !important;
+                }
+                .ledger-table-to-cards td[data-title="Description"]::before {
+                    display: none !important;
+                }
+                .ledger-table-to-cards td[data-title="Debit (+)"],
+                .ledger-table-to-cards td[data-title="Credit (-)"] {
+                    display: inline-block !important;
+                    width: 50% !important;
+                    float: left !important;
+                    padding: 8px 15px !important;
+                    font-weight: bold !important;
+                }
+                .ledger-table-to-cards td[data-title="Category"] {
+                    clear: both !important;
+                    border-top: 1px dashed #e2e8f0 !important;
+                    font-size: 0.75rem !important;
+                }
+                .ledger-table-to-cards td[data-title="Action"] {
+                    border-top: 1px solid #f1f5f9 !important;
+                    background: #fff !important;
+                }
+            }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */
         .swal2-container, .swal2-popup, .alert, .toast, .dropdown-menu, .modal, .dropdown-list {
