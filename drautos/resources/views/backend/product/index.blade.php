@@ -43,68 +43,49 @@
       </form>
       <div class="table-responsive">
         @if(count($products)>0)
-        <table class="table table-bordered" id="product-dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered responsive-table-to-cards" id="product-dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>S.N.</th>
               <th>Title</th>
               <th>Category</th>
               <th>Price</th>
-              <th>Color</th>
-              <th>Brand</th>
+              <th>Color/Brand</th>
               <th>Stock</th>
               <th>Photo</th>
               <th>Action & Status</th>
             </tr>
           </thead>
-          <tfoot>
-            <tr>
-              <th>S.N.</th>
-              <th>Title</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Color</th>
-              <th>Brand</th>
-              <th>Stock</th>
-              <th>Photo</th>
-              <th>Action & Status</th>
-            </tr>
-          </tfoot>
           <tbody>
-
             @foreach($products as $product)
                 <tr>
-                    <td>{{$loop->iteration}}</td>
-                    <td>
+                    <td data-title="S.N.">{{$loop->iteration}}</td>
+                    <td data-title="Product">
                         <div class="font-weight-bold editable-title" data-id="{{$product->id}}" style="cursor: pointer;" title="Click to edit title">{{$product->title}}</div>
                         <small class="text-muted d-block">SKU: {{$product->sku}}</small>
                         @if($product->is_featured) <span class="badge badge-warning" style="font-size: 10px;">Featured</span> @endif
                     </td>
-                    <td>{{$product->cat_info->title ?? 'N/A'}}
-                      <div class="small text-muted">
-                          {{$product->sub_cat_info->title ?? ''}}
-                      </div>
+                    <td data-title="Category">
+                      {{$product->cat_info->title ?? 'N/A'}}
+                      <div class="small text-muted">{{$product->sub_cat_info->title ?? ''}}</div>
                     </td>
-                    <td class="font-weight-bold">PKR {{number_format($product->price ?? 0, 0)}}</td>
-                    <td>
-                        @if($product->color)
-                            <div class="d-flex align-items-center">
-                                <span class="mr-1" style="width: 12px; height: 12px; border-radius: 50%; background-color: {{$product->color}}; border: 1px solid #ddd;"></span>
-                                <small>{{$product->color}}</small>
-                            </div>
-                        @else
-                            <span class="text-muted small">N/A</span>
-                        @endif
+                    <td data-title="Price" class="font-weight-bold">PKR {{number_format($product->price ?? 0, 0)}}</td>
+                    <td data-title="Brand">
+                        <div class="d-flex align-items-center">
+                            @if($product->color)
+                                <span class="mr-2" style="width: 14px; height: 14px; border-radius: 50%; background-color: {{$product->color}}; border: 1px solid #ddd;"></span>
+                            @endif
+                            <span>{{ucfirst($product->brand->title ?? 'N/A')}}</span>
+                        </div>
                     </td>
-                    <td> {{ucfirst($product->brand->title ?? 'N/A')}}</td>
-                    <td>
+                    <td data-title="Stock">
                       @if($product->stock>0)
-                      <span class="badge badge-primary">{{$product->stock}}</span>
+                      <span class="badge badge-primary px-3">{{$product->stock}}</span>
                       @else
-                      <span class="badge badge-danger">{{$product->stock}}</span>
+                      <span class="badge badge-danger px-3">{{$product->stock}}</span>
                       @endif
                     </td>
-                    <td class="text-center">
+                    <td data-title="Photo" class="text-center">
                         <div class="position-relative d-inline-block">
                             @if($product->photo)
                                 @php
@@ -121,7 +102,7 @@
                             </button>
                         </div>
                     </td>
-                    <td>
+                    <td data-title="Actions">
                         <div class="mb-2">
                             @if($product->status=='active')
                                 <span class="badge badge-success">{{$product->status}}</span>
@@ -129,12 +110,12 @@
                                 <span class="badge badge-warning">{{$product->status}}</span>
                             @endif
                         </div>
-                        <div class="d-flex border-top pt-2 mt-1">
-                            <a href="{{route('product.edit',$product->id)}}" class="btn btn-primary btn-sm mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
+                        <div class="d-flex border-top pt-2 mt-1 justify-content-end">
+                            <a href="{{route('product.edit',$product->id)}}" class="btn btn-primary btn-sm mr-1" style="height:32px; width:32px;border-radius:50%; display: flex; align-items: center; justify-content: center;" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
                             <form method="POST" action="{{route('product.destroy',[$product->id])}}">
                                 @csrf
                                 @method('delete')
-                                <button class="btn btn-danger btn-sm dltBtn" data-id={{$product->id}} style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn btn-danger btn-sm dltBtn" data-id={{$product->id}} style="height:32px; width:32px;border-radius:50%; display: flex; align-items: center; justify-content: center;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             </form>
                         </div>
                     </td>
