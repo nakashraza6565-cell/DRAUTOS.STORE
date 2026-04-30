@@ -110,16 +110,20 @@
                     <tr>
                         <td data-title="#">{{$i++}}</td>
                         <td data-title="Product">
-                            <div class="font-weight-bold text-dark">
-                                @if($cart->product)
-                                    {{$cart->product->title}}
-                                @elseif($cart->bundle)
-                                    <span class="text-primary">[BUNDLE]</span> {{$cart->bundle->name}}
-                                @else
-                                    Deleted Item
-                                @endif
+                            <div class="d-flex flex-column align-items-end w-100">
+                                <div class="font-weight-bold text-dark mb-1" style="line-height: 1.3;">
+                                    @if($cart->product)
+                                        {{$cart->product->title}}
+                                    @elseif($cart->bundle)
+                                        <span class="text-primary">[BUNDLE]</span> {{$cart->bundle->name}}
+                                    @else
+                                        Deleted Item
+                                    @endif
+                                </div>
+                                <div class="text-muted small" style="font-size: 0.7rem; opacity: 0.8;">
+                                    SKU: {{ $cart->product->sku ?? ($cart->bundle->sku ?? 'N/A') }}
+                                </div>
                             </div>
-                            <small class="text-muted">SKU: {{ $cart->product->sku ?? ($cart->bundle->sku ?? 'N/A') }}</small>
                         </td>
                         <td data-title="Quantity" class="text-center font-weight-bold">{{$cart->quantity}}</td>
                         <td data-title="Unit Price" class="text-right">Rs. {{number_format($cart->price, 2)}}</td>
