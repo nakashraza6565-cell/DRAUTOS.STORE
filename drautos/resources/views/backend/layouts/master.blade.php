@@ -32,7 +32,7 @@
   <div id="adminAppLauncher">
       <button class="launcher-close" id="launcherClose"><i class="fas fa-times"></i></button>
       
-      <div class="launcher-section-title">Quick Sales</div>
+      <div class="launcher-section-title">Sales & Billing</div>
       <div class="launcher-grid">
           @can('view-order')
           <a href="{{route('admin.pos')}}" class="launcher-item">
@@ -48,47 +48,76 @@
               <span class="launcher-label">Billing</span>
           </a>
           @endcan
+          <a href="{{route('admin.cash-register')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #64748b;"><i class="fas fa-cash-register text-white"></i></div>
+              <span class="launcher-label">Register</span>
+          </a>
       </div>
 
-      <div class="launcher-section-title">Stock & Supply</div>
-      <div class="launcher-grid">
-          @can('view-product')
-          <a href="{{route('product.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #6366f1;"><i class="fas fa-boxes text-white"></i></div>
-              <span class="launcher-label">Inventory</span>
-          </a>
-          <a href="{{route('inventory-incoming.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #8b5cf6;"><i class="fas fa-truck-loading text-white"></i></div>
-              <span class="launcher-label">Inward</span>
-          </a>
-          <a href="{{route('bundles.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #d946ef;"><i class="fas fa-layer-group text-white"></i></div>
-              <span class="launcher-label">Bundles</span>
-          </a>
-          @endcan
-      </div>
-
-      <div class="launcher-section-title">Finance & HR</div>
+      <div class="launcher-section-title">Ledgers & Finance</div>
       <div class="launcher-grid">
           @can('view-customer-ledger')
           <a href="{{route('admin.customer-ledger.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #10b981;"><i class="fas fa-user-tag text-white"></i></div>
-              <span class="launcher-label">Ledgers</span>
+              <span class="launcher-label">Customer Ledger</span>
           </a>
           @endcan
-          @hasrole('admin')
-          <a href="{{route('attendance.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #f59e0b;"><i class="fas fa-user-clock text-white"></i></div>
-              <span class="launcher-label">Attendance</span>
+          <a href="{{route('admin.supplier-ledger.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #059669;"><i class="fas fa-file-contract text-white"></i></div>
+              <span class="launcher-label">Supplier Ledger</span>
+          </a>
+          <a href="{{route('cheques.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #3b82f6;"><i class="fas fa-money-check text-white"></i></div>
+              <span class="launcher-label">Cheques</span>
           </a>
           <a href="{{route('expenses.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #ef4444;"><i class="fas fa-money-bill-wave text-white"></i></div>
               <span class="launcher-label">Expenses</span>
           </a>
-          @endhasrole
       </div>
 
-      <div class="launcher-section-title">System & Stats</div>
+      <div class="launcher-section-title">Inventory & Stock</div>
+      <div class="launcher-grid">
+          @can('view-product')
+          <a href="{{route('product.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #6366f1;"><i class="fas fa-boxes text-white"></i></div>
+              <span class="launcher-label">Products</span>
+          </a>
+          <a href="{{route('inventory-incoming.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #8b5cf6;"><i class="fas fa-truck-loading text-white"></i></div>
+              <span class="launcher-label">Inward</span>
+          </a>
+          <a href="{{route('purchase-orders.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #4f46e5;"><i class="fas fa-file-invoice text-white"></i></div>
+              <span class="launcher-label">Purchase Orders</span>
+          </a>
+          <a href="{{route('category.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #d946ef;"><i class="fas fa-tags text-white"></i></div>
+              <span class="launcher-label">Categories</span>
+          </a>
+      </div>
+
+      <div class="launcher-section-title">Manufacturing & HR</div>
+      <div class="launcher-grid">
+          <a href="{{route('manufacturing.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #f59e0b;"><i class="fas fa-industry text-white"></i></div>
+              <span class="launcher-label">Manufacturing</span>
+          </a>
+          <a href="{{route('attendance.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #fbbf24;"><i class="fas fa-user-clock text-white"></i></div>
+              <span class="launcher-label">Attendance</span>
+          </a>
+          <a href="{{route('commissions.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #f43f5e;"><i class="fas fa-percent text-white"></i></div>
+              <span class="launcher-label">Commissions</span>
+          </a>
+          <a href="{{route('tasks.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #8b5cf6;"><i class="fas fa-calendar-check text-white"></i></div>
+              <span class="launcher-label">Tasks</span>
+          </a>
+      </div>
+
+      <div class="launcher-section-title">Reports & System</div>
       <div class="launcher-grid">
           @can('view-report')
           <a href="{{route('reports.sales')}}" class="launcher-item">
@@ -96,17 +125,21 @@
               <span class="launcher-label">Reports</span>
           </a>
           @endcan
-          <a href="{{route('admin-profile')}}" class="launcher-item">
-              <div class="launcher-icon bg-secondary"><i class="fas fa-user-circle text-white"></i></div>
-              <span class="launcher-label">Profile</span>
+          <a href="{{route('staff.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #475569;"><i class="fas fa-users-cog text-white"></i></div>
+              <span class="launcher-label">Staff</span>
           </a>
           <a href="{{route('settings')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #64748b;"><i class="fas fa-cog text-white"></i></div>
+              <div class="launcher-icon" style="background: #334155;"><i class="fas fa-cog text-white"></i></div>
               <span class="launcher-label">Settings</span>
+          </a>
+          <a href="{{route('home')}}" target="_blank" class="launcher-item">
+              <div class="launcher-icon" style="background: #1e293b;"><i class="fas fa-external-link-alt text-white"></i></div>
+              <span class="launcher-label">Storefront</span>
           </a>
       </div>
       
-      <div style="height: 50px;"></div>
+      <div style="height: 100px;"></div>
   </div>
 
   @include('backend.layouts.footer')
