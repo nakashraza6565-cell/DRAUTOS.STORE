@@ -21,53 +21,54 @@
     <!-- End Breadcrumbs -->
             
     <!-- Shop Login -->
-    <section class="shop login section">
+    <section class="shop login section py-5" style="background: #f8fafc;">
         <div class="container">
             <div class="row"> 
-                <div class="col-lg-6 offset-lg-3 col-12">
-                    <div class="login">
-                        <h2>Login</h2>
-                        <p>Please register in order to checkout more quickly</p>
+                <div class="col-lg-5 col-md-8 col-12 mx-auto">
+                    <div class="login shadow-lg p-5" style="background: #fff; border-radius: 24px; border: 1px solid #f1f5f9;">
+                        <div class="text-center mb-4">
+                            <h2 class="font-weight-bold display-4 mb-2" style="font-size: 28px; color: #1e293b;">Welcome Back</h2>
+                            <p class="text-muted">Enter your credentials to access your account</p>
+                        </div>
                         <!-- Form -->
                         <form class="form" method="post" action="{{route('login.submit')}}">
                             @csrf
                             <div class="row">
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label>Email or Phone Number<span>*</span></label>
-                                        <input type="text" name="email" placeholder="Enter Email or Phone" required="required" value="{{old('email')}}">
+                                        <label class="font-weight-bold text-dark mb-2">Email or Phone Number<span>*</span></label>
+                                        <input type="text" name="email" placeholder="Enter Email or Phone" required="required" value="{{old('email')}}" style="height: 50px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; padding: 0 20px;">
                                         @error('email')
-                                            <span class="text-danger">{{$message}}</span>
+                                            <span class="text-danger small mt-1 d-block">{{$message}}</span>
                                         @enderror
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-group">
-                                        <label>Your Password<span>*</span></label>
-                                        <input type="password" name="password" placeholder="" required="required" value="{{old('password')}}">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="font-weight-bold text-dark mb-0">Your Password<span>*</span></label>
+                                        </div>
+                                        <input type="password" name="password" placeholder="••••••••" required="required" value="{{old('password')}}" style="height: 50px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; padding: 0 20px;">
                                         @error('password')
-                                            <span class="text-danger">{{$message}}</span>
+                                            <span class="text-danger small mt-1 d-block">{{$message}}</span>
                                         @enderror
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <div class="form-group login-btn">
-                                        <button class="btn" type="submit">Login</button>
-                                        <a href="{{route('register')}}" class="btn">Register</a>
-                                        <!-- OR -->
-                                        <!-- <a href="{{route('login.redirect','facebook')}}" class="btn btn-facebook"><i class="ti-facebook"></i></a>
-                                        <a href="{{route('login.redirect','github')}}" class="btn btn-github"><i class="ti-github"></i></a>
-                                        <a href="{{route('login.redirect','google')}}" class="btn btn-google"><i class="ti-google"></i></a> -->
-
+                                    <div class="form-group mb-4">
+                                        <div class="checkbox">
+                                            <label class="checkbox-inline d-flex align-items-center" for="2">
+                                                <input name="news" id="2" type="checkbox" class="mr-2" style="width: 18px; height: 18px;">
+                                                <span class="small text-muted font-weight-bold">Remember me</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="checkbox">
-                                        <label class="checkbox-inline" for="2"><input name="news" id="2" type="checkbox">Remember me</label>
+                                    <div class="form-group login-btn mb-4">
+                                        <button class="btn btn-block py-3 font-weight-bold" type="submit" style="background: #1e293b; color: #fff; border-radius: 12px; font-size: 16px; box-shadow: 0 10px 20px rgba(30, 41, 59, 0.2);">SIGN IN</button>
                                     </div>
-                                    <!-- @if (Route::has('password.request'))
-                                        <a class="lost-pass" href="{{ route('password.request') }}">
-                                            Lost your password?
-                                        </a>
-                                    @endif -->
+                                    <div class="text-center">
+                                        <p class="small text-muted mb-0">Don't have an account? <a href="{{route('register')}}" class="text-primary font-weight-bold">Register here</a></p>
+                                    </div>
                                 </div>
                             </div>
                         </form>

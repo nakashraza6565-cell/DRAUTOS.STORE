@@ -6,29 +6,33 @@
     <section id="Gslider" class="carousel slide" data-ride="carousel">
         <ol class="carousel-indicators">
             @foreach($banners as $key=>$banner)
-        <li data-target="#Gslider" data-slide-to="{{$key}}" class="{{(($key==0)? 'active' : '')}}"></li>
+                <li data-target="#Gslider" data-slide-to="{{$key}}" class="{{(($key==0)? 'active' : '')}}"></li>
             @endforeach
-
         </ol>
         <div class="carousel-inner" role="listbox">
-                @foreach($banners as $key=>$banner)
+            @foreach($banners as $key=>$banner)
                 <div class="carousel-item {{(($key==0)? 'active' : '')}}">
-                    <img class="first-slide" src="{{$banner->photo}}" alt="First slide">
-                    <div class="carousel-caption d-none d-md-block text-left">
-                        <h1 class="wow fadeInDown">{{$banner->title}}</h1>
-                        <p>{!! html_entity_decode($banner->description) !!}</p>
-                        <a class="btn btn-lg ws-btn wow fadeInUpBig" href="{{route('product-grids')}}" role="button">Shop Now<i class="far fa-arrow-alt-circle-right"></i></i></a>
+                    <div class="slider-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.2) 100%); z-index: 1;"></div>
+                    <img class="first-slide" src="{{$banner->photo}}" alt="Banner" style="object-fit: cover; height: 550px;">
+                    <div class="carousel-caption d-none d-md-block text-left" style="z-index: 2; bottom: 30%;">
+                        <h1 class="wow fadeInDown font-weight-bold display-4 text-white" style="text-shadow: 0 4px 10px rgba(0,0,0,0.3);">{{$banner->title}}</h1>
+                        <div class="description-box my-4" style="max-width: 600px;">
+                            <p class="lead text-white-50" style="font-size: 20px;">{!! html_entity_decode($banner->description) !!}</p>
+                        </div>
+                        <a class="btn btn-lg font-weight-bold px-5 py-3 wow fadeInUpBig" href="{{route('product-grids')}}" role="button" style="background: #f59e0b; color: #1e293b; border-radius: 12px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);">
+                            SHOP NOW <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
                     </div>
                 </div>
             @endforeach
         </div>
-        <a class="carousel-control-prev" href="#Gslider" role="button" data-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
+        <a class="carousel-control-prev" href="#Gslider" role="button" data-slide="prev" style="z-index: 3;">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
         </a>
-        <a class="carousel-control-next" href="#Gslider" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
+        <a class="carousel-control-next" href="#Gslider" role="button" data-slide="next" style="z-index: 3;">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
         </a>
     </section>
 @endif
@@ -322,42 +326,50 @@
 <!-- Start Shop Blog  -->
 
 <!-- Start Shop Services Area -->
-<section class="shop-services section home">
+<section class="shop-services section home py-5" style="background: #f8fafc;">
     <div class="container">
         <div class="row">
             <div class="col-lg-3 col-md-6 col-12">
                 <!-- Start Single Service -->
-                <div class="single-service">
-                    <i class="ti-rocket"></i>
-                    <h4>Free shiping</h4>
-                    <p>Orders over $100</p>
+                <div class="single-service d-flex align-items-center p-3 rounded" style="background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.3s ease;">
+                    <i class="ti-rocket mr-3" style="font-size: 30px; color: #f59e0b;"></i>
+                    <div>
+                        <h4 class="mb-0" style="font-size: 16px; font-weight: 800;">Free Shipping</h4>
+                        <p class="mb-0 small text-muted">Orders over $100</p>
+                    </div>
                 </div>
                 <!-- End Single Service -->
             </div>
             <div class="col-lg-3 col-md-6 col-12">
                 <!-- Start Single Service -->
-                <div class="single-service">
-                    <i class="ti-reload"></i>
-                    <h4>Free Return</h4>
-                    <p>Within 30 days returns</p>
+                <div class="single-service d-flex align-items-center p-3 rounded" style="background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.3s ease;">
+                    <i class="ti-reload mr-3" style="font-size: 30px; color: #f59e0b;"></i>
+                    <div>
+                        <h4 class="mb-0" style="font-size: 16px; font-weight: 800;">Free Return</h4>
+                        <p class="mb-0 small text-muted">Within 30 days returns</p>
+                    </div>
                 </div>
                 <!-- End Single Service -->
             </div>
             <div class="col-lg-3 col-md-6 col-12">
                 <!-- Start Single Service -->
-                <div class="single-service">
-                    <i class="ti-lock"></i>
-                    <h4>Sucure Payment</h4>
-                    <p>100% secure payment</p>
+                <div class="single-service d-flex align-items-center p-3 rounded" style="background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.3s ease;">
+                    <i class="ti-lock mr-3" style="font-size: 30px; color: #f59e0b;"></i>
+                    <div>
+                        <h4 class="mb-0" style="font-size: 16px; font-weight: 800;">Secure Payment</h4>
+                        <p class="mb-0 small text-muted">100% secure payment</p>
+                    </div>
                 </div>
                 <!-- End Single Service -->
             </div>
             <div class="col-lg-3 col-md-6 col-12">
                 <!-- Start Single Service -->
-                <div class="single-service">
-                    <i class="ti-tag"></i>
-                    <h4>Best Peice</h4>
-                    <p>Guaranteed price</p>
+                <div class="single-service d-flex align-items-center p-3 rounded" style="background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.3s ease;">
+                    <i class="ti-tag mr-3" style="font-size: 30px; color: #f59e0b;"></i>
+                    <div>
+                        <h4 class="mb-0" style="font-size: 16px; font-weight: 800;">Best Price</h4>
+                        <p class="mb-0 small text-muted">Guaranteed price</p>
+                    </div>
                 </div>
                 <!-- End Single Service -->
             </div>
