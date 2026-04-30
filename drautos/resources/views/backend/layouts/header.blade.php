@@ -1,13 +1,19 @@
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
 
     <!-- Sidebar Toggle (Topbar) -->
-    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3 text-gray-600" style="background: #f8fafc;">
+    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3 text-gray-600 d-none d-md-inline-block" style="background: #f8fafc;">
       <i class="fa fa-bars"></i>
     </button>
-    <!-- <a href="{{route('storage.link')}}"  class="btn btn-outline-warning btn-sm mr-3">
-        Storage Link
-    </a> -->
-    <a href="{{route('cache.clear')}}"  class="btn btn-outline-danger btn-sm mr-3">
+
+    <!-- Mobile Menu Trigger (Launcher) -->
+    <button class="mobile-menu-trigger d-md-none" id="launcherTrigger">
+        <i class="fas fa-th-large"></i>
+    </button>
+    <button class="mobile-search-trigger d-md-none">
+        <i class="fas fa-search"></i>
+    </button>
+
+    <a href="{{route('cache.clear')}}"  class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">
       Cache Clear
     </a>
 

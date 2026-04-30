@@ -471,7 +471,145 @@
             padding: 0.75rem 1.5rem !important;
         }
     </style>
-    <!-- UI Version: 1.0.2 -->
+    <style>
+        /* Admin App Launcher - Modern Enterprise UI */
+        #adminAppLauncher {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 27, 61, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100000;
+            display: none;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow-y: auto;
+            padding: 5rem 1.5rem 2rem 1.5rem;
+        }
+
+        #adminAppLauncher.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .launcher-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .launcher-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none !important;
+            padding: 1.25rem 0.5rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .launcher-item:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .launcher-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .launcher-label {
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .launcher-section-title {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 2.5rem 0 1rem 0;
+            text-align: center;
+        }
+
+        .launcher-close {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            z-index: 100001;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Mobile Header Refinement */
+        @media (max-width: 768px) {
+            .topbar {
+                margin: 0 !important;
+                border-radius: 0 !important;
+                padding: 0.75rem 1rem !important;
+                height: auto !important;
+                position: sticky !important;
+                top: 0 !important;
+                background: #fff !important;
+            }
+            .mobile-menu-trigger {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                background: var(--bg-body);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--primary);
+                font-size: 1.2rem;
+                border: none;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+            .mobile-search-trigger {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+                background: var(--bg-body);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--primary);
+                font-size: 1.1rem;
+                margin-left: 10px;
+                border: none;
+            }
+            .topbar-divider { display: none !important; }
+            .nav-item.dropdown { position: static !important; }
+            .dropdown-menu { width: 90% !important; margin: 10px 5% !important; border-radius: 20px !important; }
+        }
+    </style>
+    <!-- UI Version: 1.0.3 -->
     @stack('styles')
   
 </head>
