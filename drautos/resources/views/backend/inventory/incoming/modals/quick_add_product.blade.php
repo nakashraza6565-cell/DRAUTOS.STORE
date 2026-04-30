@@ -1,35 +1,35 @@
 <!-- Quick Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title font-weight-bold"><i class="fas fa-barcode mr-2"></i>Quick Add New Product</h5>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header py-4" style="background: #334155;">
+                <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-barcode mr-2"></i> QUICK ADD NEW PRODUCT</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="quickAddProductForm">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body p-4 bg-white">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Product Title <span class="text-danger">*</span></label>
-                                <input type="text" name="title" class="form-control" placeholder="e.g. Engine Oil 5W-30" required>
+                        <div class="col-md-8">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">PRODUCT TITLE <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="premium-input form-control" placeholder="e.g. Engine Oil 5W-30" required>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label class="small font-weight-bold">SKU / Barcode</label>
-                                <input type="text" name="sku" class="form-control" placeholder="Unique identifier">
+                        <div class="col-md-4">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">SKU / BARCODE</label>
+                                <input type="text" name="sku" class="premium-input form-control" placeholder="Unique identifier">
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Category</label>
-                                <select name="cat_id" class="form-control">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">CATEGORY</label>
+                                <select name="cat_id" class="premium-input form-control">
                                     <option value="">-- Select --</option>
                                     @foreach(\App\Models\Category::where('status','active')->get() as $cat)
                                         <option value="{{$cat->id}}">{{$cat->title}}</option>
@@ -37,10 +37,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Brand</label>
-                                <select name="brand_id" class="form-control">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">BRAND</label>
+                                <select name="brand_id" class="premium-input form-control">
                                     <option value="">-- Select --</option>
                                     @foreach(\App\Models\Brand::where('status','active')->get() as $brand)
                                         <option value="{{$brand->id}}">{{$brand->title}}</option>
@@ -48,22 +48,67 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Initial Retail Price</label>
-                                <input type="number" name="price" class="form-control" placeholder="Selling price">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">PURCHASE PRICE</label>
+                                <input type="number" name="purchase_price" step="0.01" class="premium-input form-control" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-4">
+                                <label class="premium-label">INITIAL RETAIL PRICE</label>
+                                <input type="number" name="price" step="0.01" class="premium-input form-control" placeholder="Selling price">
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-dark font-weight-bold px-4">Create Product</button>
+                <div class="modal-footer border-0 p-4 bg-light">
+                    <button type="button" class="btn btn-light px-4" data-dismiss="modal" style="border-radius: 100px; font-weight: 700; color: #64748b;">CANCEL</button>
+                    <button type="submit" class="btn btn-slate px-5 shadow-lg" style="border-radius: 100px; font-weight: 700;">CREATE PRODUCT</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .premium-label {
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .premium-input {
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+        padding: 12px 18px !important;
+        height: 50px !important;
+        font-weight: 500 !important;
+        color: #1e293b !important;
+        transition: all 0.2s ease !important;
+        background: #fdfdfd !important;
+    }
+    .premium-input:focus {
+        border-color: #334155 !important;
+        background: #fff !important;
+        box-shadow: 0 4px 12px rgba(51, 65, 85, 0.08) !important;
+    }
+    .btn-slate {
+        background: #334155 !important;
+        color: #fff !important;
+        border-radius: 12px !important;
+        font-weight: 600;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-slate:hover { background: #1e293b !important; }
+</style>
 
 <script>
 $(document).ready(function() {
