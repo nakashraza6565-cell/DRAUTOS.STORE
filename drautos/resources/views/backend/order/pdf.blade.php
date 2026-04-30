@@ -192,6 +192,7 @@
             <em>Please include the Order # with your payment.</em>
         </div>
         
+        <table class="totals-table">
             @php
                 $gross_subtotal = 0;
                 $item_discounts = 0;
