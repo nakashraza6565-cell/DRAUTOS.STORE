@@ -103,10 +103,30 @@
             .form-control {
                 height: 45px !important;
             }
-            .min-width-mobile-100 {
-                min-width: 100% !important;
+            /* DataTables Mobile Polish */
+            .dataTables_wrapper .dataTables_length, 
+            .dataTables_wrapper .dataTables_filter {
+                text-align: left !important;
+                margin-bottom: 10px !important;
             }
-        }
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100% !important;
+                margin-left: 0 !important;
+                border-radius: 10px !important;
+                height: 40px !important;
+            }
+            .dataTables_wrapper .dataTables_length select {
+                border-radius: 10px !important;
+                height: 40px !important;
+                padding: 5px 10px !important;
+            }
+            .card-header .btn {
+                float: none !important;
+                display: block !important;
+                width: 100% !important;
+                margin-top: 10px !important;
+                padding: 10px !important;
+            }
 
         /* Admin App Launcher Improvements */
         #adminAppLauncher {

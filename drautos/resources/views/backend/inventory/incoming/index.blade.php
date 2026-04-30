@@ -9,8 +9,8 @@
     <div class="card-body">
       <div class="table-responsive">
         @if(count($incoming)>0)
-        <table class="table table-bordered" id="data-table" width="100%" cellspacing="0">
-          <thead>
+        <table class="table table-bordered responsive-table-to-cards" id="data-table" width="100%" cellspacing="0">
+          <thead class="bg-light">
             <tr>
               <th>Reference #</th>
               <th>Date</th>
@@ -25,46 +25,45 @@
           <tbody>
             @foreach($incoming as $entry)   
                 <tr>
-                    <td><strong>{{$entry->reference_number}}</strong></td>
-                    <td>{{$entry->received_date->format('d M Y')}}</td>
-                    <td>{{$entry->supplier->name ?? 'N/A'}}</td>
-                    <td>{{$entry->warehouse->name ?? 'N/A'}}</td>
-                    <td>
-                        {{$entry->items->count()}} items
+                    <td data-title="Reference #"><strong>{{$entry->reference_number}}</strong></td>
+                    <td data-title="Date">{{$entry->received_date->format('d M Y')}}</td>
+                    <td data-title="Supplier">{{$entry->supplier->name ?? 'N/A'}}</td>
+                    <td data-title="Warehouse">{{$entry->warehouse->name ?? 'N/A'}}</td>
+                    <td data-title="Items">
+                        <span class="badge badge-pill badge-info px-2">{{$entry->items->count()}} items</span>
                         @php $pkgCount = $entry->items->whereNotNull('packaging_item_id')->count(); @endphp
                         @if($pkgCount > 0)
-                            <div class="small text-info"><i class="fas fa-box"></i> {{$pkgCount}} packed</div>
+                            <div class="small text-info mt-1"><i class="fas fa-box"></i> {{$pkgCount}} packed</div>
                         @endif
                     </td>
-                    <td>PKR {{number_format($entry->totalCost, 2)}}</td>
-                    <td>
+                    <td data-title="Total Cost" class="font-weight-bold text-dark">PKR {{number_format($entry->totalCost, 2)}}</td>
+                    <td data-title="Status">
                         @if($entry->status == 'pending')
-                            <span class="badge badge-warning">Pending</span>
+                            <span class="badge badge-pill badge-warning px-3">Pending</span>
                         @elseif($entry->status == 'verified')
-                            <span class="badge badge-info">Verified</span>
+                            <span class="badge badge-pill badge-info px-3">Verified</span>
                         @else
-                            <span class="badge badge-success">Completed</span>
+                            <span class="badge badge-pill badge-success px-3">Completed</span>
                         @endif
                     </td>
-                    <td>
-                        <a href="{{route('inventory-incoming.show',$entry->id)}}" class="btn btn-info btn-sm" title="View">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{route('inventory-incoming.print-barcodes',$entry->id)}}" class="btn btn-secondary btn-sm" title="Print Barcodes" target="_blank">
-                            <i class="fas fa-barcode"></i>
-                        </a>
-                        <a href="{{route('admin.supplier-ledger.thermal',$entry->supplier_id)}}" class="btn btn-info btn-sm" title="Supplier Ledger" target="_blank">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                        </a>
-                        <a href="{{route('inventory-incoming.thermal',$entry->id)}}" class="btn btn-warning btn-sm" title="Thermal Print" target="_blank">
-                            <i class="fas fa-print"></i>
-                        </a>
-                        @if($entry->status == 'pending')
-                        <form method="POST" action="{{route('inventory-incoming.verify',$entry->id)}}" style="display:inline;">
-                          @csrf
-                          <button class="btn btn-primary btn-sm" title="Verify"><i class="fas fa-check"></i></button>
-                        </form>
-                        @endif
+                    <td data-title="Action">
+                        <div class="d-flex" style="gap: 5px;">
+                            <a href="{{route('inventory-incoming.show',$entry->id)}}" class="btn btn-info btn-sm rounded-circle" title="View" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-eye fa-sm"></i>
+                            </a>
+                            <a href="{{route('inventory-incoming.print-barcodes',$entry->id)}}" class="btn btn-secondary btn-sm rounded-circle" title="Print Barcodes" target="_blank" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-barcode fa-sm"></i>
+                            </a>
+                            <a href="{{route('inventory-incoming.thermal',$entry->id)}}" class="btn btn-warning btn-sm rounded-circle" title="Thermal Print" target="_blank" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-print fa-sm"></i>
+                            </a>
+                            @if($entry->status == 'pending')
+                            <form method="POST" action="{{route('inventory-incoming.verify',$entry->id)}}" style="display:inline;">
+                              @csrf
+                              <button class="btn btn-primary btn-sm rounded-circle" title="Verify" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-check fa-sm"></i></button>
+                            </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>  
             @endforeach
