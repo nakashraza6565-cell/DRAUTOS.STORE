@@ -109,11 +109,38 @@
       <div style="height: 50px;"></div>
   </div>
 
+  <!-- Admin Bottom Navigation Bar (Mobile Only) -->
+  <div class="admin-bottom-nav">
+      <a href="{{route('admin')}}" class="nav-button {{Request::is('admin') ? 'active' : ''}}">
+          <i class="fas fa-th-large"></i>
+          <span>Stats</span>
+      </a>
+      <a href="{{route('admin.pos')}}" class="nav-button {{Request::is('admin/pos*') ? 'active' : ''}}">
+          <i class="fas fa-desktop"></i>
+          <span>POS</span>
+      </a>
+      
+      <!-- Central Menu Button -->
+      <a href="javascript:void(0)" class="nav-button menu-btn" id="bottomLauncherTrigger">
+          <i class="fas fa-bars"></i>
+      </a>
+
+      <a href="{{route('order.index')}}" class="nav-button {{Request::is('admin/order*') ? 'active' : ''}}">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Orders</span>
+      </a>
+      <a href="{{route('product.index')}}" class="nav-button {{Request::is('admin/product*') ? 'active' : ''}}">
+          <i class="fas fa-box"></i>
+          <span>Stock</span>
+      </a>
+  </div>
+
   @include('backend.layouts.footer')
 
   <script>
       $(document).ready(function() {
-          $('#launcherTrigger').on('click', function() {
+          // Both Top and Bottom triggers open the launcher
+          $('#launcherTrigger, #bottomLauncherTrigger').on('click', function() {
               $('#adminAppLauncher').fadeIn(300).addClass('active');
               $('body').css('overflow', 'hidden');
           });

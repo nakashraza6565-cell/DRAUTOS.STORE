@@ -609,7 +609,64 @@
             .dropdown-menu { width: 90% !important; margin: 10px 5% !important; border-radius: 20px !important; }
         }
     </style>
-    <!-- UI Version: 1.0.3 -->
+    <style>
+        /* Admin Bottom Navigation Bar (Option 2) */
+        .admin-bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 70px;
+            background: rgba(12, 27, 61, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .admin-bottom-nav { display: flex; }
+        }
+
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none !important;
+            color: rgba(255,255,255,0.6);
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button i { font-size: 1.2rem; margin-bottom: 4px; }
+        .nav-button span { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2px; }
+
+        .nav-button.active { color: var(--accent); }
+        .nav-button.active i { transform: translateY(-3px); }
+
+        .nav-button:active { transform: scale(0.9); }
+
+        /* Highlighted Menu Button */
+        .nav-button.menu-btn {
+            background: var(--accent-gradient);
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            color: #fff;
+            flex: none;
+            margin: 0 5px;
+            box-shadow: var(--accent-glow);
+        }
+        .nav-button.menu-btn i { margin-bottom: 0; font-size: 1.4rem; }
+    </style>
+    <!-- UI Version: 1.0.4 -->
     @stack('styles')
   
 </head>
