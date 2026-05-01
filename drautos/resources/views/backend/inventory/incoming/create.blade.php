@@ -99,7 +99,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0" id="incoming-items-table">
+                                <table class="table table-hover mb-0 responsive-table-to-cards" id="incoming-items-table">
                                     <thead class="bg-light small font-weight-bold text-uppercase">
                                         <tr>
                                             <th style="width: 40%;">Product / Description</th>
@@ -223,7 +223,7 @@ function updateGrandTotal() {
 function addItemRow(product = null) {
     let html = `
         <tr class="item-row">
-            <td class="align-middle border-0">
+            <td class="align-middle border-0" data-title="Product">
                 <div class="d-flex align-items-center">
                     <select name="items[${itemIndex}][product_id]" class="form-control select2-dynamic product-select" required>
                         <option value="">Select Product</option>
@@ -239,10 +239,10 @@ function addItemRow(product = null) {
                 </div>
                 <div class="current-cost-info mt-1 small text-muted"></div>
             </td>
-            <td class="align-middle border-0">
+            <td class="align-middle border-0" data-title="Quantity">
                 <input type="number" name="items[${itemIndex}][quantity]" class="form-control qty-input" min="1" value="${product ? product.qty : 1}" required>
             </td>
-            <td class="align-middle border-0">
+            <td class="align-middle border-0" data-title="Unit Cost">
                 <input type="number" step="0.01" name="items[${itemIndex}][unit_cost]" class="form-control cost-input" min="0" value="${product ? product.cost : 0}" required>
                 <button type="button" class="btn btn-link btn-sm p-0 small mt-1 text-info" data-toggle="collapse" data-target="#pkg-${itemIndex}">
                     <i class="fas fa-box-open mr-1"></i> Packaging
@@ -259,10 +259,10 @@ function addItemRow(product = null) {
                     <input type="number" step="0.01" name="items[${itemIndex}][packaging_cost]" class="form-control form-control-sm" value="0">
                 </div>
             </td>
-            <td class="align-middle border-0 text-right">
+            <td class="align-middle border-0 text-right" data-title="Line Total">
                 <div class="row-total-display font-weight-bold text-dark">Rs. 0.00</div>
             </td>
-            <td class="align-middle border-0 text-center">
+            <td class="align-middle border-0 text-center" data-title="Action">
                 <button type="button" class="btn btn-link text-danger remove-row"><i class="fas fa-trash-alt"></i></button>
             </td>
         </tr>
