@@ -106,8 +106,14 @@
                             <th>Date</th>
                             <th>Description</th>
                             <th>Category</th>
-                            <th class="text-right">Debit (+)</th>
-                            <th class="text-right">Credit (-)</th>
+                            <th class="text-right">
+                                Debit (+)<br>
+                                <span class="text-danger font-weight-bold" style="font-size: 0.85rem;">Rs. {{ number_format($ledger->where('type', 'debit')->sum('amount'), 2) }}</span>
+                            </th>
+                            <th class="text-right">
+                                Credit (-)<br>
+                                <span class="text-success font-weight-bold" style="font-size: 0.85rem;">Rs. {{ number_format($ledger->where('type', 'credit')->sum('amount'), 2) }}</span>
+                            </th>
                             <th class="text-right">Balance</th>
                             <th class="text-center">Action</th>
                         </tr>
