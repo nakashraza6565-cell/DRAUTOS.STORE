@@ -202,7 +202,9 @@
                             </span>
                             <span class="item-details"><br>UNIT PRICE: {{ number_format($item->price, 0) }}</span>
                         </td>
-                        <td class="text-center bold" style="font-size: 16px;">{{ $item->quantity }}</td>
+                        <td class="text-center bold" style="font-size: 16px;">
+                            {{ $item->quantity }}<span style="font-size: 10px; margin-left: 2px;">{{ strtoupper($item->product->unit ?? '') }}</span>
+                        </td>
                         <td class="text-right bold">Rs.{{ number_format($item->amount, 0) }}</td>
                     </tr>
                 @endforeach

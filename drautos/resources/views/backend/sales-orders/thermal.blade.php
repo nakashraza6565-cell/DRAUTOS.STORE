@@ -218,7 +218,9 @@
                             </span>
                             @endif
                         </td>
-                        <td class="text-center bold" style="font-size: 18px;">{{ $pendingQty }}</td>
+                        <td class="text-center bold" style="font-size: 18px;">
+                            {{ $pendingQty }}<span style="font-size: 10px; margin-left: 2px;">{{ strtoupper($item->product->unit ?? '') }}</span>
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
