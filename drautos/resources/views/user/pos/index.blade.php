@@ -41,8 +41,13 @@
         <div class="row m-0 h-100">
             <!-- Left: Catalog -->
             <div class="col-12 col-lg-8 p-0 h-100 d-flex flex-column catalog-container">
-                
-
+                <!-- Categories Bar (Sticky while scrolling) -->
+                <div class="categories-wrapper bg-white border-bottom shadow-sm sticky-top" style="z-index: 999; overflow-x: auto; white-space: nowrap; padding: 12px 15px;">
+                    <button class="btn btn-primary rounded-pill px-4 py-1 filter-cat active" data-id="all" style="font-size:13px; font-weight:700;">All Products</button>
+                    @foreach($categories as $cat)
+                        <button class="btn btn-light rounded-pill px-4 py-1 filter-cat ml-2" data-id="{{$cat->id}}" style="font-size:13px; font-weight:600; color:#475569;">{{$cat->title}}</button>
+                    @endforeach
+                </div>
 
                 <!-- Products Grid -->
                 <div id="products-grid" class="row m-0 p-3 overflow-auto flex-grow-1 custom-scrollbar">
@@ -112,7 +117,12 @@
         background: var(--primary) !important;
         color: #fff !important;
         border-color: var(--primary) !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
+    .categories-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+
 
     /* Offcanvas Sidebar Logic */
     .pos-sidebar {
@@ -339,12 +349,22 @@
     let products = initialProducts;
     const customerType = "{{ auth()->user()->customer_type ?? 'retail' }}";
 
+    let currentCategoryId = 'all';
+
     $(document).ready(function() {
         renderProducts(); // Render immediately with pre-fetched data
         
         // Sidebar Toggles
         $('#toggle-cart, #close-sidebar, #sidebar-overlay').on('click', function() {
             $('#order-sidebar, #sidebar-overlay').toggleClass('active');
+        });
+
+        // Category Filter Logic
+        $(document).on('click', '.filter-cat', function() {
+            $('.filter-cat').removeClass('active btn-primary text-white').addClass('btn-light text-muted');
+            $(this).removeClass('btn-light text-muted').addClass('active btn-primary text-white');
+            currentCategoryId = $(this).data('id');
+            renderProducts();
         });
     });
 
@@ -453,7 +473,7 @@
     }
 
     function renderProducts() {
-        let catId = 'all';
+        let catId = currentCategoryId;
         let html = '';
         
         let filtered = products;
