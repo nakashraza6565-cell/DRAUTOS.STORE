@@ -64,19 +64,25 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="price" class="col-form-label">Selling Price <span class="text-danger">*</span></label>
                         <input id="price" type="number" step="0.01" name="price" placeholder="0.00" value="{{old('price')}}" class="form-control" required>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="stock">Quantity <span class="text-danger">*</span></label>
                         <input id="quantity" type="number" name="stock" placeholder="0" value="{{old('stock')}}" class="form-control" required>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="low_stock_threshold">Low Stock Alert <span class="text-danger">*</span></label>
+                        <input id="low_stock_threshold" type="number" name="low_stock_threshold" placeholder="5" value="{{old('low_stock_threshold') ?? 5}}" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="unit">Unit / Packaging <span class="text-danger">*</span></label>
                         <div class="input-group">
