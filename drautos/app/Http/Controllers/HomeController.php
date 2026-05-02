@@ -486,10 +486,10 @@ class HomeController extends Controller
         $balance = $user->current_balance ?? 0;
         
         // Pre-fetch initial products for instant load
-        $initial_products = Product::where('status', 'active')->limit(24)->get();
+        $initial_products = Product::where('status', 'active')->get();
         foreach($initial_products as $p) $p->item_type = 'product';
         
-        $initial_bundles = Bundle::where('status', 'active')->limit(12)->get();
+        $initial_bundles = Bundle::where('status', 'active')->get();
         foreach($initial_bundles as $b) {
             $b->title = $b->name;
             $b->item_type = 'bundle';
