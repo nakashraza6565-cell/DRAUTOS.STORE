@@ -1261,9 +1261,18 @@
                 photoSrc = '/' + photoSrc;
             }
 
+            let editRoute = p.item_type === 'bundle' 
+                ? '/admin/product-bundles/' + p.id + '/edit'
+                : '/admin/product/' + p.id + '/edit';
+
             html += `
                 <div class="col-xl-8-grid mb-3 px-2">
-                    <div class="card product-grid-card shadow-sm cursor-pointer" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                    <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                        <button class="btn btn-sm btn-light shadow position-absolute" 
+                            style="top: 8px; left: 8px; z-index: 20; padding: 3px 7px; border-radius: 6px; font-size: 11px;" 
+                            onclick="event.stopPropagation(); window.open('${editRoute}', '_blank');" title="Edit Item">
+                            <i class="fas fa-edit text-primary"></i>
+                        </button>
                         <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
                         <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
                         
