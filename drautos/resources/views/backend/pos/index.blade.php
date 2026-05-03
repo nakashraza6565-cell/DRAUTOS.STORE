@@ -303,25 +303,67 @@
                     @method('PUT')
                     <input type="hidden" id="edit-product-id" name="id">
                     <input type="hidden" id="edit-product-type">
-                    <!-- Required Hidden Fields to pass Validation -->
-                    <input type="hidden" name="cat_id" id="edit-cat-id">
-                    <input type="hidden" name="low_stock_threshold" value="5">
-                    
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-md-8">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Title <span class="text-danger">*</span></label>
                                 <input type="text" name="title" id="edit-title" class="form-control" required>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Category <span class="text-danger">*</span></label>
+                                <select name="cat_id" id="edit-cat-id" class="form-control" required>
+                                    <option value="">Select Category</option>
+                                    @foreach($categories as $cat)
+                                    <option value="{{$cat->id}}">{{$cat->title}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Brand</label>
+                                <select name="brand_id" id="edit-brand-id" class="form-control">
+                                    <option value="">Select Brand</option>
+                                    @foreach($brands as $brand)
+                                    <option value="{{$brand->id}}">{{$brand->title}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Model</label>
+                                <select name="model" id="edit-model" class="form-control">
+                                    <option value="">Select Model</option>
+                                    @foreach($product_models as $m)
+                                    <option value="{{$m->name}}">{{$m->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Unit</label>
+                                <select name="unit" id="edit-unit" class="form-control">
+                                    <option value="piece">Piece</option>
+                                    @foreach($units as $u)
+                                    <option value="{{$u->name}}">{{$u->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Available Stock <span class="text-danger">*</span></label>
                                 <input type="number" name="stock" id="edit-stock" class="form-control" required>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Purchase Price</label>
@@ -332,6 +374,12 @@
                             <div class="form-group">
                                 <label class="small font-weight-bold">Selling Price <span class="text-danger">*</span></label>
                                 <input type="number" name="price" id="edit-price" class="form-control" required step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Low Stock Alert <span class="text-danger">*</span></label>
+                                <input type="number" name="low_stock_threshold" id="edit-low-stock" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -1735,7 +1783,11 @@
         $('#edit-stock').val(product.stock);
         $('#edit-price').val(product.price);
         $('#edit-purchase-price').val(product.purchase_price || 0);
-        $('#edit-cat-id').val(product.cat_id || 1); // Pass existing cat_id
+        $('#edit-cat-id').val(product.cat_id || 1);
+        $('#edit-brand-id').val(product.brand_id || '');
+        $('#edit-model').val(product.model || '');
+        $('#edit-unit').val(product.unit || 'piece');
+        $('#edit-low-stock').val(product.low_stock_threshold || 5);
         
         $('#bundle-edit-warning').addClass('d-none');
         
