@@ -243,19 +243,25 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Purchase Price</label>
                                 <input type="number" name="purchase_price" class="form-control" placeholder="0.00">
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Selling Price <span class="text-danger">*</span></label>
                                 <input type="number" name="price" class="form-control" required placeholder="0.00">
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Low Stock Alert <span class="text-danger">*</span></label>
+                                <input type="number" name="low_stock_threshold" class="form-control" value="5" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Primary Supplier</label>
                                 <div class="input-group">
