@@ -672,27 +672,29 @@ $(document).ready(function() {
             success: function(res) {
                 if (res.status === 'success') {
                     // Refresh only the table container
-                    $('#items-table-container').load(window.location.href + ' #items-table-container > *', function() {
+                    let fetchUrl = window.location.href.split('#')[0];
+                    $('#items-table-container').load(fetchUrl + ' #items-table-container > *', function() {
                         // Reset fulfillment button state based on new content
                         updateFulfillButton();
                         $('#select-all').prop('checked', false);
+                        
+                        // Show success ONLY after the table has actually updated on screen
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
                     });
                     
                     // Refresh linked POS bills history too
-                    $('#linked-bills-container').load(window.location.href + ' #linked-bills-container > *');
+                    $('#linked-bills-container').load(fetchUrl + ' #linked-bills-container > *');
 
                     // Update Grand Total in view
                     $('#grand-total-display').text('Rs. ' + parseFloat(res.total_amount).toLocaleString(undefined, {minimumFractionDigits: 2}));
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: res.message,
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
                     
                     // Reset form select
                     $('#add-product-select').val('').trigger('change');
