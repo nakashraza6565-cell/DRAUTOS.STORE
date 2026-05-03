@@ -544,7 +544,7 @@ class AdminController extends Controller
         $model = $request->get('model');
 
         // Products
-        $products = \App\Models\Product::with('brand')
+        $products = \App\Models\Product::with(['brand', 'suppliers'])
             ->withSum(['carts as total_sold' => function($q) {
                 $q->whereNotNull('order_id');
             }], 'quantity')
