@@ -1393,11 +1393,6 @@
             html += `
                 <div class="col-xl-8-grid mb-3 px-2">
                     <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
-                        <button class="btn btn-sm btn-light shadow position-absolute" 
-                            style="top: 8px; left: 8px; z-index: 20; padding: 3px 7px; border-radius: 6px; font-size: 11px;" 
-                            onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
-                            <i class="fas fa-edit text-primary"></i>
-                        </button>
                         <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
                         <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
                         
@@ -1405,7 +1400,14 @@
                         
                         <div class="glass-overlay">
                             ${itemTypeBadge}
-                            <div class="elite-title text-truncate" title="${p.title}">${p.title}</div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="elite-title text-truncate" title="${p.title}" style="max-width: 80%; margin-bottom: 0;">${p.title}</div>
+                                <button class="btn btn-sm btn-light shadow-sm" 
+                                    style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
+                                    onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
+                                    <i class="fas fa-edit text-primary"></i>
+                                </button>
+                            </div>
                             <div class="elite-meta text-truncate">${brandName} | ${modelName}</div>
                         </div>
                     </div>
