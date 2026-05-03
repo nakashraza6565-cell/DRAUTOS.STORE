@@ -1,6 +1,56 @@
 @extends('backend.layouts.master')
 
 @section('main-content')
+<style>
+    .sleek-input {
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-weight: 700;
+        color: #1e293b;
+        background: #f8fafc;
+        box-shadow: none;
+        transition: all 0.2s;
+    }
+    .sleek-input:focus {
+        border-color: #4e73df;
+        background: #fff;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.2);
+    }
+    .sleek-input-group {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+    .sleek-input-group:focus-within {
+        border-color: #4e73df;
+        background: #fff;
+        box-shadow: 0 0 0 2px rgba(78, 115, 223, 0.2);
+    }
+    .sleek-input-group .prefix {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        padding: 4px 8px;
+    }
+    .sleek-input-group input {
+        border: none;
+        background: transparent;
+        font-weight: 700;
+        color: #1e293b;
+        padding: 4px 8px 4px 0;
+        width: 100%;
+    }
+    .sleek-input-group input:focus {
+        outline: none;
+    }
+</style>
+
 <div class="row">
     <div class="col-md-12">
         @include('backend.layouts.notification')
@@ -158,18 +208,15 @@
                             <td class="text-center align-middle font-weight-bold {{ $remaining > 0 ? 'text-primary' : 'text-success' }}">{{$remaining}}</td>
                             <td class="text-center align-middle">
                                 @if($remaining > 0)
-                                    <input type="number" name="deliver[{{$item->id}}]" class="form-control form-control-sm deliver-qty" value="{{$remaining}}" min="0" step="any">
+                                    <input type="number" name="deliver[{{$item->id}}]" class="sleek-input deliver-qty text-center" value="{{$remaining}}" min="0" step="any" style="width: 70px; margin: 0 auto; display: block;">
                                 @else
                                     <span class="badge badge-success">FULFILLED</span>
                                 @endif
                             </td>
                             <td class="text-right align-middle">
-                                <div class="input-group input-group-sm ml-auto" style="width:120px;">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text px-1" style="font-size:10px;">Rs</span>
-                                    </div>
-                                    <input type="number" step="0.01" class="form-control form-control-sm text-right item-price-input" 
-                                           data-id="{{$item->id}}" value="{{$item->price}}">
+                                <div class="sleek-input-group ml-auto" style="width: 100px;">
+                                    <span class="prefix">Rs</span>
+                                    <input type="number" step="0.01" class="text-right item-price-input" data-id="{{$item->id}}" value="{{$item->price}}">
                                 </div>
                             </td>
                             <td class="text-right align-middle font-weight-bold" id="item-total-{{$item->id}}">Rs. {{number_format($item->price * $item->quantity, 2)}}</td>
