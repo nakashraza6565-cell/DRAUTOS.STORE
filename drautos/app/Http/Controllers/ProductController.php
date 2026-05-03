@@ -318,6 +318,10 @@ class ProductController extends Controller
             $product->suppliers()->sync($request->suppliers);
         }
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => 'Product successfully updated', 'product' => $product]);
+        }
+
         return redirect()->route('product.index')->with('success', 'Product Successfully updated');
     }
 

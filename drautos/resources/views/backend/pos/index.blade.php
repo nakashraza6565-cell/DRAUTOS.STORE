@@ -283,6 +283,67 @@
     </div>
 </div>
 
+{{-- Edit Product Modal --}}
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index:10000;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold">Quick Edit Item</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body bg-light">
+                <form id="edit-product-form">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="edit-product-id" name="id">
+                    <input type="hidden" id="edit-product-type">
+                    <!-- Required Hidden Fields to pass Validation -->
+                    <input type="hidden" name="cat_id" id="edit-cat-id">
+                    <input type="hidden" name="low_stock_threshold" value="5">
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Title <span class="text-danger">*</span></label>
+                                <input type="text" name="title" id="edit-title" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Available Stock <span class="text-danger">*</span></label>
+                                <input type="number" name="stock" id="edit-stock" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Purchase Price</label>
+                                <input type="number" name="purchase_price" id="edit-purchase-price" class="form-control" step="0.01">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Selling Price <span class="text-danger">*</span></label>
+                                <input type="number" name="price" id="edit-price" class="form-control" required step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="alert alert-warning small mb-0 mt-2 d-none" id="bundle-edit-warning">
+                    <i class="fas fa-info-circle mr-1"></i> Full bundle editing must be done via the Admin Dashboard. Only stock/price are editable here.
+                </div>
+            </div>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4 shadow" id="update-product-btn">
+                    <i class="fas fa-save mr-1"></i> SAVE CHANGES
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @include('backend.product.partials.modals')
 
 <!-- Payment Modal -->
@@ -1270,7 +1331,7 @@
                     <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
                         <button class="btn btn-sm btn-light shadow position-absolute" 
                             style="top: 8px; left: 8px; z-index: 20; padding: 3px 7px; border-radius: 6px; font-size: 11px;" 
-                            onclick="event.stopPropagation(); window.open('${editRoute}', '_blank');" title="Edit Item">
+                            onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
                             <i class="fas fa-edit text-primary"></i>
                         </button>
                         <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
@@ -1617,6 +1678,63 @@
             }
         });
     });
+
+    // Save Edit Product logic
+    $('#update-product-btn').on('click', function() {
+        let $btn = $(this);
+        let id = $('#edit-product-id').val();
+        let type = $('#edit-product-type').val();
+        
+        if(type === 'bundle') {
+            window.open('/admin/product-bundles/' + id + '/edit', '_blank');
+            return;
+        }
+
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> SAVING...');
+        
+        $.ajax({
+            url: "/admin/product/" + id,
+            type: 'POST',
+            data: $('#edit-product-form').serialize(),
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#editProductModal').modal('hide');
+                    Swal.fire('Success', 'Item updated!', 'success');
+                    fetchProducts(null, false, true); // Refresh grid silently
+                }
+            },
+            error: function(err) {
+                let msg = err.responseJSON ? err.responseJSON.message : 'Error updating item';
+                Swal.fire('Error', msg, 'error');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> SAVE CHANGES');
+            }
+        });
+    });
+
+    window.openEditModal = function(pid, type) {
+        if(type === 'bundle') {
+            // Bundles are complex (has many products), open in new tab for now
+            window.open('/admin/product-bundles/' + pid + '/edit', '_blank');
+            return;
+        }
+
+        let product = products.find(p => p.id == pid && p.item_type == type);
+        if (!product) return;
+
+        $('#edit-product-id').val(product.id);
+        $('#edit-product-type').val(type);
+        $('#edit-title').val(product.title);
+        $('#edit-stock').val(product.stock);
+        $('#edit-price').val(product.price);
+        $('#edit-purchase-price').val(product.purchase_price || 0);
+        $('#edit-cat-id').val(product.cat_id || 1); // Pass existing cat_id
+        
+        $('#bundle-edit-warning').addClass('d-none');
+        
+        $('#editProductModal').modal('show');
+    };
 
     $('#complete-order').on('click', function() {
         if (cart.length == 0) {
