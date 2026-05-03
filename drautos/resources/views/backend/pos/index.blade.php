@@ -364,22 +364,32 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Purchase Price</label>
                                 <input type="number" name="purchase_price" id="edit-purchase-price" class="form-control" step="0.01">
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Selling Price <span class="text-danger">*</span></label>
                                 <input type="number" name="price" id="edit-price" class="form-control" required step="0.01">
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label class="small font-weight-bold">Low Stock Alert <span class="text-danger">*</span></label>
                                 <input type="number" name="low_stock_threshold" id="edit-low-stock" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Suppliers <span class="text-danger">*</span></label>
+                                <select name="suppliers[]" id="edit-supplier-select" class="form-control" multiple required>
+                                    @foreach($suppliers as $supplier)
+                                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -1788,6 +1798,25 @@
         $('#edit-model').val(product.model || '');
         $('#edit-unit').val(product.unit || 'piece');
         $('#edit-low-stock').val(product.low_stock_threshold || 5);
+        
+        // Handle Select2 for Edit Modal
+        if ($('#edit-supplier-select').hasClass('select2-hidden-accessible')) {
+            $('#edit-supplier-select').select2('destroy');
+        }
+        
+        $('#edit-supplier-select').select2({
+            placeholder: "Select Supplier(s)",
+            width: '100%',
+            dropdownParent: $('#editProductModal')
+        });
+
+        // Set Suppliers if available, otherwise clear
+        if (product.suppliers && product.suppliers.length > 0) {
+            let sIds = product.suppliers.map(s => s.id);
+            $('#edit-supplier-select').val(sIds).trigger('change');
+        } else {
+            $('#edit-supplier-select').val(null).trigger('change');
+        }
         
         $('#bundle-edit-warning').addClass('d-none');
         
