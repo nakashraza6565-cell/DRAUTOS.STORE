@@ -177,6 +177,9 @@ class OrderController extends Controller
         }
         Cart::where('user_id', auth()->user()->id)->where('order_id', null)->update(['order_id' => $order->id]);
 
+        // Activity Log
+        \App\Models\ActivityLog::log('sale', 'New Order Placed', auth()->user()->name . ' placed a new store order #' . $order->order_number, route('order.show', $order->id));
+
         // Send WhatsApp Notification with PDF Invoice
         try {
             if ($order->phone) {
@@ -424,6 +427,11 @@ class OrderController extends Controller
 
         
         if($status){
+            // Activity Log
+            $logMsg = 'Updated order #' . $order->order_number;
+            if($request->status == 'delivered') $logMsg = 'Marked order #' . $order->order_number . ' as DELIVERED';
+            \App\Models\ActivityLog::log('sale', 'Order Updated', auth()->user()->name . ' ' . $logMsg, route('order.show', $order->id));
+
             request()->session()->flash('success','Successfully updated order');
         }
         else{

@@ -133,6 +133,12 @@ class AdminController extends Controller
         $total_payables = \App\Models\PaymentReminder::where('type', 'payable')->where('status', '!=', 'completed')->sum('amount');
         $total_receivables = \App\Models\PaymentReminder::where('type', 'receivable')->where('status', '!=', 'completed')->sum('amount');
 
+        // Activity Feed (System Newspaper)
+        $activity_logs = \App\Models\ActivityLog::with('user')
+            ->where('created_at', '>=', Carbon::now()->subHours(24))
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
         return view('backend.index')
             ->with('users', json_encode($array))
             ->with('category_count', $category_count)
@@ -160,7 +166,8 @@ class AdminController extends Controller
             ->with('present_staff_count', $present_staff_count)
             ->with('all_staff', $all_staff)
             ->with('total_payables', $total_payables)
-            ->with('total_receivables', $total_receivables);
+            ->with('total_receivables', $total_receivables)
+            ->with('activity_logs', $activity_logs);
     }
 
     public function whatsappSettings()

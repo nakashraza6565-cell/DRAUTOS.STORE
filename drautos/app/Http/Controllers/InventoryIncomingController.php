@@ -138,6 +138,9 @@ class InventoryIncomingController extends Controller
 
             DB::commit();
 
+            // Activity Log
+            \App\Models\ActivityLog::log('inventory', 'Incoming Goods Received', Auth::user()->name . ' received incoming goods #' . $incoming->reference_number . ' (' . count($request->items) . ' items)', route('inventory-incoming.show', $incoming->id));
+
             session()->flash('success', 'Incoming goods entry created successfully.' . ($request->has('post_to_ledger') ? ' Posted to supplier ledger.' : ''));
             return redirect()->route('inventory-incoming.show', $incoming->id);
 

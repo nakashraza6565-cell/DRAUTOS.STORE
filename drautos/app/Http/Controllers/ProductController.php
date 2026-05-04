@@ -144,6 +144,9 @@ class ProductController extends Controller
             $product->suppliers()->sync($request->suppliers);
         }
 
+        // Activity Log
+        \App\Models\ActivityLog::log('inventory', 'New Product Created', auth()->user()->name . ' created a new product: ' . $product->title, route('product.edit', $product->id));
+
         return redirect()->route('product.index')->with('success', 'Product Successfully added');
     }
 
@@ -185,6 +188,9 @@ class ProductController extends Controller
             $data['slug'] = $slug;
 
             $product = Product::create($data);
+
+            // Activity Log
+            \App\Models\ActivityLog::log('inventory', 'Quick Product Created', auth()->user()->name . ' added product via quick form: ' . $product->title, route('product.edit', $product->id));
 
             // Sync suppliers if provided
             if ($request->suppliers) {
@@ -313,7 +319,17 @@ class ProductController extends Controller
             $validatedData['barcode'] = str_pad($id, 8, '0', STR_PAD_LEFT);
         }
 
+        $oldPrice = $product->price;
         $status = $product->update($validatedData);
+        
+        if ($status) {
+            if ($oldPrice != $product->price) {
+                 \App\Models\ActivityLog::log('price', 'Price Updated', auth()->user()->name . ' updated price of ' . $product->title . ' from Rs. ' . $oldPrice . ' to Rs. ' . $product->price, route('product.edit', $product->id));
+            } else {
+                 \App\Models\ActivityLog::log('inventory', 'Product Updated', auth()->user()->name . ' updated product details for ' . $product->title, route('product.edit', $product->id));
+            }
+        }
+
         if ($request->has('suppliers')) {
             $product->suppliers()->sync($request->suppliers);
         }

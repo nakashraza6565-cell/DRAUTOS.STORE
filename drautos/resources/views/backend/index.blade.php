@@ -215,6 +215,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Row 4: System Newspaper (Activity Feed) -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="premium-panel shadow-sm overflow-hidden">
+                <div class="panel-header d-flex justify-content-between align-items-center" style="background: #1e293b; color: #fff; padding: 1.25rem 1.5rem;">
+                    <h5 class="m-0 font-weight-bold">
+                        <i class="fas fa-newspaper mr-2"></i> SYSTEM NEWSPAPER: TODAY'S HAPPENINGS
+                    </h5>
+                    <span class="badge badge-light px-3 py-1 font-weight-bold" style="border-radius: 20px; font-size: 0.75rem; letter-spacing: 0.5px;">LAST 24 HOURS</span>
+                </div>
+                <div class="panel-body p-4" style="background: #f8fafc; max-height: 500px; overflow-y: auto;">
+                    <div class="activity-feed">
+                        @forelse($activity_logs as $log)
+                            <div class="activity-card mb-3 p-3 bg-white border-0 shadow-sm d-flex align-items-start" style="border-radius: 15px; border-left: 5px solid #6366f1 !important; transition: transform 0.2s;">
+                                <div class="activity-icon-box mr-3 mt-1 d-flex align-items-center justify-content-center" style="min-width: 45px; height: 45px; background: #f1f5f9; border-radius: 12px;">
+                                    <i class="fas {{ $log->icon }} fa-lg"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="m-0 font-weight-bold text-dark">{{ $log->action }}</h6>
+                                        <span class="text-muted small font-weight-bold"><i class="far fa-clock mr-1"></i> {{ $log->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <p class="mb-0 text-gray-700" style="line-height: 1.5; font-size: 0.95rem;">{!! $log->description !!}</p>
+                                    @if($log->link)
+                                        <a href="{{ $log->link }}" class="btn btn-sm btn-link text-primary font-weight-bold p-0 mt-2">
+                                            READ FULL STORY <i class="fas fa-arrow-right ml-1" style="font-size: 10px;"></i>
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-5">
+                                <div class="empty-icon bg-gray-200 mb-3 mx-auto" style="width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-ghost text-gray-400 fa-2x"></i>
+                                </div>
+                                <h6 class="font-weight-bold text-gray-600">The newsroom is quiet...</h6>
+                                <p class="text-muted small">No major activities recorded in the last 24 hours.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
   <!-- Quick Attendance Modal -->

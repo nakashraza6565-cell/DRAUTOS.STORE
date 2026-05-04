@@ -666,12 +666,18 @@ class HomeController extends Controller
                 $cart->save();
             }
 
+            // Activity Log
+            \App\Models\ActivityLog::log('sale', 'Online Order Placed', $user->name . ' placed an online order #' . $order->order_number, route('order.show', $order->id));
+
             // Sync PaymentReminder
             $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
             if($reminder) {
                 $reminder->amount = $order->total_amount;
                 $reminder->save();
             }
+
+            // Activity Log
+            \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
         });
 
         return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
