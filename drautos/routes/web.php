@@ -185,6 +185,15 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         }
     });
 
+    Route::get('/fix-db', function () {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            return "<h1>Database Updated!</h1><p>New tables have been created.</p><a href='/admin'>Back to Dashboard</a>";
+        } catch (\Exception $e) {
+            return "Error: " . $e->getMessage();
+        }
+    });
+
     Route::get('/file-manager', function () {
         return view('backend.layouts.file-manager');
     })->name('file-manager');
