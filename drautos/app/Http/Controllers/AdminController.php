@@ -138,6 +138,9 @@ class AdminController extends Controller
             ->where('created_at', '>=', Carbon::now()->subHours(24))
             ->orderBy('created_at', 'DESC')
             ->get();
+            
+        // Get AI Summary Headlines
+        $ai_headlines = \App\Services\AIService::summarizeActivities($activity_logs);
 
         return view('backend.index')
             ->with('users', json_encode($array))
@@ -167,7 +170,8 @@ class AdminController extends Controller
             ->with('all_staff', $all_staff)
             ->with('total_payables', $total_payables)
             ->with('total_receivables', $total_receivables)
-            ->with('activity_logs', $activity_logs);
+            ->with('activity_logs', $activity_logs)
+            ->with('ai_headlines', $ai_headlines);
     }
 
     public function whatsappSettings()

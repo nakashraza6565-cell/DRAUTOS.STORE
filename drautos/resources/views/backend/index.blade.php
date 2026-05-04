@@ -47,37 +47,49 @@
         </div>
         <div class="ticker-content">
             <div class="ticker-track">
-                @foreach($activity_logs as $log)
+                @if(!empty($ai_headlines))
                     <div class="ticker-item">
-                        <i class="fas {{ $log->icon }}"></i>
-                        <span class="ticker-text">
-                            <strong>{{ $log->action }}:</strong> {!! strip_tags($log->description) !!}
-                            <span class="ticker-time">({{ $log->created_at->diffForHumans() }})</span>
-                        </span>
+                        <i class="fas fa-robot mr-2"></i>
+                        <span class="ticker-text"><strong>AI INSIGHT:</strong> {{ $ai_headlines }}</span>
                     </div>
-                @endforeach
-                @if($activity_logs->isEmpty())
+                    {{-- Duplicate for seamless loop --}}
                     <div class="ticker-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span class="ticker-text">The newsroom is quiet... No major activities recorded in the last 24 hours.</span>
+                        <i class="fas fa-robot mr-2"></i>
+                        <span class="ticker-text"><strong>AI INSIGHT:</strong> {{ $ai_headlines }}</span>
                     </div>
                 @else
-                    <div class="ticker-item">
-                        <a href="{{ route('admin.activity-logs') }}" class="text-white font-weight-bold" style="text-decoration: underline;">
-                            <i class="fas fa-list-ul mr-1"></i> VIEW FULL HISTORY
-                        </a>
-                    </div>
+                    @foreach($activity_logs as $log)
+                        <div class="ticker-item">
+                            <i class="fas {{ $log->icon }}"></i>
+                            <span class="ticker-text">
+                                <strong>{{ $log->action }}:</strong> {!! strip_tags($log->description) !!}
+                                <span class="ticker-time">({{ $log->created_at->diffForHumans() }})</span>
+                            </span>
+                        </div>
+                    @endforeach
+                    @if($activity_logs->isEmpty())
+                        <div class="ticker-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="ticker-text">The newsroom is quiet... No major activities recorded in the last 24 hours.</span>
+                        </div>
+                    @else
+                        <div class="ticker-item">
+                            <a href="{{ route('admin.activity-logs') }}" class="text-white font-weight-bold" style="text-decoration: underline;">
+                                <i class="fas fa-list-ul mr-1"></i> VIEW FULL HISTORY
+                            </a>
+                        </div>
+                    @endif
+                    {{-- Duplicate for loop --}}
+                    @foreach($activity_logs as $log)
+                        <div class="ticker-item">
+                            <i class="fas {{ $log->icon }}"></i>
+                            <span class="ticker-text">
+                                <strong>{{ $log->action }}:</strong> {!! strip_tags($log->description) !!}
+                                <span class="ticker-time">({{ $log->created_at->diffForHumans() }})</span>
+                            </span>
+                        </div>
+                    @endforeach
                 @endif
-                {{-- Duplicate for seamless loop if items exist --}}
-                @foreach($activity_logs as $log)
-                    <div class="ticker-item">
-                        <i class="fas {{ $log->icon }}"></i>
-                        <span class="ticker-text">
-                            <strong>{{ $log->action }}:</strong> {!! strip_tags($log->description) !!}
-                            <span class="ticker-time">({{ $log->created_at->diffForHumans() }})</span>
-                        </span>
-                    </div>
-                @endforeach
             </div>
         </div>
     </div>
