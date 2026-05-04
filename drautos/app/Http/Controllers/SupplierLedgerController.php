@@ -181,4 +181,10 @@ class SupplierLedgerController extends Controller
         $ledger = SupplierLedger::where('supplier_id', $supplierId)->orderBy('transaction_date', 'asc')->get();
         return view('backend.supplier_ledger.thermal', compact('supplier', 'ledger'));
     }
+
+    public function printTransactionVoucher($id)
+    {
+        $transaction = SupplierLedger::with('supplier')->findOrFail($id);
+        return view('backend.supplier_ledger.thermal-voucher', compact('transaction'));
+    }
 }

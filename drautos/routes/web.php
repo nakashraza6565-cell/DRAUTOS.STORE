@@ -337,6 +337,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::delete('/supplier-ledger/{id}', [App\Http\Controllers\SupplierLedgerController::class, 'destroy'])->name('admin.supplier-ledger.destroy');
     Route::get('/supplier-ledger/{supplier}/pdf', [App\Http\Controllers\SupplierLedgerController::class, 'generatePDF'])->name('admin.supplier-ledger.pdf');
     Route::get('/supplier-ledger/{supplier}/thermal', [App\Http\Controllers\SupplierLedgerController::class, 'thermalPrint'])->name('admin.supplier-ledger.thermal');
+    Route::get('/supplier-ledger/transaction/{id}/voucher', [App\Http\Controllers\SupplierLedgerController::class, 'printTransactionVoucher'])->name('admin.supplier-ledger.transaction-voucher');
     Route::post('/supplier-ledger/{supplier}/whatsapp', [App\Http\Controllers\SupplierLedgerController::class, 'sendWhatsApp'])->name('admin.supplier-ledger.whatsapp');
 
     // WhatsApp Test

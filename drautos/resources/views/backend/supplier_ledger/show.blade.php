@@ -148,6 +148,11 @@
                                                 <i class="fas fa-file-invoice" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
+                                        @if(in_array($item->category, ['payment', 'return', 'manual']))
+                                            <a href="{{route('admin.supplier-ledger.transaction-voucher', $item->id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Voucher">
+                                                <i class="fas fa-receipt" style="font-size: 12px;"></i>
+                                            </a>
+                                        @endif
                                         <button class="btn btn-primary btn-sm rounded-circle editBtn" 
                                                 style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" 
                                                 title="Edit Transaction"

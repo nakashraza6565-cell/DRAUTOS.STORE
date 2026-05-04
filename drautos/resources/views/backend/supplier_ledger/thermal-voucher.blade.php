@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Transaction Voucher #{{ $transaction->id }}</title>
+    <title>Supplier Voucher #{{ $transaction->id }}</title>
     <style>
         * { box-sizing: border-box; }
         @page { margin: 0; }
@@ -125,12 +125,12 @@
     </div>
 
     <div class="text-center" style="font-size: 16px; margin-bottom: 15px; text-decoration: underline; text-transform: uppercase;">
-        @if($transaction->category == 'payment' && $transaction->type == 'credit')
-            PAYMENT RECEIPT
+        @if($transaction->category == 'payment' && $transaction->type == 'debit')
+            PAYMENT ISSUED
         @elseif($transaction->category == 'return' && $transaction->type == 'credit')
-            GOODS RETURN VOUCHER
+            PURCHASE RETURN
         @else
-            TRANSACTION VOUCHER
+            SUPPLIER VOUCHER
         @endif
     </div>
 
@@ -148,8 +148,8 @@
             <span>{{ $transaction->created_at->format('h:i A') }}</span>
         </div>
         <div class="info-row" style="margin-top: 5px;">
-            <span>Customer:</span>
-            <span class="text-right">{{ $transaction->user->name }}<br>{{ $transaction->user->phone }}</span>
+            <span>Supplier:</span>
+            <span class="text-right">{{ $transaction->supplier->name }}<br>{{ $transaction->supplier->company_name ? $transaction->supplier->company_name . '<br>' : '' }}{{ $transaction->supplier->phone }}</span>
         </div>
     </div>
 
@@ -167,13 +167,13 @@
             <td class="text-right">{{ $transaction->description }}</td>
         </tr>
         <tr>
-            <td style="width: 40%; font-size: 12px; color: #555; padding-top: 15px;">New Balance:</td>
+            <td style="width: 40%; font-size: 12px; color: #555; padding-top: 15px;">New Payable:</td>
             <td class="text-right" style="padding-top: 15px;">Rs. {{ number_format($transaction->balance, 2) }}</td>
         </tr>
     </table>
 
     <div class="signature-line">
-        {{ auth()->check() ? auth()->user()->name : 'Admin' }}
+        Receiver Signature
     </div>
 
     <div class="footer">
