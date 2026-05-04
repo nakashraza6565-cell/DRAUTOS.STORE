@@ -81,11 +81,22 @@
         <div class="col-xl-4">
             <div class="card shadow mb-4 text-center">
                 <div class="card-header py-3 bg-white">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ $chartTitle ?? 'Receivable Split' }}</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Receivable Split by City</h6>
                 </div>
                 <div class="card-body">
-                    <div class="chart-pie pt-4 pb-2" style="height: 300px;">
-                        <canvas id="receivablePieChart"></canvas>
+                    <div class="chart-pie pt-4 pb-2" style="height: 250px;">
+                        <canvas id="cityPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4 text-center">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Top 10 Customers (% Share)</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2" style="height: 250px;">
+                        <canvas id="customerPieChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -107,39 +118,66 @@
         return result;
     }
 
-    var chartLabels = {!! json_encode($chartLabels ?? []) !!};
-    var chartData = {!! json_encode($chartData ?? []) !!};
+    var cityLabels = {!! json_encode($cityChartLabels ?? []) !!};
+    var cityData = {!! json_encode($cityChartData ?? []) !!};
 
-    var ctx = document.getElementById("receivablePieChart");
-    var myPieChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                data: chartData,
-                backgroundColor: generateColors(chartData.length),
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-            }],
-        },
-        options: {
-            maintainAspectRatio: false,
-            legend: { 
-                position: 'bottom',
-                labels: {
-                    boxWidth: 12,
-                    fontSize: 11
-                }
+    if(document.getElementById("cityPieChart")) {
+        new Chart(document.getElementById("cityPieChart"), {
+            type: 'doughnut',
+            data: {
+                labels: cityLabels,
+                datasets: [{
+                    data: cityData,
+                    backgroundColor: generateColors(cityData.length),
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
             },
-            tooltips: {
-                callbacks: {
-                    label: function(tooltipItem, data) {
-                        var label = data.labels[tooltipItem.index] || '';
-                        var value = data.datasets[0].data[tooltipItem.index];
-                        return label + ': Rs. ' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2});
+            options: {
+                maintainAspectRatio: false,
+                legend: { position: 'bottom', labels: { boxWidth: 12, fontSize: 11 } },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var label = data.labels[tooltipItem.index] || '';
+                            var value = data.datasets[0].data[tooltipItem.index];
+                            return label + ': Rs. ' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2});
+                        }
                     }
                 }
-            }
-        },
-    });
+            },
+        });
+    }
+
+    var custLabels = {!! json_encode($customerChartLabels ?? []) !!};
+    var custData = {!! json_encode($customerChartData ?? []) !!};
+
+    if(document.getElementById("customerPieChart")) {
+        new Chart(document.getElementById("customerPieChart"), {
+            type: 'pie',
+            data: {
+                labels: custLabels,
+                datasets: [{
+                    data: custData,
+                    backgroundColor: generateColors(custData.length),
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: { position: 'bottom', labels: { boxWidth: 12, fontSize: 11 } },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            var label = data.labels[tooltipItem.index] || '';
+                            var value = data.datasets[0].data[tooltipItem.index];
+                            var total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            var percentage = ((value / total) * 100).toFixed(1);
+                            return label + ': ' + percentage + '% (Rs. ' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2}) + ')';
+                        }
+                    }
+                }
+            },
+        });
+    }
 </script>
 @endpush

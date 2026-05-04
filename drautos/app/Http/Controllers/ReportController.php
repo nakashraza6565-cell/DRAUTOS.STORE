@@ -184,28 +184,29 @@ class ReportController extends Controller
             ->whereNotNull('city')->where('city', '!=', '')
             ->distinct()->pluck('city');
 
-        // Chart Logic: Group by City if overall, Group by Customer if city selected
-        $chartLabels = [];
-        $chartData = [];
-        $chartTitle = $city ? "Customer Split in " . $city : "Receivable Split by City";
-
-        if ($city) {
-            // Split by Customer
-            $chartLabels = $byCustomer->map(function($c) { return $c->name ?? 'Unknown'; })->values();
-            $chartData = $byCustomer->pluck('current_balance')->values();
-        } else {
-            // Split by City
-            $cityGroups = $byCustomer->groupBy(function($item) {
-                return $item->city ?? 'Unknown/No City';
-            });
-            
-            foreach ($cityGroups as $cityName => $group) {
-                $chartLabels[] = $cityName;
-                $chartData[] = $group->sum('current_balance');
-            }
+        // City Chart Logic
+        $cityChartLabels = [];
+        $cityChartData = [];
+        $cityGroups = $byCustomer->groupBy(function($item) {
+            return $item->city ?? 'Unknown/No City';
+        });
+        foreach ($cityGroups as $cityName => $group) {
+            $cityChartLabels[] = $cityName;
+            $cityChartData[] = $group->sum('current_balance');
         }
 
-        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'chartLabels', 'chartData', 'chartTitle'));
+        // Customer Chart Logic (Top 10 + Others)
+        $topCustomers = $byCustomer->sortByDesc('current_balance')->take(10);
+        $customerChartLabels = $topCustomers->map(function($c) { return $c->name ?? 'Unknown'; })->values()->toArray();
+        $customerChartData = $topCustomers->pluck('current_balance')->values()->toArray();
+
+        $othersBalance = $byCustomer->sortByDesc('current_balance')->skip(10)->sum('current_balance');
+        if ($othersBalance > 0) {
+            $customerChartLabels[] = 'Others';
+            $customerChartData[] = $othersBalance;
+        }
+
+        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData'));
     }
     public function productAnalysis(Request $request)
     {
