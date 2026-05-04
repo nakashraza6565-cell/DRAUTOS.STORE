@@ -543,8 +543,15 @@ class AdminController extends Controller
         $brand_id = $request->get('brand_id');
         $model = $request->get('model');
 
+        $staffId = auth()->id();
+
         // Products
         $products = \App\Models\Product::with(['brand', 'suppliers'])
+            ->withSum(['carts as staff_sold' => function($q) use ($staffId) {
+                $q->whereHas('order', function($oq) use ($staffId) {
+                    $oq->where('staff_id', $staffId);
+                });
+            }], 'quantity')
             ->withSum(['carts as total_sold' => function($q) {
                 $q->whereNotNull('order_id');
             }], 'quantity')
@@ -568,6 +575,7 @@ class AdminController extends Controller
             ->when($model && $model != 'all', function ($q) use ($model) {
                 $q->where('model', $model);
             })
+            ->orderByDesc('staff_sold')
             ->orderByDesc('total_sold')
             ->limit(40)
             ->get();
