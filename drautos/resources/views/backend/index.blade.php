@@ -61,6 +61,12 @@
                         <i class="fas fa-info-circle"></i>
                         <span class="ticker-text">The newsroom is quiet... No major activities recorded in the last 24 hours.</span>
                     </div>
+                @else
+                    <div class="ticker-item">
+                        <a href="{{ route('admin.activity-logs') }}" class="text-white font-weight-bold" style="text-decoration: underline;">
+                            <i class="fas fa-list-ul mr-1"></i> VIEW FULL HISTORY
+                        </a>
+                    </div>
                 @endif
                 {{-- Duplicate for seamless loop if items exist --}}
                 @foreach($activity_logs as $log)

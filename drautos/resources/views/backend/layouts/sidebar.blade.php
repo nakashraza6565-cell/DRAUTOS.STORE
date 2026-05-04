@@ -19,9 +19,14 @@
     @can('view-dashboard')
     <!-- Nav Item - Dashboard -->
     <li class="nav-item {{Request::is('admin') ? 'active' : ''}}">
-      <a class="nav-link d-flex align-items-center py-3" href="{{route('admin')}}">
-        <i class="fas fa-fw fa-house-chimney-window mr-2" style="font-size: 1.1rem;"></i>
-        <span style="font-weight: 600;">Dashboard</span></a>
+      <a class="nav-link d-flex align-items-center py-2" href="{{route('admin')}}">
+        <i class="fas fa-fw fa-house-chimney-window mr-2"></i>
+        <span>Dashboard</span></a>
+    </li>
+    <li class="nav-item {{Request::is('admin/activity-logs') ? 'active' : ''}}">
+      <a class="nav-link d-flex align-items-center py-2" href="{{route('admin.activity-logs')}}">
+        <i class="fas fa-fw fa-newspaper mr-2"></i>
+        <span>Full Activity Log</span></a>
     </li>
     @endcan
 
