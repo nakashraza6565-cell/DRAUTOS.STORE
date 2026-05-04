@@ -56,7 +56,9 @@ class AIService
             if ($response->successful()) {
                 $result = $response->json();
                 if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-                    return trim($result['candidates'][0]['content']['parts'][0]['text']);
+                    $headline = trim($result['candidates'][0]['content']['parts'][0]['text']);
+                    Log::info("Gemini Headline: " . $headline);
+                    return $headline;
                 }
             } else {
                 Log::warning("Gemini API Error: " . $response->body());

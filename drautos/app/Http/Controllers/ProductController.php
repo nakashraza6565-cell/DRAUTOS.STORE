@@ -449,8 +449,11 @@ class ProductController extends Controller
 
             $product = Product::findOrFail($id);
             $field   = $request->price_type;
+            $oldValue = $product->$field;
             $product->$field = $request->value;
             $product->save();
+
+            \App\Models\ActivityLog::log('price', 'Price Updated', auth()->user()->name . ' updated ' . str_replace('_', ' ', $field) . ' of ' . $product->title . ' to Rs. ' . $product->$field, route('product.edit', $product->id));
 
             return response()->json([
                 'status'  => 'success',
