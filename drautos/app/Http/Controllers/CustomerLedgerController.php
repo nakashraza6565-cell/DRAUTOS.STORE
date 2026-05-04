@@ -177,4 +177,10 @@ class CustomerLedgerController extends Controller
         $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
         return view('backend.customer_ledger.thermal', compact('user', 'ledger'));
     }
+
+    public function printTransactionVoucher($id)
+    {
+        $transaction = CustomerLedger::with('user')->findOrFail($id);
+        return view('backend.customer_ledger.thermal-voucher', compact('transaction'));
+    }
 }

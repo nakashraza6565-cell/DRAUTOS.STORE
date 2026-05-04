@@ -327,6 +327,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::delete('/customer-ledger/{id}', [App\Http\Controllers\CustomerLedgerController::class, 'destroy'])->name('admin.customer-ledger.destroy');
     Route::get('/customer-ledger/{user}/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'generatePDF'])->name('admin.customer-ledger.pdf');
     Route::get('/customer-ledger/{user}/thermal', [App\Http\Controllers\CustomerLedgerController::class, 'thermalPrint'])->name('admin.customer-ledger.thermal');
+    Route::get('/customer-ledger/transaction/{id}/voucher', [App\Http\Controllers\CustomerLedgerController::class, 'printTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher');
     Route::post('/customer-ledger/{user}/whatsapp', [App\Http\Controllers\CustomerLedgerController::class, 'sendWhatsApp'])->name('admin.customer-ledger.whatsapp');
 
     Route::get('/supplier-ledger', [App\Http\Controllers\SupplierLedgerController::class, 'index'])->name('admin.supplier-ledger.index');
