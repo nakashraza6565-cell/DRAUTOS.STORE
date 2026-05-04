@@ -31,25 +31,9 @@ class SupplierController extends Controller
     {
         $supplier = Supplier::findOrFail($id);
         
-        $from = $request->get('from', Carbon::now()->startOfMonth()->format('Y-m-d'));
-        $to = $request->get('to', Carbon::now()->format('Y-m-d'));
+        $products = $supplier->products()->orderBy('title', 'asc')->paginate(20);
 
-        $purchaseOrders = PurchaseOrder::where('supplier_id', $id)
-            ->whereBetween('order_date', [$from, $to])
-            ->orderBy('order_date', 'DESC')
-            ->get();
-
-        $returns = PurchaseReturn::where('supplier_id', $id)
-            ->whereBetween('return_date', [$from, $to])
-            ->orderBy('return_date', 'DESC')
-            ->get();
-
-        $incoming = InventoryIncoming::where('supplier_id', $id)
-            ->whereBetween('received_date', [$from, $to])
-            ->orderBy('received_date', 'DESC')
-            ->get();
-
-        return view('backend.supplier.show', compact('supplier', 'purchaseOrders', 'returns', 'incoming', 'from', 'to'));
+        return view('backend.supplier.show', compact('supplier', 'products'));
     }
 
     public function exportCSV(Request $request, $id)
