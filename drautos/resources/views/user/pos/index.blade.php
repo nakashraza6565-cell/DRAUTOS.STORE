@@ -61,8 +61,8 @@
                 <!-- Sidebar Header -->
                 <div class="p-4 border-bottom d-flex align-items-center justify-content-between bg-white sticky-top">
                     <div>
-                        <h6 class="m-0 font-weight-800 text-primary uppercase small" style="letter-spacing: 1px;">Current Order</h6>
-                        <p class="mb-0 text-muted extra-small">Customer: {{ auth()->user()->name }}</p>
+                        <h6 class="m-0 font-weight-800 text-primary uppercase small" style="letter-spacing: 1px;">{{ isset($order) ? 'Edit Order' : 'Current Order' }}</h6>
+                        <p class="mb-0 text-muted extra-small">{{ isset($order) ? '#' . $order->order_number : 'Customer: ' . auth()->user()->name }}</p>
                     </div>
                     <button class="btn btn-light rounded-circle d-lg-none" id="close-sidebar">
                         <i class="fas fa-times"></i>
@@ -96,7 +96,7 @@
                         </div>
                         <div class="col-7">
                             <button class="btn btn-success btn-block py-3 font-weight-800 shadow-success" id="submit-order" style="border-radius: 12px; font-size: 14px;">
-                                PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>
+                                {{ isset($order) ? 'UPDATE ORDER' : 'PLACE ORDER' }} <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                         </div>
                     </div>
@@ -346,15 +346,18 @@
 
 @push('scripts')
 <script>
-    let cart = [];
+    let cart = {!! isset($edit_cart) ? json_encode($edit_cart) : '[]' !!};
     let initialProducts = {!! json_encode($products) !!};
     let products = initialProducts;
     const customerType = "{{ auth()->user()->customer_type ?? 'retail' }}";
+    const isEdit = {{ isset($order) ? 'true' : 'false' }};
+    const orderId = {{ isset($order) ? $order->id : 'null' }};
 
     let currentCategoryId = 'all';
 
     $(document).ready(function() {
         renderProducts(); // Render immediately with pre-fetched data
+        renderCart(); // Render existing items if any
         
         // Sidebar Toggles
         $('#toggle-cart, #close-sidebar, #sidebar-overlay').on('click', function() {
@@ -434,7 +437,8 @@
     }
 
     function selectSuggestion(pid, type) {
-        let product = products.find(p => p.id == pid && p.item_type == type);
+        let productsArray = Array.isArray(products) ? products : Object.values(products);
+        let product = productsArray.find(p => p.id == pid && p.item_type == type);
         if (product) {
             $('#product-search').val(product.title);
             $('#search-suggestions').addClass('d-none');
@@ -476,9 +480,12 @@
         let catId = currentCategoryId;
         let html = '';
         
-        let filtered = products;
+        // Ensure products is a proper array
+        let productsArray = Array.isArray(products) ? products : Object.values(products);
+        
+        let filtered = productsArray;
         if(catId !== 'all') {
-            filtered = products.filter(p => p.cat_id == catId);
+            filtered = productsArray.filter(p => p.cat_id == catId || p.child_cat_id == catId);
         }
 
         filtered.forEach(p => {
@@ -509,7 +516,8 @@
     }
 
     function addToCart(pid, type) {
-        let product = products.find(p => p.id == pid && p.item_type == type);
+        let productsArray = Array.isArray(products) ? products : Object.values(products);
+        let product = productsArray.find(p => p.id == pid && p.item_type == type);
         if(!product) return;
         
         let cartId = type + '-' + pid;
@@ -617,17 +625,20 @@
         let btn = $(this);
         
         Swal.fire({
-            title: 'Confirm Order?',
-            text: "Ready to place your order?",
+            title: isEdit ? 'Update Order?' : 'Confirm Order?',
+            text: isEdit ? "Update your order with current items?" : "Ready to place your order?",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'Place Order'
+            confirmButtonText: isEdit ? 'Update Order' : 'Place Order',
+            confirmButtonColor: '#28a745'
         }).then((result) => {
             if (result.isConfirmed) {
-                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Submitting...');
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> ' + (isEdit ? 'UPDATING...' : 'SUBMITTING...'));
                 
+                let url = isEdit ? "{{ route('user.online-order.update', ':id') }}".replace(':id', orderId) : "{{ route('user.online-order.store') }}";
+
                 $.ajax({
-                    url: "{{ route('user.online-order.store') }}",
+                    url: url,
                     type: "POST",
                     data: {
                         _token: "{{ csrf_token() }}",
@@ -639,19 +650,19 @@
                         if(res.status == 'success') {
                             Swal.fire({
                                 title: 'Success!',
-                                text: 'Order placed! Sending invoice to your WhatsApp...',
+                                text: isEdit ? 'Order updated successfully!' : 'Order placed! Sending invoice to your WhatsApp...',
                                 icon: 'success',
                                 timer: 3000
                             }).then(() => {
                                 window.location.href = "{{ route('user.order.index') }}";
                             });
                         } else {
-                            btn.prop('disabled', false).html('PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
+                            btn.prop('disabled', false).html(isEdit ? 'UPDATE ORDER <i class="fas fa-arrow-right ml-2"></i>' : 'PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
                             Swal.fire('Error', res.message || 'Submission failed', 'error');
                         }
                     },
                     error: function(xhr) {
-                        btn.prop('disabled', false).html('PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
+                        btn.prop('disabled', false).html(isEdit ? 'UPDATE ORDER <i class="fas fa-arrow-right ml-2"></i>' : 'PLACE ORDER <i class="fas fa-arrow-right ml-2"></i>');
                         let msg = 'Internal server error. Please try again.';
                         if(xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
                         Swal.fire('Error', msg, 'error');

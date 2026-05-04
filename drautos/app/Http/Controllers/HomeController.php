@@ -559,6 +559,124 @@ class HomeController extends Controller
         return response()->json($results);
     }
 
+    public function editOnlineOrder($id)
+    {
+        $order = Order::with('cart_info.product', 'cart_info.bundle')->where('user_id', auth()->user()->id)->findOrFail($id);
+        
+        if($order->status != 'new' && $order->status != 'process') {
+            return redirect()->route('user.order.index')->with('error', 'Only pending orders can be edited.');
+        }
+
+        $categories = Category::where('status', 'active')->get();
+        $user = auth()->user();
+        $balance = $user->current_balance ?? 0;
+        
+        $initial_products = Product::where('status', 'active')->get();
+        foreach($initial_products as $p) $p->item_type = 'product';
+        
+        $initial_bundles = Bundle::where('status', 'active')->get();
+        foreach($initial_bundles as $b) {
+            $b->title = $b->name;
+            $b->item_type = 'bundle';
+        }
+        
+        $products = $initial_products->concat($initial_bundles);
+
+        // Map cart items to the JS cart format
+        $edit_cart = [];
+        foreach($order->cart_info as $item) {
+            $edit_cart[] = [
+                'unique_id' => $item->item_type . '-' . ($item->product_id ?: $item->bundle_id),
+                'id' => $item->product_id ?: $item->bundle_id,
+                'type' => $item->item_type,
+                'title' => $item->item_type == 'bundle' ? ($item->bundle->name ?? 'Bundle') : ($item->product->title ?? 'Product'),
+                'price' => (float)$item->price,
+                'qty' => (int)$item->quantity,
+                'unit' => $item->item_type == 'bundle' ? '' : ($item->product->unit ?? '')
+            ];
+        }
+
+        return view('user.pos.index', compact('categories', 'balance', 'products', 'order', 'edit_cart'));
+    }
+
+    public function updateOnlineOrder(Request $request, $id)
+    {
+        $order = Order::where('user_id', auth()->user()->id)->findOrFail($id);
+        
+        if($order->status != 'new' && $order->status != 'process') {
+             return response()->json(['status' => 'error', 'message' => 'Order cannot be edited'], 422);
+        }
+
+        $data = $request->validate([
+            'cart' => 'required|array',
+            'total_amount' => 'required',
+            'payment_method' => 'required'
+        ]);
+
+        \DB::transaction(function () use ($data, $order) {
+            // Revert stocks
+            foreach($order->cart_info as $item) {
+                if($item->item_type == 'bundle' && $item->bundle) {
+                    foreach($item->bundle->items as $bItem) {
+                        if($bItem->product) {
+                            $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
+                        }
+                    }
+                } else if($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
+
+            // Delete old cart items
+            $order->cart_info()->delete();
+
+            // Update order details
+            $order->sub_total = $data['total_amount'];
+            $order->total_amount = $data['total_amount'];
+            $order->quantity = count($data['cart']);
+            $order->payment_method = $data['payment_method'];
+            $order->save();
+
+            // Save new Cart Items & Update Stock
+            foreach($data['cart'] as $item) {
+                $type = $item['type'] ?? 'product';
+                $cart = new Cart();
+                $cart->order_id = $order->id;
+                $cart->user_id = $order->user_id;
+                $cart->price = $item['price'];
+                $cart->status = 'progress';
+                $cart->quantity = $item['qty'];
+                $cart->amount = $item['price'] * $item['qty'];
+                $cart->item_type = $type;
+
+                if ($type == 'bundle') {
+                     $cart->bundle_id = $item['id'];
+                     $bundle = Bundle::find($item['id']);
+                     if($bundle) {
+                         foreach($bundle->items as $bItem) {
+                             $prod = Product::find($bItem->product_id);
+                             if($prod) $prod->decrement('stock', $bItem->quantity * $item['qty']);
+                         }
+                     }
+                } else {
+                    $cart->product_id = $item['id'];
+                    $product = Product::find($item['id']);
+                    if($product) $product->decrement('stock', $item['qty']);
+                }
+                $cart->save();
+            }
+
+            // Sync PaymentReminder
+            $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
+            if($reminder) {
+                $reminder->amount = $order->total_amount;
+                $reminder->save();
+            }
+        });
+
+        return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
+    }
+
     public function storeOnlineOrder(Request $request)
     {
         \Log::info('storeOnlineOrder called', ['request' => $request->all()]);
@@ -596,17 +714,6 @@ class HomeController extends Controller
             $order->courier_number = $user->courier_number;
             
             $order->save();
-
-            // Ledger Integration
-            CustomerLedger::record(
-                $user->id,
-                now(),
-                'debit',
-                'order',
-                'Online Order #' . $order->order_number . ' (COD)',
-                $order->total_amount,
-                $order->id
-            );
 
             // Create Payment Reminder
             \App\Models\PaymentReminder::create([

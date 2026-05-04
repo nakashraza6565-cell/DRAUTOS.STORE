@@ -95,10 +95,13 @@
                                             <i class="fas fa-calendar-alt mr-1"></i> {{$order->created_at->format('d M, Y')}}
                                         </div>
                                     </div>
-                                    <div class="col-auto">
+                                    <div class="col-auto d-flex flex-column align-items-end" style="gap: 5px;">
                                         <div class="badge badge-info p-2 px-3 rounded-pill text-capitalize">
                                             {{$order->status}}
                                         </div>
+                                        <a href="{{route('user.online-order.edit', $order->id)}}" class="btn btn-light btn-sm rounded-circle shadow-sm" onclick="event.stopPropagation();">
+                                            <i class="fas fa-edit text-primary"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>

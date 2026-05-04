@@ -154,31 +154,6 @@ class OrderController extends Controller
         $order->fill($order_data);
         $status=$order->save();
     
-    // Ledger Integration
-    if ($order && auth()->user() && (auth()->user()->role == 'user' || auth()->user()->role == 'customer')) {
-        CustomerLedger::record(
-            auth()->user()->id,
-            now(),
-            'debit',
-            'order',
-            'Store Order #' . $order->order_number . ' via ' . $order->payment_method,
-            $order->total_amount,
-            $order->id
-        );
-
-        if ($order->payment_status == 'paid') {
-            CustomerLedger::record(
-                auth()->user()->id,
-                now(),
-                'credit',
-                'payment',
-                'Payment for Order #' . $order->order_number,
-                $order->total_amount,
-                $order->id
-            );
-        }
-    }
-
     if($order)
         // dd($order->id);
         // Notify all admins
@@ -370,32 +345,39 @@ class OrderController extends Controller
         $amount_paid_at_counter = $request->amount_paid ?? 0;
         
         if ($order->user_id) {
-            // 1. Sync the DEBIT (The Debt/Order Total) in Ledger
-            $debit = CustomerLedger::where('user_id', $order->user_id)
-                ->where('reference_id', $order->id)
-                ->where('type', 'debit')
-                ->first();
-            
-            if ($debit) {
-                $debit->update(['amount' => $new_total]);
-            } else {
-                CustomerLedger::record($order->user_id, now(), 'debit', 'order', 'Order #' . $order->order_number, $new_total, $order->id);
-            }
-
-            // 2. Sync the CREDIT (The Initial Counter Payment) in Ledger
-            $credit = CustomerLedger::where('user_id', $order->user_id)
-                ->where('reference_id', $order->id)
-                ->where('type', 'credit')
-                ->first();
-            
-            if ($amount_paid_at_counter > 0) {
-                if ($credit) {
-                    $credit->update(['amount' => $amount_paid_at_counter]);
+            if ($order->status == 'delivered') {
+                // 1. Sync the DEBIT (The Debt/Order Total) in Ledger
+                $debit = CustomerLedger::where('user_id', $order->user_id)
+                    ->where('reference_id', $order->id)
+                    ->where('type', 'debit')
+                    ->first();
+                
+                if ($debit) {
+                    $debit->update(['amount' => $new_total]);
                 } else {
-                    CustomerLedger::record($order->user_id, now(), 'credit', 'payment', 'Payment for Order #' . $order->order_number, $amount_paid_at_counter, $order->id);
+                    CustomerLedger::record($order->user_id, now(), 'debit', 'order', 'Order #' . $order->order_number, $new_total, $order->id);
                 }
-            } elseif ($credit) {
-                $credit->delete();
+
+                // 2. Sync the CREDIT (The Initial Counter Payment) in Ledger
+                $credit = CustomerLedger::where('user_id', $order->user_id)
+                    ->where('reference_id', $order->id)
+                    ->where('type', 'credit')
+                    ->first();
+                
+                if ($amount_paid_at_counter > 0) {
+                    if ($credit) {
+                        $credit->update(['amount' => $amount_paid_at_counter]);
+                    } else {
+                        CustomerLedger::record($order->user_id, now(), 'credit', 'payment', 'Payment for Order #' . $order->order_number, $amount_paid_at_counter, $order->id);
+                    }
+                } elseif ($credit) {
+                    $credit->delete();
+                }
+            } else {
+                // Remove from ledger if not delivered
+                CustomerLedger::where('user_id', $order->user_id)
+                    ->where('reference_id', $order->id)
+                    ->delete();
             }
 
             // Recalculate balance for this user (Ensures User->current_balance is correct)

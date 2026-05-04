@@ -142,8 +142,12 @@
     </div>
 
     <!-- Action Footer (Cancel only if new) -->
-    @if($order->status == 'new')
+    @if($order->status == 'new' || $order->status == 'process')
     <div class="mt-5 text-center">
+        <a href="{{route('user.online-order.edit', $order->id)}}" class="btn btn-warning rounded-pill px-4 shadow-sm mb-3">
+            <i class="fas fa-edit mr-1"></i> Edit Order Items
+        </a>
+        <br>
         <form method="POST" action="{{route('user.order.delete',[$order->id])}}">
             @csrf
             @method('delete')
