@@ -119,7 +119,7 @@
 
     <div class="header-container text-center">
         <div class="watermark-bg">DA</div>
-        <div class="merchant-name">{{ $settings->short_des ?? 'Danyal Autos' }}</div>
+        <div class="merchant-name">{!! strip_tags(str_replace('&nbsp;', ' ', $settings->short_des ?? 'Danyal Autos')) !!}</div>
         <div class="merchant-address">{{ $settings->address ?? 'Liaquat Pur, RYK' }}</div>
         <div class="merchant-address">{{ $settings->phone }}</div>
     </div>
