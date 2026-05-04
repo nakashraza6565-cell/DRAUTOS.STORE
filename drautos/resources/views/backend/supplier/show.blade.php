@@ -80,7 +80,11 @@
                     </thead>
                     <tbody>
                         @foreach($products as $product)
-                        <tr>
+                        @php
+                            $isLowStock = $product->stock <= ($product->low_stock_threshold ?? 5);
+                            $isOutOfStock = $product->stock <= 0;
+                        @endphp
+                        <tr class="{{ $isOutOfStock ? 'table-danger' : ($isLowStock ? 'table-warning' : '') }}">
                             <td>
                                 @if($product->photo)
                                     @php 
@@ -91,22 +95,31 @@
                                     <img src="{{asset('backend/img/thumbnail-default.jpg')}}" class="img-fluid zoom" style="max-width:50px" alt="avatar.png">
                                 @endif
                             </td>
-                            <td><strong>{{ $product->title }}</strong></td>
+                            <td>
+                                <strong>{{ $product->title }}</strong>
+                                @if($isOutOfStock)
+                                    <br><small class="text-danger font-weight-bold"><i class="fas fa-times-circle"></i> Out of Stock</small>
+                                @elseif($isLowStock)
+                                    <br><small class="text-warning font-weight-bold" style="color: #d68f00 !important;"><i class="fas fa-exclamation-triangle"></i> Low Stock</small>
+                                @endif
+                            </td>
                             <td>{{ $product->cat_info['title'] ?? 'N/A' }}</td>
                             <td>PKR {{ number_format($product->purchase_price, 2) }}</td>
                             <td>PKR {{ number_format($product->price, 2) }}</td>
                             <td>
-                                @if($product->stock > 0)
-                                <span class="badge badge-primary">{{$product->stock}}</span>
-                                @else 
-                                <span class="badge badge-danger">{{$product->stock}}</span>
+                                @if($isOutOfStock)
+                                    <span class="badge badge-danger" style="font-size:14px;">0</span>
+                                @elseif($isLowStock)
+                                    <span class="badge badge-warning text-dark" style="font-size:14px;">{{$product->stock}}</span>
+                                @else
+                                    <span class="badge badge-primary" style="font-size:14px;">{{$product->stock}}</span>
                                 @endif
                             </td>
                             <td>
                                 @if($product->status=='active')
                                     <span class="badge badge-success">{{$product->status}}</span>
                                 @else
-                                    <span class="badge badge-warning">{{$product->status}}</span>
+                                    <span class="badge badge-secondary">{{$product->status}}</span>
                                 @endif
                             </td>
                             <td>

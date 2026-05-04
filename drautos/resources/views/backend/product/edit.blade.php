@@ -203,16 +203,22 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label for="sku">SKU</label>
                         <input id="sku" type="text" name="sku" placeholder="Auto-generated" value="{{$product->sku}}" class="form-control">
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label for="barcode">Barcode</label>
                         <input id="barcode" type="text" name="barcode" placeholder="Auto-generated" value="{{$product->barcode}}" class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="low_stock_threshold">Low Stock Alert</label>
+                        <input id="low_stock_threshold" type="number" name="low_stock_threshold" placeholder="e.g. 5" value="{{$product->low_stock_threshold}}" class="form-control">
                     </div>
                 </div>
             </div>
