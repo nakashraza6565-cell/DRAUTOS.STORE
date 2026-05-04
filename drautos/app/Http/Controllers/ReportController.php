@@ -168,50 +168,21 @@ class ReportController extends Controller
     {
         $city = $request->input('city');
 
-        $query = PaymentReminder::where('type', 'receivable')->where('status', '!=', 'completed');
+        $query = \App\User::whereIn('role', ['user', 'customer'])
+            ->where('current_balance', '>', 0);
 
         if ($city) {
-            $query->whereHasMorph('party', ['App\User'], function ($q) use ($city) {
-                $q->where('city', $city);
-            });
+            $query->where('city', $city);
         }
 
-        $receivables = $query->get();
-        $totalReceivable = $receivables->sum('amount');
-
-        $byCustomerQuery = PaymentReminder::where('type', 'receivable')
-            ->where('status', '!=', 'completed')
-            ->select('party_type', 'party_id', DB::raw('sum(amount) as total'), DB::raw('min(due_date) as earliest_due_date'))
-            ->groupBy('party_type', 'party_id')
-            ->with('party');
-
-        if ($city) {
-            $byCustomerQuery->whereHasMorph('party', ['App\User'], function ($q) use ($city) {
-                $q->where('city', $city);
-            });
-        }
-
-        $byCustomer = $byCustomerQuery->get();
+        $byCustomer = $query->orderBy('current_balance', 'desc')->get();
+        $totalReceivable = $byCustomer->sum('current_balance');
 
         // Get unique cities for the dropdown filter (only for customers that have receivables)
-        $cities = \App\User::whereHas('paymentReminders', function($q) {
-            $q->where('type', 'receivable')->where('status', '!=', 'completed');
-        })->whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city');
-
-        // Fallback: if 'paymentReminders' relationship is not defined on User, use a join or DB query
-        if (!method_exists(\App\User::class, 'paymentReminders')) {
-             $cities = DB::table('users')
-                ->join('payment_reminders', function($join) {
-                    $join->on('users.id', '=', 'payment_reminders.party_id')
-                         ->where('payment_reminders.party_type', '=', 'App\\User')
-                         ->where('payment_reminders.type', '=', 'receivable')
-                         ->where('payment_reminders.status', '!=', 'completed');
-                })
-                ->whereNotNull('users.city')
-                ->where('users.city', '!=', '')
-                ->distinct()
-                ->pluck('users.city');
-        }
+        $cities = \App\User::whereIn('role', ['user', 'customer'])
+            ->where('current_balance', '>', 0)
+            ->whereNotNull('city')->where('city', '!=', '')
+            ->distinct()->pluck('city');
 
         // Chart Logic: Group by City if overall, Group by Customer if city selected
         $chartLabels = [];
@@ -220,21 +191,21 @@ class ReportController extends Controller
 
         if ($city) {
             // Split by Customer
-            $chartLabels = $byCustomer->map(function($c) { return $c->party->name ?? 'Unknown'; })->values();
-            $chartData = $byCustomer->pluck('total')->values();
+            $chartLabels = $byCustomer->map(function($c) { return $c->name ?? 'Unknown'; })->values();
+            $chartData = $byCustomer->pluck('current_balance')->values();
         } else {
             // Split by City
             $cityGroups = $byCustomer->groupBy(function($item) {
-                return $item->party->city ?? 'Unknown/No City';
+                return $item->city ?? 'Unknown/No City';
             });
             
             foreach ($cityGroups as $cityName => $group) {
                 $chartLabels[] = $cityName;
-                $chartData[] = $group->sum('total');
+                $chartData[] = $group->sum('current_balance');
             }
         }
 
-        return view('backend.reports.receivables', compact('receivables', 'totalReceivable', 'byCustomer', 'cities', 'city', 'chartLabels', 'chartData', 'chartTitle'));
+        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'chartLabels', 'chartData', 'chartTitle'));
     }
     public function productAnalysis(Request $request)
     {

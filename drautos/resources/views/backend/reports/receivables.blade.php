@@ -56,20 +56,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($byCustomer as $customerBalance)
+                                @foreach($byCustomer as $customer)
                                 <tr>
-                                    <td>{{$customerBalance->party->name ?? 'N/A'}}</td>
-                                    <td>{{$customerBalance->party->phone ?? '-'}}</td>
-                                    <td class="{{\Carbon\Carbon::parse($customerBalance->earliest_due_date)->isPast() ? 'text-danger font-weight-bold' : ''}}">
-                                        {{$customerBalance->earliest_due_date ? \Carbon\Carbon::parse($customerBalance->earliest_due_date)->format('d M Y') : '-'}}
+                                    <td>{{$customer->name ?? 'N/A'}}</td>
+                                    <td>{{$customer->phone ?? '-'}}</td>
+                                    <td class="text-muted">
+                                        <em>Based on ledger</em>
                                     </td>
-                                    <td class="font-weight-bold text-success">Rs. {{number_format($customerBalance->total, 2)}}</td>
+                                    <td class="font-weight-bold text-success">Rs. {{number_format($customer->current_balance, 2)}}</td>
                                     <td>
-                                        @if($customerBalance->party)
-                                            <a href="{{route('admin.customer-ledger.show', $customerBalance->party_id)}}" class="btn btn-sm btn-info shadow-sm" title="View Ledger">
-                                                <i class="fas fa-book mr-1"></i> Ledger
-                                            </a>
-                                        @endif
+                                        <a href="{{route('admin.customer-ledger.show', $customer->id)}}" class="btn btn-sm btn-info shadow-sm" title="View Ledger">
+                                            <i class="fas fa-book mr-1"></i> Ledger
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach
