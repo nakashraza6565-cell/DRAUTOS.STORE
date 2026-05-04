@@ -14,7 +14,9 @@ class SupplierController extends Controller
 {
     public function index(Request $request)
     {
-        $suppliers = Supplier::orderBy('id', 'DESC')
+        $suppliers = Supplier::withCount('products')
+            ->with(['latestPurchaseOrder', 'latestIncomingGoods'])
+            ->orderBy('id', 'DESC')
             ->when($request->search, function($query) use ($request) {
                 return $query->where('name', 'LIKE', "%{$request->search}%")
                             ->orWhere('company_name', 'LIKE', "%{$request->search}%")

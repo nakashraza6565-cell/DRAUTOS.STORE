@@ -27,4 +27,12 @@ class Supplier extends Model
     public function incomingGoods() {
         return $this->hasMany(InventoryIncoming::class);
     }
+
+    public function latestPurchaseOrder() {
+        return $this->hasOne(PurchaseOrder::class)->latest('order_date');
+    }
+
+    public function latestIncomingGoods() {
+        return $this->hasOne(InventoryIncoming::class)->latest('received_date');
+    }
 }

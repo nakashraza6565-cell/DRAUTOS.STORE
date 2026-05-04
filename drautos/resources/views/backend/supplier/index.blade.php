@@ -68,6 +68,30 @@
                                     <span class="badge badge-pill badge-{{($supplier->status=='active') ? 'success' : 'warning'}}" style="font-size: 10px;">{{strtoupper($supplier->status)}}</span>
                                 </div>
 
+                                <!-- Quick Insights -->
+                                <div class="text-left mt-2 pt-3 border-top w-100" style="font-size: 11px;">
+                                    <div class="mb-1 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-box text-info mr-1"></i> Products</span>
+                                        <span class="font-weight-bold badge badge-light">{{ $supplier->products_count }} items</span>
+                                    </div>
+                                    <div class="mb-1 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted"><i class="fas fa-money-check-alt text-success mr-1"></i> Payable</span>
+                                        <span class="font-weight-bold {{ $supplier->current_balance > 0 ? 'text-danger' : 'text-success' }}">Rs. {{ number_format($supplier->current_balance, 2) }}</span>
+                                    </div>
+                                    <div class="mb-1 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted" title="Last Purchase Order"><i class="fas fa-file-invoice text-primary mr-1"></i> Last PO</span>
+                                        <span class="font-weight-bold text-truncate" style="max-width: 90px;">
+                                            {{ $supplier->latestPurchaseOrder ? \Carbon\Carbon::parse($supplier->latestPurchaseOrder->order_date)->format('d M y') : 'N/A' }}
+                                        </span>
+                                    </div>
+                                    <div class="mb-1 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted" title="Last Goods Incoming"><i class="fas fa-truck-loading text-warning mr-1"></i> Last In</span>
+                                        <span class="font-weight-bold text-truncate" style="max-width: 90px;">
+                                            {{ $supplier->latestIncomingGoods ? \Carbon\Carbon::parse($supplier->latestIncomingGoods->received_date)->format('d M y') : 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+
                                 <div class="mt-3 text-center">
                                     <a href="javascript:void(0)" class="btn btn-success btn-circle btn-sm wa-btn" 
                                        data-id="{{$supplier->id}}" 
