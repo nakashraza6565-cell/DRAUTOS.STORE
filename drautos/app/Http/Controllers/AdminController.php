@@ -542,11 +542,19 @@ class AdminController extends Controller
         $cat_id = $request->get('cat_id');
         $brand_id = $request->get('brand_id');
         $model = $request->get('model');
+        $customerId = $request->get('customer_id');
 
         $staffId = auth()->id();
 
         // Products
         $products = \App\Models\Product::with(['brand', 'suppliers'])
+            ->when($customerId && $customerId != 1, function($query) use ($customerId) {
+                return $query->withSum(['carts as customer_sold' => function($q) use ($customerId) {
+                    $q->whereHas('order', function($oq) use ($customerId) {
+                        $oq->where('user_id', $customerId);
+                    });
+                }], 'quantity');
+            })
             ->withSum(['carts as staff_sold' => function($q) use ($staffId) {
                 $q->whereHas('order', function($oq) use ($staffId) {
                     $oq->where('staff_id', $staffId);
@@ -574,6 +582,9 @@ class AdminController extends Controller
             })
             ->when($model && $model != 'all', function ($q) use ($model) {
                 $q->where('model', $model);
+            })
+            ->when($customerId && $customerId != 1, function($query) {
+                return $query->orderByDesc('customer_sold');
             })
             ->orderByDesc('staff_sold')
             ->orderByDesc('total_sold')

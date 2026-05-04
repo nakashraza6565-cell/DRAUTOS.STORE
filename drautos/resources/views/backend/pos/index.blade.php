@@ -1180,8 +1180,8 @@
             let balance = parseFloat($(this).find(':selected').data('balance')) || 0;
             $('#modal-ledger-balance').text('Rs. ' + balance.toFixed(2));
 
-            // Re-render products if pricing depends on customer type
-            renderProducts();
+            // Re-fetch products from server to smartly sort by this customer's history
+            fetchProducts();
 
             // Update cart items if customer changes (prices might change)
             if (cart.length > 0) {
@@ -1339,12 +1339,14 @@
     function fetchProducts(query = null, triggerSuggestions = false, updateGrid = true) {
         if (query === null) query = $('#product-search').val();
         let cat_id = $('.filter-cat.active').data('id');
+        let customer_id = $('#customer-select').val();
 
         $.ajax({
             url: "{{route('pos.search-products')}}",
             data: {
                 query: query,
                 cat_id: cat_id,
+                customer_id: customer_id
             },
             success: function(res) {
                 products = res;
