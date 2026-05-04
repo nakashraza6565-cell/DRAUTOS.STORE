@@ -24,7 +24,7 @@
         <div class="row">
             @foreach($suppliers as $supplier)
             <div class="col-xl-3 col-md-4 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2 supplier-card">
+                <div class="card border-left-primary shadow h-100 py-2 supplier-card" style="cursor: pointer;" onclick="if(!event.target.closest('a') && !event.target.closest('button') && !event.target.closest('.phone-editable-container')) window.location.href='{{route('suppliers.show', $supplier->id)}}'">
                     <div class="card-body">
                         <div class="text-center mb-3">
                             <div class="d-inline-block position-relative avatar-circle">
@@ -66,30 +66,6 @@
                                         <span class="font-weight-bold small">{{number_format($avgRating, 1)}}</span>
                                     </div>
                                     <span class="badge badge-pill badge-{{($supplier->status=='active') ? 'success' : 'warning'}}" style="font-size: 10px;">{{strtoupper($supplier->status)}}</span>
-                                </div>
-
-                                <!-- Quick Insights -->
-                                <div class="text-left mt-2 pt-3 border-top w-100" style="font-size: 11px;">
-                                    <div class="mb-1 d-flex justify-content-between align-items-center">
-                                        <span class="text-muted"><i class="fas fa-box text-info mr-1"></i> Products</span>
-                                        <span class="font-weight-bold badge badge-light">{{ $supplier->products_count }} items</span>
-                                    </div>
-                                    <div class="mb-1 d-flex justify-content-between align-items-center">
-                                        <span class="text-muted"><i class="fas fa-money-check-alt text-success mr-1"></i> Payable</span>
-                                        <span class="font-weight-bold {{ $supplier->current_balance > 0 ? 'text-danger' : 'text-success' }}">Rs. {{ number_format($supplier->current_balance, 2) }}</span>
-                                    </div>
-                                    <div class="mb-1 d-flex justify-content-between align-items-center">
-                                        <span class="text-muted" title="Last Purchase Order"><i class="fas fa-file-invoice text-primary mr-1"></i> Last PO</span>
-                                        <span class="font-weight-bold text-truncate" style="max-width: 90px;">
-                                            {{ $supplier->latestPurchaseOrder ? \Carbon\Carbon::parse($supplier->latestPurchaseOrder->order_date)->format('d M y') : 'N/A' }}
-                                        </span>
-                                    </div>
-                                    <div class="mb-1 d-flex justify-content-between align-items-center">
-                                        <span class="text-muted" title="Last Goods Incoming"><i class="fas fa-truck-loading text-warning mr-1"></i> Last In</span>
-                                        <span class="font-weight-bold text-truncate" style="max-width: 90px;">
-                                            {{ $supplier->latestIncomingGoods ? \Carbon\Carbon::parse($supplier->latestIncomingGoods->received_date)->format('d M y') : 'N/A' }}
-                                        </span>
-                                    </div>
                                 </div>
 
                                 <div class="mt-3 text-center">
