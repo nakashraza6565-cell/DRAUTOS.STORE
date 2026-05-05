@@ -561,7 +561,7 @@ Route::group(['prefix' => '/user', 'middleware' => ['user']], function () {
     Route::get('/online-order', [HomeController::class, 'onlineOrder'])->name('user.online-order');
     Route::get('/online-order/{id}/edit', [HomeController::class, 'editOnlineOrder'])->name('user.online-order.edit');
     Route::post('/online-order/store', [HomeController::class, 'storeOnlineOrder'])->name('user.online-order.store');
-    Route::post('/online-order/{id}/update', [HomeController::class, 'updateOnlineOrder'])->name('user.online-order.update');
+    Route::post('/save-basket/{id}', [HomeController::class, 'updateOnlineOrder'])->name('user.online-order.update');
     Route::get('/online-order/search', [HomeController::class, 'searchProducts'])->name('user.online-order.search');
 
     // Returns & Claims
