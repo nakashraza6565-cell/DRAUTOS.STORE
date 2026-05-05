@@ -666,9 +666,6 @@ class HomeController extends Controller
                 $cart->save();
             }
 
-            // Activity Log
-            \App\Models\ActivityLog::log('sale', 'Online Order Placed', $user->name . ' placed an online order #' . $order->order_number, route('order.show', $order->id));
-
             // Sync PaymentReminder
             $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
             if($reminder) {
