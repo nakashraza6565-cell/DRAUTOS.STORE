@@ -601,13 +601,100 @@ class HomeController extends Controller
 
     public function updateOnlineOrder(Request $request, $id)
     {
-        // POINT OF ENTRY TEST:
-        return response()->json([
-            'status' => 'success', 
-            'message' => 'DEBUG: Request reached controller successfully',
-            'debug_id' => $id,
-            'debug_data' => $request->all()
+        $order = Order::where('user_id', auth()->user()->id)->find($id);
+        
+        if (!$order) {
+            return response()->json(['status' => 'error', 'message' => 'Order not found or permission denied.']);
+        }
+        
+        if($order->status != 'new' && $order->status != 'process') {
+             return response()->json(['status' => 'error', 'message' => 'This order is already being processed and cannot be edited.']);
+        }
+        
+        $validator = \Validator::make($request->all(), [
+            'cart' => 'required|array',
+            'total_amount' => 'required',
+            'payment_method' => 'required'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'Validation Error: ' . implode(', ', $validator->errors()->all())]);
+        }
+
+        $data = $validator->validated();
+
+        try {
+            \DB::transaction(function () use ($data, $order) {
+                // 1. Revert stocks for old items
+                foreach($order->cart_info as $item) {
+                    if($item->item_type == 'bundle' && $item->bundle) {
+                        foreach($item->bundle->items as $bItem) {
+                            if($bItem->product) $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
+                        }
+                    } else if($item->product) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                }
+
+                // 2. Clear old items
+                $order->cart_info()->delete();
+
+                // 3. Update Order Main Info
+                $order->sub_total = (float)$data['total_amount'];
+                $order->total_amount = (float)$data['total_amount'];
+                $order->quantity = count($data['cart']);
+                $order->payment_method = $data['payment_method'];
+                $order->save();
+
+                // 4. Save New Items & Deduct Stock
+                foreach($data['cart'] as $item) {
+                    $type = $item['type'] ?? 'product';
+                    $newCart = new \App\Models\Cart();
+                    $newCart->order_id = $order->id;
+                    $newCart->user_id = $order->user_id;
+                    $newCart->price = (float)$item['price'];
+                    $newCart->status = 'progress';
+                    $newCart->quantity = (int)$item['qty'];
+                    $newCart->amount = (float)$item['price'] * (int)$item['qty'];
+                    $newCart->item_type = $type;
+
+                    if ($type == 'bundle') {
+                         $newCart->bundle_id = $item['id'];
+                         $bundle = \App\Models\Bundle::find($item['id']);
+                         if($bundle) {
+                             foreach($bundle->items as $bItem) {
+                                 $p = \App\Models\Product::find($bItem->product_id);
+                                 if($p) $p->decrement('stock', (int)$bItem->quantity * (int)$item['qty']);
+                             }
+                         }
+                    } else {
+                        $newCart->product_id = $item['id'];
+                        $p = \App\Models\Product::find($item['id']);
+                        if($p) $p->decrement('stock', (int)$item['qty']);
+                    }
+                    $newCart->save();
+                }
+
+                // 5. Update Payment Reminder if it exists
+                $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
+                if($reminder) {
+                    $reminder->amount = $order->total_amount;
+                    $reminder->save();
+                }
+
+                // 6. Log Activity (Protected so it doesn't break the order if logging fails)
+                try {
+                    \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
+                } catch (\Exception $e) {
+                    \Log::error('Activity Log failed: ' . $e->getMessage());
+                }
+            });
+
+            return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Order Update Failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Database Error: ' . $e->getMessage()]);
+        }
     }
 
     public function storeOnlineOrder(Request $request)
