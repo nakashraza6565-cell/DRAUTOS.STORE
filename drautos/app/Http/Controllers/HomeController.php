@@ -601,7 +601,11 @@ class HomeController extends Controller
 
     public function updateOnlineOrder(Request $request, $id)
     {
-        \Log::info('==== UPDATE ORDER REQUEST ARRIVED ====', [
+        // EMERGENCY BYPASS TEST: If this shows 'Success', the code below is the problem.
+        // If this still shows 'Server Error', the problem is CSRF or Server Config.
+        // return response()->json(['status' => 'success', 'message' => 'Bypass Test Successful']);
+
+        \Illuminate\Support\Facades\Log::info('==== UPDATE ORDER REQUEST ARRIVED ====', [
             'id' => $id,
             'all' => $request->all()
         ]);
