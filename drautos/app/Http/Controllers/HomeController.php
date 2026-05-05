@@ -613,71 +613,76 @@ class HomeController extends Controller
             'payment_method' => 'required'
         ]);
 
-        \DB::transaction(function () use ($data, $order) {
-            // Revert stocks
-            foreach($order->cart_info as $item) {
-                if($item->item_type == 'bundle' && $item->bundle) {
-                    foreach($item->bundle->items as $bItem) {
-                        if($bItem->product) {
-                            $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
+        try {
+            \DB::transaction(function () use ($data, $order) {
+                // Revert stocks
+                foreach($order->cart_info as $item) {
+                    if($item->item_type == 'bundle' && $item->bundle) {
+                        foreach($item->bundle->items as $bItem) {
+                            if($bItem->product) {
+                                $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
+                            }
                         }
+                    } else if($item->product) {
+                        $item->product->increment('stock', $item->quantity);
                     }
-                } else if($item->product) {
-                    $item->product->increment('stock', $item->quantity);
                 }
-            }
 
-            // Delete old cart items
-            $order->cart_info()->delete();
+                // Delete old cart items
+                $order->cart_info()->delete();
 
-            // Update order details
-            $order->sub_total = $data['total_amount'];
-            $order->total_amount = $data['total_amount'];
-            $order->quantity = count($data['cart']);
-            $order->payment_method = $data['payment_method'];
-            $order->save();
+                // Update order details
+                $order->sub_total = $data['total_amount'];
+                $order->total_amount = $data['total_amount'];
+                $order->quantity = count($data['cart']);
+                $order->payment_method = $data['payment_method'];
+                $order->save();
 
-            // Save new Cart Items & Update Stock
-            foreach($data['cart'] as $item) {
-                $type = $item['type'] ?? 'product';
-                $cart = new Cart();
-                $cart->order_id = $order->id;
-                $cart->user_id = $order->user_id;
-                $cart->price = $item['price'];
-                $cart->status = 'progress';
-                $cart->quantity = $item['qty'];
-                $cart->amount = $item['price'] * $item['qty'];
-                $cart->item_type = $type;
+                // Save new Cart Items & Update Stock
+                foreach($data['cart'] as $item) {
+                    $type = $item['type'] ?? 'product';
+                    $cart = new \App\Models\Cart();
+                    $cart->order_id = $order->id;
+                    $cart->user_id = $order->user_id;
+                    $cart->price = $item['price'];
+                    $cart->status = 'progress';
+                    $cart->quantity = $item['qty'];
+                    $cart->amount = $item['price'] * $item['qty'];
+                    $cart->item_type = $type;
 
-                if ($type == 'bundle') {
-                     $cart->bundle_id = $item['id'];
-                     $bundle = Bundle::find($item['id']);
-                     if($bundle) {
-                         foreach($bundle->items as $bItem) {
-                             $prod = Product::find($bItem->product_id);
-                             if($prod) $prod->decrement('stock', $bItem->quantity * $item['qty']);
+                    if ($type == 'bundle') {
+                         $cart->bundle_id = $item['id'];
+                         $bundle = \App\Models\Bundle::find($item['id']);
+                         if($bundle) {
+                             foreach($bundle->items as $bItem) {
+                                 $prod = \App\Models\Product::find($bItem->product_id);
+                                 if($prod) $prod->decrement('stock', $bItem->quantity * $item['qty']);
+                             }
                          }
-                     }
-                } else {
-                    $cart->product_id = $item['id'];
-                    $product = Product::find($item['id']);
-                    if($product) $product->decrement('stock', $item['qty']);
+                    } else {
+                        $cart->product_id = $item['id'];
+                        $product = \App\Models\Product::find($item['id']);
+                        if($product) $product->decrement('stock', $item['qty']);
+                    }
+                    $cart->save();
                 }
-                $cart->save();
-            }
 
-            // Sync PaymentReminder
-            $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
-            if($reminder) {
-                $reminder->amount = $order->total_amount;
-                $reminder->save();
-            }
+                // Sync PaymentReminder
+                $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
+                if($reminder) {
+                    $reminder->amount = $order->total_amount;
+                    $reminder->save();
+                }
 
-            // Activity Log
-            \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
-        });
+                // Activity Log
+                \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
+            });
 
-        return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
+            return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
+        } catch (\Exception $e) {
+            \Log::error('Order Update Error: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
     }
 
     public function storeOnlineOrder(Request $request)
