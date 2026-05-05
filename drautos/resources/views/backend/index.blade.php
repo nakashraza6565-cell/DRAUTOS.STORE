@@ -43,7 +43,7 @@
     <!-- System Newspaper: News Ticker Section -->
     <div class="newspaper-ticker-container mb-4 shadow-sm">
         <div class="ticker-label">
-            <i class="fas fa-bolt mr-2 pulse-icon"></i> HEADLINES
+            <i class="fas fa-bolt mr-2 pulse-icon"></i> DANYAL AUTOS LIVE AI
         </div>
         <div class="ticker-content">
             <div class="ticker-track">
