@@ -614,74 +614,78 @@ class HomeController extends Controller
         ]);
 
         try {
+            \Log::info('Order Update Start', ['order_id' => $id, 'user_id' => auth()->id()]);
+
             \DB::transaction(function () use ($data, $order) {
-                // Revert stocks
+                // 1. Revert stocks
                 foreach($order->cart_info as $item) {
                     if($item->item_type == 'bundle' && $item->bundle) {
                         foreach($item->bundle->items as $bItem) {
-                            if($bItem->product) {
-                                $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
-                            }
+                            if($bItem->product) $bItem->product->increment('stock', $bItem->quantity * $item->quantity);
                         }
                     } else if($item->product) {
                         $item->product->increment('stock', $item->quantity);
                     }
                 }
 
-                // Delete old cart items
+                // 2. Clear old items
                 $order->cart_info()->delete();
 
-                // Update order details
-                $order->sub_total = $data['total_amount'];
-                $order->total_amount = $data['total_amount'];
+                // 3. Update Order
+                $order->sub_total = (float)$data['total_amount'];
+                $order->total_amount = (float)$data['total_amount'];
                 $order->quantity = count($data['cart']);
                 $order->payment_method = $data['payment_method'];
                 $order->save();
 
-                // Save new Cart Items & Update Stock
+                // 4. New Items
                 foreach($data['cart'] as $item) {
                     $type = $item['type'] ?? 'product';
-                    $cart = new \App\Models\Cart();
-                    $cart->order_id = $order->id;
-                    $cart->user_id = $order->user_id;
-                    $cart->price = $item['price'];
-                    $cart->status = 'progress';
-                    $cart->quantity = $item['qty'];
-                    $cart->amount = $item['price'] * $item['qty'];
-                    $cart->item_type = $type;
+                    $newCart = new \App\Models\Cart();
+                    $newCart->order_id = $order->id;
+                    $newCart->user_id = $order->user_id;
+                    $newCart->price = (float)$item['price'];
+                    $newCart->status = 'progress';
+                    $newCart->quantity = (int)$item['qty'];
+                    $newCart->amount = (float)$item['price'] * (int)$item['qty'];
+                    $newCart->item_type = $type;
 
                     if ($type == 'bundle') {
-                         $cart->bundle_id = $item['id'];
+                         $newCart->bundle_id = $item['id'];
                          $bundle = \App\Models\Bundle::find($item['id']);
                          if($bundle) {
                              foreach($bundle->items as $bItem) {
-                                 $prod = \App\Models\Product::find($bItem->product_id);
-                                 if($prod) $prod->decrement('stock', $bItem->quantity * $item['qty']);
+                                 $p = \App\Models\Product::find($bItem->product_id);
+                                 if($p) $p->decrement('stock', (int)$bItem->quantity * (int)$item['qty']);
                              }
                          }
                     } else {
-                        $cart->product_id = $item['id'];
-                        $product = \App\Models\Product::find($item['id']);
-                        if($product) $product->decrement('stock', $item['qty']);
+                        $newCart->product_id = $item['id'];
+                        $p = \App\Models\Product::find($item['id']);
+                        if($p) $p->decrement('stock', (int)$item['qty']);
                     }
-                    $cart->save();
+                    $newCart->save();
                 }
 
-                // Sync PaymentReminder
+                // 5. Payment Reminder
                 $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
                 if($reminder) {
                     $reminder->amount = $order->total_amount;
                     $reminder->save();
                 }
 
-                // Activity Log
-                \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
+                // 6. Activity Log (Wrapped in try to prevent it from crashing the main order)
+                try {
+                    \App\Models\ActivityLog::log('sale', 'Order Modified', auth()->user()->name . ' updated their pending order #' . $order->order_number, route('user.order.show', $order->id));
+                } catch (\Exception $ae) {
+                    \Log::error('Activity Log Error: ' . $ae->getMessage());
+                }
             });
 
             return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
         } catch (\Exception $e) {
-            \Log::error('Order Update Error: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()], 500);
+            \Log::error('CRITICAL Order Update Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()], 500);
         }
     }
 
