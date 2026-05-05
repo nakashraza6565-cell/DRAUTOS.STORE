@@ -684,8 +684,9 @@ class HomeController extends Controller
 
             return response()->json(['status' => 'success', 'message' => 'Order updated successfully']);
         } catch (\Exception $e) {
-            \Log::error('CRITICAL Order Update Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response()->json(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()], 500);
+            \Log::error('Order Update Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            // Return 200 but with status error so the message is always visible in the popup
+            return response()->json(['status' => 'error', 'message' => 'Technical Details: ' . $e->getMessage()]);
         }
     }
 
