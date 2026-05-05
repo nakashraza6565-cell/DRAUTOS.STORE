@@ -23,6 +23,25 @@ use Illuminate\Support\Facades\Schema;
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
 
 // (Removed old fix-db route - moved to admin section)
+Route::get('/fix-db', function () {
+    try {
+        // 1. Run migrations
+        $output = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+
+        // 2. Clear all cache
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        
+        return "<h1>Database & System Updated!</h1>
+                <p>New features and tables have been successfully activated.</p>
+                <p><strong>Next Step:</strong> Try changing a price in your Price List, then check the Dashboard.</p>
+                <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
+    } catch (\Exception $e) {
+        return "<h1>Error during update</h1>
+                <p style='color: red;'>" . $e->getMessage() . "</p>
+                <p>Please contact support with this error message.</p>
+                <a href='/admin'>Back to Dashboard</a>";
+    }
+});
 
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\CustomerLedgerController;
@@ -156,30 +175,6 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
             return "<h1>System Refreshed!</h1><p>The UI theme has been updated. Please refresh your browser (Ctrl+F5) or use Incognito mode to see the changes.</p><a href='/admin'>Back to Dashboard</a>";
         } catch (\Exception $e) {
             return "Error: " . $e->getMessage();
-        }
-    });
-
-    Route::get('/fix-db', function () {
-        try {
-            \Illuminate\Support\Facades\Log::info('Starting fix-db migration...');
-            
-            // 1. Run migrations
-            $output = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-            \Illuminate\Support\Facades\Log::info('Migration output: ' . $output);
-
-            // 2. Clear all cache
-            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-            
-            return "<h1>Database & System Updated!</h1>
-                    <p>New features and tables have been successfully activated.</p>
-                    <p><strong>Next Step:</strong> Try changing a price in your Price List, then check the Dashboard.</p>
-                    <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Fix-DB Error: ' . $e->getMessage());
-            return "<h1>Error during update</h1>
-                    <p style='color: red;'>" . $e->getMessage() . "</p>
-                    <p>Please contact support with this error message.</p>
-                    <a href='/admin'>Back to Dashboard</a>";
         }
     });
 
