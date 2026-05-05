@@ -601,17 +601,33 @@ class HomeController extends Controller
 
     public function updateOnlineOrder(Request $request, $id)
     {
-        $order = Order::where('user_id', auth()->user()->id)->findOrFail($id);
+        \Log::info('==== UPDATE ORDER REQUEST ARRIVED ====', [
+            'id' => $id,
+            'all' => $request->all()
+        ]);
+        
+        $order = Order::where('user_id', auth()->user()->id)->find($id);
+        
+        if (!$order) {
+            \Log::error('Order not found for update', ['id' => $id, 'user' => auth()->id()]);
+            return response()->json(['status' => 'error', 'message' => 'System Error: Order #' . $id . ' not found or you do not have permission to edit it.']);
+        }
         
         if($order->status != 'new' && $order->status != 'process') {
              return response()->json(['status' => 'error', 'message' => 'Order cannot be edited'], 422);
         }
-
-        $data = $request->validate([
+        
+        $validator = \Validator::make($request->all(), [
             'cart' => 'required|array',
             'total_amount' => 'required',
             'payment_method' => 'required'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'Validation Error: ' . implode(', ', $validator->errors()->all())]);
+        }
+
+        $data = $validator->validated();
 
         try {
             \Log::info('Order Update Start', ['order_id' => $id, 'user_id' => auth()->id()]);
