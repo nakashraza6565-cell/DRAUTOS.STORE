@@ -43,6 +43,11 @@ Route::get('/fix-db', function () {
     }
 });
 
+// ===== Admin AI Chat (Admin Only) =====
+Route::post('/admin/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])
+    ->name('admin.ai-chat')
+    ->middleware(['auth', 'admin']);
+
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\CustomerLedgerController;
 /*
