@@ -111,7 +111,7 @@ PROMPT;
 
         try {
             $response = Http::timeout(15)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key={$apiKey}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={$apiKey}",
                 [
                     'contents' => [['parts' => [['text' => $systemPrompt]]]],
                     'generationConfig' => [

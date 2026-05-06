@@ -55,12 +55,21 @@ Route::get('/test-ai', function () {
         "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"
     );
 
-    if ($response->successful()) {
-        $models = $response->json()['models'] ?? [];
-        $names = array_map(fn($m) => $m['name'] . ' | ' . ($m['supportedGenerationMethods'][0] ?? '?'), $models);
-        return "<h2>Available Models:</h2><pre>" . implode("\n", $names) . "</pre>";
+    // Test the model directly
+    $testResponse = \Illuminate\Support\Facades\Http::timeout(15)->post(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={$apiKey}",
+        [
+            'contents' => [['parts' => [['text' => 'Say hello in one sentence.']]]],
+            'generationConfig' => ['maxOutputTokens' => 50]
+        ]
+    );
+
+    if ($testResponse->successful()) {
+        $result = $testResponse->json();
+        $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No text';
+        return "✅ AI is working! Model: gemini-2.0-flash-lite | Response: " . $text;
     } else {
-        return "❌ Error: " . $response->body();
+        return "❌ API Error (HTTP " . $testResponse->status() . "): " . $testResponse->body();
     }
 });
 
