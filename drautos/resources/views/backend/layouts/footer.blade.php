@@ -56,7 +56,12 @@
 
           {{-- Input Area --}}
           <div id="ai-chat-input-area">
-              <input type="text" id="ai-chat-input" placeholder="Ask me anything about your business..." autocomplete="off">
+              <button id="ai-mic-btn" title="Speak (Urdu / English)">
+                  <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                      <path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V20H9v2h6v-2h-2v-2.07A7 7 0 0 0 19 11h-2z"/>
+                  </svg>
+              </button>
+              <input type="text" id="ai-chat-input" placeholder="Type or tap 🎤 to speak..." autocomplete="off">
               <button id="ai-chat-send">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                       <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
@@ -216,6 +221,34 @@
           }
           #ai-chat-send:hover { transform: scale(1.05); }
 
+          /* Mic Button */
+          #ai-mic-btn {
+              width: 42px;
+              height: 42px;
+              border-radius: 12px;
+              background: #f1f5f9;
+              border: 1.5px solid #e0e7ff;
+              color: #6366f1;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.2s;
+              flex-shrink: 0;
+          }
+          #ai-mic-btn:hover { background: #e0e7ff; }
+          #ai-mic-btn.recording {
+              background: #fee2e2;
+              border-color: #ef4444;
+              color: #ef4444;
+              animation: mic-pulse 1s infinite;
+          }
+          @keyframes mic-pulse {
+              0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+              70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+              100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          }
+
           @media (max-width: 480px) {
               #ai-chat-window { width: calc(100vw - 20px); right: 10px; bottom: 100px; }
           }
@@ -290,6 +323,68 @@
                   pendingAction = null;
               });
           }
+
+          // ===== Voice / Mic Button =====
+          const micBtn = document.getElementById('ai-mic-btn');
+          let recognition = null;
+          let isRecording = false;
+
+          if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+              recognition = new SpeechRecognition();
+              recognition.continuous = false;
+              recognition.interimResults = true;
+              // Support both Urdu and English
+              recognition.lang = 'ur-PK';
+
+              recognition.onstart = function() {
+                  isRecording = true;
+                  micBtn.classList.add('recording');
+                  input.placeholder = '🔴 Listening... (Urdu / English)';
+              };
+
+              recognition.onresult = function(event) {
+                  let transcript = '';
+                  for (let i = event.resultIndex; i < event.results.length; i++) {
+                      transcript += event.results[i][0].transcript;
+                  }
+                  input.value = transcript;
+              };
+
+              recognition.onend = function() {
+                  isRecording = false;
+                  micBtn.classList.remove('recording');
+                  input.placeholder = 'Type or tap 🎤 to speak...';
+                  // Auto-send if something was captured
+                  if (input.value.trim()) {
+                      setTimeout(sendMessage, 400);
+                  }
+              };
+
+              recognition.onerror = function(e) {
+                  isRecording = false;
+                  micBtn.classList.remove('recording');
+                  input.placeholder = 'Type or tap 🎤 to speak...';
+                  if (e.error !== 'no-speech') {
+                      addMessage('🎤 Mic error: ' + e.error + '. Try typing instead.', 'bot');
+                  }
+              };
+
+              micBtn.addEventListener('click', function() {
+                  if (isRecording) {
+                      recognition.stop();
+                  } else {
+                      recognition.start();
+                  }
+              });
+          } else {
+              // Browser doesn't support voice
+              micBtn.title = 'Voice not supported in this browser. Use Chrome.';
+              micBtn.addEventListener('click', function() {
+                  addMessage('🎤 Voice input requires Google Chrome browser. Please use Chrome on your phone or computer.', 'bot');
+              });
+          }
+
       })();
       </script>
       @endif
