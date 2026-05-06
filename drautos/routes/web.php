@@ -43,7 +43,34 @@ Route::get('/fix-db', function () {
     }
 });
 
-// ===== Admin AI Chat (Admin Only) =====
+// ===== Gemini AI Test Route (Admin Only) =====
+Route::get('/test-ai', function () {
+    $apiKey = env('GEMINI_API_KEY');
+    if (!$apiKey) {
+        return "❌ GEMINI_API_KEY is MISSING from .env";
+    }
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(15)->post(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}",
+            [
+                'contents' => [['parts' => [['text' => 'Say hello in one sentence.']]]],
+                'generationConfig' => ['maxOutputTokens' => 50]
+            ]
+        );
+
+        if ($response->successful()) {
+            $result = $response->json();
+            $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No text returned';
+            return "✅ AI is working! Response: " . $text;
+        } else {
+            return "❌ API Error (HTTP " . $response->status() . "): " . $response->body();
+        }
+    } catch (\Exception $e) {
+        return "❌ Exception: " . $e->getMessage();
+    }
+});
+
 Route::post('/admin/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])
     ->name('admin.ai-chat')
     ->middleware(['auth', 'admin']);
