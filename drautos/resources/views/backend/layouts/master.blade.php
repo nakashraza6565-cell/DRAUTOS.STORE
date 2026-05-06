@@ -139,7 +139,23 @@
               <span class="launcher-label">Storefront</span>
           </a>
       </div>
-      
+
+      <div class="launcher-section-title">Customers & Users</div>
+      <div class="launcher-grid">
+          <a href="{{route('users.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #0ea5e9;"><i class="fas fa-users text-white"></i></div>
+              <span class="launcher-label">Customers</span>
+          </a>
+          <a href="{{route('order.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #10b981;"><i class="fas fa-shopping-bag text-white"></i></div>
+              <span class="launcher-label">Online Orders</span>
+          </a>
+          <a href="{{route('admin.customer-ledger.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #f59e0b;"><i class="fas fa-file-invoice-dollar text-white"></i></div>
+              <span class="launcher-label">Ledger</span>
+          </a>
+      </div>
+
       <div style="height: 100px;"></div>
   </div>
 
