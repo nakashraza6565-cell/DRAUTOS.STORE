@@ -50,24 +50,17 @@ Route::get('/test-ai', function () {
         return "❌ GEMINI_API_KEY is MISSING from .env";
     }
 
-    try {
-        $response = \Illuminate\Support\Facades\Http::timeout(15)->post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key={$apiKey}",
-            [
-                'contents' => [['parts' => [['text' => 'Say hello in one sentence.']]]],
-                'generationConfig' => ['maxOutputTokens' => 50]
-            ]
-        );
+    // List all available models for this key
+    $response = \Illuminate\Support\Facades\Http::get(
+        "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"
+    );
 
-        if ($response->successful()) {
-            $result = $response->json();
-            $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No text returned';
-            return "✅ AI is working! Response: " . $text;
-        } else {
-            return "❌ API Error (HTTP " . $response->status() . "): " . $response->body();
-        }
-    } catch (\Exception $e) {
-        return "❌ Exception: " . $e->getMessage();
+    if ($response->successful()) {
+        $models = $response->json()['models'] ?? [];
+        $names = array_map(fn($m) => $m['name'] . ' | ' . ($m['supportedGenerationMethods'][0] ?? '?'), $models);
+        return "<h2>Available Models:</h2><pre>" . implode("\n", $names) . "</pre>";
+    } else {
+        return "❌ Error: " . $response->body();
     }
 });
 
