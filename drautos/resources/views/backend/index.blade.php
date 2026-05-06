@@ -498,7 +498,7 @@
     .ticker-track {
         display: flex;
         white-space: nowrap;
-        animation: ticker-scroll 80s linear infinite;
+        animation: ticker-scroll 140s linear infinite; /* Slowed down from 80s to 140s */
         padding-left: 20px;
     }
     .ticker-track:hover {
@@ -510,6 +510,11 @@
         padding-right: 60px;
         font-size: 0.9rem;
         color: #e2e8f0;
+    }
+    .ticker-item strong {
+        color: #818cf8; /* Indigo for AI */
+        margin-right: 6px;
+        letter-spacing: 0.5px;
     }
     .ticker-item i {
         color: #fbbf24;
