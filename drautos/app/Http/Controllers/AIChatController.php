@@ -7,7 +7,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\Cheque;
 use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class AIChatController extends Controller
 {
@@ -97,15 +99,18 @@ class AIChatController extends Controller
         $context .= "\nToday's Sales: Rs.{$todaySales} | Pending Orders: {$pending}";
 
         $systemPrompt = "You are a professional AI business assistant for 'Danyal Autos' spare parts store in Pakistan. " .
-            "You help the admin manage inventory, orders, and pricing.\n\n" .
+            "You help the admin manage inventory, orders, pricing, and cheque management.\n\n" .
             "REAL-TIME BUSINESS DATA:\n{$context}\n\n" .
             "STRICT RULES:\n" .
             "1. NEVER delete anything. Refuse politely if asked.\n" .
-            "2. For ANY price or stock update, respond ONLY with this exact JSON format on its own line: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
-            "3. Answer questions about products, orders, stock naturally.\n" .
-            "4. Keep replies short, friendly, and professional.\n" .
-            "5. You understand Urdu, Roman Urdu, and English.\n" .
-            "6. For PDF download requests respond with: ACTION_JSON:{\"type\":\"download_pdf\"}\n";
+            "2. For price updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
+            "3. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"receivable\",\"notes\":\"\"}\n" .
+            "4. cheque_type must be either 'receivable' (incoming cheque) or 'payable' (outgoing cheque).\n" .
+            "5. Answer questions about products, orders, stock, and cheques naturally.\n" .
+            "6. Keep replies short, friendly, and professional.\n" .
+            "7. You understand Urdu, Roman Urdu, and English.\n" .
+            "8. For PDF download requests respond with: ACTION_JSON:{\"type\":\"download_pdf\"}\n" .
+            "9. Dates must be in YYYY-MM-DD format.\n";
 
         // Build model queue: user-selected first, then all others as fallback
         $queue = $this->models;
@@ -185,6 +190,26 @@ class AIChatController extends Controller
             ]);
         }
 
+        if (($action['type'] ?? '') === 'add_cheque') {
+            $chequeType = $action['cheque_type'] === 'payable' ? 'payable' : 'receivable';
+            $confirmMsg = "⚠️ **Confirm Add Cheque:**\n\n" .
+                "Type: **" . ucfirst($chequeType) . "**\n" .
+                "Cheque #: **{$action['cheque_number']}**\n" .
+                "Amount: **Rs. {$action['amount']}**\n" .
+                "Bank: **{$action['bank_name']}**\n" .
+                "Party: **{$action['party_name']}**\n" .
+                "Cheque Date: **{$action['cheque_date']}**\n" .
+                "Clearing Date: **{$action['clearing_date']}**\n" .
+                ($action['notes'] ? "Notes: **{$action['notes']}**\n" : "") .
+                "\nIs this correct? Type **YES** to confirm or **NO** to cancel.";
+
+            return response()->json([
+                'reply'         => $confirmMsg,
+                'action'        => $action,
+                'needs_confirm' => true,
+            ]);
+        }
+
         $confirmMsg = "⚠️ **Confirm Price Update:**\n\n" .
             "Product: **{$action['product_name']}**\n" .
             "Current Price: **Rs. {$action['old_price']}**\n" .
@@ -214,6 +239,37 @@ class AIChatController extends Controller
                 return $this->reply("✅ **Done!** Price of **{$product->title}** updated from Rs.{$old} to Rs.{$product->price}.");
             } catch (\Exception $e) {
                 return $this->reply('❌ Update failed: ' . $e->getMessage());
+            }
+        }
+
+        if (($a['type'] ?? '') === 'add_cheque') {
+            try {
+                $cheque = Cheque::create([
+                    'type'           => $a['cheque_type'] === 'payable' ? 'payable' : 'receivable',
+                    'cheque_number'  => $a['cheque_number'],
+                    'amount'         => (float) $a['amount'],
+                    'cheque_date'    => $a['cheque_date'],
+                    'clearing_date'  => $a['clearing_date'],
+                    'bank_name'      => $a['bank_name'] ?? '',
+                    'party_type'     => null,
+                    'party_id'       => null,
+                    'status'         => 'pending',
+                    'notes'          => $a['notes'] ?? 'Added via AI Chat',
+                    'created_by'     => Auth::id(),
+                ]);
+                ActivityLog::log('cheque', 'Cheque Added via AI Chat',
+                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} from {$a['party_name']}",
+                    route('cheques.index'));
+                return $this->reply(
+                    "✅ **Cheque Added Successfully!**\n\n" .
+                    "Cheque #: **{$cheque->cheque_number}**\n" .
+                    "Amount: **Rs. {$cheque->amount}**\n" .
+                    "Bank: **{$cheque->bank_name}**\n" .
+                    "Status: **Pending**\n" .
+                    "Clearing Date: **{$cheque->clearing_date}**"
+                );
+            } catch (\Exception $e) {
+                return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
             }
         }
 
