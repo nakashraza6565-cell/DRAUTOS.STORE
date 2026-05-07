@@ -43,7 +43,7 @@ class AIChatController extends Controller
         $this->middleware(['auth', 'admin']);
     }
 
-    private $forbiddenKeywords = ['delete', 'remove', 'drop', 'destroy', 'erase', 'truncate', 'wipe'];
+    private $forbiddenKeywords = ['remove user', 'drop table', 'truncate', 'wipe database'];
 
     public function chat(Request $request)
     {
@@ -85,6 +85,7 @@ class AIChatController extends Controller
         // Build real-time context from database
         $products     = Product::orderBy('price', 'desc')->take(15)->get(['id', 'title', 'price', 'stock']);
         $recentOrders = Order::with('user')->latest()->take(5)->get(['id', 'order_number', 'total_amount', 'status', 'user_id']);
+        $recentCheques = Cheque::latest()->take(10)->get(['id', 'cheque_number', 'amount', 'bank_name', 'status']);
         $todaySales   = Order::whereDate('created_at', now()->toDateString())->sum('total_amount');
         $pending      = Order::whereIn('status', ['new', 'process'])->count();
 
@@ -96,6 +97,10 @@ class AIChatController extends Controller
         foreach ($recentOrders as $o) {
             $context .= "- Order#{$o->order_number} | Rs.{$o->total_amount} | {$o->status} | " . ($o->user->name ?? 'Guest') . "\n";
         }
+        $context .= "\nRecent Cheques:\n";
+        foreach ($recentCheques as $c) {
+            $context .= "- #{$c->cheque_number} | Rs.{$c->amount} | {$c->bank_name} | Status: {$c->status}\n";
+        }
         $context .= "\nToday's Sales: Rs.{$todaySales} | Pending Orders: {$pending}";
 
         $systemPrompt = "You are a professional AI business assistant for 'Danyal Autos' spare parts store in Pakistan. " .
@@ -106,7 +111,8 @@ class AIChatController extends Controller
             "2. For price updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
             "3. For stock updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_stock\",\"product_id\":123,\"product_name\":\"Name\",\"old_stock\":10,\"new_stock\":50}\n" .
             "4. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"received\",\"notes\":\"\"}\n" .
-            "5. For stock updates, if the user says 'add 10', calculate the new total based on current stock in context.\n" .
+            "5. For removing a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"remove_cheque\",\"cheque_number\":\"12345\"}\n" .
+            "6. For stock updates, if the user says 'add 10', calculate the new total based on current stock in context.\n" .
             "6. cheque_type must be either 'received' (cheque received from customer) or 'paid' (cheque paid to vendor).\n" .
             "5. Answer questions about products, orders, stock, and cheques naturally.\n" .
             "6. Keep replies short, friendly, and professional.\n" .
@@ -226,6 +232,25 @@ class AIChatController extends Controller
             ]);
         }
 
+        if (($action['type'] ?? '') === 'remove_cheque') {
+            $cheque = Cheque::where('cheque_number', $action['cheque_number'])->first();
+            if (!$cheque) return $this->reply("❌ Cheque #{$action['cheque_number']} not found.");
+
+            $confirmMsg = "🛑 **CRITICAL: Confirm Cheque Deletion**\n\n" .
+                "Are you sure you want to PERMANENTLY REMOVE this cheque?\n\n" .
+                "Cheque #: **{$cheque->cheque_number}**\n" .
+                "Amount: **Rs. {$cheque->amount}**\n" .
+                "Bank: **{$cheque->bank_name}**\n" .
+                "Status: **{$cheque->status}**\n\n" .
+                "Type **YES** to delete or **NO** to cancel.";
+
+            return response()->json([
+                'reply'         => $confirmMsg,
+                'action'        => array_merge($action, ['id' => $cheque->id]),
+                'needs_confirm' => true,
+            ]);
+        }
+
         $confirmMsg = "⚠️ **Confirm Price Update:**\n\n" .
             "Product: **{$action['product_name']}**\n" .
             "Current Price: **Rs. {$action['old_price']}**\n" .
@@ -302,6 +327,21 @@ class AIChatController extends Controller
                 );
             } catch (\Exception $e) {
                 return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
+            }
+        }
+
+        if (($a['type'] ?? '') === 'remove_cheque') {
+            try {
+                $cheque = Cheque::findOrFail($a['id']);
+                $num = $cheque->cheque_number;
+                $amt = $cheque->amount;
+                $cheque->delete();
+                ActivityLog::log('cheque', 'Cheque Deleted via AI Chat',
+                    "AI permanently removed cheque #{$num} for Rs.{$amt}",
+                    route('cheques.index'));
+                return $this->reply("🗑️ **Deleted!** Cheque #{$num} (Rs.{$amt}) has been removed from the system.");
+            } catch (\Exception $e) {
+                return $this->reply('❌ Deletion failed: ' . $e->getMessage());
             }
         }
 
