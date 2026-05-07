@@ -48,17 +48,18 @@ Route::get('/test-ai', function () {
     $apiKey = env('OPENROUTER_API_KEY');
     if (!$apiKey) return '❌ OPENROUTER_API_KEY is MISSING from .env';
 
-    // List all available free models
     $response = \Illuminate\Support\Facades\Http::withHeaders([
         'Authorization' => 'Bearer ' . $apiKey,
         'Content-Type'  => 'application/json',
-    ])->get('https://openrouter.ai/api/v1/models');
+    ])->post('https://openrouter.ai/api/v1/chat/completions', [
+        'model'      => 'meta-llama/llama-3.3-70b-instruct:free',
+        'messages'   => [['role' => 'user', 'content' => 'Say hello in one sentence.']],
+        'max_tokens' => 50,
+    ]);
 
     if ($response->successful()) {
-        $models = $response->json()['data'] ?? [];
-        $free = array_filter($models, fn($m) => str_contains($m['id'], ':free'));
-        $names = array_column(array_values($free), 'id');
-        return '<h2>Available FREE Models:</h2><pre>' . implode("\n", $names) . '</pre>';
+        $text = $response->json()['choices'][0]['message']['content'] ?? 'No response';
+        return '✅ AI is working! Model: Llama 3.3 70B | Response: ' . $text;
     }
     return '❌ Error (' . $response->status() . '): ' . $response->body();
 });
