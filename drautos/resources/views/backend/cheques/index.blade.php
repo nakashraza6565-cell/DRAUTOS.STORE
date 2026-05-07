@@ -133,6 +133,11 @@
                                         </button>
                                         </form>
                                         @endif
+                                        <form method="POST" action="{{route('cheques.destroy',[$cheque->id])}}" style="display:inline;">
+                                          @csrf 
+                                          @method('delete')
+                                              <button class="btn btn-sm btn-danger border-0 dltBtn" data-id="{{$cheque->id}}" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>  
