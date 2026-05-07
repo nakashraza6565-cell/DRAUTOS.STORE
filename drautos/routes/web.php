@@ -52,7 +52,7 @@ Route::get('/test-ai', function () {
         'Authorization' => 'Bearer ' . $apiKey,
         'Content-Type'  => 'application/json',
     ])->post('https://openrouter.ai/api/v1/chat/completions', [
-        'model'      => 'meta-llama/llama-3.1-8b-instruct:free',
+        'model'      => 'mistralai/mistral-7b-instruct:free',
         'messages'   => [['role' => 'user', 'content' => 'Say hello in one sentence.']],
         'max_tokens' => 50,
     ]);
