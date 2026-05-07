@@ -104,8 +104,10 @@ class AIChatController extends Controller
             "STRICT RULES:\n" .
             "1. NEVER delete anything. Refuse politely if asked.\n" .
             "2. For price updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
-            "3. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"received\",\"notes\":\"\"}\n" .
-            "4. cheque_type must be either 'received' (cheque received from customer) or 'paid' (cheque paid to vendor).\n" .
+            "3. For stock updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_stock\",\"product_id\":123,\"product_name\":\"Name\",\"old_stock\":10,\"new_stock\":50}\n" .
+            "4. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"received\",\"notes\":\"\"}\n" .
+            "5. For stock updates, if the user says 'add 10', calculate the new total based on current stock in context.\n" .
+            "6. cheque_type must be either 'received' (cheque received from customer) or 'paid' (cheque paid to vendor).\n" .
             "5. Answer questions about products, orders, stock, and cheques naturally.\n" .
             "6. Keep replies short, friendly, and professional.\n" .
             "7. You understand Urdu, Roman Urdu, and English.\n" .
@@ -210,6 +212,20 @@ class AIChatController extends Controller
             ]);
         }
 
+        if (($action['type'] ?? '') === 'update_stock') {
+            $confirmMsg = "⚠️ **Confirm Stock Update:**\n\n" .
+                "Product: **{$action['product_name']}**\n" .
+                "Current Stock: **{$action['old_stock']}**\n" .
+                "New Stock: **{$action['new_stock']}**\n\n" .
+                "Is this correct? Type **YES** to confirm or **NO** to cancel.";
+
+            return response()->json([
+                'reply'         => $confirmMsg,
+                'action'        => $action,
+                'needs_confirm' => true,
+            ]);
+        }
+
         $confirmMsg = "⚠️ **Confirm Price Update:**\n\n" .
             "Product: **{$action['product_name']}**\n" .
             "Current Price: **Rs. {$action['old_price']}**\n" .
@@ -239,6 +255,21 @@ class AIChatController extends Controller
                 return $this->reply("✅ **Done!** Price of **{$product->title}** updated from Rs.{$old} to Rs.{$product->price}.");
             } catch (\Exception $e) {
                 return $this->reply('❌ Update failed: ' . $e->getMessage());
+            }
+        }
+
+        if (($a['type'] ?? '') === 'update_stock') {
+            try {
+                $product = Product::findOrFail($a['product_id']);
+                $old = $product->stock;
+                $product->stock = (int) $a['new_stock'];
+                $product->save();
+                ActivityLog::log('product', 'Stock Updated via AI Chat',
+                    "AI updated stock of {$product->title} from {$old} to {$product->stock}",
+                    route('product.index'));
+                return $this->reply("✅ **Stock Updated!** **{$product->title}** is now **{$product->stock}** units.");
+            } catch (\Exception $e) {
+                return $this->reply('❌ Stock update failed: ' . $e->getMessage());
             }
         }
 
