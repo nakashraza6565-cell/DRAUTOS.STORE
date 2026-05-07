@@ -12,7 +12,7 @@ use App\Models\ActivityLog;
 class AIChatController extends Controller
 {
     private $forbiddenKeywords = ['delete', 'remove', 'drop', 'destroy', 'erase', 'truncate', 'wipe'];
-    private $model = 'meta-llama/llama-3.3-70b-instruct:free';
+    private $model = 'google/gemma-4-26b-a4b-it:free';
     private $apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
     public function __construct()
