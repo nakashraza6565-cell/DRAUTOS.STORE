@@ -48,18 +48,17 @@ Route::get('/test-ai', function () {
     $apiKey = env('OPENROUTER_API_KEY');
     if (!$apiKey) return '❌ OPENROUTER_API_KEY is MISSING from .env';
 
+    // List all available free models
     $response = \Illuminate\Support\Facades\Http::withHeaders([
         'Authorization' => 'Bearer ' . $apiKey,
         'Content-Type'  => 'application/json',
-    ])->post('https://openrouter.ai/api/v1/chat/completions', [
-        'model'      => 'mistralai/mistral-7b-instruct:free',
-        'messages'   => [['role' => 'user', 'content' => 'Say hello in one sentence.']],
-        'max_tokens' => 50,
-    ]);
+    ])->get('https://openrouter.ai/api/v1/models');
 
     if ($response->successful()) {
-        $text = $response->json()['choices'][0]['message']['content'] ?? 'No response';
-        return '✅ AI is working! Response: ' . $text;
+        $models = $response->json()['data'] ?? [];
+        $free = array_filter($models, fn($m) => str_contains($m['id'], ':free'));
+        $names = array_column(array_values($free), 'id');
+        return '<h2>Available FREE Models:</h2><pre>' . implode("\n", $names) . '</pre>';
     }
     return '❌ Error (' . $response->status() . '): ' . $response->body();
 });
