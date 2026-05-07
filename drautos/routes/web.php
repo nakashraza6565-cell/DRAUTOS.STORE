@@ -57,7 +57,7 @@ Route::get('/test-ai', function () {
 
     // Test the model directly
     $testResponse = \Illuminate\Support\Facades\Http::timeout(15)->post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={$apiKey}",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
         [
             'contents' => [['parts' => [['text' => 'Say hello in one sentence.']]]],
             'generationConfig' => ['maxOutputTokens' => 50]

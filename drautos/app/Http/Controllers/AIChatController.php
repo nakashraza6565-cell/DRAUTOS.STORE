@@ -15,7 +15,14 @@ class AIChatController extends Controller
     // SAFETY RULES — These are HARDCODED and cannot be changed
     // ============================================================
     private $forbiddenKeywords = [
-        'delete', 'remove', 'drop', 'destroy', 'erase', 'truncate', 'wipe', 'clear all'
+        'delete',
+        'remove',
+        'drop',
+        'destroy',
+        'erase',
+        'truncate',
+        'wipe',
+        'clear all'
     ];
 
     public function __construct()
@@ -182,21 +189,21 @@ PROMPT;
         switch ($action['type'] ?? '') {
             case 'update_price':
                 return "⚠️ **Confirm Price Update:**\n\n" .
-                       "Product: **{$action['product_name']}**\n" .
-                       "Current Price: **Rs. {$action['old_price']}**\n" .
-                       "New Price: **Rs. {$action['new_price']}**\n\n" .
-                       "Is this correct? Type **YES** to confirm or **NO** to cancel.";
+                    "Product: **{$action['product_name']}**\n" .
+                    "Current Price: **Rs. {$action['old_price']}**\n" .
+                    "New Price: **Rs. {$action['new_price']}**\n\n" .
+                    "Is this correct? Type **YES** to confirm or **NO** to cancel.";
 
             case 'update_stock':
                 return "⚠️ **Confirm Stock Update:**\n\n" .
-                       "Product: **{$action['product_name']}**\n" .
-                       "New Stock: **{$action['new_stock']} units**\n\n" .
-                       "Is this correct? Type **YES** to confirm or **NO** to cancel.";
+                    "Product: **{$action['product_name']}**\n" .
+                    "New Stock: **{$action['new_stock']} units**\n\n" .
+                    "Is this correct? Type **YES** to confirm or **NO** to cancel.";
 
             case 'download_pdf':
                 return "📄 **Download Price List PDF?**\n\n" .
-                       "I will open the PDF download link for you.\n\n" .
-                       "Type **YES** to proceed or **NO** to cancel.";
+                    "I will open the PDF download link for you.\n\n" .
+                    "Type **YES** to proceed or **NO** to cancel.";
 
             default:
                 return "❓ I need confirmation to proceed. Type **YES** to confirm or **NO** to cancel.";
