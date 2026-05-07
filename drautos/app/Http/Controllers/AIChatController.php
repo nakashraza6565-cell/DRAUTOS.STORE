@@ -198,21 +198,47 @@ class AIChatController extends Controller
         }
 
         if (($action['type'] ?? '') === 'add_cheque') {
+            $partyName = $action['party_name'] ?? '';
+            
+            // 1. Try exact match first
+            $partyUser = \App\User::where('name', $partyName)->first();
+            
+            // 2. If no exact match, try partial search
+            if (!$partyUser) {
+                $partyUsers = \App\User::where('name', 'like', "%{$partyName}%")->limit(5)->get();
+                
+                if ($partyUsers->isEmpty()) {
+                    return response()->json([
+                        'reply' => "❌ **Error:** Customer **'{$partyName}'** is not registered in your system. \n\nPlease add the customer to the 'Customers & Users' section before adding their cheques.",
+                        'action' => null
+                    ]);
+                }
+                
+                if ($partyUsers->count() > 1) {
+                    $options = $partyUsers->pluck('name')->map(fn($n) => "• **{$n}**")->implode("\n");
+                    return response()->json([
+                        'reply' => "🔍 I found multiple customers matching **'{$partyName}'**:\n\n{$options}\n\n**Please specify the full name** so I can link the cheque correctly.",
+                        'action' => null
+                    ]);
+                }
+                
+                $partyUser = $partyUsers->first();
+            }
+
             $chequeType = $action['cheque_type'] === 'paid' ? 'paid' : 'received';
             $confirmMsg = "⚠️ **Confirm Add Cheque:**\n\n" .
                 "Type: **" . ($chequeType === 'received' ? '📥 Received (from customer)' : '📤 Paid (to vendor)') . "**\n" .
+                "Customer: **{$partyUser->name}** ✅ (Registered)\n" .
                 "Cheque #: **{$action['cheque_number']}**\n" .
                 "Amount: **Rs. {$action['amount']}**\n" .
                 "Bank: **{$action['bank_name']}**\n" .
-                "Party: **{$action['party_name']}**\n" .
                 "Cheque Date: **{$action['cheque_date']}**\n" .
                 "Clearing Date: **{$action['clearing_date']}**\n" .
-                ($action['notes'] ? "Notes: **{$action['notes']}**\n" : "") .
                 "\nIs this correct? Type **YES** to confirm or **NO** to cancel.";
 
             return response()->json([
                 'reply'         => $confirmMsg,
-                'action'        => $action,
+                'action'        => array_merge($action, ['party_id' => $partyUser->id, 'party_name' => $partyUser->name]),
                 'needs_confirm' => true,
             ]);
         }
@@ -306,11 +332,7 @@ class AIChatController extends Controller
         if (($a['type'] ?? '') === 'add_cheque') {
             try {
                 $chequeType = $a['cheque_type'] === 'paid' ? 'paid' : 'received';
-
-                // Try to find the user/customer by name
-                $partyName = $a['party_name'] ?? '';
-                $partyUser = \App\User::where('name', 'like', "%{$partyName}%")->first();
-
+                
                 $cheque = Cheque::create([
                     'type'           => $chequeType,
                     'cheque_number'  => $a['cheque_number'],
@@ -318,27 +340,26 @@ class AIChatController extends Controller
                     'cheque_date'    => $a['cheque_date'],
                     'clearing_date'  => $a['clearing_date'] ?? null,
                     'bank_name'      => $a['bank_name'] ?? '',
-                    'party_type'     => $partyUser ? 'App\User' : null,
-                    'party_id'       => $partyUser ? $partyUser->id : null,
+                    'party_type'     => 'App\User',
+                    'party_id'       => $a['party_id'],
                     'status'         => 'pending',
-                    'notes'          => ($a['notes'] ?? '') . ' | Party Name: ' . $partyName . ' | Added via AI Chat',
+                    'notes'          => ($a['notes'] ?? '') . ' | Added via AI Chat',
                     'created_by'     => Auth::id(),
                 ]);
-
+                
                 ActivityLog::log(
                     'cheque',
                     'Cheque Added via AI Chat',
-                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} for party: " . ($partyUser ? $partyUser->name : $partyName),
+                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} for customer: {$a['party_name']}",
                     route('cheques.index')
                 );
 
                 return $this->reply(
                     "✅ **Cheque Added Successfully!**\n\n" .
-                        "Party: **" . ($partyUser ? $partyUser->name : $partyName) . "**\n" .
+                        "Customer: **{$a['party_name']}**\n" .
                         "Cheque #: **{$cheque->cheque_number}**\n" .
                         "Amount: **Rs. {$cheque->amount}**\n" .
-                        "Bank: **{$cheque->bank_name}**\n" .
-                        "Status: **Pending**"
+                        "Bank: **{$cheque->bank_name}**"
                 );
             } catch (\Exception $e) {
                 return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
