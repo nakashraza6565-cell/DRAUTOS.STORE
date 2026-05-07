@@ -43,34 +43,25 @@ Route::get('/fix-db', function () {
     }
 });
 
-// ===== Gemini AI Test Route (Admin Only) =====
+// ===== OpenRouter AI Test Route =====
 Route::get('/test-ai', function () {
-    $apiKey = env('GEMINI_API_KEY');
-    if (!$apiKey) {
-        return "❌ GEMINI_API_KEY is MISSING from .env";
+    $apiKey = env('OPENROUTER_API_KEY');
+    if (!$apiKey) return '❌ OPENROUTER_API_KEY is MISSING from .env';
+
+    $response = \Illuminate\Support\Facades\Http::withHeaders([
+        'Authorization' => 'Bearer ' . $apiKey,
+        'Content-Type'  => 'application/json',
+    ])->post('https://openrouter.ai/api/v1/chat/completions', [
+        'model'      => 'meta-llama/llama-3.1-8b-instruct:free',
+        'messages'   => [['role' => 'user', 'content' => 'Say hello in one sentence.']],
+        'max_tokens' => 50,
+    ]);
+
+    if ($response->successful()) {
+        $text = $response->json()['choices'][0]['message']['content'] ?? 'No response';
+        return '✅ AI is working! Response: ' . $text;
     }
-
-    // List all available models for this key
-    $response = \Illuminate\Support\Facades\Http::get(
-        "https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}"
-    );
-
-    // Test the model directly
-    $testResponse = \Illuminate\Support\Facades\Http::timeout(15)->post(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
-        [
-            'contents' => [['parts' => [['text' => 'Say hello in one sentence.']]]],
-            'generationConfig' => ['maxOutputTokens' => 50]
-        ]
-    );
-
-    if ($testResponse->successful()) {
-        $result = $testResponse->json();
-        $text = $result['candidates'][0]['content']['parts'][0]['text'] ?? 'No text';
-        return "✅ AI is working! Model: gemini-2.0-flash-lite | Response: " . $text;
-    } else {
-        return "❌ API Error (HTTP " . $testResponse->status() . "): " . $testResponse->body();
-    }
+    return '❌ Error (' . $response->status() . '): ' . $response->body();
 });
 
 Route::post('/admin/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])
