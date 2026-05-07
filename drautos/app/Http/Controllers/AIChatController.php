@@ -31,7 +31,7 @@ class AIChatController extends Controller
             'meta-llama/llama-3.3-70b-instruct:free'   => '🦙 Llama 3.3 (70B)',
             'meta-llama/llama-3.2-3b-instruct:free'    => '🦙 Llama 3.2 (Fast)',
             'qwen/qwen3-next-80b-a3b-instruct:free'    => '⚡ Qwen 3 (80B)',
-            'nousresearch/hermes-3-llama-3.1-405b:free'=> '🧠 Hermes 405B (Smartest)',
+            'nousresearch/hermes-3-llama-3.1-405b:free' => '🧠 Hermes 405B (Smartest)',
             'nvidia/nemotron-3-super-120b-a12b:free'   => '🎮 NVIDIA Nemotron (120B)',
         ];
     }
@@ -161,14 +161,13 @@ class AIChatController extends Controller
                         'reply'      => $aiText,
                         'action'     => null,
                         'used_model' => $usedModel,
-                        'model_label'=> self::modelLabels()[$usedModel] ?? $usedModel,
+                        'model_label' => self::modelLabels()[$usedModel] ?? $usedModel,
                     ]);
                 }
 
                 // 429 or 404 — try next model
                 $lastError = $response->status() . ': ' . substr($response->body(), 0, 100);
                 Log::warning("Model {$model} failed ({$response->status()}), trying next...");
-
             } catch (\Exception $e) {
                 $lastError = $e->getMessage();
                 Log::warning("Model {$model} exception: " . $e->getMessage());
@@ -274,9 +273,12 @@ class AIChatController extends Controller
                 $old = $product->price;
                 $product->price = (float) $a['new_price'];
                 $product->save();
-                ActivityLog::log('product', 'Price Updated via AI Chat',
+                ActivityLog::log(
+                    'product',
+                    'Price Updated via AI Chat',
                     "AI updated price of {$product->title} from Rs.{$old} to Rs.{$product->price}",
-                    route('product.index'));
+                    route('product.index')
+                );
                 return $this->reply("✅ **Done!** Price of **{$product->title}** updated from Rs.{$old} to Rs.{$product->price}.");
             } catch (\Exception $e) {
                 return $this->reply('❌ Update failed: ' . $e->getMessage());
@@ -289,9 +291,12 @@ class AIChatController extends Controller
                 $old = $product->stock;
                 $product->stock = (int) $a['new_stock'];
                 $product->save();
-                ActivityLog::log('product', 'Stock Updated via AI Chat',
+                ActivityLog::log(
+                    'product',
+                    'Stock Updated via AI Chat',
                     "AI updated stock of {$product->title} from {$old} to {$product->stock}",
-                    route('product.index'));
+                    route('product.index')
+                );
                 return $this->reply("✅ **Stock Updated!** **{$product->title}** is now **{$product->stock}** units.");
             } catch (\Exception $e) {
                 return $this->reply('❌ Stock update failed: ' . $e->getMessage());
@@ -301,11 +306,11 @@ class AIChatController extends Controller
         if (($a['type'] ?? '') === 'add_cheque') {
             try {
                 $chequeType = $a['cheque_type'] === 'paid' ? 'paid' : 'received';
-                
+
                 // Try to find the user/customer by name
                 $partyName = $a['party_name'] ?? '';
                 $partyUser = \App\User::where('name', 'like', "%{$partyName}%")->first();
-                
+
                 $cheque = Cheque::create([
                     'type'           => $chequeType,
                     'cheque_number'  => $a['cheque_number'],
@@ -319,18 +324,21 @@ class AIChatController extends Controller
                     'notes'          => ($a['notes'] ?? '') . ' | Party Name: ' . $partyName . ' | Added via AI Chat',
                     'created_by'     => Auth::id(),
                 ]);
-                
-                ActivityLog::log('cheque', 'Cheque Added via AI Chat',
+
+                ActivityLog::log(
+                    'cheque',
+                    'Cheque Added via AI Chat',
                     "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} for party: " . ($partyUser ? $partyUser->name : $partyName),
-                    route('cheques.index'));
+                    route('cheques.index')
+                );
 
                 return $this->reply(
                     "✅ **Cheque Added Successfully!**\n\n" .
-                    "Party: **" . ($partyUser ? $partyUser->name : $partyName) . "**\n" .
-                    "Cheque #: **{$cheque->cheque_number}**\n" .
-                    "Amount: **Rs. {$cheque->amount}**\n" .
-                    "Bank: **{$cheque->bank_name}**\n" .
-                    "Status: **Pending**"
+                        "Party: **" . ($partyUser ? $partyUser->name : $partyName) . "**\n" .
+                        "Cheque #: **{$cheque->cheque_number}**\n" .
+                        "Amount: **Rs. {$cheque->amount}**\n" .
+                        "Bank: **{$cheque->bank_name}**\n" .
+                        "Status: **Pending**"
                 );
             } catch (\Exception $e) {
                 return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
@@ -343,9 +351,12 @@ class AIChatController extends Controller
                 $num = $cheque->cheque_number;
                 $amt = $cheque->amount;
                 $cheque->delete();
-                ActivityLog::log('cheque', 'Cheque Deleted via AI Chat',
+                ActivityLog::log(
+                    'cheque',
+                    'Cheque Deleted via AI Chat',
                     "AI permanently removed cheque #{$num} for Rs.{$amt}",
-                    route('cheques.index'));
+                    route('cheques.index')
+                );
                 return $this->reply("🗑️ **Deleted!** Cheque #{$num} (Rs.{$amt}) has been removed from the system.");
             } catch (\Exception $e) {
                 return $this->reply('❌ Deletion failed: ' . $e->getMessage());
