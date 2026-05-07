@@ -104,8 +104,8 @@ class AIChatController extends Controller
             "STRICT RULES:\n" .
             "1. NEVER delete anything. Refuse politely if asked.\n" .
             "2. For price updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
-            "3. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"receivable\",\"notes\":\"\"}\n" .
-            "4. cheque_type must be either 'receivable' (incoming cheque) or 'payable' (outgoing cheque).\n" .
+            "3. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"received\",\"notes\":\"\"}\n" .
+            "4. cheque_type must be either 'received' (cheque received from customer) or 'paid' (cheque paid to vendor).\n" .
             "5. Answer questions about products, orders, stock, and cheques naturally.\n" .
             "6. Keep replies short, friendly, and professional.\n" .
             "7. You understand Urdu, Roman Urdu, and English.\n" .
@@ -191,9 +191,9 @@ class AIChatController extends Controller
         }
 
         if (($action['type'] ?? '') === 'add_cheque') {
-            $chequeType = $action['cheque_type'] === 'payable' ? 'payable' : 'receivable';
+            $chequeType = $action['cheque_type'] === 'paid' ? 'paid' : 'received';
             $confirmMsg = "⚠️ **Confirm Add Cheque:**\n\n" .
-                "Type: **" . ucfirst($chequeType) . "**\n" .
+                "Type: **" . ($chequeType === 'received' ? '📥 Received (from customer)' : '📤 Paid (to vendor)') . "**\n" .
                 "Cheque #: **{$action['cheque_number']}**\n" .
                 "Amount: **Rs. {$action['amount']}**\n" .
                 "Bank: **{$action['bank_name']}**\n" .
@@ -244,17 +244,18 @@ class AIChatController extends Controller
 
         if (($a['type'] ?? '') === 'add_cheque') {
             try {
+                $chequeType = $a['cheque_type'] === 'paid' ? 'paid' : 'received';
                 $cheque = Cheque::create([
-                    'type'           => $a['cheque_type'] === 'payable' ? 'payable' : 'receivable',
+                    'type'           => $chequeType,
                     'cheque_number'  => $a['cheque_number'],
                     'amount'         => (float) $a['amount'],
                     'cheque_date'    => $a['cheque_date'],
-                    'clearing_date'  => $a['clearing_date'],
+                    'clearing_date'  => $a['clearing_date'] ?? null,
                     'bank_name'      => $a['bank_name'] ?? '',
-                    'party_type'     => null,
-                    'party_id'       => null,
+                    'party_type'     => 'App\User',
+                    'party_id'       => Auth::id(),
                     'status'         => 'pending',
-                    'notes'          => $a['notes'] ?? 'Added via AI Chat',
+                    'notes'          => ($a['notes'] ?? '') . ' | Party: ' . ($a['party_name'] ?? '') . ' | Added via AI Chat',
                     'created_by'     => Auth::id(),
                 ]);
                 ActivityLog::log('cheque', 'Cheque Added via AI Chat',
