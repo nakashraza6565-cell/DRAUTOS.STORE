@@ -38,7 +38,17 @@
                       <div style="font-size:0.7rem; color:#a5b4fc;">Always at your service</div>
                   </div>
               </div>
-              <button id="ai-chat-close">✕</button>
+              <div class="d-flex align-items-center gap-2">
+                  <select id="ai-model-select" title="Choose AI Model">
+                      <option value="google/gemma-4-26b-a4b-it:free">🟢 Gemma 4</option>
+                      <option value="meta-llama/llama-3.3-70b-instruct:free">🦙 Llama 3.3 70B</option>
+                      <option value="meta-llama/llama-3.2-3b-instruct:free">🦙 Llama 3.2 Fast</option>
+                      <option value="qwen/qwen3-next-80b-a3b-instruct:free">⚡ Qwen 3 80B</option>
+                      <option value="nousresearch/hermes-3-llama-3.1-405b:free">🧠 Hermes 405B</option>
+                      <option value="nvidia/nemotron-3-super-120b-a12b:free">🎮 Nemotron 120B</option>
+                  </select>
+                  <button id="ai-chat-close">✕</button>
+              </div>
           </div>
 
           {{-- Messages Area --}}
@@ -221,6 +231,26 @@
           }
           #ai-chat-send:hover { transform: scale(1.05); }
 
+          /* Model Selector */
+          #ai-model-select {
+              background: rgba(255,255,255,0.15);
+              border: 1px solid rgba(255,255,255,0.3);
+              color: white;
+              border-radius: 8px;
+              padding: 4px 6px;
+              font-size: 0.7rem;
+              cursor: pointer;
+              outline: none;
+              max-width: 110px;
+          }
+          #ai-model-select option { background: #4f46e5; color: white; }
+          .ai-model-badge {
+              font-size: 0.65rem;
+              color: #6366f1;
+              margin-top: 4px;
+              opacity: 0.8;
+          }
+
           /* Mic Button */
           #ai-mic-btn {
               width: 42px;
@@ -264,6 +294,7 @@
           const input       = document.getElementById('ai-chat-input');
           const sendBtn     = document.getElementById('ai-chat-send');
           const messages    = document.getElementById('ai-chat-messages');
+          const modelSelect = document.getElementById('ai-model-select');
 
           trigger.addEventListener('click', () => {
               chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
@@ -273,10 +304,16 @@
           sendBtn.addEventListener('click', sendMessage);
           input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-          function addMessage(text, type) {
+          function addMessage(text, type, modelLabel) {
               const div = document.createElement('div');
               div.className = 'ai-msg ' + type;
               div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+              if (modelLabel && type === 'bot') {
+                  const badge = document.createElement('div');
+                  badge.className = 'ai-model-badge';
+                  badge.textContent = '— ' + modelLabel;
+                  div.appendChild(badge);
+              }
               messages.appendChild(div);
               messages.scrollTop = messages.scrollHeight;
               return div;
@@ -290,6 +327,7 @@
               input.value = '';
 
               const thinking = addMessage('⏳ Thinking...', 'thinking');
+              const selectedModel = modelSelect ? modelSelect.value : null;
 
               fetch('/admin/ai-chat', {
                   method: 'POST',
@@ -299,13 +337,14 @@
                   },
                   body: JSON.stringify({
                       message: text,
-                      pending_action: pendingAction
+                      pending_action: pendingAction,
+                      model: selectedModel
                   })
               })
               .then(res => res.json())
               .then(data => {
                   thinking.remove();
-                  addMessage(data.reply, 'bot');
+                  addMessage(data.reply, 'bot', data.model_label || null);
 
                   if (data.needs_confirm && data.action) {
                       pendingAction = data.action;

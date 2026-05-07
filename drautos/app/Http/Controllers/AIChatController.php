@@ -11,8 +11,29 @@ use App\Models\ActivityLog;
 
 class AIChatController extends Controller
 {
-    private $forbiddenKeywords = ['delete', 'remove', 'drop', 'destroy', 'erase', 'truncate', 'wipe'];
-    private $model = 'google/gemma-4-26b-a4b-it:free';
+    // All confirmed free models — tried in order automatically
+    private $models = [
+        'google/gemma-4-26b-a4b-it:free',
+        'meta-llama/llama-3.3-70b-instruct:free',
+        'meta-llama/llama-3.2-3b-instruct:free',
+        'qwen/qwen3-next-80b-a3b-instruct:free',
+        'nousresearch/hermes-3-llama-3.1-405b:free',
+        'nvidia/nemotron-3-super-120b-a12b:free',
+    ];
+
+    // Human-readable model names for UI
+    public static function modelLabels(): array
+    {
+        return [
+            'google/gemma-4-26b-a4b-it:free'           => '🟢 Google Gemma 4 (26B)',
+            'meta-llama/llama-3.3-70b-instruct:free'   => '🦙 Llama 3.3 (70B)',
+            'meta-llama/llama-3.2-3b-instruct:free'    => '🦙 Llama 3.2 (Fast)',
+            'qwen/qwen3-next-80b-a3b-instruct:free'    => '⚡ Qwen 3 (80B)',
+            'nousresearch/hermes-3-llama-3.1-405b:free'=> '🧠 Hermes 405B (Smartest)',
+            'nvidia/nemotron-3-super-120b-a12b:free'   => '🎮 NVIDIA Nemotron (120B)',
+        ];
+    }
+
     private $apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
     public function __construct()
@@ -20,12 +41,15 @@ class AIChatController extends Controller
         $this->middleware(['auth', 'admin']);
     }
 
+    private $forbiddenKeywords = ['delete', 'remove', 'drop', 'destroy', 'erase', 'truncate', 'wipe'];
+
     public function chat(Request $request)
     {
         $request->validate(['message' => 'required|string|max:500']);
 
         $userMessage   = trim($request->input('message'));
         $pendingAction = $request->input('pending_action');
+        $selectedModel = $request->input('model'); // User-selected model from UI
 
         // Safety: block delete commands
         foreach ($this->forbiddenKeywords as $word) {
@@ -45,10 +69,10 @@ class AIChatController extends Controller
             }
         }
 
-        return $this->parseAndRespond($userMessage);
+        return $this->parseAndRespond($userMessage, $selectedModel);
     }
 
-    private function parseAndRespond($message)
+    private function parseAndRespond($message, $selectedModel = null)
     {
         $apiKey = env('OPENROUTER_API_KEY');
 
@@ -83,41 +107,66 @@ class AIChatController extends Controller
             "5. You understand Urdu, Roman Urdu, and English.\n" .
             "6. For PDF download requests respond with: ACTION_JSON:{\"type\":\"download_pdf\"}\n";
 
-        try {
-            $response = Http::timeout(20)->withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'HTTP-Referer'  => config('app.url'),
-                'X-Title'       => 'Danyal Autos AI',
-                'Content-Type'  => 'application/json',
-            ])->post($this->apiUrl, [
-                'model'    => $this->model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user',   'content' => $message],
-                ],
-                'max_tokens'  => 400,
-                'temperature' => 0.4,
-            ]);
+        // Build model queue: user-selected first, then all others as fallback
+        $queue = $this->models;
+        if ($selectedModel && in_array($selectedModel, $this->models)) {
+            $queue = array_merge(
+                [$selectedModel],
+                array_values(array_filter($this->models, fn($m) => $m !== $selectedModel))
+            );
+        }
 
-            if ($response->successful()) {
-                $aiText = trim($response->json()['choices'][0]['message']['content'] ?? '');
+        $lastError   = '';
+        $usedModel   = null;
 
-                if (str_contains($aiText, 'ACTION_JSON:')) {
-                    return $this->handleActionIntent($aiText);
+        foreach ($queue as $model) {
+            try {
+                $response = Http::timeout(20)->withHeaders([
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'HTTP-Referer'  => config('app.url'),
+                    'X-Title'       => 'Danyal Autos AI',
+                    'Content-Type'  => 'application/json',
+                ])->post($this->apiUrl, [
+                    'model'       => $model,
+                    'messages'    => [
+                        ['role' => 'system', 'content' => $systemPrompt],
+                        ['role' => 'user',   'content' => $message],
+                    ],
+                    'max_tokens'  => 400,
+                    'temperature' => 0.4,
+                ]);
+
+                if ($response->successful()) {
+                    $aiText    = trim($response->json()['choices'][0]['message']['content'] ?? '');
+                    $usedModel = $model;
+
+                    if (str_contains($aiText, 'ACTION_JSON:')) {
+                        return $this->handleActionIntent($aiText, $usedModel);
+                    }
+
+                    return response()->json([
+                        'reply'      => $aiText,
+                        'action'     => null,
+                        'used_model' => $usedModel,
+                        'model_label'=> self::modelLabels()[$usedModel] ?? $usedModel,
+                    ]);
                 }
 
-                return $this->reply($aiText);
-            } else {
-                Log::warning('OpenRouter Error: ' . $response->body());
-                return $this->reply('⚠️ AI connection issue. Please try again. (' . $response->status() . ')');
+                // 429 or 404 — try next model
+                $lastError = $response->status() . ': ' . substr($response->body(), 0, 100);
+                Log::warning("Model {$model} failed ({$response->status()}), trying next...");
+
+            } catch (\Exception $e) {
+                $lastError = $e->getMessage();
+                Log::warning("Model {$model} exception: " . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error('AI Chat Exception: ' . $e->getMessage());
-            return $this->reply('⚠️ Connection error: ' . $e->getMessage());
         }
+
+        // All models failed
+        return $this->reply("⚠️ All AI models are temporarily busy. Please try again in 1 minute.\n\nLast error: " . $lastError);
     }
 
-    private function handleActionIntent($aiText)
+    private function handleActionIntent($aiText, $usedModel = null)
     {
         preg_match('/ACTION_JSON:(\{.*?\})/s', $aiText, $matches);
         if (!$matches) {
