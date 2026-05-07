@@ -301,6 +301,11 @@ class AIChatController extends Controller
         if (($a['type'] ?? '') === 'add_cheque') {
             try {
                 $chequeType = $a['cheque_type'] === 'paid' ? 'paid' : 'received';
+                
+                // Try to find the user/customer by name
+                $partyName = $a['party_name'] ?? '';
+                $partyUser = \App\User::where('name', 'like', "%{$partyName}%")->first();
+                
                 $cheque = Cheque::create([
                     'type'           => $chequeType,
                     'cheque_number'  => $a['cheque_number'],
@@ -308,22 +313,24 @@ class AIChatController extends Controller
                     'cheque_date'    => $a['cheque_date'],
                     'clearing_date'  => $a['clearing_date'] ?? null,
                     'bank_name'      => $a['bank_name'] ?? '',
-                    'party_type'     => 'App\User',
-                    'party_id'       => Auth::id(),
+                    'party_type'     => $partyUser ? 'App\User' : null,
+                    'party_id'       => $partyUser ? $partyUser->id : null,
                     'status'         => 'pending',
-                    'notes'          => ($a['notes'] ?? '') . ' | Party: ' . ($a['party_name'] ?? '') . ' | Added via AI Chat',
+                    'notes'          => ($a['notes'] ?? '') . ' | Party Name: ' . $partyName . ' | Added via AI Chat',
                     'created_by'     => Auth::id(),
                 ]);
+                
                 ActivityLog::log('cheque', 'Cheque Added via AI Chat',
-                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} from {$a['party_name']}",
+                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} for party: " . ($partyUser ? $partyUser->name : $partyName),
                     route('cheques.index'));
+
                 return $this->reply(
                     "✅ **Cheque Added Successfully!**\n\n" .
+                    "Party: **" . ($partyUser ? $partyUser->name : $partyName) . "**\n" .
                     "Cheque #: **{$cheque->cheque_number}**\n" .
                     "Amount: **Rs. {$cheque->amount}**\n" .
                     "Bank: **{$cheque->bank_name}**\n" .
-                    "Status: **Pending**\n" .
-                    "Clearing Date: **{$cheque->clearing_date}**"
+                    "Status: **Pending**"
                 );
             } catch (\Exception $e) {
                 return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
