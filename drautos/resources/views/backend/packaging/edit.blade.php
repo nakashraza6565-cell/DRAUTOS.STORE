@@ -45,8 +45,8 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="supplier_id">Preferred Supplier</label>
-                        <select name="supplier_id" class="form-control">
+                        <label for="supplier_id">Supplier</label>
+                        <select name="supplier_id" class="form-control select2">
                             <option value="">-- Select Supplier --</option>
                             @foreach($suppliers as $supplier)
                             <option value="{{$supplier->id}}" {{$item->supplier_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
@@ -70,3 +70,20 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+@endpush
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            width: '100%'
+        });
+    });
+</script>
+@endpush
