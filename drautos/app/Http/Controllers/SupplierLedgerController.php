@@ -73,6 +73,7 @@ class SupplierLedgerController extends Controller
         ]);
 
         try {
+            \Log::info('SupplierLedger Store Request', $request->all());
             DB::beginTransaction();
 
             // Auto-fix database schema if columns are missing
@@ -87,9 +88,12 @@ class SupplierLedgerController extends Controller
             $paymentDetails = $request->payment_details;
             $referenceId = null;
 
+            \Log::info('Payment Method: ' . $paymentMethod);
+
             // Handle Customer Cheque transfer (Multiple)
             if ($paymentMethod === 'customer_cheque' && isset($paymentDetails['cheque_ids'])) {
                 $chequeIds = $paymentDetails['cheque_ids'];
+                \Log::info('Transferring Cheque IDs: ', $chequeIds);
                 $chequeDetails = [];
                 
                 foreach ($chequeIds as $id) {
@@ -107,7 +111,7 @@ class SupplierLedgerController extends Controller
                 $paymentDetails['all_cheque_ids'] = $chequeIds;
             }
 
-            SupplierLedger::record(
+            $ledger = SupplierLedger::record(
                 $request->supplier_id,
                 $request->transaction_date,
                 $request->type,
@@ -119,9 +123,13 @@ class SupplierLedgerController extends Controller
                 $paymentDetails
             );
 
+            \Log::info('Ledger Recorded: ' . $ledger->id);
+
             DB::commit();
             return redirect()->back()->with('success', 'Transaction recorded successfully');
         } catch (\Exception $e) {
+            \Log::error('SupplierLedger Store Error: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
             DB::rollBack();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
