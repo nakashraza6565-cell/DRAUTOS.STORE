@@ -183,43 +183,42 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    // Initialize Select2 with tags for Title
-    $('#qa-title-select').select2({
-        tags: true,
-        placeholder: "Search or Enter Product Name",
-        width: '100%',
-        dropdownParent: $('#addProductModal'),
-        ajax: {
-            url: "{{ route('pos.search-products') }}",
-            dataType: 'json',
-            delay: 250,
-            data: function (params) {
-                return { q: params.term };
-            },
-            processResults: function (data) {
-                return {
-                    results: data.map(function (item) {
-                        return { id: item.title, text: item.title };
-                    })
-                };
-            },
-            cache: true
-        }
-    });
-
     // Fix focus issue for Select2 in Bootstrap Modals
-    // This prevents the modal from stealing focus from the Select2 search box
     $('#addProductModal').on('shown.bs.modal', function() {
-        $(this).removeAttr('tabindex'); // Removing tabindex is a common fix for focus issues
-    });
+        $(this).removeAttr('tabindex'); 
+        
+        // Re-initialize Select2 when modal is shown to ensure correct width and focus
+        $('#qa-title-select').select2({
+            tags: true,
+            placeholder: "Search or Enter Product Name",
+            width: '100%',
+            dropdownParent: $('#addProductModal'),
+            ajax: {
+                url: "{{ route('pos.search-products') }}",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { q: params.term };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.map(function (item) {
+                            return { id: item.title, text: item.title };
+                        })
+                    };
+                },
+                cache: true
+            }
+        });
 
-    // Initialize Select2 for other dropdowns in the modal
-    $('#qa-cat-select, #qa-brand-select, #qa-model-select, #qa-unit-select, #qa-supplier-select').select2({
-        theme: 'bootstrap4',
-        width: '100%',
-        dropdownParent: $('#addProductModal'),
-        placeholder: "Select or Type",
-        allowClear: true
+        $('#qa-cat-select, #qa-brand-select, #qa-model-select, #qa-unit-select, #qa-supplier-select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('#addProductModal'),
+            placeholder: "Select or Type",
+            allowClear: true,
+            minimumResultsForSearch: 0 // Force search bar visibility
+        });
     });
 
     $('#quickAddProductForm').on('submit', function(e) {

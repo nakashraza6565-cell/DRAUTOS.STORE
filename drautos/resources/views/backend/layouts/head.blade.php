@@ -909,7 +909,12 @@
             
             /* Global Form Mobile Optimization */
             .card-body form .row > [class*="col-"] { margin-bottom: 1rem !important; }
-            .topbar { position: sticky !important; top: 0 !important; z-index: 1000 !important; }
+        /* Global Select2 Modal Fixes */
+        .select2-container--open {
+            z-index: 999999999 !important;
+        }
+        .select2-search__field {
+            color: #1e293b !important;
         }
     </style>
     <!-- UI Version: 1.0.5 -->

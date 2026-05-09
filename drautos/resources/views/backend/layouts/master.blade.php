@@ -172,6 +172,11 @@
               $('#adminAppLauncher').fadeOut(300).removeClass('active');
               $('body').css('overflow', 'auto');
           });
+
+          // Global Bootstrap Modal Focus Fix for Select2
+          if ($.fn.modal) {
+              $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+          }
       });
   </script>
 </body>
