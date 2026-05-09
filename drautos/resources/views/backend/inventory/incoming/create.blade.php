@@ -229,7 +229,7 @@ function addItemRow(product = null) {
                         <option value="">Select Product</option>
                         @foreach($products as $p)
                             <option value="{{$p->id}}" data-cost="{{$p->purchase_price}}" ${product && product.id == {{$p->id}} ? 'selected' : ''}>
-                                {{$p->title}} ({{$p->sku}})
+                                {{$p->title}} | {{ $p->brand->title ?? 'No Brand' }} | Rs. {{ number_format($p->purchase_price, 2) }}
                             </option>
                         @endforeach
                     </select>

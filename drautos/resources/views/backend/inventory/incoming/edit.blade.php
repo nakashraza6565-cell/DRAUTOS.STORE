@@ -296,7 +296,7 @@ function addItemRow(product = null) {
                 return {
                     results: $.map(data, function (item) {
                         return {
-                            text: item.title + ' (' + item.sku + ')',
+                            text: item.title + ' | ' + item.brand_name + ' | Rs. ' + parseFloat(item.purchase_price).toFixed(2),
                             id: item.id,
                             cost: item.purchase_price
                         }

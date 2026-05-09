@@ -40,7 +40,7 @@ class InventoryIncomingController extends Controller
     {
         $suppliers = Supplier::where('status', 'active')->get();
         $warehouses = Warehouse::where('status', 'active')->get();
-        $products = Product::where('status', 'active')->get();
+        $products = Product::with('brand')->where('status', 'active')->get();
         $packaging_items = \App\Models\PackagingItem::all();
 
         return view('backend.inventory.incoming.create', compact('suppliers', 'warehouses', 'products', 'packaging_items'));
@@ -267,16 +267,27 @@ class InventoryIncomingController extends Controller
     {
         $query = $request->get('q');
 
-        $products = Product::where('status', 'active')
+        $products = Product::with('brand')->where('status', 'active')
             ->where(function($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
                   ->orWhere('sku', 'like', "%{$query}%")
                   ->orWhere('barcode', 'like', "%{$query}%");
             })
-            ->limit(10)
-            ->get(['id', 'title', 'sku', 'purchase_price', 'stock']);
+            ->limit(20)
+            ->get();
 
-        return response()->json($products);
+        $data = $products->map(function($p) {
+            return [
+                'id' => $p->id,
+                'title' => $p->title,
+                'sku' => $p->sku,
+                'purchase_price' => $p->purchase_price,
+                'brand_name' => $p->brand->title ?? 'No Brand',
+                'stock' => $p->stock
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
