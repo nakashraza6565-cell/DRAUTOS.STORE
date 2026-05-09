@@ -207,12 +207,19 @@ $(document).ready(function() {
         }
     });
 
+    // Fix focus issue for Select2 in Bootstrap Modals
+    // This prevents the modal from stealing focus from the Select2 search box
+    $('#addProductModal').on('shown.bs.modal', function() {
+        $(this).removeAttr('tabindex'); // Removing tabindex is a common fix for focus issues
+    });
+
     // Initialize Select2 for other dropdowns in the modal
     $('#qa-cat-select, #qa-brand-select, #qa-model-select, #qa-unit-select, #qa-supplier-select').select2({
         theme: 'bootstrap4',
         width: '100%',
         dropdownParent: $('#addProductModal'),
-        placeholder: "Select or Type"
+        placeholder: "Select or Type",
+        allowClear: true
     });
 
     $('#quickAddProductForm').on('submit', function(e) {
