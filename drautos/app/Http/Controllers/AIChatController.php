@@ -101,6 +101,9 @@ class AIChatController extends Controller
 
         try {
             switch ($name) {
+                case 'read_database':
+                    $result = $this->tool_read_database($args);
+                    break;
                 case 'search_products':
                     $result = Product::where('title', 'like', "%{$args['query']}%")->orWhere('sku', 'like', "%{$args['query']}%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
                     break;
@@ -182,6 +185,20 @@ class AIChatController extends Controller
     private function getToolsDefinition()
     {
         return [
+            [
+                'name' => 'read_database',
+                'description' => 'A universal reader to query the database. Available models: Product, User, Supplier, Order, Cheque, CustomerLedger, SupplierLedger, Expense. Use this to lookup ANY information before taking an action.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'model_name' => ['type' => 'STRING', 'description' => 'Exact model name (e.g., Product, User, Supplier, Order)'],
+                        'search_column' => ['type' => 'STRING', 'description' => 'Column to search (e.g., title, sku, name, order_number). Leave empty if you want latest records.'],
+                        'search_value' => ['type' => 'STRING', 'description' => 'Value to search for'],
+                        'limit' => ['type' => 'NUMBER', 'description' => 'Max results to return (default 5, max 10)']
+                    ],
+                    'required' => ['model_name']
+                ]
+            ],
             [
                 'name' => 'search_products',
                 'description' => 'Search products by name or SKU.',
@@ -289,6 +306,28 @@ class AIChatController extends Controller
 
         ActivityLog::log('cheque', 'AI Add', "Added cheque #{$cheque->cheque_number} for customer {$user->name}");
         return "Success: Cheque added for {$user->name}.";
+    }
+
+    private function tool_read_database($args)
+    {
+        $modelName = $args['model_name'];
+        $modelClass = '\\App\\Models\\' . $modelName;
+        if ($modelName === 'User') $modelClass = '\\App\\User';
+
+        if (!class_exists($modelClass)) {
+            return "Error: Model {$modelName} not found in system.";
+        }
+
+        try {
+            $query = $modelClass::query();
+            if (!empty($args['search_column']) && !empty($args['search_value'])) {
+                $query->where($args['search_column'], 'like', "%{$args['search_value']}%");
+            }
+            $limit = min((int)($args['limit'] ?? 5), 10);
+            return $query->orderBy('id', 'desc')->limit($limit)->get()->toArray();
+        } catch (\Exception $e) {
+            return "Error querying {$modelName}: " . $e->getMessage();
+        }
     }
 
     private function tool_add_customer_ledger_entry($args)
