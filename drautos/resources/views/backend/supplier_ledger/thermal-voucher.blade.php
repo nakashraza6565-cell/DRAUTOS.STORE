@@ -166,8 +166,38 @@
             <td style="width: 40%; font-size: 12px; color: #555;">Description:</td>
             <td class="text-right">{{ $transaction->description }}</td>
         </tr>
+    </table>
+
+    @if($incoming && count($incoming->items) > 0)
+        <div class="separator"></div>
+        <div style="font-size: 11px; margin-bottom: 5px; text-transform: uppercase; text-decoration: underline;">Items Detail:</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <thead>
+                <tr style="border-bottom: 1px solid #000;">
+                    <th class="text-left" style="padding: 2px 0;">Item</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($incoming->items as $item)
+                    <tr style="border-bottom: 1px dashed #eee;">
+                        <td style="padding: 4px 0;">
+                            <div>{{ $item->product->title }}</div>
+                            <small style="color: #666;">{{ $item->product->sku }}</small>
+                        </td>
+                        <td class="text-center">{{ $item->quantity }}</td>
+                        <td class="text-right">{{ number_format($item->total_cost, 0) }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="separator"></div>
+    @endif
+
+    <table class="voucher-details" style="margin-top: 5px;">
         <tr>
-            <td style="width: 40%; font-size: 12px; color: #555; padding-top: 15px;">New Payable:</td>
+            <td style="width: 40%; font-size: 12px; color: #555;">New Payable:</td>
             <td class="text-right" style="padding-top: 15px;">Rs. {{ number_format($transaction->balance, 2) }}</td>
         </tr>
     </table>

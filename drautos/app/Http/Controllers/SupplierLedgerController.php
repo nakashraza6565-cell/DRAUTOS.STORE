@@ -213,6 +213,12 @@ class SupplierLedgerController extends Controller
     public function printTransactionVoucher($id)
     {
         $transaction = SupplierLedger::with('supplier')->findOrFail($id);
-        return view('backend.supplier_ledger.thermal-voucher', compact('transaction'));
+        
+        $incoming = null;
+        if ($transaction->category === 'purchase' && $transaction->reference_id) {
+            $incoming = \App\Models\InventoryIncoming::with(['items.product', 'receiver'])->find($transaction->reference_id);
+        }
+        
+        return view('backend.supplier_ledger.thermal-voucher', compact('transaction', 'incoming'));
     }
 }
