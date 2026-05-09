@@ -2,9 +2,16 @@
 
 @section('main-content')
 <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary float-left">Incoming Goods Records</h6>
-      <a href="{{route('inventory-incoming.create')}}" class="btn btn-primary btn-sm float-right"><i class="fas fa-plus"></i> New Entry</a>
+    <div class="card-header py-3 d-flex align-items-center justify-content-between">
+      <div>
+        <a href="{{route('inventory-incoming.index')}}" class="btn btn-outline-secondary btn-sm mr-2" title="Back to Suppliers">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h6 class="m-0 font-weight-bold text-primary d-inline-block">
+            Incoming Goods: {{ $supplier->name ?? 'Detailed Records' }}
+        </h6>
+      </div>
+      <a href="{{route('inventory-incoming.create')}}" class="btn btn-primary btn-sm"><i class="fas fa-plus fa-sm"></i> New Entry</a>
     </div>
     <div class="card-body">
       <div class="table-responsive">

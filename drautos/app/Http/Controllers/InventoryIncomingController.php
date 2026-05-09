@@ -24,13 +24,28 @@ class InventoryIncomingController extends Controller
     /**
      * Display incoming goods list
      */
-    public function index()
+    public function index(Request $request)
     {
-        $incoming = InventoryIncoming::with(['supplier', 'warehouse', 'receiver', 'items'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(5000);
+        $supplierId = $request->get('supplier_id');
 
-        return view('backend.inventory.incoming.index', compact('incoming'));
+        if ($supplierId) {
+            // Detailed view for one supplier
+            $incoming = InventoryIncoming::with(['supplier', 'warehouse', 'receiver', 'items'])
+                ->where('supplier_id', $supplierId)
+                ->orderBy('created_at', 'desc')
+                ->paginate(5000);
+            
+            $supplier = Supplier::find($supplierId);
+            return view('backend.inventory.incoming.index', compact('incoming', 'supplier'));
+        }
+
+        // Overview view: List suppliers who have entries
+        $suppliersWithEntries = Supplier::whereHas('incomingGoods')
+            ->withCount(['incomingGoods as entries_count'])
+            ->withSum('incomingGoods as total_spent', 'total_cost')
+            ->get();
+
+        return view('backend.inventory.incoming.supplier_overview', compact('suppliersWithEntries'));
     }
 
     /**
