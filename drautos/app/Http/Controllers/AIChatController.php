@@ -104,6 +104,15 @@ class AIChatController extends Controller
                 case 'read_database':
                     $result = $this->tool_read_database($args);
                     break;
+                case 'print_document':
+                    $o = \App\Models\Order::where('order_number', $args['order_number'])->first();
+                    if ($o) {
+                        $redirect = ($args['document_type'] === 'pdf') ? "/order/pdf/{$o->id}" : "/order/print/{$o->id}";
+                        $result = "Success: Opening {$args['document_type']} for order {$args['order_number']}.";
+                    } else {
+                        $result = "Error: Order not found.";
+                    }
+                    break;
                 case 'search_products':
                     $result = Product::where('title', 'like', "%{$args['query']}%")->orWhere('sku', 'like', "%{$args['query']}%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
                     break;
@@ -197,6 +206,18 @@ class AIChatController extends Controller
                         'limit' => ['type' => 'NUMBER', 'description' => 'Max results to return (default 5, max 10)']
                     ],
                     'required' => ['model_name']
+                ]
+            ],
+            [
+                'name' => 'print_document',
+                'description' => 'Control the users browser to open/print a thermal receipt or PDF invoice for an order.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'document_type' => ['type' => 'STRING', 'description' => 'receipt or pdf'],
+                        'order_number' => ['type' => 'STRING']
+                    ],
+                    'required' => ['document_type', 'order_number']
                 ]
             ],
             [
