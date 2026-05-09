@@ -19,6 +19,7 @@ use App\Http\Controllers\HomeController;
 use \UniSharp\LaravelFilemanager\Lfm;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\ChequeController;
 
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
 
