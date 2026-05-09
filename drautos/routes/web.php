@@ -290,6 +290,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/order/pdf/{id}', [OrderController::class, 'pdf'])->name('order.pdf');
     Route::get('/pos/search-products', [AdminController::class, 'searchProducts'])->name('pos.search-products');
     Route::get('/pos/last-purchase', [AdminController::class, 'getLastPurchase'])->name('pos.last-purchase');
+    Route::get('/cheques/pending-customer', [ChequeController::class, 'getPendingCustomerCheques'])->name('cheques.pending-customer');
 
     // Sales Orders
     Route::get('sales-orders/{id}/thermal', 'SalesOrderController@thermalPrint')->name('sales-orders.thermal');

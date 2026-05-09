@@ -125,7 +125,7 @@
                                         <div class="small text-muted mt-1">
                                             <i class="fas fa-credit-card mr-1"></i>
                                             <strong>{{strtoupper($item->payment_method)}}:</strong> 
-                                            @if($item->payment_method == 'cheque' && isset($item->payment_details['cheque_no']))
+                                            @if(($item->payment_method == 'cheque' || $item->payment_method == 'customer_cheque') && isset($item->payment_details['cheque_no']))
                                                 No. {{$item->payment_details['cheque_no']}} ({{$item->payment_details['bank_name'] ?? 'No Bank'}})
                                             @elseif($item->payment_method == 'bank' && isset($item->payment_details['account_no']))
                                                 Acc: {{$item->payment_details['account_no']}} (Ref: {{$item->payment_details['ref_no'] ?? '-'}})
@@ -235,10 +235,25 @@
                                     <input type="radio" id="method_bank" name="payment_method" value="bank" class="custom-control-input">
                                     <label class="custom-control-label" for="method_bank">Bank Account</label>
                                 </div>
-                                <div class="custom-control custom-radio">
+                                <div class="custom-control custom-radio mr-3">
                                     <input type="radio" id="method_wallet" name="payment_method" value="wallet" class="custom-control-input">
                                     <label class="custom-control-label" for="method_wallet">Wallet</label>
                                 </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="method_customer_cheque" name="payment_method" value="customer_cheque" class="custom-control-input">
+                                    <label class="custom-control-label" for="method_customer_cheque">Customer Cheque</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specific Fields -->
+                        <div id="customer_cheque_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-0">
+                                <label class="small">Select Customer Cheque</label>
+                                <select name="payment_details[cheque_id]" id="customer_cheque_select" class="form-control form-control-sm select2" style="width:100%;">
+                                    <option value="">-- Choose Cheque --</option>
+                                </select>
+                                <small class="text-muted">Only pending cheques from customers are shown here.</small>
                             </div>
                         </div>
 
@@ -421,6 +436,43 @@
         if (selected === 'cheque') $('#cheque_fields').show();
         else if (selected === 'bank') $('#bank_fields').show();
         else if (selected === 'wallet') $('#wallet_fields').show();
+        else if (selected === 'customer_cheque') {
+            $('#customer_cheque_fields').show();
+            loadCustomerCheques();
+        }
+    });
+
+    function loadCustomerCheques() {
+        var $select = $('#customer_cheque_select');
+        if ($select.children('option').length > 1) return; // Already loaded
+
+        $.ajax({
+            url: "{{ route('cheques.pending-customer') }}",
+            type: "GET",
+            success: function(res) {
+                res.forEach(function(ch) {
+                    var partyName = ch.party ? ch.party.name : 'Unknown';
+                    var text = ch.cheque_number + " - " + partyName + " (Rs. " + ch.amount.toLocaleString() + ")";
+                    var option = new Option(text, ch.id, false, false);
+                    $(option).data('amount', ch.amount);
+                    $(option).data('cheque_no', ch.cheque_number);
+                    $(option).data('customer', partyName);
+                    $select.append(option);
+                });
+                $select.select2({
+                    theme: 'bootstrap4',
+                    dropdownParent: $('#addTransactionModal')
+                });
+            }
+        });
+    }
+
+    $('#customer_cheque_select').on('change', function() {
+        var $opt = $(this).find(':selected');
+        if ($opt.val()) {
+            $('#t_amount').val($opt.data('amount'));
+            $('#t_description').val("Payment via Customer Cheque #" + $opt.data('cheque_no') + " (" + $opt.data('customer') + ")");
+        }
     });
 
     $(document).on('click', '.dltBtn', function(e) {

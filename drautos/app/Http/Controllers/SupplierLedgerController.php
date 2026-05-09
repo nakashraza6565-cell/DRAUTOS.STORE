@@ -73,12 +73,29 @@ class SupplierLedgerController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
             // Auto-fix database schema if columns are missing
             if (!\Illuminate\Support\Facades\Schema::hasColumn('supplier_ledgers', 'payment_method')) {
                 \Illuminate\Support\Facades\Schema::table('supplier_ledgers', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('payment_method')->nullable()->after('category');
-                    $table->text('payment_details')->nullable()->after('payment_method'); // Using text instead of json for better compatibility
+                    $table->text('payment_details')->nullable()->after('payment_method');
                 });
+            }
+
+            $paymentMethod = $request->payment_method;
+            $paymentDetails = $request->payment_details;
+            $referenceId = null;
+
+            // Handle Customer Cheque transfer
+            if ($paymentMethod === 'customer_cheque' && isset($paymentDetails['cheque_id'])) {
+                $cheque = \App\Models\Cheque::findOrFail($paymentDetails['cheque_id']);
+                $cheque->update(['status' => 'transferred', 'notes' => ($cheque->notes ? $cheque->notes . "\n" : "") . "Transferred to Supplier ID: " . $request->supplier_id]);
+                $referenceId = $cheque->id;
+                
+                // Add cheque info to details for display
+                $paymentDetails['cheque_no'] = $cheque->cheque_number;
+                $paymentDetails['bank_name'] = $cheque->bank_name;
             }
 
             SupplierLedger::record(
@@ -88,13 +105,15 @@ class SupplierLedgerController extends Controller
                 $request->category,
                 $request->description,
                 $request->amount,
-                null,
-                $request->payment_method,
-                $request->payment_details
+                $referenceId,
+                $paymentMethod,
+                $paymentDetails
             );
 
+            DB::commit();
             return redirect()->back()->with('success', 'Transaction recorded successfully');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }

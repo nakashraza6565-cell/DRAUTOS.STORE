@@ -181,7 +181,7 @@ class ChequeController extends Controller
             'bank_branch' => 'nullable|string',
             'reference_number' => 'nullable|string',
             'notes' => 'nullable|string',
-            'status' => 'nullable|in:pending,cleared,bounced,cancelled',
+            'status' => 'nullable|in:pending,cleared,bounced,cancelled,transferred',
         ]);
 
         $cheque->update($validated);
@@ -310,6 +310,20 @@ class ChequeController extends Controller
         }
 
         return response()->json($events);
+    }
+
+    /**
+     * Get pending received cheques for selection in ledger
+     */
+    public function getPendingCustomerCheques()
+    {
+        $cheques = Cheque::with('party')
+            ->where('type', 'received')
+            ->where('status', 'pending')
+            ->orderBy('cheque_date', 'asc')
+            ->get();
+            
+        return response()->json($cheques);
     }
 
     /**
