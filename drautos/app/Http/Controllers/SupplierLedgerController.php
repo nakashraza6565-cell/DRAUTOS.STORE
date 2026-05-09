@@ -102,8 +102,9 @@ class SupplierLedgerController extends Controller
                     $chequeDetails[] = "#" . $cheque->cheque_number;
                 }
                 
-                $referenceId = implode(',', $chequeIds);
+                $referenceId = !empty($chequeIds) ? $chequeIds[0] : null;
                 $paymentDetails['transferred_cheques'] = $chequeDetails;
+                $paymentDetails['all_cheque_ids'] = $chequeIds;
             }
 
             SupplierLedger::record(

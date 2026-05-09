@@ -574,6 +574,13 @@
             }
         });
     });
+
+    // Fix for scroll issue when using multiple modals
+    $(document).on('hidden.bs.modal', '.modal', function () {
+        if ($('.modal:visible').length) {
+            $('body').addClass('modal-open');
+        }
+    });
 </script>
 @endpush
 @endsection
