@@ -198,7 +198,7 @@ $(document).ready(function() {
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
-                    return { q: params.term };
+                    return { query: params.term };
                 },
                 processResults: function (data) {
                     return {
