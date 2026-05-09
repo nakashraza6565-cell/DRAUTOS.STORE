@@ -42,8 +42,14 @@ class InventoryIncomingController extends Controller
         // Overview view: List suppliers who have entries
         $suppliersWithEntries = Supplier::whereHas('incomingGoods')
             ->withCount(['incomingGoods as entries_count'])
-            ->withSum('incomingGoods as total_spent', 'total_cost')
-            ->get();
+            ->get()
+            ->map(function($supplier) {
+                // Manually sum the total cost from all incoming records
+                $supplier->total_spent = $supplier->incomingGoods()->with('items')->get()->sum(function($incoming) {
+                    return $incoming->items->sum('total_cost');
+                });
+                return $supplier;
+            });
 
         return view('backend.inventory.incoming.supplier_overview', compact('suppliersWithEntries'));
     }
