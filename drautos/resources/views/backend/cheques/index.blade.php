@@ -92,13 +92,29 @@
                     <tbody>
                         @foreach($cheques as $cheque)   
                             <tr style="border-bottom: 1px solid rgba(0,0,0,0.03);">
-                                <td class="align-middle"><strong>{{$cheque->cheque_number}}</strong></td>
+                                <td class="align-middle">
+                                    <strong>{{$cheque->cheque_number}}</strong>
+                                    @if($cheque->status == 'transferred' && $cheque->transferredTo)
+                                        <div class="small text-info mt-1">
+                                            <i class="fas fa-exchange-alt mr-1"></i> Transferred
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="align-middle">
                                     <span class="badge badge-pill badge-{{ $cheque->type == 'received' ? 'success' : 'danger' }} px-3 py-1">
                                         {{ strtoupper($cheque->type) }}
                                     </span>
                                 </td>
-                                <td class="align-middle font-weight-bold text-gray-700">{{$cheque->party->name ?? 'N/A'}}</td>
+                                <td class="align-middle font-weight-bold text-gray-700">
+                                    <div class="small text-muted">From:</div>
+                                    {{$cheque->party->name ?? 'N/A'}}
+                                    @if($cheque->status == 'transferred' && $cheque->transferredTo)
+                                        <div class="mt-1">
+                                            <div class="small text-muted">To:</div>
+                                            <span class="text-primary">{{$cheque->transferredTo->name}}</span>
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="align-middle font-weight-bold">Rs. {{number_format($cheque->amount, 2)}}</td>
                                 <td class="align-middle text-gray-500">{{$cheque->cheque_date->format('d M Y')}}</td>
                                 <td class="align-middle font-weight-bold text-primary">{{$cheque->clearing_date->format('d M Y')}}</td>
@@ -110,6 +126,8 @@
                                         <span class="badge badge-success" style="border-radius:6px; font-weight: 600;">CLEARED</span>
                                     @elseif($cheque->status == 'bounced')
                                         <span class="badge badge-danger" style="border-radius:6px; font-weight: 600;">BOUNCED</span>
+                                    @elseif($cheque->status == 'transferred')
+                                        <span class="badge badge-info" style="border-radius:6px; font-weight: 600;">TRANSFERRED</span>
                                     @else
                                         <span class="badge badge-secondary" style="border-radius:6px; font-weight: 600;">CANCELLED</span>
                                     @endif

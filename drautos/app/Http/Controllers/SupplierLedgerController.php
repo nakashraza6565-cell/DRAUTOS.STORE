@@ -87,15 +87,23 @@ class SupplierLedgerController extends Controller
             $paymentDetails = $request->payment_details;
             $referenceId = null;
 
-            // Handle Customer Cheque transfer
-            if ($paymentMethod === 'customer_cheque' && isset($paymentDetails['cheque_id'])) {
-                $cheque = \App\Models\Cheque::findOrFail($paymentDetails['cheque_id']);
-                $cheque->update(['status' => 'transferred', 'notes' => ($cheque->notes ? $cheque->notes . "\n" : "") . "Transferred to Supplier ID: " . $request->supplier_id]);
-                $referenceId = $cheque->id;
+            // Handle Customer Cheque transfer (Multiple)
+            if ($paymentMethod === 'customer_cheque' && isset($paymentDetails['cheque_ids'])) {
+                $chequeIds = $paymentDetails['cheque_ids'];
+                $chequeDetails = [];
                 
-                // Add cheque info to details for display
-                $paymentDetails['cheque_no'] = $cheque->cheque_number;
-                $paymentDetails['bank_name'] = $cheque->bank_name;
+                foreach ($chequeIds as $id) {
+                    $cheque = \App\Models\Cheque::findOrFail($id);
+                    $cheque->update([
+                        'status' => 'transferred', 
+                        'transferred_to_id' => $request->supplier_id,
+                        'notes' => ($cheque->notes ? $cheque->notes . "\n" : "") . "Transferred to Supplier ID: " . $request->supplier_id
+                    ]);
+                    $chequeDetails[] = "#" . $cheque->cheque_number;
+                }
+                
+                $referenceId = implode(',', $chequeIds);
+                $paymentDetails['transferred_cheques'] = $chequeDetails;
             }
 
             SupplierLedger::record(

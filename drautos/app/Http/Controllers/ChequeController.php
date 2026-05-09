@@ -16,7 +16,14 @@ class ChequeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Cheque::with(['party', 'creator']);
+        // Auto-migration for transferred_to_id
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('cheques', 'transferred_to_id')) {
+            \Illuminate\Support\Facades\Schema::table('cheques', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->unsignedBigInteger('transferred_to_id')->nullable()->after('created_by');
+            });
+        }
+
+        $query = Cheque::with(['party', 'creator', 'transferredTo']);
 
         // Filter by type
         if ($request->has('type') && in_array($request->type, ['received', 'paid'])) {

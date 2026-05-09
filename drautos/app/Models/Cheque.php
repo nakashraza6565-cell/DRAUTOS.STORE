@@ -12,7 +12,8 @@ class Cheque extends Model
     protected $fillable = [
         'type', 'cheque_number', 'amount', 'cheque_date', 'clearing_date',
         'party_type', 'party_id', 'bank_name', 'bank_branch', 'status',
-        'actual_clearing_date', 'delay_days', 'notes', 'reference_number', 'created_by'
+        'actual_clearing_date', 'delay_days', 'notes', 'reference_number', 'created_by',
+        'transferred_to_id'
     ];
 
     protected $casts = [
@@ -21,6 +22,7 @@ class Cheque extends Model
         'clearing_date' => 'date',
         'actual_clearing_date' => 'date',
         'delay_days' => 'integer',
+        'transferred_to_id' => 'integer'
     ];
 
     /**
@@ -29,6 +31,11 @@ class Cheque extends Model
     public function party()
     {
         return $this->morphTo();
+    }
+
+    public function transferredTo()
+    {
+        return $this->belongsTo(Supplier::class, 'transferred_to_id');
     }
 
     public function creator()

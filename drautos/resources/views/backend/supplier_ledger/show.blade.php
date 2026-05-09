@@ -249,11 +249,14 @@
                         <!-- Specific Fields -->
                         <div id="customer_cheque_fields" class="payment_detail_fields" style="display:none;">
                             <div class="form-group mb-0">
-                                <label class="small">Select Customer Cheque</label>
-                                <select name="payment_details[cheque_id]" id="customer_cheque_select" class="form-control form-control-sm select2" style="width:100%;">
-                                    <option value="">-- Choose Cheque --</option>
-                                </select>
-                                <small class="text-muted">Only pending cheques from customers are shown here.</small>
+                                <label class="small">Selected Cheques</label>
+                                <div id="selected_cheques_list" class="mb-2 p-2 bg-white border rounded" style="min-height: 40px; font-size: 0.8rem;">
+                                    <span class="text-muted">No cheques selected</span>
+                                </div>
+                                <button type="button" class="btn btn-info btn-block btn-sm" data-toggle="modal" data-target="#selectChequesModal">
+                                    <i class="fas fa-search-plus mr-1"></i> Browse & Select Cheques
+                                </button>
+                                <div id="cheque_hidden_inputs"></div>
                             </div>
                         </div>
 
@@ -306,10 +309,47 @@
     </div>
 </div>
 
+<!-- Select Cheques Modal -->
+<div class="modal fade" id="selectChequesModal" tabindex="-1" role="dialog" style="z-index: 1000000;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-info shadow-lg">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Select Customer Cheques to Transfer</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm" id="chequesSelectionTable">
+                        <thead class="bg-light">
+                            <tr>
+                                <th width="30"><input type="checkbox" id="selectAllCheques"></th>
+                                <th>Cheque #</th>
+                                <th>Customer</th>
+                                <th>Bank</th>
+                                <th>Date</th>
+                                <th class="text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cheques_selection_body">
+                            <tr><td colspan="6" class="text-center">Loading cheques...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <div class="mr-auto font-weight-bold">Total Selected: Rs. <span id="selectedChequesTotalDisplay">0.00</span></div>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" id="confirmChequeSelection">Confirm Selection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // ... (Chart logic stays the same)
         var ctx = document.getElementById("supplierPerformanceChart");
         if(ctx) {
             var myLineChart = new Chart(ctx, {
@@ -417,6 +457,8 @@
             $('#t_amount').val('');
             $('#t_description').val('');
             $('#saveBtn').text('Save Transaction');
+            $('#cheque_hidden_inputs').empty();
+            $('#selected_cheques_list').html('<span class="text-muted">No cheques selected</span>');
         }
     });
 
@@ -433,8 +475,7 @@
     $('input[name="payment_method"]').on('change', function() {
         $('.payment_detail_fields').hide();
         var selected = $(this).val();
-        if (selected === 'cheque') $('#cheque_fields').show();
-        else if (selected === 'bank') $('#bank_fields').show();
+        if (selected === 'bank') $('#bank_fields').show();
         else if (selected === 'wallet') $('#wallet_fields').show();
         else if (selected === 'customer_cheque') {
             $('#customer_cheque_fields').show();
@@ -442,36 +483,78 @@
         }
     });
 
+    let allCheques = [];
     function loadCustomerCheques() {
-        var $select = $('#customer_cheque_select');
-        if ($select.children('option').length > 1) return; // Already loaded
-
+        if (allCheques.length > 0) return;
+        
         $.ajax({
             url: "{{ route('cheques.pending-customer') }}",
             type: "GET",
             success: function(res) {
-                res.forEach(function(ch) {
-                    var partyName = ch.party ? ch.party.name : 'Unknown';
-                    var text = ch.cheque_number + " - " + partyName + " (Rs. " + ch.amount.toLocaleString() + ")";
-                    var option = new Option(text, ch.id, false, false);
-                    $(option).data('amount', ch.amount);
-                    $(option).data('cheque_no', ch.cheque_number);
-                    $(option).data('customer', partyName);
-                    $select.append(option);
-                });
-                $select.select2({
-                    theme: 'bootstrap4',
-                    dropdownParent: $('#addTransactionModal')
-                });
+                allCheques = res;
+                renderChequesTable();
             }
         });
     }
 
-    $('#customer_cheque_select').on('change', function() {
-        var $opt = $(this).find(':selected');
-        if ($opt.val()) {
-            $('#t_amount').val($opt.data('amount'));
-            $('#t_description').val("Payment via Customer Cheque #" + $opt.data('cheque_no') + " (" + $opt.data('customer') + ")");
+    function renderChequesTable() {
+        let html = '';
+        if (allCheques.length === 0) {
+            html = '<tr><td colspan="6" class="text-center">No pending customer cheques found.</td></tr>';
+        } else {
+            allCheques.forEach(ch => {
+                let partyName = ch.party ? ch.party.name : 'Unknown';
+                html += `<tr>
+                    <td><input type="checkbox" class="cheque-checkbox" value="${ch.id}" data-amount="${ch.amount}" data-no="${ch.cheque_number}" data-customer="${partyName}"></td>
+                    <td>${ch.cheque_number}</td>
+                    <td>${partyName}</td>
+                    <td>${ch.bank_name || '-'}</td>
+                    <td>${ch.cheque_date}</td>
+                    <td class="text-right font-weight-bold">Rs. ${ch.amount.toLocaleString()}</td>
+                </tr>`;
+            });
+        }
+        $('#cheques_selection_body').html(html);
+    }
+
+    $(document).on('change', '#selectAllCheques', function() {
+        $('.cheque-checkbox').prop('checked', $(this).is(':checked')).trigger('change');
+    });
+
+    $(document).on('change', '.cheque-checkbox', function() {
+        let total = 0;
+        $('.cheque-checkbox:checked').each(function() {
+            total += parseFloat($(this).data('amount'));
+        });
+        $('#selectedChequesTotalDisplay').text(total.toLocaleString(undefined, {minimumFractionDigits: 2}));
+    });
+
+    $('#confirmChequeSelection').click(function() {
+        let selected = [];
+        let total = 0;
+        let descParts = [];
+        let hiddenInputs = '';
+        
+        $('.cheque-checkbox:checked').each(function() {
+            let id = $(this).val();
+            let amount = parseFloat($(this).data('amount'));
+            let no = $(this).data('no');
+            let customer = $(this).data('customer');
+            
+            selected.push({id, amount, no, customer});
+            total += amount;
+            descParts.push("#" + no + " (" + customer + ")");
+            hiddenInputs += `<input type="hidden" name="payment_details[cheque_ids][]" value="${id}">`;
+        });
+
+        if (selected.length > 0) {
+            $('#selected_cheques_list').html(selected.map(s => `<span class="badge badge-info mr-1 mb-1">#${s.no} - Rs.${s.amount.toLocaleString()}</span>`).join(''));
+            $('#cheque_hidden_inputs').html(hiddenInputs);
+            $('#t_amount').val(total);
+            $('#t_description').val("Payment via Transfer of Customer Cheques: " + descParts.join(', '));
+            $('#selectChequesModal').modal('hide');
+        } else {
+            Swal.fire('Wait', 'Please select at least one cheque', 'info');
         }
     });
 
