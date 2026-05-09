@@ -146,12 +146,12 @@
                                 <td data-title="Action" class="text-center">
                                     <div class="d-flex justify-content-end" style="gap: 5px;">
                                         @if($item->category == 'purchase' && $item->reference_id)
-                                            <a href="{{route('purchase-orders.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Purchase Order">
-                                                <i class="fas fa-file-invoice" style="font-size: 12px;"></i>
+                                            <a href="{{route('inventory-incoming.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Incoming Goods">
+                                                <i class="fas fa-eye" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
-                                        @if(in_array($item->category, ['payment', 'return', 'manual']))
-                                            <a href="{{route('admin.supplier-ledger.transaction-voucher', $item->id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Voucher">
+                                        @if(in_array($item->category, ['payment', 'return', 'manual', 'purchase']))
+                                            <a href="{{route('admin.supplier-ledger.transaction-voucher', $item->id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Receipt">
                                                 <i class="fas fa-receipt" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
