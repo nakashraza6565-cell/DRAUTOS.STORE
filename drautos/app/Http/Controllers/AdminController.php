@@ -344,8 +344,13 @@ class AdminController extends Controller
         $order = new \App\Models\Order();
         $order->order_number = $order_number;
         $order->user_id = $data['customer_id'];
-        $order->sub_total = $data['total_amount'];
-        $order->total_amount = $data['total_amount'];
+        
+        // Calculate totals correctly
+        $discount = $request->discount ?? 0;
+        $order->coupon = $discount;
+        $order->sub_total = $data['total_amount'] + $discount; // Total before global discount
+        $order->total_amount = $data['total_amount']; // Final amount after all discounts
+        
         $order->quantity = count($data['cart']);
         $order->payment_method = $data['payment_method'];
 

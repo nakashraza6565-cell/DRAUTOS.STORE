@@ -481,16 +481,27 @@
                             </div>
                         </div>
 
-                        <!-- Amount Received (Hidden until method selected) -->
+                        <!-- Amount Received & Discount -->
                         <div id="amount-input-wrapper" style="display: none;" class="animated fadeIn">
-                            <div class="form-group mb-0">
+                            <div class="form-group mb-3">
                                 <label class="font-weight-bold text-uppercase small text-success">Amount Received</label>
-                                <div class="input-group input-group-lg border rounded overflow-hidden">
+                                <div class="input-group input-group-lg border rounded overflow-hidden shadow-sm">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text bg-white border-0">Rs.</span>
                                     </div>
                                     <input type="number" class="form-control border-0 shadow-none font-weight-bold" id="amount-received" placeholder="0.00">
                                 </div>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="font-weight-bold text-uppercase small text-danger">Order Discount</label>
+                                <div class="input-group input-group-lg border rounded overflow-hidden shadow-sm">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-white border-0">Rs.</span>
+                                    </div>
+                                    <input type="number" class="form-control border-0 shadow-none font-weight-bold text-danger" id="order-discount" placeholder="0.00" value="0">
+                                </div>
+                                <small class="text-muted" style="font-size: 11px;">Final discount applied to total payable.</small>
                                 <div id="partial-info" class="mt-2 small text-warning font-weight-bold" style="display:none;">
                                     <i class="fas fa-exclamation-triangle mr-1"></i> Partial Payment
                                 </div>
@@ -1662,11 +1673,23 @@
         $('#amount-received').focus();
     });
 
-    $('#amount-received').on('input', function() {
-        let total = parseFloat($('#total-val').text().replace('Rs. ', ''));
-        let received = parseFloat($(this).val()) || 0;
+    $('#amount-received, #order-discount').on('input', function() {
+        // 1. Get original cart total (Subtotal - Line Item Discounts)
+        let subtotal = parseFloat($('#subtotal-val').text().replace('Rs. ', '')) || 0;
+        let lineDiscount = parseFloat($('#discount-val').text().replace('Rs. ', '')) || 0;
+        let originalTotal = subtotal - lineDiscount;
 
-        if (received > 0 && received < total) {
+        // 2. Apply Global Discount
+        let globalDiscount = parseFloat($('#order-discount').val()) || 0;
+        let newTotal = originalTotal - globalDiscount;
+
+        // 3. Update Displays
+        $('.total-payable').text('Rs. ' + newTotal.toFixed(2));
+        $('#total-val').text('Rs. ' + newTotal.toFixed(2));
+
+        // 4. Handle Partial Payment Info
+        let received = parseFloat($('#amount-received').val()) || 0;
+        if (received > 0 && received < newTotal) {
             $('#partial-info').show();
         } else {
             $('#partial-info').hide();
@@ -1844,12 +1867,15 @@
         let amount_received_raw = $('#amount-received').val();
         let amount_received = (amount_received_raw === "" || amount_received_raw === null) ? 0 : parseFloat(amount_received_raw);
         if (isNaN(amount_received)) amount_received = 0;
+        
+        let order_discount = parseFloat($('#order-discount').val()) || 0;
         let due_date = $('#payment-due-date').val();
 
         // Prepare data
         let payload = {
             customer_id: customer_id,
             total_amount: total_amount,
+            discount: order_discount,
             payment_method: payment_method,
             payment_status: (amount_received >= total_amount) ? 'paid' : 'partial',
             amount_paid: amount_received,
