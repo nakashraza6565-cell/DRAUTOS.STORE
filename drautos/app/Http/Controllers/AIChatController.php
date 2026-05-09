@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class AIChatController extends Controller
 {
-    private $apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+    private $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
     public function __construct()
     {
@@ -166,8 +166,8 @@ class AIChatController extends Controller
         $url = "{$this->apiUrl}?key={$apiKey}";
         $body = [
             'contents' => $messages,
-            'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
-            'tools' => [[ 'functionDeclarations' => $this->getToolsDefinition() ]],
+            'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+            'tools' => [[ 'function_declarations' => $this->getToolsDefinition() ]],
             'generationConfig' => [ 'temperature' => 0.2, 'maxOutputTokens' => 1000 ]
         ];
 
