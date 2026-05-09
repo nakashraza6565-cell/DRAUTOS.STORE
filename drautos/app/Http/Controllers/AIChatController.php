@@ -11,7 +11,7 @@ use App\Models\Cheque;
 use App\Models\Supplier;
 use App\Models\SupplierLedger;
 use App\Models\ActivityLog;
-use App\Models\User;
+use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
