@@ -23,6 +23,13 @@ class ChequeController extends Controller
             });
         }
 
+        // Always ensure the status enum includes 'transferred' (can be run multiple times safely in MySQL)
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE cheques MODIFY COLUMN status ENUM('pending', 'cleared', 'bounced', 'cancelled', 'transferred') DEFAULT 'pending'");
+        } catch (\Exception $e) {
+            // Silently fail if already updated or not supported
+        }
+
         $query = Cheque::with(['party', 'creator', 'transferredTo']);
 
         // Filter by type
@@ -330,6 +337,11 @@ class ChequeController extends Controller
                 $table->unsignedBigInteger('transferred_to_id')->nullable()->after('created_by');
             });
         }
+
+        // Ensure status enum includes 'transferred'
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE cheques MODIFY COLUMN status ENUM('pending', 'cleared', 'bounced', 'cancelled', 'transferred') DEFAULT 'pending'");
+        } catch (\Exception $e) {}
 
         $cheques = Cheque::with('party')
             ->where('type', 'received')
