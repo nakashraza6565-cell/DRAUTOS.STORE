@@ -61,7 +61,6 @@ class SupplierLedgerController extends Controller
 
     public function store(Request $request)
     {
-        dd($request->all());
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'transaction_date' => 'required|date',
@@ -74,7 +73,6 @@ class SupplierLedgerController extends Controller
         ]);
 
         try {
-            dd($request->all());
             \Log::info('SupplierLedger Store Request', $request->all());
             DB::beginTransaction();
 
