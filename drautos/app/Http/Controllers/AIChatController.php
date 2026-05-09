@@ -11,8 +11,9 @@ use App\Models\Cheque;
 use App\Models\Supplier;
 use App\Models\SupplierLedger;
 use App\Models\ActivityLog;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class AIChatController extends Controller
 {
@@ -23,16 +24,13 @@ class AIChatController extends Controller
         $this->middleware(['auth', 'admin']);
     }
 
-    /**
-     * Main Chat Entry Point
-     */
     public function chat(Request $request)
     {
-        $request->validate(['message' => 'required|string|max:1000']);
+        $request->validate(['message' => 'required|string|max:1500']);
         
         $apiKey = env('GEMINI_API_KEY');
         if (!$apiKey) {
-            return response()->json(['reply' => '⚠️ Gemini API Key missing in .env file. Please add GEMINI_API_KEY.']);
+            return response()->json(['reply' => '⚠️ Gemini API Key missing. Please add GEMINI_API_KEY to your .env file.']);
         }
 
         $userMessage = $request->input('message');
@@ -43,17 +41,22 @@ class AIChatController extends Controller
 
     private function runAgenticLoop($message, $history, $apiKey)
     {
-        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You have full access to the business data via tools. 
+        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a high-level executive assistant.
+        YOUR POWERS:
+        - You can check stock, prices, orders, and ledgers.
+        - You can update prices and stock.
+        - You can add cheques and ledger entries.
+        - You can update order statuses.
+
         RULES:
-        1. Use tools to look up info. Don't guess.
-        2. If you need to update a price or stock, ask for confirmation first.
-        3. Be professional, concise, and helpful. 
-        4. You can speak English, Urdu, and Roman Urdu.
-        5. NEVER perform destructive actions (deleting) unless a specific tool allows it.
-        6. Today's date is: " . date('Y-m-d') . ".";
+        1. ALWAYS confirm with the user before making a change. Show a summary of what you are about to do.
+        2. SLOT FILLING: If the user gives an incomplete command (e.g. 'Add a cheque' but no amount), ASK for the missing info.
+        3. Be fast, professional, and concise.
+        4. Understand Urdu, Roman Urdu, and English.
+        5. NEVER delete data.
+        6. Today is: " . date('Y-m-d') . ". Use this for relative dates like 'today', 'tomorrow', 'yesterday'.";
 
         $messages = [];
-        // Convert history to Gemini format
         foreach ($history as $turn) {
             $role = ($turn['role'] === 'user') ? 'user' : 'model';
             $messages[] = ['role' => $role, 'parts' => [['text' => $turn['content']]]];
@@ -62,22 +65,19 @@ class AIChatController extends Controller
 
         try {
             $response = $this->callGemini($messages, $systemPrompt, $apiKey);
-            
             $candidate = $response['candidates'][0] ?? null;
-            if (!$candidate) throw new \Exception("Empty AI response");
+            if (!$candidate) throw new \Exception("Empty response from Gemini.");
 
             $content = $candidate['content'];
             $parts = $content['parts'] ?? [];
             
-            // Check for tool calls
             foreach ($parts as $part) {
                 if (isset($part['functionCall'])) {
                     return $this->handleFunctionCall($part['functionCall'], $messages, $systemPrompt, $apiKey, $history, $message);
                 }
             }
 
-            // Normal text response
-            $aiText = $parts[0]['text'] ?? "I'm not sure how to answer that.";
+            $aiText = $parts[0]['text'] ?? "I'm ready to help. What would you like me to do?";
             return response()->json([
                 'reply' => $aiText,
                 'history' => array_merge($history, [
@@ -88,7 +88,7 @@ class AIChatController extends Controller
 
         } catch (\Exception $e) {
             Log::error("Gemini Error: " . $e->getMessage());
-            return response()->json(['reply' => "⚠️ Brain Error: " . $e->getMessage()]);
+            return response()->json(['reply' => "⚠️ Error: " . $e->getMessage()]);
         }
     }
 
@@ -96,36 +96,47 @@ class AIChatController extends Controller
     {
         $name = $functionCall['name'];
         $args = $functionCall['args'] ?? [];
-        
-        $result = ['error' => 'Tool not found'];
+        $result = ['status' => 'error', 'message' => 'Tool not found'];
         $redirect = null;
 
-        switch ($name) {
-            case 'search_products':
-                $result = $this->tool_search_products($args['query'] ?? '');
-                break;
-            case 'get_supplier_info':
-                $result = $this->tool_get_supplier_info($args['id_or_name'] ?? '');
-                break;
-            case 'get_recent_orders':
-                $result = $this->tool_get_recent_orders($args['limit'] ?? 5);
-                break;
-            case 'get_pending_cheques':
-                $result = $this->tool_get_pending_cheques();
-                break;
-            case 'update_product_price':
-                $result = $this->tool_update_price($args['id'], $args['new_price']);
-                break;
-            case 'update_product_stock':
-                $result = $this->tool_update_stock($args['id'], $args['new_quantity']);
-                break;
-            case 'download_price_list':
-                $redirect = route('product.price-list.pdf');
-                $result = "Success: Redirecting to PDF download.";
-                break;
-        }
+        try {
+            switch ($name) {
+                case 'search_products':
+                    $result = Product::where('title', 'like', "%{$args['query']}%")->orWhere('sku', 'like', "%{$args['query']}%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
+                    break;
+                case 'get_supplier_ledger':
+                    $s = Supplier::where('name', 'like', "%{$args['name']}%")->first();
+                    $result = $s ? $s->only(['id', 'name', 'current_balance']) : "Supplier not found.";
+                    break;
+                case 'add_customer_cheque':
+                    $result = $this->tool_add_cheque($args);
+                    break;
+                case 'add_supplier_ledger_entry':
+                    $result = $this->tool_add_supplier_ledger_entry($args);
+                    break;
+                case 'update_product_price':
+                    $p = Product::find($args['id']);
+                    if ($p) {
+                        $old = $p->price;
+                        $p->update(['price' => $args['new_price']]);
+                        ActivityLog::log('product', 'AI Update', "Price of {$p->title} changed from $old to {$args['new_price']}");
+                        $result = "Success: Price updated.";
+                    } else $result = "Product not found.";
+                    break;
+                case 'update_order_status':
+                    $o = Order::where('order_number', $args['order_number'])->first();
+                    if ($o) {
+                        $o->update(['status' => $args['status']]);
+                        $result = "Success: Order #{$args['order_number']} status changed to {$args['status']}.";
+                    } else $result = "Order not found.";
+                    break;
+                case 'download_price_list':
+                    $redirect = route('product.price-list.pdf');
+                    $result = "Success: Redirecting to PDF.";
+                    break;
+            }
+        } catch (\Exception $e) { $result = "Error: " . $e->getMessage(); }
 
-        // Send tool result back to AI
         $messages[] = ['role' => 'model', 'parts' => [['functionCall' => $functionCall]]];
         $messages[] = [
             'role' => 'function', 
@@ -157,7 +168,7 @@ class AIChatController extends Controller
             'contents' => $messages,
             'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
             'tools' => [[ 'function_declarations' => $this->getToolsDefinition() ]],
-            'generationConfig' => [ 'temperature' => 0.4, 'maxOutputTokens' => 800 ]
+            'generationConfig' => [ 'temperature' => 0.2, 'maxOutputTokens' => 1000 ]
         ];
 
         $response = Http::post($url, $body);
@@ -170,21 +181,59 @@ class AIChatController extends Controller
         return [
             [
                 'name' => 'search_products',
-                'description' => 'Search products by name/SKU to check price and stock.',
+                'description' => 'Search products by name or SKU.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => [ 'query' => ['type' => 'STRING'] ], 'required' => ['query'] ]
+            ],
+            [
+                'name' => 'get_pending_cheques',
+                'description' => 'List all pending customer cheques.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => new \stdClass() ]
+            ],
+            [
+                'name' => 'get_supplier_ledger',
+                'description' => 'Get balance of a supplier.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => [ 'name' => ['type' => 'STRING'] ], 'required' => ['name'] ]
+            ],
+            [
+                'name' => 'add_customer_cheque',
+                'description' => 'Add a new cheque received from a customer.',
                 'parameters' => [
                     'type' => 'OBJECT',
-                    'properties' => [ 'query' => ['type' => 'STRING'] ],
-                    'required' => ['query']
+                    'properties' => [
+                        'customer_name' => ['type' => 'STRING'],
+                        'amount' => ['type' => 'NUMBER'],
+                        'cheque_number' => ['type' => 'STRING'],
+                        'bank_name' => ['type' => 'STRING'],
+                        'cheque_date' => ['type' => 'STRING', 'description' => 'YYYY-MM-DD'],
+                        'clearing_date' => ['type' => 'STRING', 'description' => 'YYYY-MM-DD']
+                    ],
+                    'required' => ['customer_name', 'amount', 'cheque_number', 'bank_name', 'cheque_date']
                 ]
             ],
             [
-                'name' => 'get_supplier_info',
-                'description' => 'Get supplier details and current ledger balance.',
+                'name' => 'add_supplier_ledger_entry',
+                'description' => 'Add a manual transaction (payment/purchase) to a supplier ledger.',
                 'parameters' => [
                     'type' => 'OBJECT',
-                    'properties' => [ 'id_or_name' => ['type' => 'STRING'] ],
-                    'required' => ['id_or_name']
+                    'properties' => [
+                        'supplier_name' => ['type' => 'STRING'],
+                        'amount' => ['type' => 'NUMBER'],
+                        'type' => ['type' => 'STRING', 'description' => 'debit or credit'],
+                        'category' => ['type' => 'STRING', 'description' => 'payment, purchase, return, etc'],
+                        'description' => ['type' => 'STRING']
+                    ],
+                    'required' => ['supplier_name', 'amount', 'type', 'category']
                 ]
+            ],
+            [
+                'name' => 'update_product_price',
+                'description' => 'Update product price.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => [ 'id' => ['type' => 'NUMBER'], 'new_price' => ['type' => 'NUMBER'] ], 'required' => ['id', 'new_price'] ]
+            ],
+            [
+                'name' => 'update_order_status',
+                'description' => 'Change status of an order.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => [ 'order_number' => ['type' => 'STRING'], 'status' => ['type' => 'STRING', 'description' => 'new, process, delivered, cancel'] ], 'required' => ['order_number', 'status'] ]
             ],
             [
                 'name' => 'get_recent_orders',
@@ -195,74 +244,49 @@ class AIChatController extends Controller
                 ]
             ],
             [
-                'name' => 'get_pending_cheques',
-                'description' => 'List all pending customer cheques.',
-                'parameters' => ['type' => 'OBJECT', 'properties' => []]
-            ],
-            [
-                'name' => 'update_product_price',
-                'description' => 'Update a product price. Ask confirmation first.',
-                'parameters' => [
-                    'type' => 'OBJECT',
-                    'properties' => [ 'id' => ['type' => 'NUMBER'], 'new_price' => ['type' => 'NUMBER'] ],
-                    'required' => ['id', 'new_price']
-                ]
-            ],
-            [
-                'name' => 'update_product_stock',
-                'description' => 'Set product stock quantity. Ask confirmation first.',
-                'parameters' => [
-                    'type' => 'OBJECT',
-                    'properties' => [ 'id' => ['type' => 'NUMBER'], 'new_quantity' => ['type' => 'NUMBER'] ],
-                    'required' => ['id', 'new_quantity']
-                ]
-            ],
-            [
                 'name' => 'download_price_list',
-                'description' => 'Generate and download the full price list PDF.',
-                'parameters' => ['type' => 'OBJECT', 'properties' => []]
+                'description' => 'Download price list PDF.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => new \stdClass() ]
             ]
         ];
     }
 
-    private function tool_search_products($query)
+    private function tool_add_cheque($args)
     {
-        return Product::where('title', 'like', "%$query%")->orWhere('sku', 'like', "%$query%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
+        $user = User::where('name', 'like', "%{$args['customer_name']}%")->first();
+        if (!$user) return "Error: Customer '{$args['customer_name']}' not found.";
+
+        $cheque = Cheque::create([
+            'type' => 'received',
+            'cheque_number' => $args['cheque_number'],
+            'amount' => $args['amount'],
+            'cheque_date' => $args['cheque_date'],
+            'clearing_date' => $args['clearing_date'] ?? $args['cheque_date'],
+            'bank_name' => $args['bank_name'],
+            'party_type' => 'App\User',
+            'party_id' => $user->id,
+            'status' => 'pending',
+            'created_by' => Auth::id(),
+        ]);
+
+        ActivityLog::log('cheque', 'AI Add', "Added cheque #{$cheque->cheque_number} for customer {$user->name}");
+        return "Success: Cheque added for {$user->name}.";
     }
 
-    private function tool_get_supplier_info($query)
+    private function tool_add_supplier_ledger_entry($args)
     {
-        $s = Supplier::where('name', 'like', "%$query%")->orWhere('id', $query)->first();
-        return $s ? $s->only(['id', 'name', 'current_balance', 'status']) : "Supplier not found.";
-    }
+        $supplier = Supplier::where('name', 'like', "%{$args['supplier_name']}%")->first();
+        if (!$supplier) return "Error: Supplier '{$args['supplier_name']}' not found.";
 
-    private function tool_get_recent_orders($limit)
-    {
-        return Order::latest()->limit($limit)->get(['order_number', 'total_amount', 'status'])->toArray();
-    }
+        SupplierLedger::record(
+            $supplier->id,
+            date('Y-m-d'),
+            $args['type'],
+            $args['category'],
+            ($args['description'] ?? 'Manual entry via AI'),
+            $args['amount']
+        );
 
-    private function tool_get_pending_cheques()
-    {
-        return Cheque::where('status', 'pending')->limit(15)->get(['cheque_number', 'amount', 'bank_name', 'cheque_date'])->toArray();
-    }
-
-    private function tool_update_price($id, $price)
-    {
-        $p = Product::find($id);
-        if (!$p) return "Product not found.";
-        $old = $p->price;
-        $p->update(['price' => $price]);
-        ActivityLog::log('product', 'AI Price Update', "Updated {$p->title} price from $old to $price", route('product.index'));
-        return "Price updated successfully.";
-    }
-
-    private function tool_update_stock($id, $qty)
-    {
-        $p = Product::find($id);
-        if (!$p) return "Product not found.";
-        $old = $p->stock;
-        $p->update(['stock' => $qty]);
-        ActivityLog::log('product', 'AI Stock Update', "Updated {$p->title} stock from $old to $qty", route('product.index'));
-        return "Stock updated successfully.";
+        return "Success: Entry added to {$supplier->name}'s ledger.";
     }
 }
