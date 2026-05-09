@@ -228,10 +228,6 @@
                                     <label class="custom-control-label" for="method_cash">Cash</label>
                                 </div>
                                 <div class="custom-control custom-radio mr-3">
-                                    <input type="radio" id="method_cheque" name="payment_method" value="cheque" class="custom-control-input">
-                                    <label class="custom-control-label" for="method_cheque">Cheque</label>
-                                </div>
-                                <div class="custom-control custom-radio mr-3">
                                     <input type="radio" id="method_bank" name="payment_method" value="bank" class="custom-control-input">
                                     <label class="custom-control-label" for="method_bank">Bank Account</label>
                                 </div>
@@ -493,6 +489,9 @@
             success: function(res) {
                 allCheques = res;
                 renderChequesTable();
+            },
+            error: function(xhr) {
+                $('#cheques_selection_body').html('<tr><td colspan="6" class="text-center text-danger">Error loading cheques. Please refresh the page or contact admin.</td></tr>');
             }
         });
     }

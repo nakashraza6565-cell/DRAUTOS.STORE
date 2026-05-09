@@ -324,6 +324,13 @@ class ChequeController extends Controller
      */
     public function getPendingCustomerCheques()
     {
+        // Auto-migration for transferred_to_id (backup check)
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('cheques', 'transferred_to_id')) {
+            \Illuminate\Support\Facades\Schema::table('cheques', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->unsignedBigInteger('transferred_to_id')->nullable()->after('created_by');
+            });
+        }
+
         $cheques = Cheque::with('party')
             ->where('type', 'received')
             ->where('status', 'pending')
