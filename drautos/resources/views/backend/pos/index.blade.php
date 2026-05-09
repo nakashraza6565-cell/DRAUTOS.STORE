@@ -438,7 +438,7 @@
                                 <span class="font-weight-bold text-info" id="modal-ledger-balance">Rs. 0.00</span>
                             </div>
                             <hr>
-                            <div class="form-group mb-0">
+                            <div class="form-group mb-0" id="due-date-wrapper" style="display: none;">
                                 <label class="small font-weight-bold text-uppercase text-danger">Payment Due Date</label>
                                 <input type="date" class="form-control form-control-sm border-0 shadow-none bg-white" id="payment-due-date" value="{{ date('Y-m-d', strtotime('+7 days')) }}">
                                 <small class="text-muted" style="font-size: 10px;">For partial/credit payments</small>
@@ -1662,10 +1662,16 @@
         $(this).addClass('active');
 
         let method = $(this).data('method');
+        
+        // Show/Hide Due Date for Credit Sale
         if (method === 'credit') {
+            $('#due-date-wrapper').fadeIn();
             $('#amount-received').val(0).trigger('input');
-        } else if ($('#amount-received').val() == 0) {
-            $('#amount-received').val('').trigger('input');
+        } else {
+            $('#due-date-wrapper').fadeOut();
+            if ($('#amount-received').val() == 0) {
+                $('#amount-received').val('').trigger('input');
+            }
         }
 
         // Show amount received input with animation
