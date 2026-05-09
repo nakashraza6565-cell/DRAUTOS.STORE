@@ -33,6 +33,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
 $(document).ready(function() {
     $('#quickAddSupplierForm').on('submit', function(e) {
@@ -42,27 +43,30 @@ $(document).ready(function() {
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
 
         $.ajax({
-            url: "{{ route('suppliers.store') }}",
+            url: "{{ route('supplier.quick-store') }}",
             type: "POST",
-            data: $form.serialize(),
-            success: function(response) {
-                // Assuming the response returns the new supplier object
-                let newOption = new Option(response.name + ' (' + (response.phone || '') + ')', response.id, true, true);
-                $(newOption).data('phone', response.phone || '');
-                $(newOption).data('balance', '0.00');
-                $(newOption).data('name', response.name);
-                
-                $('#supplier_id').append(newOption).trigger('change');
-                $('#addSupplierModal').modal('hide');
-                $form[0].reset();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Supplier Added',
-                    text: response.name + ' has been registered successfully.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+            data: $form.serialize() + "&_token={{csrf_token()}}",
+            success: function(res) {
+                if(res.status === 'success') {
+                    let response = res.supplier;
+                    let newOption = new Option(response.name + ' (' + (response.phone || '') + ')', response.id, true, true);
+                    $(newOption).data('phone', response.phone || '');
+                    $(newOption).data('balance', '0.00');
+                    $(newOption).data('name', response.name);
+                    
+                    $('#supplier_id').append(newOption).trigger('change');
+                    $('#addSupplierModal').modal('hide');
+                    $form[0].reset();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Supplier Added',
+                        text: response.name + ' has been registered successfully.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+                $btn.prop('disabled', false).text('Register Supplier');
             },
             error: function(err) {
                 $btn.prop('disabled', false).text('Register Supplier');
@@ -73,3 +77,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endpush

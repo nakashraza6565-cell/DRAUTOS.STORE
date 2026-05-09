@@ -339,15 +339,6 @@ $(document).on('submit', '#quickAddModelForm', function(e) {
     });
 });
 
-$(document).on('submit', '#quickAddSupplierForm', function(e) {
-    e.preventDefault();
-    $.post("{{route('supplier.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
-        if(res.status == 'success') {
-            $('#supplier_id').append(new Option(res.supplier.name + ' (' + (res.supplier.phone || '') + ')', res.supplier.id, false, true)).trigger('change');
-            $('#addSupplierModal').modal('hide');
-        }
-    });
-});
 </script>
 @endpush
 @endsection

@@ -180,6 +180,7 @@
     }
 </style>
 
+@push('scripts')
 <script>
 $(document).ready(function() {
     // Initialize Select2 with tags for Title
@@ -204,6 +205,14 @@ $(document).ready(function() {
             },
             cache: true
         }
+    });
+
+    // Initialize Select2 for other dropdowns in the modal
+    $('#qa-cat-select, #qa-brand-select, #qa-model-select, #qa-unit-select, #qa-supplier-select').select2({
+        theme: 'bootstrap4',
+        width: '100%',
+        dropdownParent: $('#addProductModal'),
+        placeholder: "Select or Type"
     });
 
     $('#quickAddProductForm').on('submit', function(e) {
@@ -241,3 +250,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endpush
