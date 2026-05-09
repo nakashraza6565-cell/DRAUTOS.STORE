@@ -111,6 +111,9 @@ class AIChatController extends Controller
                 case 'add_customer_cheque':
                     $result = $this->tool_add_cheque($args);
                     break;
+                case 'add_customer_ledger_entry':
+                    $result = $this->tool_add_customer_ledger_entry($args);
+                    break;
                 case 'add_supplier_ledger_entry':
                     $result = $this->tool_add_supplier_ledger_entry($args);
                     break;
@@ -211,6 +214,21 @@ class AIChatController extends Controller
                 ]
             ],
             [
+                'name' => 'add_customer_ledger_entry',
+                'description' => 'Add a manual transaction (payment/purchase) to a customer ledger. e.g., cash payment, JazzCash, Easypaisa.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'customer_name' => ['type' => 'STRING'],
+                        'amount' => ['type' => 'NUMBER'],
+                        'type' => ['type' => 'STRING', 'description' => 'debit or credit'],
+                        'category' => ['type' => 'STRING', 'description' => 'payment, sale, return, etc'],
+                        'description' => ['type' => 'STRING']
+                    ],
+                    'required' => ['customer_name', 'amount', 'type', 'category']
+                ]
+            ],
+            [
                 'name' => 'add_supplier_ledger_entry',
                 'description' => 'Add a manual transaction (payment/purchase) to a supplier ledger.',
                 'parameters' => [
@@ -271,6 +289,23 @@ class AIChatController extends Controller
 
         ActivityLog::log('cheque', 'AI Add', "Added cheque #{$cheque->cheque_number} for customer {$user->name}");
         return "Success: Cheque added for {$user->name}.";
+    }
+
+    private function tool_add_customer_ledger_entry($args)
+    {
+        $user = User::where('name', 'like', "%{$args['customer_name']}%")->first();
+        if (!$user) return "Error: Customer '{$args['customer_name']}' not found.";
+
+        \App\Models\CustomerLedger::record(
+            $user->id,
+            date('Y-m-d'),
+            $args['type'],
+            $args['category'],
+            ($args['description'] ?? 'Manual entry via AI'),
+            $args['amount']
+        );
+
+        return "Success: Entry added to {$user->name}'s ledger.";
     }
 
     private function tool_add_supplier_ledger_entry($args)
