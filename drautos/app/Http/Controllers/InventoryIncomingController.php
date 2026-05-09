@@ -46,7 +46,7 @@ class InventoryIncomingController extends Controller
             ->map(function($supplier) {
                 // Manually sum the total cost from all incoming records
                 $supplier->total_spent = $supplier->incomingGoods()->with('items')->get()->sum(function($incoming) {
-                    return $incoming->items->sum('total_cost');
+                    return $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
                 });
                 return $supplier;
             });
