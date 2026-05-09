@@ -39,14 +39,6 @@
                   </div>
               </div>
               <div class="d-flex align-items-center gap-2">
-                  <select id="ai-model-select" title="Choose AI Model">
-                      <option value="google/gemma-4-26b-a4b-it:free">🟢 Gemma 4</option>
-                      <option value="meta-llama/llama-3.3-70b-instruct:free">🦙 Llama 3.3 70B</option>
-                      <option value="meta-llama/llama-3.2-3b-instruct:free">🦙 Llama 3.2 Fast</option>
-                      <option value="qwen/qwen3-next-80b-a3b-instruct:free">⚡ Qwen 3 80B</option>
-                      <option value="nousresearch/hermes-3-llama-3.1-405b:free">🧠 Hermes 405B</option>
-                      <option value="nvidia/nemotron-3-super-120b-a12b:free">🎮 Nemotron 120B</option>
-                  </select>
                   <button id="ai-chat-close">✕</button>
               </div>
           </div>
@@ -54,13 +46,14 @@
           {{-- Messages Area --}}
           <div id="ai-chat-messages">
               <div class="ai-msg bot">
-                  👋 Hello! I'm your AI business assistant.<br><br>
-                  You can ask me to:<br>
-                  • <b>Update prices</b> — "Set TR Boot price to 450"<br>
-                  • <b>Check orders</b> — "Show recent orders"<br>
-                  • <b>Check stock</b> — "How much stock of Wheel Boot?"<br>
-                  • <b>Download PDF</b> — "Download price list"<br><br>
-                  I will always confirm before making any change! 🔒
+                  👋 Hello! I'm your **Agentic Manager**. I'm connected directly to your store. <br><br>
+                  Tap a quick action or ask me anything:
+              </div>
+              <div id="ai-quick-actions">
+                  <button class="ai-action-btn" data-query="Give me a summary of today's sales and pending orders.">📊 Today's Summary</button>
+                  <button class="ai-action-btn" data-query="List any products with low stock.">📦 Low Stock</button>
+                  <button class="ai-action-btn" data-query="Which customer cheques are pending clearing?">💰 Pending Cheques</button>
+                  <button class="ai-action-btn" data-query="Download the latest price list PDF.">📄 Price List PDF</button>
               </div>
           </div>
 
@@ -89,245 +82,215 @@
               width: 60px;
               height: 60px;
               border-radius: 50%;
-              background: linear-gradient(135deg, #6366f1, #818cf8);
+              background: linear-gradient(135deg, #4f46e5, #7c3aed);
               color: white;
               border: none;
               cursor: pointer;
-              box-shadow: 0 8px 25px rgba(99,102,241,0.5);
+              box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
               display: flex;
               align-items: center;
               justify-content: center;
               z-index: 9999;
-              transition: transform 0.3s, box-shadow 0.3s;
-              animation: ai-pulse 2.5s infinite;
+              transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           }
           #ai-chat-trigger:hover {
-              transform: scale(1.1);
-              box-shadow: 0 12px 30px rgba(99,102,241,0.7);
-              animation: none;
-          }
-          @keyframes ai-pulse {
-              0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0.5); }
-              70%  { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
-              100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+              transform: scale(1.1) rotate(5deg);
+              box-shadow: 0 15px 40px rgba(79, 70, 229, 0.6);
           }
           #ai-chat-window {
               position: fixed;
               bottom: 105px;
               right: 30px;
-              width: 370px;
-              max-height: 560px;
+              width: 400px;
+              max-height: 600px;
               background: #fff;
-              border-radius: 20px;
-              box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+              border-radius: 24px;
+              box-shadow: 0 25px 70px rgba(0,0,0,0.15);
               display: none;
               flex-direction: column;
               z-index: 9998;
               overflow: hidden;
-              border: 1px solid #e0e7ff;
-              animation: chat-slide-in 0.3s ease;
-          }
-          @keyframes chat-slide-in {
-              from { opacity: 0; transform: translateY(20px) scale(0.95); }
-              to   { opacity: 1; transform: translateY(0) scale(1); }
+              border: 1px solid #f0f4ff;
+              transition: all 0.3s ease;
           }
           #ai-chat-header {
-              background: linear-gradient(135deg, #4f46e5, #6366f1);
+              background: #4f46e5;
               color: white;
-              padding: 16px 20px;
+              padding: 18px 24px;
               display: flex;
               align-items: center;
               justify-content: space-between;
           }
           #ai-avatar {
-              width: 38px;
-              height: 38px;
-              border-radius: 50%;
+              width: 42px;
+              height: 42px;
+              border-radius: 14px;
               background: rgba(255,255,255,0.2);
               display: flex;
               align-items: center;
               justify-content: center;
               font-weight: 800;
-              font-size: 0.85rem;
-              margin-right: 12px;
-              border: 2px solid rgba(255,255,255,0.3);
+              margin-right: 14px;
           }
           #ai-chat-close {
-              background: rgba(255,255,255,0.15);
+              background: rgba(255,255,255,0.1);
               border: none;
               color: white;
-              width: 30px;
-              height: 30px;
-              border-radius: 50%;
+              width: 32px;
+              height: 32px;
+              border-radius: 10px;
               cursor: pointer;
-              font-size: 0.8rem;
           }
           #ai-chat-messages {
               flex: 1;
               overflow-y: auto;
-              padding: 16px;
+              padding: 20px;
               display: flex;
               flex-direction: column;
-              gap: 10px;
-              max-height: 380px;
-              background: #f8faff;
+              gap: 12px;
+              background: #fcfdfe;
           }
           .ai-msg {
               max-width: 85%;
-              padding: 10px 14px;
-              border-radius: 16px;
-              font-size: 0.85rem;
+              padding: 12px 16px;
+              border-radius: 18px;
+              font-size: 0.9rem;
               line-height: 1.5;
-              word-wrap: break-word;
           }
           .ai-msg.bot {
-              background: white;
+              background: #f1f5f9;
               color: #1e293b;
               align-self: flex-start;
               border-bottom-left-radius: 4px;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.07);
           }
           .ai-msg.user {
-              background: linear-gradient(135deg, #6366f1, #818cf8);
+              background: #4f46e5;
               color: white;
               align-self: flex-end;
               border-bottom-right-radius: 4px;
           }
           .ai-msg.thinking {
-              background: #e0e7ff;
-              color: #6366f1;
+              background: #eef2ff;
+              color: #4f46e5;
               align-self: flex-start;
-              font-style: italic;
+              animation: thinking-pulse 1.5s infinite;
+          }
+          @keyframes thinking-pulse {
+              0% { opacity: 0.5; }
+              50% { opacity: 1; }
+              100% { opacity: 0.5; }
+          }
+          #ai-quick-actions {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
+              margin-top: 5px;
+          }
+          .ai-action-btn {
+              background: #fff;
+              border: 1px solid #e2e8f0;
+              padding: 8px 12px;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              color: #475569;
+              cursor: pointer;
+              transition: all 0.2s;
+              text-align: left;
+          }
+          .ai-action-btn:hover {
+              background: #f1f5f9;
+              border-color: #cbd5e1;
+              transform: translateY(-2px);
           }
           #ai-chat-input-area {
-              padding: 12px 16px;
+              padding: 15px 20px;
               display: flex;
-              gap: 8px;
-              border-top: 1px solid #e0e7ff;
+              gap: 10px;
               background: white;
+              border-top: 1px solid #f1f5f9;
           }
           #ai-chat-input {
               flex: 1;
-              border: 1.5px solid #e0e7ff;
-              border-radius: 12px;
-              padding: 10px 14px;
-              font-size: 0.85rem;
+              border: 1.5px solid #e2e8f0;
+              border-radius: 14px;
+              padding: 12px 16px;
+              font-size: 0.9rem;
               outline: none;
-              transition: border-color 0.2s;
           }
-          #ai-chat-input:focus { border-color: #6366f1; }
+          #ai-chat-input:focus { border-color: #4f46e5; }
           #ai-chat-send {
-              width: 42px;
-              height: 42px;
-              border-radius: 12px;
-              background: linear-gradient(135deg, #6366f1, #818cf8);
+              width: 48px;
+              height: 48px;
+              border-radius: 14px;
+              background: #4f46e5;
               border: none;
               color: white;
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: transform 0.2s;
           }
-          #ai-chat-send:hover { transform: scale(1.05); }
-
-          /* Model Selector */
-          #ai-model-select {
-              background: rgba(255,255,255,0.15);
-              border: 1px solid rgba(255,255,255,0.3);
-              color: white;
-              border-radius: 8px;
-              padding: 4px 6px;
-              font-size: 0.7rem;
-              cursor: pointer;
-              outline: none;
-              max-width: 110px;
-          }
-          #ai-model-select option { background: #4f46e5; color: white; }
-          .ai-model-badge {
-              font-size: 0.65rem;
-              color: #6366f1;
-              margin-top: 4px;
-              opacity: 0.8;
-          }
-
-          /* Mic Button */
           #ai-mic-btn {
-              width: 42px;
-              height: 42px;
-              border-radius: 12px;
-              background: #f1f5f9;
-              border: 1.5px solid #e0e7ff;
-              color: #6366f1;
+              width: 48px;
+              height: 48px;
+              border-radius: 14px;
+              background: #f8fafc;
+              border: 1.5px solid #e2e8f0;
+              color: #64748b;
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: all 0.2s;
-              flex-shrink: 0;
           }
-          #ai-mic-btn:hover { background: #e0e7ff; }
           #ai-mic-btn.recording {
-              background: #fee2e2;
-              border-color: #ef4444;
-              color: #ef4444;
-              animation: mic-pulse 1s infinite;
-          }
-          @keyframes mic-pulse {
-              0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
-              70%  { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
-              100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-          }
-
-          @media (max-width: 480px) {
-              #ai-chat-window { width: calc(100vw - 20px); right: 10px; bottom: 100px; }
+              background: #ef4444;
+              color: white;
+              border-color: #dc2626;
           }
       </style>
 
       {{-- Script --}}
       <script>
       (function() {
-          let pendingAction = null;
           const chatWindow  = document.getElementById('ai-chat-window');
           const trigger     = document.getElementById('ai-chat-trigger');
           const closeBtn    = document.getElementById('ai-chat-close');
           const input       = document.getElementById('ai-chat-input');
           const sendBtn     = document.getElementById('ai-chat-send');
           const messages    = document.getElementById('ai-chat-messages');
-          const modelSelect = document.getElementById('ai-model-select');
+          const quickActions = document.querySelectorAll('.ai-action-btn');
+          
+          let chatHistory = [];
 
           trigger.addEventListener('click', () => {
               chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
           });
           closeBtn.addEventListener('click', () => { chatWindow.style.display = 'none'; });
 
-          sendBtn.addEventListener('click', sendMessage);
+          sendBtn.addEventListener('click', () => sendMessage());
           input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-          function addMessage(text, type, modelLabel) {
+          quickActions.forEach(btn => {
+              btn.addEventListener('click', () => sendMessage(btn.getAttribute('data-query')));
+          });
+
+          function addMessage(text, type) {
               const div = document.createElement('div');
               div.className = 'ai-msg ' + type;
               div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-              if (modelLabel && type === 'bot') {
-                  const badge = document.createElement('div');
-                  badge.className = 'ai-model-badge';
-                  badge.textContent = '— ' + modelLabel;
-                  div.appendChild(badge);
-              }
               messages.appendChild(div);
               messages.scrollTop = messages.scrollHeight;
               return div;
           }
 
-          function sendMessage() {
-              const text = input.value.trim();
+          function sendMessage(overrideText = null) {
+              const text = overrideText || input.value.trim();
               if (!text) return;
 
               addMessage(text, 'user');
-              input.value = '';
+              if (!overrideText) input.value = '';
 
-              const thinking = addMessage('⏳ Thinking...', 'thinking');
-              const selectedModel = modelSelect ? modelSelect.value : null;
+              const thinking = addMessage('🧠 Manager is working...', 'thinking');
 
               fetch('/admin/ai-chat', {
                   method: 'POST',
@@ -337,93 +300,39 @@
                   },
                   body: JSON.stringify({
                       message: text,
-                      pending_action: pendingAction,
-                      model: selectedModel
+                      history: chatHistory
                   })
               })
               .then(res => res.json())
               .then(data => {
                   thinking.remove();
-                  addMessage(data.reply, 'bot', data.model_label || null);
-
-                  if (data.needs_confirm && data.action) {
-                      pendingAction = data.action;
-                  } else {
-                      pendingAction = null;
-                  }
+                  addMessage(data.reply, 'bot');
+                  chatHistory = data.history || chatHistory;
 
                   if (data.redirect) {
-                      setTimeout(() => { window.open(data.redirect, '_blank'); }, 800);
+                      setTimeout(() => { window.open(data.redirect, '_blank'); }, 1000);
                   }
               })
               .catch(() => {
                   thinking.remove();
-                  addMessage('❌ Connection error. Please try again.', 'bot');
-                  pendingAction = null;
+                  addMessage('❌ Brain connection lost. Try again.', 'bot');
               });
           }
 
-          // ===== Voice / Mic Button =====
+          // Voice Logic
           const micBtn = document.getElementById('ai-mic-btn');
           let recognition = null;
-          let isRecording = false;
-
-          if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-              recognition = new SpeechRecognition();
-              recognition.continuous = false;
-              recognition.interimResults = true;
-              // Support both Urdu and English
+          if ('webkitSpeechRecognition' in window) {
+              recognition = new webkitSpeechRecognition();
               recognition.lang = 'ur-PK';
-
-              recognition.onstart = function() {
-                  isRecording = true;
-                  micBtn.classList.add('recording');
-                  input.placeholder = '🔴 Listening... (Urdu / English)';
+              recognition.onstart = () => micBtn.classList.add('recording');
+              recognition.onend = () => micBtn.classList.remove('recording');
+              recognition.onresult = (e) => {
+                  input.value = e.results[0][0].transcript;
+                  sendMessage();
               };
-
-              recognition.onresult = function(event) {
-                  let transcript = '';
-                  for (let i = event.resultIndex; i < event.results.length; i++) {
-                      transcript += event.results[i][0].transcript;
-                  }
-                  input.value = transcript;
-              };
-
-              recognition.onend = function() {
-                  isRecording = false;
-                  micBtn.classList.remove('recording');
-                  input.placeholder = 'Type or tap 🎤 to speak...';
-                  // Auto-send if something was captured
-                  if (input.value.trim()) {
-                      setTimeout(sendMessage, 400);
-                  }
-              };
-
-              recognition.onerror = function(e) {
-                  isRecording = false;
-                  micBtn.classList.remove('recording');
-                  input.placeholder = 'Type or tap 🎤 to speak...';
-                  if (e.error !== 'no-speech') {
-                      addMessage('🎤 Mic error: ' + e.error + '. Try typing instead.', 'bot');
-                  }
-              };
-
-              micBtn.addEventListener('click', function() {
-                  if (isRecording) {
-                      recognition.stop();
-                  } else {
-                      recognition.start();
-                  }
-              });
-          } else {
-              // Browser doesn't support voice
-              micBtn.title = 'Voice not supported in this browser. Use Chrome.';
-              micBtn.addEventListener('click', function() {
-                  addMessage('🎤 Voice input requires Google Chrome browser. Please use Chrome on your phone or computer.', 'bot');
-              });
+              micBtn.onclick = () => recognition.start();
           }
-
       })();
       </script>
       @endif

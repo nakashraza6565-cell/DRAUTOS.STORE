@@ -8,387 +8,261 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\Cheque;
+use App\Models\Supplier;
+use App\Models\SupplierLedger;
 use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class AIChatController extends Controller
 {
-    // All confirmed free models — tried in order automatically
-    private $models = [
-        'google/gemma-4-26b-a4b-it:free',
-        'meta-llama/llama-3.3-70b-instruct:free',
-        'meta-llama/llama-3.2-3b-instruct:free',
-        'qwen/qwen3-next-80b-a3b-instruct:free',
-        'nousresearch/hermes-3-llama-3.1-405b:free',
-        'nvidia/nemotron-3-super-120b-a12b:free',
-    ];
-
-    // Human-readable model names for UI
-    public static function modelLabels(): array
-    {
-        return [
-            'google/gemma-4-26b-a4b-it:free'           => '🟢 Google Gemma 4 (26B)',
-            'meta-llama/llama-3.3-70b-instruct:free'   => '🦙 Llama 3.3 (70B)',
-            'meta-llama/llama-3.2-3b-instruct:free'    => '🦙 Llama 3.2 (Fast)',
-            'qwen/qwen3-next-80b-a3b-instruct:free'    => '⚡ Qwen 3 (80B)',
-            'nousresearch/hermes-3-llama-3.1-405b:free' => '🧠 Hermes 405B (Smartest)',
-            'nvidia/nemotron-3-super-120b-a12b:free'   => '🎮 NVIDIA Nemotron (120B)',
-        ];
-    }
-
-    private $apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-
+    private $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    
     public function __construct()
     {
         $this->middleware(['auth', 'admin']);
     }
 
-    private $forbiddenKeywords = ['remove user', 'drop table', 'truncate', 'wipe database'];
-
+    /**
+     * Main Chat Entry Point
+     */
     public function chat(Request $request)
     {
-        $request->validate(['message' => 'required|string|max:500']);
-
-        $userMessage   = trim($request->input('message'));
-        $pendingAction = $request->input('pending_action');
-        $selectedModel = $request->input('model'); // User-selected model from UI
-
-        // Safety: block delete commands
-        foreach ($this->forbiddenKeywords as $word) {
-            if (stripos($userMessage, $word) !== false) {
-                return $this->reply('🚫 I am not allowed to delete anything. Please use the admin panel for that.');
-            }
-        }
-
-        // Confirmation flow
-        if ($pendingAction) {
-            $lower = strtolower(trim($userMessage));
-            if (in_array($lower, ['yes', 'y', 'confirm', 'ok', 'haan', 'ہاں'])) {
-                return $this->executeAction($pendingAction);
-            }
-            if (in_array($lower, ['no', 'n', 'cancel', 'nahi', 'نہیں'])) {
-                return $this->reply('✅ Action cancelled. No changes were made.');
-            }
-        }
-
-        return $this->parseAndRespond($userMessage, $selectedModel);
-    }
-
-    private function parseAndRespond($message, $selectedModel = null)
-    {
-        $apiKey = env('OPENROUTER_API_KEY');
-
+        $request->validate(['message' => 'required|string|max:1000']);
+        
+        $apiKey = env('GEMINI_API_KEY');
         if (!$apiKey) {
-            return $this->reply('⚠️ AI is not configured. Please add OPENROUTER_API_KEY to your .env file.');
+            return response()->json(['reply' => '⚠️ Gemini API Key missing in .env file. Please add GEMINI_API_KEY.']);
         }
 
-        // Build real-time context from database
-        $products     = Product::orderBy('price', 'desc')->take(15)->get(['id', 'title', 'price', 'stock']);
-        $recentOrders = Order::with('user')->latest()->take(5)->get(['id', 'order_number', 'total_amount', 'status', 'user_id']);
-        $recentCheques = Cheque::latest()->take(10)->get(['id', 'cheque_number', 'amount', 'bank_name', 'status']);
-        $todaySales   = Order::whereDate('created_at', now()->toDateString())->sum('total_amount');
-        $pending      = Order::whereIn('status', ['new', 'process'])->count();
+        $userMessage = $request->input('message');
+        $chatHistory = $request->input('history', []); 
 
-        $context = "Current Products (top 15):\n";
-        foreach ($products as $p) {
-            $context .= "- ID:{$p->id} | {$p->title} | Price: Rs.{$p->price} | Stock: {$p->stock}\n";
-        }
-        $context .= "\nRecent Orders:\n";
-        foreach ($recentOrders as $o) {
-            $context .= "- Order#{$o->order_number} | Rs.{$o->total_amount} | {$o->status} | " . ($o->user->name ?? 'Guest') . "\n";
-        }
-        $context .= "\nRecent Cheques:\n";
-        foreach ($recentCheques as $c) {
-            $context .= "- #{$c->cheque_number} | Rs.{$c->amount} | {$c->bank_name} | Status: {$c->status}\n";
-        }
-        $context .= "\nToday's Sales: Rs.{$todaySales} | Pending Orders: {$pending}";
-
-        $systemPrompt = "You are a professional AI business assistant for 'Danyal Autos' spare parts store in Pakistan. " .
-            "You help the admin manage inventory, orders, pricing, and cheque management.\n\n" .
-            "REAL-TIME BUSINESS DATA:\n{$context}\n\n" .
-            "STRICT RULES:\n" .
-            "1. NEVER delete anything. Refuse politely if asked.\n" .
-            "2. For price updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_price\",\"product_id\":123,\"product_name\":\"Name\",\"old_price\":100,\"new_price\":200}\n" .
-            "3. For stock updates, respond ONLY with: ACTION_JSON:{\"type\":\"update_stock\",\"product_id\":123,\"product_name\":\"Name\",\"old_stock\":10,\"new_stock\":50}\n" .
-            "4. For adding a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"add_cheque\",\"cheque_number\":\"12345\",\"amount\":5000,\"cheque_date\":\"2025-05-07\",\"clearing_date\":\"2025-05-14\",\"bank_name\":\"HBL\",\"party_name\":\"Customer Name\",\"cheque_type\":\"received\",\"notes\":\"\"}\n" .
-            "5. For removing a cheque, respond ONLY with: ACTION_JSON:{\"type\":\"remove_cheque\",\"cheque_number\":\"12345\"}\n" .
-            "6. For stock updates, if the user says 'add 10', calculate the new total based on current stock in context.\n" .
-            "6. cheque_type must be either 'received' (cheque received from customer) or 'paid' (cheque paid to vendor).\n" .
-            "5. Answer questions about products, orders, stock, and cheques naturally.\n" .
-            "6. Keep replies short, friendly, and professional.\n" .
-            "7. You understand Urdu, Roman Urdu, and English.\n" .
-            "8. For PDF download requests respond with: ACTION_JSON:{\"type\":\"download_pdf\"}\n" .
-            "9. Dates must be in YYYY-MM-DD format.\n";
-
-        // Build model queue: user-selected first, then all others as fallback
-        $queue = $this->models;
-        if ($selectedModel && in_array($selectedModel, $this->models)) {
-            $queue = array_merge(
-                [$selectedModel],
-                array_values(array_filter($this->models, fn($m) => $m !== $selectedModel))
-            );
-        }
-
-        $lastError   = '';
-        $usedModel   = null;
-
-        foreach ($queue as $model) {
-            try {
-                $response = Http::timeout(20)->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'HTTP-Referer'  => config('app.url'),
-                    'X-Title'       => 'Danyal Autos AI',
-                    'Content-Type'  => 'application/json',
-                ])->post($this->apiUrl, [
-                    'model'       => $model,
-                    'messages'    => [
-                        ['role' => 'system', 'content' => $systemPrompt],
-                        ['role' => 'user',   'content' => $message],
-                    ],
-                    'max_tokens'  => 400,
-                    'temperature' => 0.4,
-                ]);
-
-                if ($response->successful()) {
-                    $aiText    = trim($response->json()['choices'][0]['message']['content'] ?? '');
-                    $usedModel = $model;
-
-                    if (str_contains($aiText, 'ACTION_JSON:')) {
-                        return $this->handleActionIntent($aiText, $usedModel);
-                    }
-
-                    return response()->json([
-                        'reply'      => $aiText,
-                        'action'     => null,
-                        'used_model' => $usedModel,
-                        'model_label' => self::modelLabels()[$usedModel] ?? $usedModel,
-                    ]);
-                }
-
-                // 429 or 404 — try next model
-                $lastError = $response->status() . ': ' . substr($response->body(), 0, 100);
-                Log::warning("Model {$model} failed ({$response->status()}), trying next...");
-            } catch (\Exception $e) {
-                $lastError = $e->getMessage();
-                Log::warning("Model {$model} exception: " . $e->getMessage());
-            }
-        }
-
-        // All models failed
-        return $this->reply("⚠️ All AI models are temporarily busy. Please try again in 1 minute.\n\nLast error: " . $lastError);
+        return $this->runAgenticLoop($userMessage, $chatHistory, $apiKey);
     }
 
-    private function handleActionIntent($aiText, $usedModel = null)
+    private function runAgenticLoop($message, $history, $apiKey)
     {
-        preg_match('/ACTION_JSON:(\{.*?\})/s', $aiText, $matches);
-        if (!$matches) {
-            $clean = str_replace(strstr($aiText, 'ACTION_JSON:'), '', $aiText);
-            return $this->reply(trim($clean) ?: 'Please rephrase your request.');
+        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You have full access to the business data via tools. 
+        RULES:
+        1. Use tools to look up info. Don't guess.
+        2. If you need to update a price or stock, ask for confirmation first.
+        3. Be professional, concise, and helpful. 
+        4. You can speak English, Urdu, and Roman Urdu.
+        5. NEVER perform destructive actions (deleting) unless a specific tool allows it.
+        6. Today's date is: " . date('Y-m-d') . ".";
+
+        $messages = [];
+        // Convert history to Gemini format
+        foreach ($history as $turn) {
+            $role = ($turn['role'] === 'user') ? 'user' : 'model';
+            $messages[] = ['role' => $role, 'parts' => [['text' => $turn['content']]]];
         }
+        $messages[] = ['role' => 'user', 'parts' => [['text' => $message]]];
 
-        $action = json_decode($matches[1], true);
-        if (!$action) return $this->reply('I understood the request but could not process it. Please rephrase.');
-
-        if (($action['type'] ?? '') === 'download_pdf') {
-            return response()->json([
-                'reply'    => '📄 Opening Price List PDF...',
-                'action'   => null,
-                'redirect' => route('admin.price-list.pdf'),
-            ]);
-        }
-
-        if (($action['type'] ?? '') === 'add_cheque') {
-            $partyName = $action['party_name'] ?? '';
+        try {
+            $response = $this->callGemini($messages, $systemPrompt, $apiKey);
             
-            // 1. Try exact match first
-            $partyUser = \App\User::where('name', $partyName)->first();
+            $candidate = $response['candidates'][0] ?? null;
+            if (!$candidate) throw new \Exception("Empty AI response");
+
+            $content = $candidate['content'];
+            $parts = $content['parts'] ?? [];
             
-            // 2. If no exact match, try partial search
-            if (!$partyUser) {
-                $partyUsers = \App\User::where('name', 'like', "%{$partyName}%")->limit(5)->get();
-                
-                if ($partyUsers->isEmpty()) {
-                    return response()->json([
-                        'reply' => "❌ **Error:** Customer **'{$partyName}'** is not registered in your system. \n\nPlease add the customer to the 'Customers & Users' section before adding their cheques.",
-                        'action' => null
-                    ]);
+            // Check for tool calls
+            foreach ($parts as $part) {
+                if (isset($part['functionCall'])) {
+                    return $this->handleFunctionCall($part['functionCall'], $messages, $systemPrompt, $apiKey, $history, $message);
                 }
-                
-                if ($partyUsers->count() > 1) {
-                    $options = $partyUsers->pluck('name')->map(fn($n) => "• **{$n}**")->implode("\n");
-                    return response()->json([
-                        'reply' => "🔍 I found multiple customers matching **'{$partyName}'**:\n\n{$options}\n\n**Please specify the full name** so I can link the cheque correctly.",
-                        'action' => null
-                    ]);
-                }
-                
-                $partyUser = $partyUsers->first();
             }
 
-            $chequeType = $action['cheque_type'] === 'paid' ? 'paid' : 'received';
-            $confirmMsg = "⚠️ **Confirm Add Cheque:**\n\n" .
-                "Type: **" . ($chequeType === 'received' ? '📥 Received (from customer)' : '📤 Paid (to vendor)') . "**\n" .
-                "Customer: **{$partyUser->name}** ✅ (Registered)\n" .
-                "Cheque #: **{$action['cheque_number']}**\n" .
-                "Amount: **Rs. {$action['amount']}**\n" .
-                "Bank: **{$action['bank_name']}**\n" .
-                "Cheque Date: **{$action['cheque_date']}**\n" .
-                "Clearing Date: **{$action['clearing_date']}**\n" .
-                "\nIs this correct? Type **YES** to confirm or **NO** to cancel.";
-
+            // Normal text response
+            $aiText = $parts[0]['text'] ?? "I'm not sure how to answer that.";
             return response()->json([
-                'reply'         => $confirmMsg,
-                'action'        => array_merge($action, ['party_id' => $partyUser->id, 'party_name' => $partyUser->name]),
-                'needs_confirm' => true,
+                'reply' => $aiText,
+                'history' => array_merge($history, [
+                    ['role' => 'user', 'content' => $message],
+                    ['role' => 'model', 'content' => $aiText]
+                ])
             ]);
+
+        } catch (\Exception $e) {
+            Log::error("Gemini Error: " . $e->getMessage());
+            return response()->json(['reply' => "⚠️ Brain Error: " . $e->getMessage()]);
+        }
+    }
+
+    private function handleFunctionCall($functionCall, $messages, $systemPrompt, $apiKey, $history, $originalMessage)
+    {
+        $name = $functionCall['name'];
+        $args = $functionCall['args'] ?? [];
+        
+        $result = ['error' => 'Tool not found'];
+        $redirect = null;
+
+        switch ($name) {
+            case 'search_products':
+                $result = $this->tool_search_products($args['query'] ?? '');
+                break;
+            case 'get_supplier_info':
+                $result = $this->tool_get_supplier_info($args['id_or_name'] ?? '');
+                break;
+            case 'get_recent_orders':
+                $result = $this->tool_get_recent_orders($args['limit'] ?? 5);
+                break;
+            case 'get_pending_cheques':
+                $result = $this->tool_get_pending_cheques();
+                break;
+            case 'update_product_price':
+                $result = $this->tool_update_price($args['id'], $args['new_price']);
+                break;
+            case 'update_product_stock':
+                $result = $this->tool_update_stock($args['id'], $args['new_quantity']);
+                break;
+            case 'download_price_list':
+                $redirect = route('product.price-list.pdf');
+                $result = "Success: Redirecting to PDF download.";
+                break;
         }
 
-        if (($action['type'] ?? '') === 'update_stock') {
-            $confirmMsg = "⚠️ **Confirm Stock Update:**\n\n" .
-                "Product: **{$action['product_name']}**\n" .
-                "Current Stock: **{$action['old_stock']}**\n" .
-                "New Stock: **{$action['new_stock']}**\n\n" .
-                "Is this correct? Type **YES** to confirm or **NO** to cancel.";
+        // Send tool result back to AI
+        $messages[] = ['role' => 'model', 'parts' => [['functionCall' => $functionCall]]];
+        $messages[] = [
+            'role' => 'function', 
+            'parts' => [[
+                'functionResponse' => [
+                    'name' => $name,
+                    'response' => ['name' => $name, 'content' => $result]
+                ]
+            ]]
+        ];
 
-            return response()->json([
-                'reply'         => $confirmMsg,
-                'action'        => $action,
-                'needs_confirm' => true,
-            ]);
-        }
-
-        if (($action['type'] ?? '') === 'remove_cheque') {
-            $cheque = Cheque::where('cheque_number', $action['cheque_number'])->first();
-            if (!$cheque) return $this->reply("❌ Cheque #{$action['cheque_number']} not found.");
-
-            $confirmMsg = "🛑 **CRITICAL: Confirm Cheque Deletion**\n\n" .
-                "Are you sure you want to PERMANENTLY REMOVE this cheque?\n\n" .
-                "Cheque #: **{$cheque->cheque_number}**\n" .
-                "Amount: **Rs. {$cheque->amount}**\n" .
-                "Bank: **{$cheque->bank_name}**\n" .
-                "Status: **{$cheque->status}**\n\n" .
-                "Type **YES** to delete or **NO** to cancel.";
-
-            return response()->json([
-                'reply'         => $confirmMsg,
-                'action'        => array_merge($action, ['id' => $cheque->id]),
-                'needs_confirm' => true,
-            ]);
-        }
-
-        $confirmMsg = "⚠️ **Confirm Price Update:**\n\n" .
-            "Product: **{$action['product_name']}**\n" .
-            "Current Price: **Rs. {$action['old_price']}**\n" .
-            "New Price: **Rs. {$action['new_price']}**\n\n" .
-            "Is this correct? Type **YES** to confirm or **NO** to cancel.";
+        $finalResponse = $this->callGemini($messages, $systemPrompt, $apiKey);
+        $finalText = $finalResponse['candidates'][0]['content']['parts'][0]['text'] ?? "Done.";
 
         return response()->json([
-            'reply'         => $confirmMsg,
-            'action'        => $action,
-            'needs_confirm' => true,
+            'reply' => $finalText,
+            'redirect' => $redirect,
+            'history' => array_merge($history, [
+                ['role' => 'user', 'content' => $originalMessage],
+                ['role' => 'model', 'content' => $finalText]
+            ])
         ]);
     }
 
-    private function executeAction($action)
+    private function callGemini($messages, $systemPrompt, $apiKey)
     {
-        $a = is_array($action) ? $action : json_decode($action, true);
+        $url = "{$this->apiUrl}?key={$apiKey}";
+        $body = [
+            'contents' => $messages,
+            'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+            'tools' => [[ 'function_declarations' => $this->getToolsDefinition() ]],
+            'generationConfig' => [ 'temperature' => 0.4, 'maxOutputTokens' => 800 ]
+        ];
 
-        if (($a['type'] ?? '') === 'update_price') {
-            try {
-                $product = Product::findOrFail($a['product_id']);
-                $old = $product->price;
-                $product->price = (float) $a['new_price'];
-                $product->save();
-                ActivityLog::log(
-                    'product',
-                    'Price Updated via AI Chat',
-                    "AI updated price of {$product->title} from Rs.{$old} to Rs.{$product->price}",
-                    route('product.index')
-                );
-                return $this->reply("✅ **Done!** Price of **{$product->title}** updated from Rs.{$old} to Rs.{$product->price}.");
-            } catch (\Exception $e) {
-                return $this->reply('❌ Update failed: ' . $e->getMessage());
-            }
-        }
-
-        if (($a['type'] ?? '') === 'update_stock') {
-            try {
-                $product = Product::findOrFail($a['product_id']);
-                $old = $product->stock;
-                $product->stock = (int) $a['new_stock'];
-                $product->save();
-                ActivityLog::log(
-                    'product',
-                    'Stock Updated via AI Chat',
-                    "AI updated stock of {$product->title} from {$old} to {$product->stock}",
-                    route('product.index')
-                );
-                return $this->reply("✅ **Stock Updated!** **{$product->title}** is now **{$product->stock}** units.");
-            } catch (\Exception $e) {
-                return $this->reply('❌ Stock update failed: ' . $e->getMessage());
-            }
-        }
-
-        if (($a['type'] ?? '') === 'add_cheque') {
-            try {
-                $chequeType = $a['cheque_type'] === 'paid' ? 'paid' : 'received';
-                
-                $cheque = Cheque::create([
-                    'type'           => $chequeType,
-                    'cheque_number'  => $a['cheque_number'],
-                    'amount'         => (float) $a['amount'],
-                    'cheque_date'    => $a['cheque_date'],
-                    'clearing_date'  => $a['clearing_date'] ?? null,
-                    'bank_name'      => $a['bank_name'] ?? '',
-                    'party_type'     => 'App\User',
-                    'party_id'       => $a['party_id'],
-                    'status'         => 'pending',
-                    'notes'          => ($a['notes'] ?? '') . ' | Added via AI Chat',
-                    'created_by'     => Auth::id(),
-                ]);
-                
-                ActivityLog::log(
-                    'cheque',
-                    'Cheque Added via AI Chat',
-                    "AI added cheque #{$cheque->cheque_number} for Rs.{$cheque->amount} for customer: {$a['party_name']}",
-                    route('cheques.index')
-                );
-
-                return $this->reply(
-                    "✅ **Cheque Added Successfully!**\n\n" .
-                        "Customer: **{$a['party_name']}**\n" .
-                        "Cheque #: **{$cheque->cheque_number}**\n" .
-                        "Amount: **Rs. {$cheque->amount}**\n" .
-                        "Bank: **{$cheque->bank_name}**"
-                );
-            } catch (\Exception $e) {
-                return $this->reply('❌ Failed to add cheque: ' . $e->getMessage());
-            }
-        }
-
-        if (($a['type'] ?? '') === 'remove_cheque') {
-            try {
-                $cheque = Cheque::findOrFail($a['id']);
-                $num = $cheque->cheque_number;
-                $amt = $cheque->amount;
-                $cheque->delete();
-                ActivityLog::log(
-                    'cheque',
-                    'Cheque Deleted via AI Chat',
-                    "AI permanently removed cheque #{$num} for Rs.{$amt}",
-                    route('cheques.index')
-                );
-                return $this->reply("🗑️ **Deleted!** Cheque #{$num} (Rs.{$amt}) has been removed from the system.");
-            } catch (\Exception $e) {
-                return $this->reply('❌ Deletion failed: ' . $e->getMessage());
-            }
-        }
-
-        return $this->reply('❓ Unknown action. No changes made.');
+        $response = Http::post($url, $body);
+        if (!$response->successful()) throw new \Exception($response->body());
+        return $response->json();
     }
 
-    private function reply(string $text)
+    private function getToolsDefinition()
     {
-        return response()->json(['reply' => $text, 'action' => null]);
+        return [
+            [
+                'name' => 'search_products',
+                'description' => 'Search products by name/SKU to check price and stock.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [ 'query' => ['type' => 'STRING'] ],
+                    'required' => ['query']
+                ]
+            ],
+            [
+                'name' => 'get_supplier_info',
+                'description' => 'Get supplier details and current ledger balance.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [ 'id_or_name' => ['type' => 'STRING'] ],
+                    'required' => ['id_or_name']
+                ]
+            ],
+            [
+                'name' => 'get_recent_orders',
+                'description' => 'Get a list of the most recent customer orders.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [ 'limit' => ['type' => 'NUMBER'] ]
+                ]
+            ],
+            [
+                'name' => 'get_pending_cheques',
+                'description' => 'List all pending customer cheques.',
+                'parameters' => ['type' => 'OBJECT', 'properties' => []]
+            ],
+            [
+                'name' => 'update_product_price',
+                'description' => 'Update a product price. Ask confirmation first.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [ 'id' => ['type' => 'NUMBER'], 'new_price' => ['type' => 'NUMBER'] ],
+                    'required' => ['id', 'new_price']
+                ]
+            ],
+            [
+                'name' => 'update_product_stock',
+                'description' => 'Set product stock quantity. Ask confirmation first.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [ 'id' => ['type' => 'NUMBER'], 'new_quantity' => ['type' => 'NUMBER'] ],
+                    'required' => ['id', 'new_quantity']
+                ]
+            ],
+            [
+                'name' => 'download_price_list',
+                'description' => 'Generate and download the full price list PDF.',
+                'parameters' => ['type' => 'OBJECT', 'properties' => []]
+            ]
+        ];
+    }
+
+    private function tool_search_products($query)
+    {
+        return Product::where('title', 'like', "%$query%")->orWhere('sku', 'like', "%$query%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
+    }
+
+    private function tool_get_supplier_info($query)
+    {
+        $s = Supplier::where('name', 'like', "%$query%")->orWhere('id', $query)->first();
+        return $s ? $s->only(['id', 'name', 'current_balance', 'status']) : "Supplier not found.";
+    }
+
+    private function tool_get_recent_orders($limit)
+    {
+        return Order::latest()->limit($limit)->get(['order_number', 'total_amount', 'status'])->toArray();
+    }
+
+    private function tool_get_pending_cheques()
+    {
+        return Cheque::where('status', 'pending')->limit(15)->get(['cheque_number', 'amount', 'bank_name', 'cheque_date'])->toArray();
+    }
+
+    private function tool_update_price($id, $price)
+    {
+        $p = Product::find($id);
+        if (!$p) return "Product not found.";
+        $old = $p->price;
+        $p->update(['price' => $price]);
+        ActivityLog::log('product', 'AI Price Update', "Updated {$p->title} price from $old to $price", route('product.index'));
+        return "Price updated successfully.";
+    }
+
+    private function tool_update_stock($id, $qty)
+    {
+        $p = Product::find($id);
+        if (!$p) return "Product not found.";
+        $old = $p->stock;
+        $p->update(['stock' => $qty]);
+        ActivityLog::log('product', 'AI Stock Update', "Updated {$p->title} stock from $old to $qty", route('product.index'));
+        return "Stock updated successfully.";
     }
 }
