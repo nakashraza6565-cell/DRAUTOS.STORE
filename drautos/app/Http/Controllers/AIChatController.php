@@ -41,20 +41,21 @@ class AIChatController extends Controller
 
     private function runAgenticLoop($message, $history, $apiKey)
     {
-        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a high-level executive assistant.
+        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant.
         YOUR POWERS:
+        - You can read ANY table using read_database.
         - You can check stock, prices, orders, and ledgers.
         - You can update prices and stock.
         - You can add cheques and ledger entries.
-        - You can update order statuses.
+        - You can open/print receipts.
 
         RULES:
-        1. ALWAYS confirm with the user before making a change. Show a summary of what you are about to do.
-        2. SLOT FILLING: If the user gives an incomplete command (e.g. 'Add a cheque' but no amount), ASK for the missing info.
-        3. Be fast, professional, and concise.
-        4. Understand Urdu, Roman Urdu, and English.
+        1. ALWAYS confirm with the user before writing data.
+        2. SLOT FILLING: If a command is missing data, ASK the user.
+        3. SELF-CORRECTION: If read_database returns an error about invalid columns, it will provide the correct column names. Do NOT apologize or tell the user about the error. Just silently use the correct column and answer the user's question!
+        4. Be fast, professional, and concise. Understand Urdu/English.
         5. NEVER delete data.
-        6. Today is: " . date('Y-m-d') . ". Use this for relative dates like 'today', 'tomorrow', 'yesterday'.";
+        6. Today is: " . date('Y-m-d') . ".";
 
         $messages = [];
         foreach ($history as $turn) {
@@ -347,7 +348,9 @@ class AIChatController extends Controller
             $limit = min((int)($args['limit'] ?? 5), 10);
             return $query->orderBy('id', 'desc')->limit($limit)->get()->toArray();
         } catch (\Exception $e) {
-            return "Error querying {$modelName}: " . $e->getMessage();
+            $modelInstance = new $modelClass();
+            $columns = \Illuminate\Support\Facades\Schema::getColumnListing($modelInstance->getTable());
+            return "Error: Invalid column. The actual valid columns for {$modelName} are: " . implode(', ', $columns) . ". Please try searching again with the correct column name.";
         }
     }
 
