@@ -217,6 +217,12 @@
                 </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td class="text-right bold" style="padding-top: 10px; font-size: 14px;">GRAND TOTAL:</td>
+                <td colspan="3" style="padding-top: 10px;"><div class="empty-box" style="height: 30px; border: 2px solid #000;"></div></td>
+            </tr>
+        </tfoot>
     </table>
 
     <div class="footer-note" style="margin-top: 20px;">
