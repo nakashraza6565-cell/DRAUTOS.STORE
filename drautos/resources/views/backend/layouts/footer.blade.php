@@ -126,12 +126,23 @@
               max-height: 85vh;
               bottom: 105px;
           }
-          @media (max-width: 991px) {
+          @media (max-width: 768px) {
+              #ai-chat-window {
+                  width: calc(100% - 30px) !important;
+                  right: 15px !important;
+                  bottom: 90px !important;
+                  max-height: calc(100vh - 110px) !important;
+                  border-radius: 20px;
+              }
               #ai-chat-window.large-view {
-                  width: calc(100% - 40px);
+                  width: calc(100% - 30px) !important;
+                  right: 15px !important;
+              }
+              #ai-chat-trigger {
+                  bottom: 20px;
                   right: 20px;
-                  left: 20px;
-                  bottom: 100px;
+                  width: 55px;
+                  height: 55px;
               }
           }
           #ai-chat-header {
