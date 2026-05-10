@@ -35,11 +35,6 @@ class AIChatController extends Controller
         }
     }
 
-    public function index()
-    {
-        return view('backend.ai.chat');
-    }
-
     public function runAgenticLoop(Request $request)
     {
         $user = auth()->user();
@@ -57,14 +52,13 @@ class AIChatController extends Controller
         // Load Last 20 Messages for context
         $historyData = DB::table('ai_chat_messages')
             ->where('user_id', $user->id)
-            ->orderBy('id', 'desc')
-            ->limit(20)
-            ->get()
-            ->reverse();
+            ->orderBy('id', 'asc') // Load in chronological order
+            ->limit(50)
+            ->get();
 
-        $history = [];
+        $messages = [];
         foreach ($historyData as $msg) {
-            $history[] = ['role' => $msg->role, 'parts' => [['text' => $msg->content]]];
+            $messages[] = ['role' => ($msg->role === 'user' ? 'user' : 'model'), 'parts' => [['text' => $msg->content]]];
         }
 
         $userMemory = "";
@@ -102,20 +96,6 @@ class AIChatController extends Controller
         
         Today is: " . date('Y-m-d') . ".";
 
-        // Initial Message
-        $messages = $history;
-        if (empty($messages)) {
-            $messages[] = ['role' => 'user', 'parts' => [['text' => $input]]];
-        } else {
-            // Check if last message was user
-            $last = end($messages);
-            if ($last['role'] === 'user') {
-                // Already has user input
-            } else {
-                $messages[] = ['role' => 'user', 'parts' => [['text' => $input]]];
-            }
-        }
-
         $finalResponse = $this->executeRecursiveLoop($messages, $systemPrompt);
 
         // Save Assistant Response
@@ -132,11 +112,12 @@ class AIChatController extends Controller
 
     private function executeRecursiveLoop($messages, $systemPrompt, $depth = 0)
     {
-        if ($depth > 10) return "Error: Maximum thinking depth reached.";
+        if ($depth > 10) return "Error: Thinking too deep. Please simplify your request.";
 
         $response = $this->callGemini($messages, $systemPrompt);
+        
         $candidate = $response['candidates'][0] ?? null;
-        if (!$candidate) return "Error: No response from Gemini.";
+        if (!$candidate) throw new \Exception("Empty response from Gemini.");
 
         $content = $candidate['content'];
         $messages[] = $content;
@@ -153,7 +134,7 @@ class AIChatController extends Controller
                 try {
                     $result = $this->handleFunctionCall($name, $args);
                 } catch (\Throwable $e) {
-                    $result = "Error executing tool {$name}: " . $e->getMessage();
+                    $result = "Error: " . $e->getMessage();
                 }
 
                 $toolResultsParts[] = [
@@ -188,7 +169,7 @@ class AIChatController extends Controller
             'tools' => [['functionDeclarations' => $this->getTools()]]
         ];
 
-        $response = Http::post($url, $body);
+        $response = Http::timeout(60)->post($url, $body);
         if (!$response->successful()) {
             throw new \Exception("Gemini API Error: " . $response->body());
         }
@@ -204,20 +185,12 @@ class AIChatController extends Controller
                 return $this->tool_global_search($args);
             case 'get_analytics':
                 return $this->tool_get_analytics($args);
-            case 'send_whatsapp':
-                return $this->tool_send_whatsapp($args);
             case 'open_whatsapp':
                 return $this->tool_open_whatsapp($args);
-            case 'get_recent_entities':
-                return $this->tool_get_recent_entities();
             case 'update_memory':
                 return $this->tool_update_memory($args);
-            case 'open_receipt':
-                return "Success: Triggered redirect to receipt.";
-            case 'print_thermal':
-                return "Success: Triggered thermal print.";
             default:
-                return "Error: Unknown tool {$name}";
+                return "Error: Tool {$name} not implemented.";
         }
     }
 
@@ -226,15 +199,12 @@ class AIChatController extends Controller
         $model = $args['model_name'];
         $modelClass = strpos($model, '\\') !== false ? $model : "App\\Models\\" . $model;
         if (!class_exists($modelClass)) {
-             // Try App root if Models fails (like for User)
              $modelClass = "App\\" . $model;
              if (!class_exists($modelClass)) return "Error: Model {$model} not found.";
         }
 
         try {
             $query = $modelClass::query();
-            
-            // Auto-load common relationships
             foreach (['user', 'customer', 'party', 'supplier'] as $rel) {
                 if (method_exists($modelClass, $rel)) $query->with($rel);
             }
@@ -244,26 +214,23 @@ class AIChatController extends Controller
             }
             return $query->orderBy('id', 'desc')->limit(10)->get()->toArray();
         } catch (\Throwable $e) {
-            return "Database Error: " . $e->getMessage();
+            return "DB Error: " . $e->getMessage();
         }
     }
 
     private function tool_global_search($args)
     {
         $q = $args['query'];
-        $results = [
+        return [
             'customers' => \App\User::where('name', 'like', "%$q%")->orWhere('phone', 'like', "%$q%")->limit(5)->get()->toArray(),
             'suppliers' => \App\Models\Supplier::where('name', 'like', "%$q%")->limit(5)->get()->toArray(),
             'products' => \App\Models\Product::where('title', 'like', "%$q%")->orWhere('sku', 'like', "%$q%")->limit(5)->get()->toArray()
         ];
-        return $results;
     }
 
     private function tool_get_analytics($args)
     {
         $type = $args['type'] ?? 'sales_summary';
-        $period = $args['period'] ?? 'month';
-        
         if ($type === 'top_selling_products') {
             return \App\Models\Cart::whereNotNull('order_id')
                 ->whereMonth('created_at', date('m'))
@@ -273,11 +240,8 @@ class AIChatController extends Controller
                 ->orderBy('total_amount', 'desc')
                 ->limit(10)->get()->toArray();
         }
-        return \App\Models\Order::whereMonth('created_at', date('m'))
-                ->selectRaw('COUNT(*) as count, SUM(total_amount) as total')->first()->toArray();
+        return \App\Models\Order::whereMonth('created_at', date('m'))->selectRaw('COUNT(*) as count, SUM(total_amount) as total')->first()->toArray();
     }
-
-    private function tool_send_whatsapp($args) { return "Feature restricted to manual push for stability."; }
 
     private function tool_open_whatsapp($args)
     {
@@ -286,19 +250,10 @@ class AIChatController extends Controller
         return "Success: Opening WhatsApp for {$phone}";
     }
 
-    private function tool_get_recent_entities()
-    {
-        return [
-            'recent_customers' => \App\User::orderBy('id', 'desc')->limit(5)->get(['id','name'])->toArray(),
-            'recent_orders' => \App\Models\Order::orderBy('id', 'desc')->limit(5)->get(['id','order_number'])->toArray()
-        ];
-    }
-
     private function tool_update_memory($args)
     {
         $user = auth()->user();
-        $path = storage_path("app/ai_memory_{$user->id}.json");
-        file_put_contents($path, $args['memory_content']);
+        file_put_contents(storage_path("app/ai_memory_{$user->id}.json"), $args['memory_content']);
         return "Success: Memory updated.";
     }
 
@@ -340,7 +295,7 @@ class AIChatController extends Controller
             ],
             [
                 'name' => 'open_whatsapp',
-                'description' => 'Open a chat window with a message.',
+                'description' => 'Open a chat window.',
                 'parameters' => [
                     'type' => 'OBJECT',
                     'properties' => [
