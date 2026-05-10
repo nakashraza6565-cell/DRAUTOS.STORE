@@ -97,7 +97,6 @@ class AIChatController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-            Log::error("Gemini Error: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
             return response()->json(['reply' => "⚠️ System Crash Prevented: " . $e->getMessage() . " on line " . $e->getLine()]);
         }
     }
