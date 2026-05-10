@@ -32,13 +32,10 @@ class PurchaseOrderController extends Controller
         $this->validate($request, [
             'supplier_id' => 'required|exists:suppliers,id',
             'order_date' => 'required|date',
-            'expected_delivery_date' => 'nullable|date',
             'product_id' => 'required|array',
             'product_id.*' => 'required|exists:products,id',
             'quantity' => 'required|array',
-            'quantity.*' => 'required|numeric|min:1',
-            'unit_price' => 'required|array',
-            'unit_price.*' => 'required|numeric|min:0',
+            'quantity.*' => 'required|numeric|min:0.1',
         ]);
 
         try {
@@ -46,21 +43,12 @@ class PurchaseOrderController extends Controller
 
             $po_number = 'PO-' . strtoupper(uniqid());
             
-            $total_amount = 0;
-            foreach ($request->quantity as $key => $qty) {
-                $total_amount += $qty * $request->unit_price[$key];
-            }
-
-            $paid_amount = $request->paid_amount ?: 0;
-
             $purchaseOrder = PurchaseOrder::create([
                 'supplier_id' => $request->supplier_id,
                 'po_number' => $po_number,
                 'order_date' => $request->order_date,
-                'expected_delivery_date' => $request->expected_delivery_date,
                 'status' => 'pending',
-                'total_amount' => $total_amount,
-                'paid_amount' => $paid_amount,
+                'total_amount' => 0,
                 'notes' => $request->notes,
             ]);
 
@@ -69,35 +57,25 @@ class PurchaseOrderController extends Controller
                     'purchase_order_id' => $purchaseOrder->id,
                     'product_id' => $pid,
                     'quantity' => $request->quantity[$key],
-                    'unit_price' => $request->unit_price[$key],
-                    'subtotal' => $request->quantity[$key] * $request->unit_price[$key],
+                    'unit_price' => 0,
+                    'subtotal' => 0,
                 ]);
             }
 
-            // --- Handle Payment Reminder for Supplier ---
-            $pending_amount = $total_amount - $paid_amount;
-            if ($pending_amount > 0) {
-                \App\Models\PaymentReminder::create([
-                    'type' => 'payable',
-                    'party_type' => 'App\\Models\\Supplier',
-                    'party_id' => $request->supplier_id,
-                    'reference_number' => $po_number,
-                    'amount' => $pending_amount,
-                    'due_date' => $request->due_date ?: now()->addDays(7),
-                    'status' => 'pending',
-                    'notes' => 'Generated from Purchase Order ' . $po_number
-                ]);
+            DB::commit();
 
-                // Update supplier current balance
-                $supplier = Supplier::find($request->supplier_id);
-                if ($supplier) {
-                    $supplier->current_balance += $pending_amount;
-                    $supplier->save();
+            // Activity Log
+            \App\Models\ActivityLog::log('purchase', 'Purchase Order Created', auth()->user()->name . ' created purchase order #' . $po_number, route('purchase-orders.show', $purchaseOrder->id));
 
-                    // Record in Ledger
-                    \App\Models\SupplierLedger::record(
-                        $supplier->id,
-                        $request->order_date,
+            request()->session()->flash('success', 'Purchase Order (Request) created successfully.');
+            return redirect()->route('purchase-orders.index');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            request()->session()->flash('error', 'Error creating purchase order: ' . $e->getMessage());
+            return back();
+        }
+    }
                         'debit',
                         'purchase',
                         'Purchase Order: ' . $po_number,
@@ -153,62 +131,28 @@ class PurchaseOrderController extends Controller
         $purchaseOrder = PurchaseOrder::findOrFail($id);
         $this->validate($request, [
             'status' => 'required|in:pending,ordered,received,cancelled',
-            'paid_amount' => 'nullable|numeric|min:0',
-            'due_date' => 'nullable|date'
         ]);
 
-        $old_paid = $purchaseOrder->paid_amount;
-        $new_paid = $request->paid_amount ?? $old_paid;
-
         $purchaseOrder->status = $request->status;
-        $purchaseOrder->paid_amount = $new_paid;
+        $purchaseOrder->notes = $request->notes;
         $purchaseOrder->save();
-
-        // Sync Reminder
-        $reminder = \App\Models\PaymentReminder::where('reference_number', $purchaseOrder->po_number)->first();
-        $total_amount = $purchaseOrder->total_amount;
-        $new_pending = $total_amount - $new_paid;
-
-        if ($new_pending > 0) {
-            if (!$reminder) {
-                $reminder = new \App\Models\PaymentReminder();
-                $reminder->type = 'payable';
-                $reminder->party_type = 'App\\Models\\Supplier';
-                $reminder->party_id = $purchaseOrder->supplier_id;
-                $reminder->reference_number = $purchaseOrder->po_number;
-                $reminder->status = 'pending';
-            }
-            
-            $old_pending = $reminder->amount;
-            $reminder->amount = $new_pending;
-            if ($request->due_date) {
-                $reminder->due_date = $request->due_date;
-            }
-            $reminder->save();
-
-            // Update Supplier Balance Difference
-            $diff = $new_pending - $old_pending;
-            if ($diff != 0) {
-                $supplier = Supplier::find($purchaseOrder->supplier_id);
-                if ($supplier) {
-                    $supplier->current_balance += $diff;
-                    $supplier->save();
-                }
-            }
-        } elseif ($reminder) {
-            // Paid in full now?
-            $old_pending = $reminder->amount;
-            $reminder->delete();
-
-            $supplier = Supplier::find($purchaseOrder->supplier_id);
-            if ($supplier) {
-                $supplier->current_balance -= $old_pending;
-                $supplier->save();
-            }
-        }
 
         request()->session()->flash('success', 'Purchase Order updated successfully');
         return redirect()->route('purchase-orders.index');
+    }
+
+    public function convert($id)
+    {
+        $purchaseOrder = PurchaseOrder::findOrFail($id);
+        
+        // Redirect to Incoming Goods create page with the PO ID
+        return redirect()->route('inventory-incoming.create', ['purchase_order_id' => $id]);
+    }
+
+    public function thermalPrint($id)
+    {
+        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product'])->findOrFail($id);
+        return view('backend.purchase.thermal', compact('purchaseOrder'));
     }
 
     public function destroy($id)

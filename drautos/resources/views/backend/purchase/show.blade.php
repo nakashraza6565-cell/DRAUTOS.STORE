@@ -9,8 +9,16 @@
                 <a href="{{route('purchase-orders.index')}}" class="btn btn-light btn-sm rounded-pill border px-3">
                     <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to List
                 </a>
+                @if($purchaseOrder->status != 'received')
+                    <a href="{{route('purchase-orders.convert', $purchaseOrder->id)}}" class="btn btn-success btn-sm rounded-pill shadow-sm px-3 ml-2">
+                        <i class="fas fa-truck-loading fa-sm mr-1"></i> Shift to Incoming
+                    </a>
+                @endif
                 <button onclick="window.print();" class="btn btn-info btn-sm rounded-pill shadow-sm px-3 ml-2">
-                    <i class="fas fa-print fa-sm mr-1"></i> Print PO
+                    <i class="fas fa-file-pdf fa-sm mr-1"></i> Print PDF
+                </button>
+                <a href="{{route('purchase-orders.thermal', $purchaseOrder->id)}}" target="_blank" class="btn btn-primary btn-sm rounded-pill shadow-sm px-3 ml-2">
+                    <i class="fas fa-print fa-sm mr-1"></i> Thermal Receipt
                 </a>
             </div>
         </div>
@@ -52,9 +60,7 @@
                         <tr>
                             <th style="width: 50px;">#</th>
                             <th>Product</th>
-                            <th class="text-center">Quantity</th>
-                            <th class="text-right">Unit Price (Rs.)</th>
-                            <th class="text-right">Subtotal (Rs.)</th>
+                            <th class="text-right">Quantity</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,20 +71,12 @@
                                     <div class="font-weight-bold text-gray-900">{{$item->product->title ?? 'N/A'}}</div>
                                     <small class="text-gray-500">SKU: {{$item->product->sku ?? 'N/A'}}</small>
                                 </td>
-                                <td class="text-center">{{$item->quantity}}</td>
-                                <td class="text-right">{{number_format($item->unit_price, 2)}}</td>
-                                <td class="text-right font-weight-bold">{{number_format($item->subtotal, 2)}}</td>
+                                <td class="text-right font-weight-bold" style="font-size: 1.1rem;">
+                                    {{$item->quantity}} <span class="small text-muted font-weight-normal">{{$item->product->unit ?? ''}}</span>
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4" class="text-right font-weight-bold text-gray-900" style="padding: 15px;">Grand Total:</td>
-                            <td class="text-right" style="padding: 15px;">
-                                <h5 class="m-0 font-weight-bold text-primary">Rs. {{number_format($purchaseOrder->total_amount, 2)}}</h5>
-                            </td>
-                        </tr>
-                    </tfoot>
                 </table>
             </div>
 

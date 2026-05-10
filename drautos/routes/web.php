@@ -372,6 +372,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::post('suppliers/{id}/rating', 'SupplierController@updateRating')->name('suppliers.rating');
         Route::post('/supplier-quick', 'SupplierController@quickStore')->name('supplier.quick-store');
         Route::resource('warehouses', 'WarehouseController');
+        Route::get('purchase-orders/{id}/convert', 'PurchaseOrderController@convert')->name('purchase-orders.convert');
+        Route::get('purchase-orders/{id}/thermal', 'PurchaseOrderController@thermalPrint')->name('purchase-orders.thermal');
         Route::resource('purchase-orders', 'PurchaseOrderController');
     });
 

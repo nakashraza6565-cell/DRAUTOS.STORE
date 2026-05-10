@@ -57,14 +57,37 @@ class InventoryIncomingController extends Controller
     /**
      * Show form for creating new incoming goods entry
      */
-    public function create()
+    public function create(Request $request)
     {
         $suppliers = Supplier::where('status', 'active')->get();
         $warehouses = Warehouse::where('status', 'active')->get();
         $products = Product::with('brand')->where('status', 'active')->get();
         $packaging_items = \App\Models\PackagingItem::all();
 
-        return view('backend.inventory.incoming.create', compact('suppliers', 'warehouses', 'products', 'packaging_items'));
+        $prefill_items = [];
+        $prefill_supplier_id = null;
+        $purchase_order_id = $request->get('purchase_order_id');
+
+        if ($purchase_order_id) {
+            $po = \App\Models\PurchaseOrder::with('items.product')->find($purchase_order_id);
+            if ($po) {
+                $prefill_supplier_id = $po->supplier_id;
+                foreach ($po->items as $item) {
+                    $prefill_items[] = [
+                        'product_id' => $item->product_id,
+                        'title' => $item->product->title ?? 'Unknown',
+                        'quantity' => $item->quantity,
+                        'unit_cost' => $item->unit_price,
+                        'sku' => $item->product->sku ?? ''
+                    ];
+                }
+            }
+        }
+
+        return view('backend.inventory.incoming.create', compact(
+            'suppliers', 'warehouses', 'products', 'packaging_items', 
+            'prefill_items', 'prefill_supplier_id', 'purchase_order_id'
+        ));
     }
 
     /**
@@ -155,6 +178,15 @@ class InventoryIncomingController extends Controller
             // Auto-Post to Ledger if requested
             if ($request->has('post_to_ledger') && $incoming->supplier_id) {
                 $this->performVerification($incoming);
+            }
+
+            // Close Purchase Order if linked
+            if ($request->has('purchase_order_id') && !empty($request->purchase_order_id)) {
+                $po = \App\Models\PurchaseOrder::find($request->purchase_order_id);
+                if ($po) {
+                    $po->status = 'received';
+                    $po->save();
+                }
             }
 
             DB::commit();

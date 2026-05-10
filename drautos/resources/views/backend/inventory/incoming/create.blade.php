@@ -16,6 +16,13 @@
             </div>
         @endif
 
+        @if($purchase_order_id)
+            <input type="hidden" name="purchase_order_id" value="{{$purchase_order_id}}">
+            <div class="alert alert-info mx-4 mb-4">
+                <i class="fas fa-info-circle mr-2"></i> Converting from Purchase Order: <strong>#{{ \App\Models\PurchaseOrder::find($purchase_order_id)->po_number ?? 'PO-N/A' }}</strong>
+            </div>
+        @endif
+
         {{-- STICKY TOOLBAR --}}
         <div class="sticky-top bg-white border-bottom shadow-sm mb-4" style="z-index: 1020; top: 0;">
             <div class="container-fluid py-3">
@@ -56,7 +63,7 @@
                                             <select name="supplier_id" id="supplier_id" class="form-control select2" required>
                                                 <option value="">--Select Supplier--</option>
                                                 @foreach($suppliers as $supplier)
-                                                    <option value="{{$supplier->id}}" data-phone="{{$supplier->phone}}" data-balance="{{number_format($supplier->current_balance, 2)}}" data-name="{{$supplier->name}}">
+                                                    <option value="{{$supplier->id}}" data-phone="{{$supplier->phone}}" data-balance="{{number_format($supplier->current_balance, 2)}}" data-name="{{$supplier->name}}" {{ (isset($prefill_supplier_id) && $prefill_supplier_id == $supplier->id) ? 'selected' : '' }}>
                                                         {{$supplier->name}} ({{$supplier->phone}})
                                                     </option>
                                                 @endforeach
@@ -183,8 +190,18 @@ let itemIndex = 0;
 $(document).ready(function() {
     $('.select2').select2({ theme: 'bootstrap4' });
     
-    // Add first row automatically
-    addItemRow();
+    // Add first row automatically or pre-filled rows
+    @if(count($prefill_items) > 0)
+        @foreach($prefill_items as $item)
+            addItemRow({
+                id: {{$item['product_id']}},
+                qty: {{$item['quantity']}},
+                cost: {{$item['unit_cost']}}
+            });
+        @endforeach
+    @else
+        addItemRow();
+    @endif
 
     $('#supplier_id').on('change', function() {
         let $opt = $(this).find(':selected');
