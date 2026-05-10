@@ -201,7 +201,7 @@ class AIChatController extends Controller
                     'type' => 'OBJECT',
                     'properties' => [
                         'model_name' => ['type' => 'STRING', 'description' => 'Exact model name (e.g., Product, User, Supplier, Order)'],
-                        'search_column' => ['type' => 'STRING', 'description' => 'Column to search (e.g., title, sku, name, order_number). Leave empty if you want latest records.'],
+                        'search_column' => ['type' => 'STRING', 'description' => 'Column to search (e.g., title, sku, name, order_number). For dates use transaction_date or created_at. Leave empty if you want latest records.'],
                         'search_value' => ['type' => 'STRING', 'description' => 'Value to search for'],
                         'limit' => ['type' => 'NUMBER', 'description' => 'Max results to return (default 5, max 10)']
                     ],
