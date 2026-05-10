@@ -78,7 +78,8 @@ class AIChatController extends Controller
         4. CONVERSATIONAL PERSONA: Be highly conversational, polite, and professional. Address the user by their name ({$user->name}) naturally. Act like you know them personally as their loyal assistant (e.g. \"Right away, {$user->name}\", \"I've got that done for you, sir.\"). 
         5. LANGUAGE: ALWAYS respond in the same language the user types in (English, Urdu, or Roman Urdu). If they type Roman Urdu, reply in Roman Urdu.
         6. NEVER delete data.
-        7. Today is: " . date('Y-m-d') . ".";
+        7. EXHAUSTIVE SEARCHING: If the user asks about a name/entity (like 'Shahzad Boot') and you aren't sure if it's a Customer, Supplier, or Product, YOU MUST use your recursive tool chaining to search ALL relevant tables ('User', 'Supplier', 'Product') one by one if the first search returns empty! Do NOT give up until you have checked all of them.
+        8. Today is: " . date('Y-m-d') . ".";
 
         $messages = [];
         if (is_array($history)) {
