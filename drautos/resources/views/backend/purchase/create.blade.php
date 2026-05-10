@@ -41,7 +41,10 @@
                                     <option value="">--Select Product--</option>
                                     @foreach($products as $product)
                                     <option value="{{$product->id}}" data-unit="{{$product->unit}}">
-                                        {{$product->title}} @if($product->sku) ({{$product->sku}}) @endif
+                                        {{$product->title}} 
+                                        @if($product->brand) | {{$product->brand->title}} @endif
+                                        | Rs. {{number_format($product->purchase_price, 0)}}
+                                        @if($product->sku) ({{$product->sku}}) @endif
                                     </option>
                                     @endforeach
                                 </select>
@@ -155,9 +158,13 @@
                         <input type="hidden" name="product_id[]" value="${productId}">
                         <div class="font-weight-bold text-gray-900">${productName}</div>
                     </td>
-                    <td class="align-middle text-right font-weight-bold">
-                        <input type="hidden" name="quantity[]" value="${qty}">
-                        ${qty} <span class="small text-muted font-weight-normal">${unit}</span>
+                    <td class="align-middle" width="180">
+                        <div class="input-group input-group-sm">
+                            <input type="number" name="quantity[]" value="${qty}" class="form-control font-weight-bold text-right" min="0.1" step="any" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text small">${unit}</span>
+                            </div>
+                        </div>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-link text-danger p-0 remove-item"><i class="fas fa-trash"></i></button>
