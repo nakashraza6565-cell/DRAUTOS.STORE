@@ -182,6 +182,10 @@ class AIChatController extends Controller
             }
         } catch (\Throwable $e) { $result = "Error executing tool: " . $e->getMessage(); }
 
+        if (!isset($functionCall['args']) || (is_array($functionCall['args']) && empty($functionCall['args']))) {
+            $functionCall['args'] = new \stdClass();
+        }
+
         $messages[] = ['role' => 'model', 'parts' => [['functionCall' => $functionCall]]];
         $messages[] = [
             'role' => 'function', 
