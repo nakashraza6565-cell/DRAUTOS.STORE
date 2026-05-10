@@ -183,6 +183,12 @@ class PurchaseOrderController extends Controller
         return view('backend.purchase.thermal', compact('purchaseOrder'));
     }
 
+    public function supplierRecord($id)
+    {
+        $purchaseOrder = PurchaseOrder::with(['supplier', 'items.product'])->findOrFail($id);
+        return view('backend.purchase.supplier_record', compact('purchaseOrder'));
+    }
+
     public function destroy($id)
     {
         $purchaseOrder = PurchaseOrder::findOrFail($id);
