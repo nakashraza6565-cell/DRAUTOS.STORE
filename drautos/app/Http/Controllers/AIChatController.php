@@ -141,7 +141,12 @@ class AIChatController extends Controller
                     }
                     break;
                 case 'get_pending_cheques':
-                    $result = \App\Models\Cheque::where('status', 'pending')->limit(10)->get()->toArray();
+                    $cheques = \App\Models\Cheque::where('status', 'pending')->with('party')->orderBy('clearing_date', 'asc')->limit(10)->get();
+                    $result = $cheques->map(function($c) {
+                        $arr = $c->toArray();
+                        $arr['customer_name'] = $c->party ? $c->party->name : 'Unknown';
+                        return $arr;
+                    })->toArray();
                     break;
                 case 'search_products':
                     $result = Product::where('title', 'like', "%{$args['query']}%")->orWhere('sku', 'like', "%{$args['query']}%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
@@ -198,7 +203,14 @@ class AIChatController extends Controller
         ];
 
         $finalResponse = $this->callGemini($messages, $systemPrompt, $apiKey);
-        $finalText = $finalResponse['candidates'][0]['content']['parts'][0]['text'] ?? "Done.";
+        $nextPart = $finalResponse['candidates'][0]['content']['parts'][0] ?? [];
+        
+        // If Gemini wants to call ANOTHER tool based on the result, recursively handle it!
+        if (isset($nextPart['functionCall'])) {
+            return $this->handleFunctionCall($nextPart['functionCall'], $messages, $systemPrompt, $apiKey, $history, $originalMessage);
+        }
+
+        $finalText = $nextPart['text'] ?? "I have successfully processed your request.";
 
         return response()->json([
             'reply' => $finalText,
