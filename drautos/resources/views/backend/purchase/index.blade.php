@@ -47,8 +47,9 @@
                                 </td>
                                 <td class="text-right font-weight-bold">Rs. {{number_format($po->total_amount,2)}}</td>
                                 <td class="text-center">
-                                    <a href="{{route('purchase-orders.show',$po->id)}}" class="btn btn-info btn-sm rounded-circle"><i class="fas fa-eye text-white"></i></a>
-                                    <a href="{{route('purchase-orders.edit',$po->id)}}" class="btn btn-primary btn-sm rounded-circle"><i class="fas fa-edit text-white"></i></a>
+                                    <a href="{{route('purchase-orders.thermal',$po->id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" title="Print Thermal"><i class="fas fa-print text-white"></i></a>
+                                    <a href="{{route('purchase-orders.show',$po->id)}}" class="btn btn-info btn-sm rounded-circle" title="View"><i class="fas fa-eye text-white"></i></a>
+                                    <a href="{{route('purchase-orders.edit',$po->id)}}" class="btn btn-primary btn-sm rounded-circle" title="Edit"><i class="fas fa-edit text-white"></i></a>
                                     <form method="POST" action="{{route('purchase-orders.destroy',[$po->id])}}" style="display:inline-block">
                                       @csrf 
                                       @method('delete')

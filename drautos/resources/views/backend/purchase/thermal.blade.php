@@ -1,107 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Order - {{ $purchaseOrder->po_number }}</title>
+    <title>Purchase Order #{{ $purchaseOrder->po_number }}</title>
     <style>
-        @page {
-            size: 80mm auto;
-            margin: 0;
-        }
+        * { box-sizing: border-box; }
+        @page { margin: 0; }
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             width: 80mm;
-            margin: 0;
-            padding: 5mm;
-            font-size: 12px;
-            line-height: 1.4;
+            margin: 0 auto;
+            padding: 20px;
+            font-size: 13px;
             color: #000;
+            line-height: 1.3;
+            font-weight: 700;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .font-bold { font-weight: bold; }
-        .header { margin-bottom: 5mm; }
-        .divider { border-top: 1px dashed #000; margin: 3mm 0; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; border-bottom: 1px solid #000; padding: 1mm 0; }
-        td { padding: 1mm 0; vertical-align: top; }
-        .item-row td { padding-top: 2mm; }
-        .footer { margin-top: 5mm; font-size: 10px; }
+        .bold { font-weight: 900; }
+        
+        .header-container {
+            position: relative;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            overflow: hidden;
+        }
+        .merchant-name {
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .merchant-address {
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .info-grid {
+            margin-bottom: 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .separator {
+            border-top: 1px solid #000;
+            margin: 5px 0;
+        }
+
+        .item-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+        .item-list th {
+            text-align: left;
+            font-size: 10px;
+            border-bottom: 1px solid #000;
+            padding: 5px 0;
+        }
+        .item-list td {
+            padding: 8px 0;
+            vertical-align: top;
+            border-bottom: 0.5px solid #eee;
+        }
+        .item-name {
+            font-size: 13px;
+            display: block;
+            font-weight: 900;
+        }
+        .item-details {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        .footer-note {
+            margin-top: 15px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 900;
+            border-top: 2px solid #000;
+            padding-top: 10px;
+        }
+
+        @media print {
+            body { padding: 5px; margin: 0; }
+            .no-print { display: none; }
+        }
     </style>
 </head>
 <body onload="window.print();">
-    <div class="text-center header">
-        <h2 style="margin: 0; font-size: 18px;">DANYAL AUTOS</h2>
-        <p style="margin: 2px 0;">PURCHASE ORDER (PERFORMA)</p>
-        <p style="margin: 2px 0; font-size: 10px;">{{ now()->format('d M Y, h:i A') }}</p>
+    <div class="header-container text-center">
+        <div class="merchant-name">DANYAL AUTOS</div>
+        <div class="merchant-address">
+            12-Butt Market, Badami Bagh, Lahore<br>
+            PURCHASE ORDER (PERFORMA)
+        </div>
     </div>
 
-    <div class="divider"></div>
-
-    <div>
-        <table style="font-size: 11px;">
-            <tr>
-                <td width="40%">PO #:</td>
-                <td class="font-bold">{{ $purchaseOrder->po_number }}</td>
-            </tr>
-            <tr>
-                <td>Date:</td>
-                <td>{{ $purchaseOrder->order_date }}</td>
-            </tr>
-            <tr>
-                <td>Supplier:</td>
-                <td class="font-bold">{{ $purchaseOrder->supplier->name ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td>Company:</td>
-                <td>{{ $purchaseOrder->supplier->company_name ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td>Phone:</td>
-                <td>{{ $purchaseOrder->supplier->phone ?? 'N/A' }}</td>
-            </tr>
-        </table>
+    <div class="info-grid">
+        <div class="info-row">
+            <span>PO #: <strong>{{ $purchaseOrder->po_number }}</strong></span>
+            <span>Date: <strong>{{ date('d/m/y', strtotime($purchaseOrder->order_date)) }}</strong></span>
+        </div>
+        <div class="separator"></div>
+        <div class="info-row">
+            <span>Supplier: <strong>{{ strtoupper($purchaseOrder->supplier->name ?? 'N/A') }}</strong></span>
+        </div>
+        <div class="info-row">
+            <span>Company: <strong>{{ strtoupper($purchaseOrder->supplier->company_name ?? 'N/A') }}</strong></span>
+        </div>
+        @if($purchaseOrder->supplier && $purchaseOrder->supplier->phone)
+        <div class="info-row">
+            <span>Contact: <strong>{{ $purchaseOrder->supplier->phone }}</strong></span>
+        </div>
+        @endif
     </div>
 
-    <div class="divider"></div>
-
-    <table>
+    <table class="item-list">
         <thead>
             <tr>
-                <th>Item</th>
-                <th class="text-right">Quantity</th>
+                <th width="70%">PRODUCT DETAILS</th>
+                <th width="30%" class="text-right">QUANTITY</th>
             </tr>
         </thead>
         <tbody>
             @foreach($purchaseOrder->items as $item)
-            <tr class="item-row">
-                <td colspan="2">
-                    <div class="font-bold">{{ $item->product->title ?? 'N/A' }}</div>
-                </td>
-            </tr>
-            <tr>
-                <td style="font-size: 10px; color: #555;">{{ $item->product->sku ?? '' }}</td>
-                <td class="text-right font-bold" style="font-size: 14px;">{{ $item->quantity }} {{ $item->product->unit ?? '' }}</td>
-            </tr>
+                <tr>
+                    <td>
+                        <span class="item-name">{{ strtoupper($item->product->title ?? 'N/A') }}</span>
+                        <span class="item-details">
+                            @if($item->product)
+                                @if($item->product->brand) BRAND: {{ strtoupper($item->product->brand->title) }} @endif
+                                @if($item->product->sku) | SKU: {{ $item->product->sku }} @endif
+                            @endif
+                        </span>
+                    </td>
+                    <td class="text-right bold" style="font-size: 16px;">
+                        {{ $item->quantity }}<span style="font-size: 10px; margin-left: 2px;">{{ strtoupper($item->product->unit ?? '') }}</span>
+                    </td>
+                </tr>
             @endforeach
         </tbody>
     </table>
 
-    <div class="divider"></div>
-
     @if($purchaseOrder->notes)
-    <div style="font-size: 10px; margin-bottom: 3mm;">
-        <span class="font-bold">Notes:</span> {{ $purchaseOrder->notes }}
+    <div class="separator"></div>
+    <div style="font-size: 11px; text-transform: uppercase;">
+        <strong>Notes:</strong> {{ $purchaseOrder->notes }}
     </div>
     @endif
 
-    <div class="text-center footer">
-        <p>This is a computer generated Performa Invoice.</p>
-        <p>Please supply above items at earliest.</p>
-        <p>Software by Dr Auto Store</p>
+    <div class="footer-note">
+        PLEASE SUPPLY ITEMS AT EARLIEST
     </div>
-
+    
     <div class="text-center no-print" style="margin-top: 10mm;">
         <button onclick="window.print()" style="padding: 5mm 10mm;">Print Again</button>
     </div>

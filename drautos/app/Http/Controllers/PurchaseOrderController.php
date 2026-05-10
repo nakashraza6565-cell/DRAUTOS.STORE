@@ -50,7 +50,8 @@ class PurchaseOrderController extends Controller
         try {
             DB::beginTransaction();
 
-            $po_number = 'PO-' . strtoupper(uniqid());
+            $last_po = PurchaseOrder::orderBy('id', 'desc')->first();
+            $po_number = $last_po ? (int)$last_po->po_number + 1 : 1001;
             
             $purchaseOrder = PurchaseOrder::create([
                 'supplier_id' => $request->supplier_id,
@@ -103,13 +104,22 @@ class PurchaseOrderController extends Controller
 
     public function edit($id)
     {
-        $purchaseOrder = PurchaseOrder::findOrFail($id);
+        $purchaseOrder = PurchaseOrder::with('items.product')->findOrFail($id);
         $suppliers = Supplier::where('status', 'active')->get();
         $products = Product::where('status', 'active')->get();
+        $categories = \App\Models\Category::where('status', 'active')->where('is_parent', 1)->get();
+        $brands = \App\Models\Brand::where('status', 'active')->get();
+        $units = \App\Models\Unit::all();
+        $product_models = \App\Models\ProductModel::all();
+
         return view('backend.purchase.edit')->with([
             'purchaseOrder' => $purchaseOrder,
             'suppliers' => $suppliers,
-            'products' => $products
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands,
+            'units' => $units,
+            'product_models' => $product_models
         ]);
     }
 
@@ -117,15 +127,46 @@ class PurchaseOrderController extends Controller
     {
         $purchaseOrder = PurchaseOrder::findOrFail($id);
         $this->validate($request, [
+            'supplier_id' => 'required|exists:suppliers,id',
+            'order_date' => 'required|date',
             'status' => 'required|in:pending,ordered,received,cancelled',
+            'product_id' => 'required|array',
+            'product_id.*' => 'required|exists:products,id',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|numeric|min:0.1',
         ]);
 
-        $purchaseOrder->status = $request->status;
-        $purchaseOrder->notes = $request->notes;
-        $purchaseOrder->save();
+        try {
+            DB::beginTransaction();
 
-        request()->session()->flash('success', 'Purchase Order updated successfully');
-        return redirect()->route('purchase-orders.index');
+            $purchaseOrder->update([
+                'supplier_id' => $request->supplier_id,
+                'order_date' => $request->order_date,
+                'status' => $request->status,
+                'notes' => $request->notes,
+            ]);
+
+            // Sync Items
+            $purchaseOrder->items()->delete();
+            foreach ($request->product_id as $key => $productId) {
+                PurchaseOrderItem::create([
+                    'purchase_order_id' => $purchaseOrder->id,
+                    'product_id' => $productId,
+                    'quantity' => $request->quantity[$key],
+                    'unit_price' => 0,
+                    'total_price' => 0,
+                ]);
+            }
+
+            DB::commit();
+            request()->session()->flash('success', 'Purchase Order updated successfully');
+            return redirect()->route('purchase-orders.index');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            request()->session()->flash('error', 'Error updating purchase order: ' . $e->getMessage());
+            return back();
+        }
     }
 
     public function convert($id)
