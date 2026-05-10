@@ -96,9 +96,9 @@ class AIChatController extends Controller
                 ])
             ]);
 
-        } catch (\Exception $e) {
-            Log::error("Gemini Error: " . $e->getMessage());
-            return response()->json(['reply' => "⚠️ Error: " . $e->getMessage()]);
+        } catch (\Throwable $e) {
+            Log::error("Gemini Error: " . $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine());
+            return response()->json(['reply' => "⚠️ System Crash Prevented: " . $e->getMessage() . " on line " . $e->getLine()]);
         }
     }
 
@@ -130,6 +130,9 @@ class AIChatController extends Controller
                     } else {
                         $result = "Error: Order not found.";
                     }
+                    break;
+                case 'get_pending_cheques':
+                    $result = \App\Models\Cheque::where('status', 'pending')->limit(10)->get()->toArray();
                     break;
                 case 'search_products':
                     $result = Product::where('title', 'like', "%{$args['query']}%")->orWhere('sku', 'like', "%{$args['query']}%")->limit(10)->get(['id', 'title', 'sku', 'price', 'stock'])->toArray();
@@ -168,7 +171,7 @@ class AIChatController extends Controller
                     $result = "Success: Redirecting to PDF.";
                     break;
             }
-        } catch (\Exception $e) { $result = "Error: " . $e->getMessage(); }
+        } catch (\Throwable $e) { $result = "Error executing tool: " . $e->getMessage(); }
 
         $messages[] = ['role' => 'model', 'parts' => [['functionCall' => $functionCall]]];
         $messages[] = [
