@@ -39,6 +39,14 @@
                   </div>
               </div>
               <div class="d-flex align-items-center gap-2">
+                  <button id="ai-chat-resize" title="Maximize/Minimize" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                      <svg id="resize-icon-max" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                      </svg>
+                      <svg id="resize-icon-min" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display:none;">
+                          <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                      </svg>
+                  </button>
                   <button id="ai-chat-close">✕</button>
               </div>
           </div>
@@ -112,6 +120,19 @@
               overflow: hidden;
               border: 1px solid #f0f4ff;
               transition: all 0.3s ease;
+          }
+          #ai-chat-window.large-view {
+              width: 850px;
+              max-height: 85vh;
+              bottom: 105px;
+          }
+          @media (max-width: 991px) {
+              #ai-chat-window.large-view {
+                  width: calc(100% - 40px);
+                  right: 20px;
+                  left: 20px;
+                  bottom: 100px;
+              }
           }
           #ai-chat-header {
               background: #4f46e5;
@@ -255,6 +276,7 @@
           const chatWindow  = document.getElementById('ai-chat-window');
           const trigger     = document.getElementById('ai-chat-trigger');
           const closeBtn    = document.getElementById('ai-chat-close');
+          const resizeBtn   = document.getElementById('ai-chat-resize');
           const input       = document.getElementById('ai-chat-input');
           const sendBtn     = document.getElementById('ai-chat-send');
           const messages    = document.getElementById('ai-chat-messages');
@@ -266,6 +288,13 @@
               chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
           });
           closeBtn.addEventListener('click', () => { chatWindow.style.display = 'none'; });
+          
+          resizeBtn.addEventListener('click', () => {
+              chatWindow.classList.toggle('large-view');
+              const isLarge = chatWindow.classList.contains('large-view');
+              document.getElementById('resize-icon-max').style.display = isLarge ? 'none' : 'block';
+              document.getElementById('resize-icon-min').style.display = isLarge ? 'block' : 'none';
+          });
 
           sendBtn.addEventListener('click', () => sendMessage());
           input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
