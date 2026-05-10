@@ -55,7 +55,14 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\EmployeeCommission', 'employee_id');
     }
 
-    public function paymentReminders() {
-        return $this->morphMany('App\Models\PaymentReminder', 'party');
+    public function customerLedger() {
+        return $this->hasMany('App\Models\CustomerLedger', 'user_id');
+    }
+
+    public function latestPayment() {
+        return $this->hasOne('App\Models\CustomerLedger', 'user_id')
+            ->where('category', 'payment')
+            ->latest('transaction_date')
+            ->latest('id');
     }
 }

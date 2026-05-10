@@ -25,7 +25,7 @@ class CustomerLedgerController extends Controller
             $query->where('city', $request->city);
         }
 
-        $customers = $query->orderBy('name', 'asc')->paginate(5000);
+        $customers = $query->with('latestPayment')->orderBy('name', 'asc')->paginate(5000);
         $cities = User::whereIn('role', ['user', 'customer'])->whereNotNull('city')->distinct()->pluck('city');
         
         return view('backend.customer_ledger.index', compact('customers', 'cities'));

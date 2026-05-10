@@ -44,6 +44,7 @@
                             <th>City</th>
                             <th>Customer Type</th>
                             <th>Current Balance</th>
+                            <th>Last Payment Received</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -54,6 +55,16 @@
                                 <td data-title="Phone">{{$customer->phone}}</td>
                                 <td data-title="City">{{$customer->city ?? 'N/A'}}</td>
                                 <td data-title="Type"><span class="badge badge-info text-capitalize">{{$customer->customer_type ?? 'Retail'}}</span></td>
+                                <td data-title="Last Payment">
+                                    @if($customer->latestPayment)
+                                        <div class="small">
+                                            <span class="text-success font-weight-bold">Rs. {{number_format($customer->latestPayment->amount, 2)}}</span><br>
+                                            <span class="text-muted" style="font-size: 0.75rem;">{{$customer->latestPayment->transaction_date->format('d M, Y')}}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-muted small">No payments</span>
+                                    @endif
+                                </td>
                                 <td data-title="Balance" class="{{$customer->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
                                     Rs. {{number_format($customer->current_balance, 2)}}
                                 </td>

@@ -36,6 +36,7 @@
                             <th>Phone</th>
                             <th>Status</th>
                             <th>Current Balance</th>
+                            <th>Last Payment Made</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -50,6 +51,16 @@
                                 </td>
                                 <td class="{{$supplier->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
                                     Rs. {{number_format($supplier->current_balance, 2)}}
+                                </td>
+                                <td>
+                                    @if($supplier->latestPayment)
+                                        <div class="small">
+                                            <span class="text-info font-weight-bold">Rs. {{number_format($supplier->latestPayment->amount, 2)}}</span><br>
+                                            <span class="text-muted" style="font-size: 0.75rem;">{{$supplier->latestPayment->transaction_date->format('d M, Y')}}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-muted small">No payments</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <a href="{{route('admin.supplier-ledger.show', $supplier->id)}}" class="btn btn-primary btn-sm">

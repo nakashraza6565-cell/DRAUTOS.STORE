@@ -21,7 +21,7 @@ class SupplierLedgerController extends Controller
             });
         }
 
-        $suppliers = $query->orderBy('name', 'asc')->paginate(5000);
+        $suppliers = $query->with('latestPayment')->orderBy('name', 'asc')->paginate(5000);
         
         return view('backend.supplier_ledger.index', compact('suppliers'));
     }

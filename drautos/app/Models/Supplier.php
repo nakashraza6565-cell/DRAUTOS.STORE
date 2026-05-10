@@ -12,6 +12,13 @@ class Supplier extends Model
         return $this->hasMany(SupplierLedger::class);
     }
 
+    public function latestPayment() {
+        return $this->hasOne(SupplierLedger::class)
+            ->where('category', 'payment')
+            ->latest('transaction_date')
+            ->latest('id');
+    }
+
     public function products() {
         return $this->belongsToMany(Product::class, 'product_supplier');
     }
