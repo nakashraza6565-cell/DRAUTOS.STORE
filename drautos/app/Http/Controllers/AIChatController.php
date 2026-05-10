@@ -441,6 +441,15 @@ class AIChatController extends Controller
 
         try {
             $query = $modelClass::query();
+
+            // Automatically load common relationships if they exist on this model
+            $relationships = ['user', 'customer', 'party', 'supplier', 'creator', 'processor'];
+            foreach ($relationships as $rel) {
+                if (method_exists($modelClass, $rel)) {
+                    $query->with($rel);
+                }
+            }
+
             if (!empty($args['search_column']) && !empty($args['search_value'])) {
                 $query->where($args['search_column'], 'like', "%{$args['search_value']}%");
             }
