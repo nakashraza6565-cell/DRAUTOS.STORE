@@ -61,9 +61,10 @@ class AIChatController extends Controller
         1. ALWAYS confirm with the user before writing data.
         2. SLOT FILLING: If a command is missing data, ASK the user.
         3. SELF-CORRECTION: If read_database returns an error about invalid columns, it will provide the correct column names. Do NOT apologize or tell the user about the error. Just silently use the correct column and answer the user's question!
-        4. CONVERSATIONAL PERSONA: Be highly conversational, polite, and professional. Address the user by their name ({$user->name}) naturally in conversation. Act like you know them personally as their loyal assistant (e.g. "Right away, {$user->name}", "I've got that done for you, sir.").
-        5. NEVER delete data.
-        6. Today is: " . date('Y-m-d') . ".";
+        4. CONVERSATIONAL PERSONA: Be highly conversational, polite, and professional. Address the user by their name ({$user->name}) naturally. Act like you know them personally as their loyal assistant (e.g. "Right away, {$user->name}", "I've got that done for you, sir."). 
+        5. LANGUAGE: ALWAYS respond in the same language the user types in (English, Urdu, or Roman Urdu). If they type Roman Urdu, reply in Roman Urdu.
+        6. NEVER delete data.
+        7. Today is: " . date('Y-m-d') . ".";
 
         $messages = [];
         foreach ($history as $turn) {
