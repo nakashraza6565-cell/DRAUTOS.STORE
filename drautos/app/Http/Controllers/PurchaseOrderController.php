@@ -21,9 +21,18 @@ class PurchaseOrderController extends Controller
     {
         $suppliers = Supplier::where('status', 'active')->get();
         $products = Product::where('status', 'active')->get();
+        $categories = \App\Models\Category::where('status', 'active')->where('is_parent', 1)->get();
+        $brands = \App\Models\Brand::where('status', 'active')->get();
+        $units = \App\Models\Unit::all();
+        $product_models = \App\Models\ProductModel::all();
+
         return view('backend.purchase.create')->with([
             'suppliers' => $suppliers,
-            'products' => $products
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands,
+            'units' => $units,
+            'product_models' => $product_models
         ]);
     }
 

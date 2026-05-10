@@ -14,12 +14,17 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="supplier_id" class="col-form-label font-weight-bold">Supplier <span class="text-danger">*</span></label>
-                        <select name="supplier_id" id="supplier_id" class="form-control select2" required>
-                            <option value="">-- Select Supplier --</option>
-                            @foreach($suppliers as $supplier)
-                                <option value="{{$supplier->id}}">{{$supplier->name}} ({{$supplier->company_name}})</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <select name="supplier_id" id="supplier_id" class="form-control select2" required>
+                                <option value="">-- Select Supplier --</option>
+                                @foreach($suppliers as $supplier)
+                                    <option value="{{$supplier->id}}">{{$supplier->name}} ({{$supplier->company_name}})</option>
+                                @endforeach
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addSupplierModal"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -37,17 +42,22 @@
                         <div class="item-row row mb-2 align-items-end">
                             <div class="col-md-7">
                                 <label class="small font-weight-bold mb-1">Search Product</label>
-                                <select class="form-control select2 product-select">
-                                    <option value="">--Select Product--</option>
-                                    @foreach($products as $product)
-                                    <option value="{{$product->id}}" data-unit="{{$product->unit}}">
-                                        {{$product->title}} 
-                                        @if($product->brand) | {{$product->brand->title}} @endif
-                                        | Rs. {{number_format($product->purchase_price, 0)}}
-                                        @if($product->sku) ({{$product->sku}}) @endif
-                                    </option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group">
+                                    <select class="form-control select2 product-select">
+                                        <option value="">--Select Product--</option>
+                                        @foreach($products as $product)
+                                        <option value="{{$product->id}}" data-unit="{{$product->unit}}">
+                                            {{$product->title}} 
+                                            @if($product->brand) | {{$product->brand->title}} @endif
+                                            | Rs. {{number_format($product->purchase_price, 0)}}
+                                            @if($product->sku) ({{$product->sku}}) @endif
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addProductModal"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-3">
                                 <label class="small font-weight-bold mb-1">Quantity</label>
@@ -93,6 +103,8 @@
         </form>
     </div>
 </div>
+@include('backend.product.partials.modals')
+
 @endsection
 
 @push('styles')
@@ -101,13 +113,19 @@
     .select2-container .select2-selection--single { height: 38px !important; }
     .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px !important; }
     .select2-container--default .select2-selection--single .select2-selection__arrow { height: 36px !important; }
+    .modal-backdrop { z-index: 1040 !important; }
+    .modal { z-index: 1050 !important; }
 </style>
 @endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     $(document).ready(function() {
+        // Fix for modal backdrop issue: move modals to body
+        $('#addProductModal, #addCategoryModal, #addBrandModal, #addSupplierModal, #addUnitModal, #addModelModal').appendTo('body');
+
         $('.select2').select2({ width: '100%' });
 
         let itemsCount = 0;
@@ -182,6 +200,140 @@
             if ($('#added-items-table tbody tr').length === 0) {
                 $('#submit-order').prop('disabled', true);
             }
+        });
+
+        // Initialize Select2 for Add Product Modal
+        $('#addProductModal').on('shown.bs.modal', function() {
+            $('#pos-model-select, #pos-unit-select, #pos-cat-select, #pos-brand-select').select2({
+                placeholder: "Select or Type",
+                allowClear: true,
+                tags: true,
+                width: '100%',
+                dropdownParent: $('#addProductModal')
+            });
+
+            $('#pos-supplier-select').select2({
+                placeholder: "Select Supplier(s)",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#addProductModal')
+            });
+
+            $('#pos-title-select').select2({
+                placeholder: "Search or Enter Product Name",
+                allowClear: true,
+                tags: true,
+                width: '100%',
+                dropdownParent: $('#addProductModal'),
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{route('admin.product.search-simple')}}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { q: params.term };
+                    },
+                    processResults: function(data) {
+                        return { results: data };
+                    },
+                    cache: true
+                }
+            });
+        });
+
+        // AJAX handlers for modals
+        $(document).on('submit', '#quickAddCategoryForm', function(e) {
+            e.preventDefault();
+            $.post("{{route('category.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}&is_parent=1", function(res) {
+                if (res.status == 'success') {
+                    $('#pos-cat-select').append(new Option(res.category.title, res.category.id, false, true)).trigger('change');
+                    $('#addCategoryModal').modal('hide');
+                }
+            });
+        });
+
+        $(document).on('submit', '#quickAddSupplierForm', function(e) {
+            e.preventDefault();
+            $.post("{{route('supplier.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+                if (res.status == 'success') {
+                    // Update the main supplier dropdown
+                    let newOption = new Option(res.supplier.name + ' (' + (res.supplier.company_name || '') + ')', res.supplier.id, true, true);
+                    $('#supplier_id').append(newOption).trigger('change');
+                    
+                    // Update the modal's supplier dropdown if it exists
+                    $('#pos-supplier-select').append(new Option(res.supplier.name + ' (' + (res.supplier.company_name || '') + ')', res.supplier.id, false, true)).trigger('change');
+                    
+                    $('#addSupplierModal').modal('hide');
+                    Swal.fire('Success', 'Supplier Added Successfully!', 'success');
+                }
+            });
+        });
+
+        $(document).on('submit', '#quickAddBrandForm', function(e) {
+            e.preventDefault();
+            $.post("{{route('brand.quick-store')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+                if (res.status == 'success') {
+                    $('#pos-brand-select').append(new Option(res.brand.title, res.brand.id, false, true)).trigger('change');
+                    $('#addBrandModal').modal('hide');
+                }
+            });
+        });
+
+        $(document).on('submit', '#quickAddUnitForm', function(e) {
+            e.preventDefault();
+            $.post("{{route('product.store-unit')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+                if (res.status == 'success') {
+                    $('#pos-unit-select').append(new Option(res.unit.name, res.unit.name, false, true)).trigger('change');
+                    $('#addUnitModal').modal('hide');
+                }
+            });
+        });
+
+        $(document).on('submit', '#quickAddModelForm', function(e) {
+            e.preventDefault();
+            $.post("{{route('product.store-model')}}", $(this).serialize() + "&_token={{csrf_token()}}", function(res) {
+                if (res.status == 'success') {
+                    $('#pos-model-select').append(new Option(res.model.name, res.model.name, false, true)).trigger('change');
+                    $('#addModelModal').modal('hide');
+                }
+            });
+        });
+
+        $('#save-product-btn').on('click', function() {
+            let form = $('#add-product-form');
+            let formData = form.serialize();
+            let $btn = $(this);
+
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> SAVING...');
+
+            $.ajax({
+                url: "{{route('product.quick-store')}}",
+                type: "POST",
+                data: formData,
+                success: function(res) {
+                    if (res.status === 'success') {
+                        $('#addProductModal').modal('hide');
+                        form[0].reset();
+                        Swal.fire('Success', 'Product added successfully!', 'success');
+
+                        // Add to the main product-select dropdown
+                        let displayText = res.product.title;
+                        if(res.product.brand_name) displayText += ' | ' + res.product.brand_name;
+                        displayText += ' | Rs. ' + parseFloat(res.product.purchase_price || 0).toLocaleString();
+                        if(res.product.sku) displayText += ' (' + res.product.sku + ')';
+
+                        let newOption = new Option(displayText, res.product.id, false, true);
+                        $(newOption).attr('data-unit', res.product.unit);
+                        $('.product-select').append(newOption).trigger('change');
+                    }
+                    $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> SAVE PRODUCT');
+                },
+                error: function(err) {
+                    let msg = err.responseJSON ? err.responseJSON.message : 'Error adding product';
+                    Swal.fire('Error', msg, 'error');
+                    $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> SAVE PRODUCT');
+                }
+            });
         });
     });
 </script>
