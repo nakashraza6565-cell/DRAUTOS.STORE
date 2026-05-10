@@ -41,13 +41,21 @@ class AIChatController extends Controller
 
     private function runAgenticLoop($message, $history, $apiKey)
     {
-        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant.
+        $user = Auth::user();
+        $memoryFile = "ai_memory_{$user->id}.txt";
+        $userMemory = \Illuminate\Support\Facades\Storage::exists($memoryFile) ? \Illuminate\Support\Facades\Storage::get($memoryFile) : 'No preferences saved yet.';
+
+        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant currently talking to {$user->name}.
+        
+        LONG-TERM MEMORY FOR {$user->name}:
+        {$userMemory}
+
         YOUR POWERS:
         - You can read ANY table using read_database.
         - You can check stock, prices, orders, and ledgers.
-        - You can update prices and stock.
-        - You can add cheques and ledger entries.
+        - You can update prices and stock, add cheques, and ledger entries.
         - You can open/print receipts.
+        - You can permanently remember rules or facts using update_memory.
 
         RULES:
         1. ALWAYS confirm with the user before writing data.
@@ -104,6 +112,14 @@ class AIChatController extends Controller
             switch ($name) {
                 case 'read_database':
                     $result = $this->tool_read_database($args);
+                    break;
+                case 'update_memory':
+                    $userId = Auth::id();
+                    $file = "ai_memory_{$userId}.txt";
+                    $currentMemory = \Illuminate\Support\Facades\Storage::exists($file) ? \Illuminate\Support\Facades\Storage::get($file) : '';
+                    $newMemory = $currentMemory . "\n- " . $args['fact'];
+                    \Illuminate\Support\Facades\Storage::put($file, $newMemory);
+                    $result = "Success: Fact permanently remembered for this user.";
                     break;
                 case 'print_document':
                     $o = \App\Models\Order::where('order_number', $args['order_number'])->first();
@@ -219,6 +235,17 @@ class AIChatController extends Controller
                         'order_number' => ['type' => 'STRING']
                     ],
                     'required' => ['document_type', 'order_number']
+                ]
+            ],
+            [
+                'name' => 'update_memory',
+                'description' => 'Use this tool to save a long-term preference or fact about the current user. Use this when the user says "remember that I...", "always do X", or tells you a rule they want you to follow forever.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'fact' => ['type' => 'STRING', 'description' => 'The rule, preference, or fact to remember.']
+                    ],
+                    'required' => ['fact']
                 ]
             ],
             [
