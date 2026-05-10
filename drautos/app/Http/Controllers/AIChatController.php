@@ -189,6 +189,21 @@ class AIChatController extends Controller
                         $result = "Success: Order #{$args['order_number']} status changed to {$args['status']}.";
                     } else $result = "Order not found.";
                     break;
+                case 'global_search':
+                    $q = $args['query'] ?? '';
+                    $result = [
+                        'customers' => \App\User::where('name', 'like', "%{$q}%")->limit(5)->get(['id', 'name'])->toArray(),
+                        'suppliers' => \App\Models\Supplier::where('name', 'like', "%{$q}%")->limit(5)->get(['id', 'name'])->toArray(),
+                        'products' => \App\Models\Product::where('title', 'like', "%{$q}%")->limit(5)->get(['id', 'title', 'sku', 'price'])->toArray(),
+                    ];
+                    break;
+                case 'get_recent_entities':
+                    $result = [
+                        'recent_customers' => \App\User::orderBy('id', 'desc')->limit(10)->get(['id', 'name'])->toArray(),
+                        'recent_suppliers' => \App\Models\Supplier::orderBy('id', 'desc')->limit(10)->get(['id', 'name'])->toArray(),
+                        'recent_products' => \App\Models\Product::orderBy('id', 'desc')->limit(10)->get(['id', 'title', 'sku', 'price'])->toArray(),
+                    ];
+                    break;
                 case 'download_price_list':
                     $redirect = route('product.price-list.pdf');
                     $result = "Success: Redirecting to PDF.";
@@ -368,6 +383,16 @@ class AIChatController extends Controller
             [
                 'name' => 'download_price_list',
                 'description' => 'Download price list PDF.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => new \stdClass() ]
+            ],
+            [
+                'name' => 'global_search',
+                'description' => 'Search for ANY name across Customers, Suppliers, and Products at once. Use this if you are not sure what the user is talking about.',
+                'parameters' => [ 'type' => 'OBJECT', 'properties' => [ 'query' => ['type' => 'STRING'] ], 'required' => ['query'] ]
+            ],
+            [
+                'name' => 'get_recent_entities',
+                'description' => 'Get a list of 10 most recent Customers, Suppliers, and Products to gain context on who the user might be talking about.',
                 'parameters' => [ 'type' => 'OBJECT', 'properties' => new \stdClass() ]
             ]
         ];
