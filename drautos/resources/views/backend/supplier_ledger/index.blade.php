@@ -11,13 +11,23 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="input-group">
-                            <input type="text" name="search" id="supplier-search" class="form-control" placeholder="Search by name, company or phone..." value="{{request()->search}}">
+                            <input type="text" name="search" id="supplier-search" class="form-control" placeholder="Search by name, company or phone..." value="{{request()->search}}" autocomplete="off">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                                @if(request()->search)
+                                    <a href="{{route('admin.supplier-ledger.index')}}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Clear
+                                    </a>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
             </form>
 
-            <div class="table-responsive">
+            <div class="table-responsive" id="ledger-list-container">
                 <table class="table table-bordered" width="100%" cellspacing="0">
                     <thead>
                         <tr>
@@ -54,20 +64,43 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div class="d-flex justify-content-end mt-3">
+                    {{$suppliers->links()}}
+                </div>
             </div>
-            {{$suppliers->links()}}
         </div>
     </div>
 </div>
 @push('scripts')
 <script>
     $(document).ready(function() {
-        var searchTimer;
-        $('#supplier-search').on('input', function() {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(function() {
-                $('#ledger-filter-form').submit();
-            }, 500);
+        let searchTimer;
+        const searchDelay = 500; // 500ms debounce
+
+        // Automatic search on typing has been disabled per user request.
+        // Search now only triggers on explicit form submission.
+
+        $('#ledger-filter-form').on('submit', function(e) {
+            e.preventDefault();
+            let search = $('#supplier-search').val();
+            
+            $('#ledger-list-container').css('opacity', '0.5');
+            
+            $.ajax({
+                url: "{{route('admin.supplier-ledger.index')}}",
+                type: "GET",
+                data: {
+                    search: search
+                },
+                success: function(response) {
+                    let newContent = $(response).find('#ledger-list-container').html();
+                    $('#ledger-list-container').html(newContent).css('opacity', '1');
+                },
+                error: function(err) {
+                    console.log(err);
+                    $('#ledger-list-container').css('opacity', '1');
+                }
+            });
         });
     });
 </script>

@@ -372,40 +372,12 @@
           let searchTimer;
           const searchDelay = 500; // 500ms debounce
 
-          $('input[name="search"]').on('keyup input', function() {
-              clearTimeout(searchTimer);
-              let searchInput = $(this);
-              
-              searchTimer = setTimeout(function() {
-                  let search = searchInput.val();
-                  let status = $('select[name="status"]').val();
-                  let city = $('select[name="city"]').val();
-                  
-                  // Show loading state
-                  $('#user-list-container').css('opacity', '0.5');
-                  
-                  $.ajax({
-                      url: "{{request()->url()}}",
-                      type: "GET",
-                      data: {
-                          search: search,
-                          status: status,
-                          city: city
-                      },
-                      success: function(response) {
-                          // Extract the content of #user-list-container from the response
-                          let newContent = $(response).find('#user-list-container').html();
-                          $('#user-list-container').html(newContent).css('opacity', '1');
-                          
-                          // Re-initialize any dynamic elements if needed
-                          // (e.g. tooltips, delete buttons logic)
-                      },
-                      error: function(err) {
-                          console.log(err);
-                          $('#user-list-container').css('opacity', '1');
-                      }
-                  });
-              }, searchDelay);
+          // Automatic search on typing has been disabled per user request.
+          // Search now only triggers on explicit form submission.
+          $('form').on('submit', function(e) {
+              // Standard form submission is fine here as it will reload the page with filters.
+              // If we want to keep it AJAX-based, we can implement that, but the user seems to want 
+              // predictable behavior, and standard submission is most predictable.
           });
 
           $('.btn-rating').click(function() {
