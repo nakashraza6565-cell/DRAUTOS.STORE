@@ -88,6 +88,18 @@
             padding-top: 10px;
         }
 
+        .page-break {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 3px dashed #000;
+            page-break-before: always;
+        }
+
+        .empty-box {
+            height: 25px;
+            border: 1px solid #000;
+        }
+
         @media print {
             body { padding: 5px; margin: 0; }
             .no-print { display: none; }
@@ -95,6 +107,7 @@
     </style>
 </head>
 <body onload="window.print();">
+    <!-- RECEIPT 1: PURCHASE ORDER (PERFORMA) -->
     <div class="header-container text-center">
         <div class="merchant-name">DANYAL AUTOS</div>
         <div class="merchant-address">
@@ -158,6 +171,56 @@
 
     <div class="footer-note">
         PLEASE SUPPLY ITEMS AT EARLIEST
+    </div>
+
+    <!-- PAGE BREAK / SEPARATOR FOR SECOND RECEIPT -->
+    <div class="page-break"></div>
+
+    <!-- RECEIPT 2: SUPPLIER RECORD -->
+    <div class="header-container text-center">
+        <div class="merchant-name">DANYAL AUTOS</div>
+        <div class="merchant-address">
+            12-Butt Market, Badami Bagh, Lahore<br>
+            SUPPLIER RECORD RECEIPT
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-row">
+            <span>PO #: <strong>{{ $purchaseOrder->po_number }}</strong></span>
+            <span>Date: <strong>{{ date('d/m/y', strtotime($purchaseOrder->order_date)) }}</strong></span>
+        </div>
+        <div class="separator"></div>
+        <div class="info-row">
+            <span>Supplier: <strong>{{ strtoupper($purchaseOrder->supplier->name ?? 'N/A') }}</strong></span>
+        </div>
+    </div>
+
+    <table class="item-list">
+        <thead>
+            <tr>
+                <th width="40%">ITEM NAME</th>
+                <th width="20%" class="text-center">QTY</th>
+                <th width="20%" class="text-center">PRICE</th>
+                <th width="20%" class="text-center">TOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($purchaseOrder->items as $item)
+                <tr>
+                    <td style="border-bottom: 0.5px solid #000;">
+                        <span class="item-name">{{ strtoupper($item->product->title ?? 'N/A') }}</span>
+                    </td>
+                    <td style="border-bottom: 0.5px solid #000;"><div class="empty-box"></div></td>
+                    <td style="border-bottom: 0.5px solid #000;"><div class="empty-box"></div></td>
+                    <td style="border-bottom: 0.5px solid #000;"><div class="empty-box"></div></td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <div class="footer-note" style="margin-top: 20px;">
+        SUPPLIER SIGNATURE / STAMP
     </div>
     
     <div class="text-center no-print" style="margin-top: 10mm;">

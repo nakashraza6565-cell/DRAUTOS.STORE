@@ -18,10 +18,7 @@
                     <i class="fas fa-file-pdf fa-sm mr-1"></i> Print PDF
                 </button>
                 <a href="{{route('purchase-orders.thermal', $purchaseOrder->id)}}" target="_blank" class="btn btn-primary btn-sm rounded-pill shadow-sm px-3 ml-2">
-                    <i class="fas fa-print fa-sm mr-1"></i> Thermal Receipt
-                </a>
-                <a href="{{route('purchase-orders.supplier-record', $purchaseOrder->id)}}" target="_blank" class="btn btn-secondary btn-sm rounded-pill shadow-sm px-3 ml-2">
-                    <i class="fas fa-file-invoice fa-sm mr-1"></i> Supplier Record
+                    <i class="fas fa-print fa-sm mr-1"></i> Print Both Receipts
                 </a>
             </div>
         </div>
