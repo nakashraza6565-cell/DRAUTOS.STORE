@@ -40,7 +40,7 @@
                     <h6 class="font-weight-bold mb-3">Add Products to Request</h6>
                     <div id="items-container">
                         <div class="item-row row mb-2 align-items-end">
-                            <div class="col-md-7">
+                            <div class="col-12 col-md-7 mb-2 mb-md-0">
                                 <label class="small font-weight-bold mb-1">Search Product</label>
                                 <div class="input-group">
                                     <select class="form-control select2 product-select">
@@ -59,7 +59,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-6 col-md-3 mb-2 mb-md-0">
                                 <label class="small font-weight-bold mb-1">Quantity</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control qty-input" value="1" min="0.1" step="any">
@@ -68,8 +68,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <button type="button" class="btn btn-primary btn-block add-item"><i class="fas fa-plus"></i> ADD</button>
+                            <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                <button type="button" class="btn btn-primary btn-block add-item" style="height: 38px;"><i class="fas fa-plus"></i> ADD</button>
                             </div>
                         </div>
                     </div>
