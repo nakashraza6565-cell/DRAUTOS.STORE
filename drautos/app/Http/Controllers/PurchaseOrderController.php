@@ -64,6 +64,15 @@ class PurchaseOrderController extends Controller
 
             DB::commit();
 
+            // WhatsApp Notification
+            try {
+                $purchaseOrder->load('supplier', 'items.product');
+                $waService = new \App\Services\WhatsAppService();
+                $waService->sendPurchaseOrderNotification($purchaseOrder);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send PO WhatsApp: " . $e->getMessage());
+            }
+
             // Activity Log
             \App\Models\ActivityLog::log('purchase', 'Purchase Order Created', auth()->user()->name . ' created purchase order #' . $po_number, route('purchase-orders.show', $purchaseOrder->id));
 
@@ -74,37 +83,6 @@ class PurchaseOrderController extends Controller
             DB::rollback();
             request()->session()->flash('error', 'Error creating purchase order: ' . $e->getMessage());
             return back();
-        }
-    }
-                        'debit',
-                        'purchase',
-                        'Purchase Order: ' . $po_number,
-                        $pending_amount,
-                        $purchaseOrder->id
-                    );
-                }
-            }
-
-            DB::commit();
-            
-            // Send WhatsApp Notification to Supplier
-            // Send WhatsApp Notification to Supplier
-            try {
-                $purchaseOrder->load('supplier', 'items.product');
-                $waService = new \App\Services\WhatsAppService();
-                $waService->sendPurchaseOrderNotification($purchaseOrder);
-                \Log::info("WhatsApp PO sent to supplier: {$request->supplier_id}");
-            } catch (\Exception $e) {
-                \Log::error("Failed to send PO WhatsApp: " . $e->getMessage());
-            }
-            
-            request()->session()->flash('success', 'Purchase Order successfully created');
-            return redirect()->route('purchase-orders.index');
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            request()->session()->flash('error', 'Error occurred: ' . $e->getMessage());
-            return redirect()->back();
         }
     }
 
