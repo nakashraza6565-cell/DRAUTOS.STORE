@@ -46,7 +46,7 @@
           {{-- Messages Area --}}
           <div id="ai-chat-messages">
               <div class="ai-msg bot">
-                  👋 Hello! I'm your **Agentic Manager**. I'm connected directly to your store. <br><br>
+                  👋 Hello {{ auth()->user()->name }}! I'm your **AI Assistant**. I'm connected directly to your store. <br><br>
                   Tap a quick action or ask me anything:
               </div>
               <div id="ai-quick-actions">
