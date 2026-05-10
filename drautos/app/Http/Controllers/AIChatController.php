@@ -244,6 +244,24 @@ class AIChatController extends Controller
                         $result = "Success: WhatsApp message sent to {$phone} (" . ($name ?? 'Direct') . ").";
                     }
                     break;
+                case 'open_whatsapp':
+                    $name = $args['name'] ?? null;
+                    $phone = $args['phone'] ?? null;
+                    $message = $args['message'] ?? '';
+                    if ($name && !$phone) {
+                        $u = \App\User::where('name', 'like', "%{$name}%")->first();
+                        if ($u && $u->phone) $phone = $u->phone;
+                    }
+                    if (!$phone) {
+                        $result = "Error: Could not find phone number for '{$name}'. Please provide it.";
+                    } else {
+                        $formattedPhone = preg_replace('/[^0-9]/', '', $phone);
+                        if (strlen($formattedPhone) == 10) $formattedPhone = '92' . $formattedPhone;
+                        if (str_starts_with($formattedPhone, '03')) $formattedPhone = '92' . substr($formattedPhone, 1);
+                        $redirect = "https://wa.me/{$formattedPhone}?text=" . urlencode($message);
+                        $result = "Success: Opening WhatsApp for {$name}.";
+                    }
+                    break;
                 case 'download_price_list':
                     $redirect = route('product.price-list.pdf');
                     $result = "Success: Redirecting to PDF.";
@@ -455,6 +473,19 @@ class AIChatController extends Controller
                     'properties' => [
                         'name' => ['type' => 'STRING', 'description' => 'Name of the contact'],
                         'phone' => ['type' => 'STRING', 'description' => 'Phone number (if name is unknown)'],
+                        'message' => ['type' => 'STRING']
+                    ],
+                    'required' => ['message']
+                ]
+            ],
+            [
+                'name' => 'open_whatsapp',
+                'description' => 'Open a new browser window with a pre-filled WhatsApp message for a customer.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'name' => ['type' => 'STRING'],
+                        'phone' => ['type' => 'STRING'],
                         'message' => ['type' => 'STRING']
                     ],
                     'required' => ['message']
