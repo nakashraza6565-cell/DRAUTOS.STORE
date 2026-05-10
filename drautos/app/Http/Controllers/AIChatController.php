@@ -66,6 +66,7 @@ class AIChatController extends Controller
         - Cheques -> model_name: 'Cheque'
         - Products -> model_name: 'Product'
         - Orders -> model_name: 'Order'
+        - Reminders -> model_name: 'PaymentReminder' or 'TaskReminder' (Search by 'due_date' or 'date')
 
         - You can update prices and stock, add cheques, and ledger entries.
         - You can open/print receipts.
