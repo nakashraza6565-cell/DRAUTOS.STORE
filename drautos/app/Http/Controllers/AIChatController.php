@@ -228,6 +228,22 @@ class AIChatController extends Controller
                             ->first()->toArray();
                     }
                     break;
+                case 'send_whatsapp':
+                    $name = $args['name'] ?? null;
+                    $phone = $args['phone'] ?? null;
+                    $message = $args['message'] ?? '';
+                    if ($name && !$phone) {
+                        $u = \App\User::where('name', 'like', "%{$name}%")->first();
+                        if ($u && $u->phone) $phone = $u->phone;
+                    }
+                    if (!$phone) {
+                        $result = "Error: Could not find phone number for '{$name}'. Please provide it.";
+                    } else {
+                        $wa = new \App\Services\WhatsAppService();
+                        $wa->sendMessage($phone, $message);
+                        $result = "Success: WhatsApp message sent to {$phone} (" . ($name ?? 'Direct') . ").";
+                    }
+                    break;
                 case 'download_price_list':
                     $redirect = route('product.price-list.pdf');
                     $result = "Success: Redirecting to PDF.";
@@ -429,6 +445,19 @@ class AIChatController extends Controller
                         'period' => ['type' => 'STRING', 'description' => 'today, week, or month']
                     ],
                     'required' => ['type']
+                ]
+            ],
+            [
+                'name' => 'send_whatsapp',
+                'description' => 'Send a WhatsApp message to a customer or supplier.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'name' => ['type' => 'STRING', 'description' => 'Name of the contact'],
+                        'phone' => ['type' => 'STRING', 'description' => 'Phone number (if name is unknown)'],
+                        'message' => ['type' => 'STRING']
+                    ],
+                    'required' => ['message']
                 ]
             ]
         ];
