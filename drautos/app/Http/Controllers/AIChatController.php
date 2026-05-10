@@ -204,6 +204,26 @@ class AIChatController extends Controller
                         'recent_products' => \App\Models\Product::orderBy('id', 'desc')->limit(10)->get(['id', 'title', 'sku', 'price'])->toArray(),
                     ];
                     break;
+                case 'get_analytics':
+                    $type = $args['type'] ?? 'top_selling_products';
+                    $period = $args['period'] ?? 'month';
+                    if ($type === 'top_selling_products') {
+                        $result = \App\Models\Cart::whereNotNull('order_id')
+                            ->whereMonth('created_at', date('m'))
+                            ->whereYear('created_at', date('Y'))
+                            ->with('product:id,title')
+                            ->selectRaw('product_id, SUM(quantity) as total_qty, SUM(amount) as total_amount')
+                            ->groupBy('product_id')
+                            ->orderBy('total_amount', 'desc')
+                            ->limit(10)
+                            ->get()->toArray();
+                    } elseif ($type === 'sales_summary') {
+                        $result = \App\Models\Order::whereMonth('created_at', date('m'))
+                            ->whereYear('created_at', date('Y'))
+                            ->selectRaw('COUNT(*) as total_orders, SUM(total_amount) as total_sales, AVG(total_amount) as avg_order_value')
+                            ->first()->toArray();
+                    }
+                    break;
                 case 'download_price_list':
                     $redirect = route('product.price-list.pdf');
                     $result = "Success: Redirecting to PDF.";
@@ -394,6 +414,18 @@ class AIChatController extends Controller
                 'name' => 'get_recent_entities',
                 'description' => 'Get a list of 10 most recent Customers, Suppliers, and Products to gain context on who the user might be talking about.',
                 'parameters' => [ 'type' => 'OBJECT', 'properties' => new \stdClass() ]
+            ],
+            [
+                'name' => 'get_analytics',
+                'description' => 'Get advanced sales reports and top-performing item analytics.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'type' => ['type' => 'STRING', 'description' => 'top_selling_products or sales_summary'],
+                        'period' => ['type' => 'STRING', 'description' => 'today, week, or month']
+                    ],
+                    'required' => ['type']
+                ]
             ]
         ];
     }
