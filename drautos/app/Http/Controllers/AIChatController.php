@@ -51,6 +51,15 @@ class AIChatController extends Controller
             }
         } catch (\Throwable $e) {}
 
+        $models = ['User'];
+        $path = app_path('Models');
+        if (is_dir($path)) {
+            foreach (scandir($path) as $file) {
+                if (strpos($file, '.php') !== false) $models[] = str_replace('.php', '', $file);
+            }
+        }
+        $modelList = implode(', ', $models);
+
         $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant currently talking to {$user->name}.
         
         LONG-TERM MEMORY FOR {$user->name}:
@@ -58,15 +67,9 @@ class AIChatController extends Controller
 
         YOUR POWERS:
         - You can read ANY table using read_database. 
-        **CRITICAL DATABASE MAP (Use these exact model names):**
-        - Customers -> model_name: 'User' (Search by 'name')
-        - Suppliers -> model_name: 'Supplier' (Search by 'name')
-        - Customer Ledgers -> model_name: 'CustomerLedger'
-        - Supplier Ledgers -> model_name: 'SupplierLedger'
-        - Cheques -> model_name: 'Cheque'
-        - Products -> model_name: 'Product'
-        - Orders -> model_name: 'Order'
-        - Reminders -> model_name: 'PaymentReminder' or 'TaskReminder' (Search by 'due_date' or 'date')
+        
+        **DATABASE KNOWLEDGE (Models you can query):**
+        {$modelList}
 
         - You can update prices and stock, add cheques, and ledger entries.
         - You can open/print receipts.
