@@ -295,15 +295,24 @@
             $('.unit-display').text(unit);
         });
 
-        $('.add-item').on('click', function() {
+        // Prevent form submission on Enter key for quantity input
+        $('.qty-input').on('keydown', function(e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                $('.add-item').click();
+            }
+        });
+
+        $('.add-item').on('click', function(e) {
+            e.preventDefault();
             let productSelect = $('.product-select');
             let productId = productSelect.val();
             let productName = productSelect.find(':selected').text();
             let unit = productSelect.find(':selected').data('unit') || '';
             let qty = parseFloat($('.qty-input').val());
 
-            if (!productId || qty <= 0) {
-                alert('Please select a product and valid quantity');
+            if (!productId || isNaN(qty) || qty <= 0) {
+                Swal.fire('Error', 'Please select a product and valid quantity', 'error');
                 return;
             }
 

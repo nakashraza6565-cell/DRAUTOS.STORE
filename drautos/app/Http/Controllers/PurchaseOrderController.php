@@ -154,7 +154,7 @@ class PurchaseOrderController extends Controller
                     'product_id' => $productId,
                     'quantity' => $request->quantity[$key],
                     'unit_price' => 0,
-                    'total_price' => 0,
+                    'subtotal' => 0,
                 ]);
             }
 
