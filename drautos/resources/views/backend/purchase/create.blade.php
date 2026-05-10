@@ -22,7 +22,7 @@
                                 @endforeach
                             </select>
                             <div class="input-group-append">
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addSupplierModal"><i class="fas fa-plus"></i></button>
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addSupplierModal"><i class="fas fa-plus"></i></button>
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                                         @endforeach
                                     </select>
                                     <div class="input-group-append">
-                                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addProductModal"><i class="fas fa-plus"></i></button>
+                                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#addProductModal"><i class="fas fa-plus"></i></button>
                                     </div>
                                 </div>
                             </div>
@@ -103,6 +103,123 @@
         </form>
     </div>
 </div>
+<!-- Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold">Add Quick Product</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body bg-light">
+                <form id="add-product-form">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Product Title <span class="text-danger">*</span></label>
+                                <select name="title" id="pos-title-select" class="form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Category <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select name="cat_id" id="pos-cat-select" class="form-control" required>
+                                        <option value="">Select Category</option>
+                                        @foreach($categories as $cat)
+                                        <option value="{{$cat->id}}">{{$cat->title}}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addCategoryModal"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Brand</label>
+                                <div class="input-group">
+                                    <select name="brand_id" id="pos-brand-select" class="form-control">
+                                        <option value="">Select Brand</option>
+                                        @foreach($brands as $brand)
+                                        <option value="{{$brand->id}}">{{$brand->title}}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#addBrandModal"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Model</label>
+                                <div class="input-group">
+                                    <select name="model" id="pos-model-select" class="form-control">
+                                        <option value="">Select Model</option>
+                                        @foreach($product_models as $m)
+                                        <option value="{{$m->name}}">{{$m->name}}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#addModelModal"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Unit / Packaging</label>
+                                <div class="input-group">
+                                    <select name="unit" id="pos-unit-select" class="form-control">
+                                        <option value="piece">Piece</option>
+                                        @foreach($units as $u)
+                                        <option value="{{$u->name}}">{{$u->name}}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addUnitModal"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Initial Stock <span class="text-danger">*</span></label>
+                                <input type="number" name="stock" class="form-control" required value="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Purchase Price</label>
+                                <input type="number" name="purchase_price" class="form-control" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Selling Price <span class="text-danger">*</span></label>
+                                <input type="number" name="price" class="form-control" required placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 p-3 bg-light">
+                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4 shadow" id="save-product-btn">
+                    <i class="fas fa-save mr-1"></i> SAVE PRODUCT
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @include('backend.product.partials.modals')
 
 @endsection
