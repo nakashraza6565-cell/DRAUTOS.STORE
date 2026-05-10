@@ -143,8 +143,12 @@
         </tfoot>
     </table>
 
-    <div class="footer-note" style="margin-top: 20px;">
-        SUPPLIER SIGNATURE / STAMP
+    <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
+        <div style="text-align: center; width: 50%;">
+            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: 900; font-size: 12px; text-transform: uppercase;">
+                SUPPLIER SIGNATURE
+            </div>
+        </div>
     </div>
     
     <div class="text-center no-print" style="margin-top: 10mm;">
