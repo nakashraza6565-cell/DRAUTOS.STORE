@@ -396,12 +396,21 @@ class AIChatController extends Controller
 
     private function tool_read_database($args)
     {
-        $modelName = $args['model_name'];
+        $modelName = $args['model_name'] ?? '';
         $modelClass = '\\App\\Models\\' . $modelName;
         if ($modelName === 'User') $modelClass = '\\App\\User';
 
-        if (!class_exists($modelClass)) {
-            return "Error: Model {$modelName} not found in system.";
+        if (!$modelName || !class_exists($modelClass)) {
+            $models = ['User'];
+            $modelsPath = app_path('Models');
+            if (is_dir($modelsPath)) {
+                foreach (scandir($modelsPath) as $file) {
+                    if (strpos($file, '.php') !== false) {
+                        $models[] = str_replace('.php', '', $file);
+                    }
+                }
+            }
+            return "Error: Model '{$modelName}' not found. The actual valid models in this system are: " . implode(', ', $models) . ". Please silently retry your search using one of these correct model names.";
         }
 
         try {
