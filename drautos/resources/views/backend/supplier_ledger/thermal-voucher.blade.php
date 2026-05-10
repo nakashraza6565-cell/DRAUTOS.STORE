@@ -203,7 +203,7 @@
     </table>
 
     <div class="signature-line">
-        Supplier Signature
+        SIGNATURE
     </div>
 
     <div class="footer">
