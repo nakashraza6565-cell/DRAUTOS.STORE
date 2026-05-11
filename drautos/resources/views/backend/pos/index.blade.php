@@ -1189,17 +1189,21 @@
             let id = $(this).val();
             let balance = parseFloat($(this).find(':selected').data('balance')) || 0;
             
-            // Disable Credit Sale for Walk-in Customer (ID 1)
+            // Force only Cash for Walk-in Customer (ID 1)
             if (id == 1) {
                 $('.payment-option[data-method="credit"]').addClass('disabled-option').css('opacity', '0.5').css('pointer-events', 'none');
-                // Force select Cash if Credit was active
-                if ($('.payment-option.active').data('method') == 'credit') {
+                $('.payment-option[data-method="cod"]').addClass('disabled-option').css('opacity', '0.5').css('pointer-events', 'none');
+                
+                // Force select Cash if Credit or COD was active
+                let activeMethod = $('.payment-option.active').data('method');
+                if (activeMethod == 'credit' || activeMethod == 'cod') {
                     $('.payment-option[data-method="cash"]').trigger('click');
                 }
                 // Clear payment amount for walk-in
                 $('#amount-received').val('');
             } else {
                 $('.payment-option[data-method="credit"]').removeClass('disabled-option').css('opacity', '1').css('pointer-events', 'auto');
+                $('.payment-option[data-method="cod"]').removeClass('disabled-option').css('opacity', '1').css('pointer-events', 'auto');
             }
 
             $('#modal-ledger-balance').text('Rs. ' + balance.toFixed(2));
