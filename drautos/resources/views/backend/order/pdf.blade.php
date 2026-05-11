@@ -128,11 +128,12 @@
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="45%">DESCRIPTION</th>
+                <th width="33%">DESCRIPTION</th>
                 <th width="8%" class="text-center">QTY</th>
-                <th width="14%" class="text-right">PRICE</th>
-                <th width="14%" class="text-right">DISCOUNT</th>
-                <th width="14%" class="text-right">TOTAL</th>
+                <th width="13%" class="text-right">PRICE</th>
+                <th width="13%" class="text-right">DISCOUNT</th>
+                <th width="13%" class="text-right">DISC. PRICE</th>
+                <th width="15%" class="text-right">TOTAL</th>
             </tr>
         </thead>
         <tbody>
@@ -175,6 +176,9 @@
                 </td>
                 <td class="text-right">
                     {{ $discount > 0 ? number_format($discount, 2) : '-' }}
+                </td>
+                <td class="text-right">
+                    {{ number_format($soldPrice, 2) }}
                 </td>
                 <td class="text-right" style="font-weight:bold;">{{ number_format($cart->amount, 2) }}</td>
             </tr>
@@ -232,20 +236,36 @@
                 <td class="label" style="font-weight:bold;">Grand Total</td>
                 <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
             </tr>
+            @php
+                $requested_pending = 0;
+                $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
+                if ($reminder) {
+                    $requested_pending = $reminder->amount - $reminder->paid_amount;
+                }
+                $amount_paid = $order->total_amount - $requested_pending;
+                
+                // Previous Balance calculation
+                // If order is delivered, it's already in the ledger, so we subtract its impact to get 'previous'
+                $current_user_balance = $order->user->current_balance ?? 0;
+                if($order->status == 'delivered') {
+                    $previous_balance = $current_user_balance - $requested_pending;
+                } else {
+                    $previous_balance = $current_user_balance;
+                }
+                
+                $final_balance_due = $requested_pending + $previous_balance;
+            @endphp
             <tr>
                 <td class="label">Amount Paid</td>
-                @php
-                    $requested_pending = 0;
-                    $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
-                    if ($reminder) {
-                        $requested_pending = $reminder->amount - $reminder->paid_amount;
-                    }
-                @endphp
-                <td class="value">Rs. {{ number_format($order->total_amount - $requested_pending, 2) }}</td>
+                <td class="value">Rs. {{ number_format($amount_paid, 2) }}</td>
             </tr>
             <tr>
-                <td class="label" style="color:#d32f2f;">Balance Due</td>
-                <td class="value" style="color:#d32f2f;">Rs. {{ number_format($requested_pending, 2) }}</td>
+                <td class="label">Previous Balance</td>
+                <td class="value">Rs. {{ number_format($previous_balance, 2) }}</td>
+            </tr>
+            <tr class="grand-total">
+                <td class="label" style="font-weight:bold; color:#d32f2f;">Balance Due</td>
+                <td class="value" style="color:#d32f2f;">Rs. {{ number_format($final_balance_due, 2) }}</td>
             </tr>
         </table>
     </div>
