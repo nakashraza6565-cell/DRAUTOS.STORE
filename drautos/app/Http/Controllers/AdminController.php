@@ -404,8 +404,8 @@ class AdminController extends Controller
         // Log the phone number found
         \Log::info("POS Order Created. Customer ID: {$data['customer_id']}, Phone: {$order->phone}");
 
-        // Ledger Integration
-        if ($user) {
+        // Ledger Integration - SKIP for Walk-in Customer (ID 1)
+        if ($user && $user->id != 1) {
             CustomerLedger::record(
                 $user->id,
                 now(),
@@ -415,7 +415,7 @@ class AdminController extends Controller
                 $order->total_amount,
                 $order->id
             );
-
+            
             if ($amount_paid > 0) {
                 CustomerLedger::record(
                     $user->id,
@@ -430,7 +430,8 @@ class AdminController extends Controller
         }
 
         // Partial Payment Logic: Create Reminder & Update Balance
-        if ($pending_amount > 0 && $user) {
+        // SKIP for Walk-in Customer (ID 1) - They should not have credit
+        if ($pending_amount > 0 && $user && $user->id != 1) {
             \App\Models\PaymentReminder::create([
                 'type' => 'receivable',
                 'party_type' => 'App\\User',
@@ -441,10 +442,6 @@ class AdminController extends Controller
                 'status' => 'pending',
                 'notes' => 'Generated from POS Order ' . $order_number
             ]);
-
-            // Balance is now handled via CustomerLedger::record hooks
-            // $user->current_balance += $pending_amount;
-            // $user->save();
         }
 
         // Save Cart Items & Update Stock

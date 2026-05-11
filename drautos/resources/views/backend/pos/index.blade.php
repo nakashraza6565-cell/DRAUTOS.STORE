@@ -119,7 +119,6 @@
                             <option value="retail">Retail Customer</option>
                             <option value="wholesale">Wholesale Customer</option>
                             <option value="salesman">Salesman</option>
-                            <option value="walkin">Walk-in Customer</option>
                         </select>
                     </div>
 
@@ -1187,8 +1186,22 @@
 
         // Customer Change Logic
         $('#customer-select').on('change', function() {
-            let customer_id = $(this).val();
+            let id = $(this).val();
             let balance = parseFloat($(this).find(':selected').data('balance')) || 0;
+            
+            // Disable Credit Sale for Walk-in Customer (ID 1)
+            if (id == 1) {
+                $('.payment-option[data-method="credit"]').addClass('disabled-option').css('opacity', '0.5').css('pointer-events', 'none');
+                // Force select Cash if Credit was active
+                if ($('.payment-option.active').data('method') == 'credit') {
+                    $('.payment-option[data-method="cash"]').trigger('click');
+                }
+                // Clear payment amount for walk-in
+                $('#amount-received').val('');
+            } else {
+                $('.payment-option[data-method="credit"]').removeClass('disabled-option').css('opacity', '1').css('pointer-events', 'auto');
+            }
+
             $('#modal-ledger-balance').text('Rs. ' + balance.toFixed(2));
 
             // Re-fetch products from server to smartly sort by this customer's history
