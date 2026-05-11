@@ -235,7 +235,10 @@
                 $current_bill_unpaid = $order->total_amount - $amount_paid;
                 $current_user_balance = $order->user->current_balance ?? 0;
                 
-                if($order->status == 'delivered') {
+                // Check if this order is already recorded in the ledger
+                $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
+
+                if($is_in_ledger) {
                     $previous_balance = $current_user_balance - $current_bill_unpaid;
                 } else {
                     $previous_balance = $current_user_balance;

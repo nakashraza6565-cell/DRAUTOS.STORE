@@ -243,9 +243,12 @@
                 // Get Current Ledger Balance
                 $current_user_balance = $order->user->current_balance ?? 0;
                 
-                // Calculate Previous Balance (Balance before this bill was added)
-                // If the order is 'delivered', its net impact is already in the current_user_balance
-                if($order->status == 'delivered') {
+                // Check if this order is already recorded in the ledger
+                $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
+                
+                // If it's in the ledger, the current_balance already includes this bill.
+                // We subtract the unpaid portion to find what the balance was BEFORE this bill.
+                if($is_in_ledger) {
                     $previous_balance = $current_user_balance - $current_bill_unpaid;
                 } else {
                     $previous_balance = $current_user_balance;
