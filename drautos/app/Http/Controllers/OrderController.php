@@ -324,7 +324,8 @@ class OrderController extends Controller
 
         $status = $order->fill($request->only([
             'status', 'staff_id', 'staff_commission', 'first_name', 'last_name', 
-            'phone', 'email', 'address1', 'courier_company', 'courier_number'
+            'phone', 'email', 'address1', 'courier_company', 'courier_number',
+            'amount_paid', 'due_date'
         ]))->save();
         
         // Update Commission

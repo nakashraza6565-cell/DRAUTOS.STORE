@@ -237,24 +237,26 @@
                 <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
             </tr>
             @php
-                $requested_pending = 0;
-                $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
-                if ($reminder) {
-                    $requested_pending = $reminder->amount - $reminder->paid_amount;
-                }
-                $amount_paid = $order->total_amount - $requested_pending;
+                $amount_paid = $order->amount_paid ?? 0;
+                $current_bill_unpaid = $order->total_amount - $amount_paid;
                 
-                // Previous Balance calculation
-                // If order is delivered, it's already in the ledger, so we subtract its impact to get 'previous'
+                // Get Current Ledger Balance
                 $current_user_balance = $order->user->current_balance ?? 0;
+                
+                // Calculate Previous Balance (Balance before this bill was added)
+                // If the order is 'delivered', its net impact is already in the current_user_balance
                 if($order->status == 'delivered') {
-                    $previous_balance = $current_user_balance - $requested_pending;
+                    $previous_balance = $current_user_balance - $current_bill_unpaid;
                 } else {
                     $previous_balance = $current_user_balance;
                 }
                 
-                $final_balance_due = $requested_pending + $previous_balance;
+                $final_balance_due = $previous_balance + $current_bill_unpaid;
             @endphp
+            <tr>
+                <td class="label">Current Bill Total</td>
+                <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
+            </tr>
             <tr>
                 <td class="label">Amount Paid</td>
                 <td class="value">Rs. {{ number_format($amount_paid, 2) }}</td>

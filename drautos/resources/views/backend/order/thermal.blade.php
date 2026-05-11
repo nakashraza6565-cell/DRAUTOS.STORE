@@ -230,6 +230,19 @@
                 </div>
             </div>
 
+            @php
+                $amount_paid = $order->amount_paid ?? 0;
+                $current_bill_unpaid = $order->total_amount - $amount_paid;
+                $current_user_balance = $order->user->current_balance ?? 0;
+                
+                if($order->status == 'delivered') {
+                    $previous_balance = $current_user_balance - $current_bill_unpaid;
+                } else {
+                    $previous_balance = $current_user_balance;
+                }
+                $final_balance_due = $previous_balance + $current_bill_unpaid;
+            @endphp
+
             <div class="info-grid" style="margin-top: 10px;">
                 <div class="info-row">
                     <span>Payment Method:</span>
@@ -237,20 +250,21 @@
                 </div>
                 <div class="info-row">
                     <span>Amount Received:</span>
-                    <span class="bold">Rs.{{ number_format($order->amount_paid ?? 0, 0) }}</span>
+                    <span class="bold">Rs.{{ number_format($amount_paid, 0) }}</span>
                 </div>
-                @php $balance = $order->total_amount - ($order->amount_paid ?? 0); @endphp
-                @if($balance > 0)
                 <div class="info-row">
-                    <span>Balance Outstanding:</span>
-                    <span class="bold">Rs.{{ number_format($balance, 0) }}</span>
+                    <span>Previous Balance:</span>
+                    <span class="bold">Rs.{{ number_format($previous_balance, 0) }}</span>
+                </div>
+                <div class="info-row" style="font-size: 16px; border-top: 1px solid #000; padding-top: 5px; margin-top: 5px;">
+                    <span>BALANCE DUE:</span>
+                    <span class="bold">Rs.{{ number_format($final_balance_due, 0) }}</span>
                 </div>
                 @if($order->due_date)
-                <div class="info-row" style="color: #d00;">
+                <div class="info-row" style="color: #d00; margin-top: 5px;">
                     <span>PAYMENT DUE BY:</span>
                     <span class="bold">{{ date('d/m/y', strtotime($order->due_date)) }}</span>
                 </div>
-                @endif
                 @endif
             </div>
 
