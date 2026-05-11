@@ -369,7 +369,7 @@ class AdminController extends Controller
             $order->payment_status = 'unpaid';
         }
 
-        $order->status = 'new'; // POS orders start as new (matches DB enum: new,process,delivered,cancel)
+        $order->status = ($data['customer_id'] == 1) ? 'delivered' : 'new'; // Walk-in is auto-delivered, others start as new
         $order->order_type = 'local'; // Mark as POS order
         $order->staff_id = auth()->id(); // Track which staff/admin created the POS order
         $order->shipping_id = null; // No shipping for POS likely
