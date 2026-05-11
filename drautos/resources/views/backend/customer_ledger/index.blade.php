@@ -43,8 +43,8 @@
                             <th>Phone</th>
                             <th>City</th>
                             <th>Customer Type</th>
-                            <th>Current Balance</th>
                             <th>Last Payment Received</th>
+                            <th>Current Balance</th>
                             <th>Action</th>
                         </tr>
                     </thead>
