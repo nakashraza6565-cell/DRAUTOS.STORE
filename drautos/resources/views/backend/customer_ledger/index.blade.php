@@ -59,7 +59,8 @@
                                     @if($customer->latestPayment)
                                         <div class="small">
                                             <span class="text-success font-weight-bold">Rs. {{number_format($customer->latestPayment->amount, 2)}}</span><br>
-                                            <span class="text-muted" style="font-size: 0.75rem;">{{$customer->latestPayment->transaction_date->format('d M, Y')}}</span>
+                                            <span class="text-muted" style="font-size: 0.75rem;">{{$customer->latestPayment->transaction_date->format('d M, Y')}}</span><br>
+                                            <span class="text-muted italic" style="font-size: 0.7rem; font-style: italic;">{{Str::limit($customer->latestPayment->description, 40)}}</span>
                                         </div>
                                     @else
                                         <span class="text-muted small">No payments</span>
