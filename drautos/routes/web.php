@@ -26,31 +26,34 @@ Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-s
 // (Removed old fix-db route - moved to admin section)
 Route::get('/fix-db', function () {
     try {
-        // 1. Try to run migrations normally first
-        $output = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        // Run only the specific migrations for Financial Accounts
+        $migrations = [
+            '2026_05_12_000001_create_financial_accounts_table.php',
+            '2026_05_12_000002_create_account_transactions_table.php',
+            '2026_05_12_000003_add_financial_account_id_to_ledgers.php'
+        ];
+
+        foreach ($migrations as $file) {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--path' => '/database/migrations/' . $file,
+                '--force' => true
+            ]);
+        }
         
-        // 2. Clear all cache
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
         
-        return "<h1>Database & System Updated!</h1>
-                <p>New features and tables have been successfully activated.</p>
+        return "<h1>Success!</h1>
+                <p>Financial Account features have been activated.</p>
                 <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
     } catch (\Exception $e) {
-        // If it fails because of an existing table, let's try to clear cache and just report success if the main tables we need are there
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        
-        $hasAccounts = \Illuminate\Support\Facades\Schema::hasTable('financial_accounts');
-        $hasTransactions = \Illuminate\Support\Facades\Schema::hasTable('account_transactions');
-        
-        if ($hasAccounts && $hasTransactions) {
-             return "<h1>Database Already Updated!</h1>
-                <p>The Financial Account tables are already present.</p>
-                <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
-        }
-
-        return "<h1>Migration Error</h1>
-                <p style='color: red;'>" . $e->getMessage() . "</p>
-                <p>Trying a forceful update... please refresh this page one more time.</p>
+        return "<h1>Status Check</h1>
+                <p>Checking tables...</p>
+                <ul>
+                    <li>Financial Accounts: " . (\Illuminate\Support\Facades\Schema::hasTable('financial_accounts') ? 'OK' : 'Missing') . "</li>
+                    <li>Transactions: " . (\Illuminate\Support\Facades\Schema::hasTable('account_transactions') ? 'OK' : 'Missing') . "</li>
+                </ul>
+                <p>Error if any: " . $e->getMessage() . "</p>
                 <a href='/admin'>Back to Dashboard</a>";
     }
 });
