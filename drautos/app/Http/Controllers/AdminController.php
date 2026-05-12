@@ -406,12 +406,16 @@ class AdminController extends Controller
 
         // Ledger Integration
         if ($user) {
-            // Find active cash register for this admin to link payment
+            // Only link to Cash Register if payment method is "cash"
             $activeRegister = \App\Models\CashRegister::where('status', 'open')
                 ->where('user_id', auth()->id())
                 ->latest()
                 ->first();
-            $financialAccountId = $activeRegister ? $activeRegister->financial_account_id : null;
+                
+            $financialAccountId = null;
+            if ($activeRegister && strtolower($data['payment_method']) == 'cash') {
+                $financialAccountId = $activeRegister->financial_account_id;
+            }
 
             // record the debt (Always debit)
             CustomerLedger::record(
