@@ -9,66 +9,90 @@
         </div>
         <div class="card-body">
             @if($activeRegister)
-            <!-- Active Session View -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="border rounded p-3 bg-light border-left-success" style="border-left: 5px solid #1cc88a !important;">
-                        <small class="text-uppercase font-weight-bold text-muted">Register Status</small>
-                        <h4 class="text-success mt-1">OPEN</h4>
-                        <small>Account: <strong>{{$activeRegister->financialAccount->name ?? 'Default Cash'}}</strong></small><br>
-                        <small>By: {{$activeRegister->user->name ?? 'Admin'}} at {{$activeRegister->opened_at->format('d M, h:i A')}}</small>
+                <!-- Active Session View -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 bg-light border-left-success" style="border-left: 5px solid #1cc88a !important;">
+                            <small class="text-uppercase font-weight-bold text-muted">Register Status</small>
+                            <h4 class="text-success mt-1">OPEN</h4>
+                            <small>Account: <strong>{{$activeRegister->financialAccount->name ?? 'Default Cash'}}</strong></small><br>
+                            <small>By: {{$activeRegister->user->name ?? 'Admin'}} at {{$activeRegister->opened_at->format('d M, h:i A')}}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 bg-light">
+                            <small class="text-uppercase font-weight-bold text-muted">Opening Balance</small>
+                            <h4 class="mt-1">Rs. {{number_format($activeRegister->opening_amount, 2)}}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3 bg-white border-left-primary" style="border-left: 5px solid #4e73df !important;">
+                            <small class="text-uppercase font-weight-bold text-primary">Expected Cash in Drawer</small>
+                            <h4 class="mt-1 font-weight-bold">Rs. {{number_format($summary['expected_cash'], 2)}}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                         <!-- Action to Close -->
+                         <button class="btn btn-danger btn-block h-100" data-toggle="modal" data-target="#closeRegisterModal">
+                            <i class="fas fa-power-off mb-2"></i><br>CLOSE REGISTER
+                         </button>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="border rounded p-3 bg-light">
-                        <small class="text-uppercase font-weight-bold text-muted">Opening Balance</small>
-                        <h4 class="mt-1">Rs. {{number_format($activeRegister->opening_amount, 2)}}</h4>
+
+                <!-- Detailed Breakdown -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-success">Cash Inflow (+)</h6></div>
+                            <div class="card-body py-2">
+                                 <div class="d-flex justify-content-between mb-1"><span>POS Cash Sales:</span><span class="font-weight-bold">Rs. {{number_format($summary['pos_sales'], 2)}}</span></div>
+                                 <div class="d-flex justify-content-between"><span>Later Cash Collections:</span><span class="font-weight-bold">Rs. {{number_format($summary['collections'], 2)}}</span></div>
+                                 <hr class="my-2">
+                                 <div class="d-flex justify-content-between text-success"><span>Total Inflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_in'], 2)}}</span></div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="border rounded p-3 bg-white border-left-primary" style="border-left: 5px solid #4e73df !important;">
-                        <small class="text-uppercase font-weight-bold text-primary">Expected Cash in Drawer</small>
-                        <h4 class="mt-1 font-weight-bold">Rs. {{number_format($summary['expected_cash'], 2)}}</h4>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                     <!-- Action to Close -->
-                     <button class="btn btn-danger btn-block h-100" data-toggle="modal" data-target="#closeRegisterModal">
-                        <i class="fas fa-power-off mb-2"></i><br>CLOSE REGISTER
-                     </button>
-                </div>
-            </div>
-            @if($activeRegister)
-            <!-- Detailed Breakdown -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-success">Cash Inflow (+)</h6></div>
-                        <div class="card-body py-2">
-                             <div class="d-flex justify-content-between mb-1"><span>POS Cash Sales:</span><span class="font-weight-bold">Rs. {{number_format($summary['pos_sales'], 2)}}</span></div>
-                             <div class="d-flex justify-content-between"><span>Later Cash Collections:</span><span class="font-weight-bold">Rs. {{number_format($summary['collections'], 2)}}</span></div>
-                             <hr class="my-2">
-                             <div class="d-flex justify-content-between text-success"><span>Total Inflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_in'], 2)}}</span></div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-danger">Cash Outflow (-)</h6></div>
+                            <div class="card-body py-2">
+                                 <div class="d-flex justify-content-between mb-1"><span>Expenses Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['expenses'], 2)}}</span></div>
+                                 <div class="d-flex justify-content-between mb-1"><span>Purchase Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['purchase_payments'], 2)}}</span></div>
+                                 <div class="d-flex justify-content-between mb-1"><span>Supplier Ledger Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['supplier_ledger_payments'], 2)}}</span></div>
+                                 <div class="d-flex justify-content-between"><span>Packaging Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['packaging_payments'], 2)}}</span></div>
+                                 <hr class="my-2">
+                                 <div class="d-flex justify-content-between text-danger"><span>Total Outflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_out'], 2)}}</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-danger">Cash Outflow (-)</h6></div>
-                        <div class="card-body py-2">
-                             <div class="d-flex justify-content-between mb-1"><span>Expenses Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['expenses'], 2)}}</span></div>
-                             <div class="d-flex justify-content-between mb-1"><span>Purchase Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['purchase_payments'], 2)}}</span></div>
-                             <div class="d-flex justify-content-between mb-1"><span>Supplier Ledger Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['supplier_ledger_payments'], 2)}}</span></div>
-                             <div class="d-flex justify-content-between"><span>Packaging Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['packaging_payments'], 2)}}</span></div>
-                             <hr class="my-2">
-                             <div class="d-flex justify-content-between text-danger"><span>Total Outflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_out'], 2)}}</span></div>
+            @else
+                <!-- Open New Register -->
+                <div class="text-center py-5 border rounded bg-white shadow-sm mb-4">
+                    <i class="fas fa-cash-register fa-4x text-gray-300 mb-3"></i>
+                    <h4 class="mb-3">Open a Cash Register</h4>
+                    <form action="{{route('cash-register.open')}}" method="POST" class="d-inline-block text-left" style="max-width: 400px;">
+                        @csrf
+                        <div class="form-group">
+                            <label>Select Admin / Cash Account</label>
+                            <select name="financial_account_id" class="form-control" required>
+                                @foreach($cashAccounts as $acc)
+                                    <option value="{{$acc->id}}">{{$acc->name}} (Current: Rs. {{number_format($acc->current_balance, 0)}})</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
+                        <div class="form-group">
+                            <label>Opening Amount (Leave empty to use Current Balance)</label>
+                            <input type="number" name="opening_amount" class="form-control" placeholder="Optional" min="0">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                            <i class="fas fa-check mr-2"></i> OPEN REGISTER SESSION
+                        </button>
+                    </form>
                 </div>
-            </div>
             @endif
 
-            <!-- Unified Account Balances (Banks, Wallets, and Physical Registers) -->
+            <!-- Unified Account Balances (Always Visible) -->
             <h5 class="mb-3 font-weight-bold text-gray-800 mt-4">All Accounts & Balances</h5>
             <div class="row mb-4">
                 @foreach($financialAccounts as $acc)
@@ -93,34 +117,6 @@
                 @endforeach
             </div>
 
-            <!-- Open New Register (If some accounts are closed) -->
-            @if(!$activeRegister)
-            <div class="text-center py-5 border rounded bg-white shadow-sm mb-4">
-                <i class="fas fa-cash-register fa-4x text-gray-300 mb-3"></i>
-                <h4 class="mb-3">Open a Cash Register</h4>
-                <form action="{{route('cash-register.open')}}" method="POST" class="d-inline-block text-left" style="max-width: 400px;">
-                    @csrf
-                    <div class="form-group">
-                        <label>Select Admin / Cash Account</label>
-                        <select name="financial_account_id" class="form-control" required>
-                            @foreach($cashAccounts as $acc)
-                                <option value="{{$acc->id}}">{{$acc->name}} (Current: Rs. {{number_format($acc->current_balance, 0)}})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Opening Amount (Leave empty to use Current Balance)</label>
-                        <input type="number" name="opening_amount" class="form-control" placeholder="Optional" min="0">
-                    </div>
-                    <button type="submit" class="btn btn-primary btn-block shadow-sm">
-                        <i class="fas fa-check mr-2"></i> OPEN REGISTER SESSION
-                    </button>
-                </form>
-            </div>
-            @endif
-
-            @if($activeRegister)
-
             <hr class="my-5">
             <h5 class="mb-3 font-weight-bold text-gray-800">Register History</h5>
             <div class="table-responsive">
@@ -129,10 +125,11 @@
                         <tr>
                             <th>ID</th>
                             <th>Staff</th>
+                            <th>Account</th>
                             <th>Opened At</th>
                             <th>Closed At</th>
-                            <th>Opening Amount</th>
-                            <th>Closing Amount</th>
+                            <th>Opening</th>
+                            <th>Closing</th>
                             <th>Difference</th>
                             <th>Status</th>
                         </tr>
@@ -142,6 +139,7 @@
                         <tr>
                             <td>#{{$h->id}}</td>
                             <td>{{$h->user->name ?? 'User'}}</td>
+                            <td><small>{{$h->financialAccount->name ?? '-'}}</small></td>
                             <td>{{$h->opened_at->format('d M, h:i A')}}</td>
                             <td>{{$h->closed_at ? $h->closed_at->format('d M, h:i A') : 'STILL OPEN'}}</td>
                             <td>Rs. {{number_format($h->opening_amount, 2)}}</td>

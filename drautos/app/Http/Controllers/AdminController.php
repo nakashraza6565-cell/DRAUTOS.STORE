@@ -434,7 +434,9 @@ class AdminController extends Controller
                     'Payment for Order #' . $order->order_number . ' via ' . ($financialAccountId ? 'Register' : $order->payment_method),
                     $amount_paid,
                     $order->id,
-                    $financialAccountId // NEW: Pass the financial account ID from the active register
+                    null, // paymentMethod
+                    null, // paymentDetails
+                    $financialAccountId // 10th argument
                 );
             }
         }

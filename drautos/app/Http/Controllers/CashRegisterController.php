@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\CashRegister;
 use App\Models\Order;
 use Carbon\Carbon;
-use Auth;
+
+
 
 class CashRegisterController extends Controller
 {
@@ -94,7 +95,7 @@ class CashRegisterController extends Controller
         $account = \App\Models\FinancialAccount::find($request->financial_account_id);
 
         CashRegister::create([
-            'user_id' => Auth::id(),
+            'user_id' => auth()->id(),
             'financial_account_id' => $request->financial_account_id,
             'opening_amount' => $request->opening_amount ?? $account->current_balance,
             'status' => 'open',
