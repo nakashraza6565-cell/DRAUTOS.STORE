@@ -375,7 +375,7 @@ class AdminController extends Controller
         $order->shipping_id = null; // No shipping for POS likely
         // Add name/email/phone from User
         $user = User::find($data['customer_id']);
-        if ($user) {
+        if ($user && $data['customer_id'] != 1) {
             $names = explode(' ', $user->name, 2);
             $order->first_name = $names[0] ?: 'Customer';
             $order->last_name = $names[1] ?? 'Customer';
