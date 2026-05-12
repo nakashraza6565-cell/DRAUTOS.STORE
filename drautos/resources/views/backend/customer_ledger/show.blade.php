@@ -203,6 +203,16 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>Financial Account (Optional)</label>
+                        <select name="financial_account_id" class="form-control">
+                            <option value="">-- No Account (Ledger Only) --</option>
+                            @foreach($accounts as $acc)
+                                <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Select to link this payment to a Bank/Wallet balance.</small>
+                    </div>
+                    <div class="form-group">
                         <label>Amount (Rs.)</label>
                         <input type="number" name="amount" id="t_amount" class="form-control" step="0.01" required>
                     </div>

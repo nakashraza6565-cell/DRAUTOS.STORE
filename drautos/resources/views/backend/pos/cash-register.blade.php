@@ -64,6 +64,35 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Financial Accounts Section -->
+            <h5 class="mb-3 font-weight-bold text-gray-800 mt-4">Bank & Wallet Balances</h5>
+            <div class="row mb-4">
+                @forelse($financialAccounts as $acc)
+                <div class="col-md-3 mb-3">
+                    <div class="card border-left-{{$acc->current_balance >= 0 ? 'info' : 'danger'}} shadow-sm h-100 py-2">
+                        <div class="card-body py-1">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{$acc->name}}</div>
+                                    <div class="h6 mb-0 font-weight-bold text-gray-800">Rs. {{number_format($acc->current_balance, 2)}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-{{$acc->type == 'bank' ? 'university' : ($acc->type == 'wallet' ? 'mobile-alt' : 'money-bill-wave')}} fa-sm text-gray-300"></i>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-right">
+                                <a href="{{route('financial-accounts.show', $acc->id)}}" class="text-xs text-primary font-weight-bold">View Ledger</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div class="col-12">
+                    <div class="alert alert-light border">No financial accounts linked. <a href="{{route('financial-accounts.index')}}">Add Accounts</a></div>
+                </div>
+                @endforelse
+            </div>
             @else
             <!-- Closed State - Open New -->
             <div class="text-center py-5 border rounded bg-white shadow-sm">

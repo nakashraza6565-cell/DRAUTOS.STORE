@@ -84,10 +84,16 @@
     @endcan
 
     @can('view-cash-register')
-    <li class="nav-item">
+    <li class="nav-item {{ Request::is('admin/cash-register*') ? 'active' : '' }}">
         <a class="nav-link py-2" href="{{route('admin.cash-register')}}">
-            <i class="fas fa-cash-register mr-2"></i>
-            <span>Cash Register</span>
+          <i class="fas fa-cash-register mr-2"></i>
+          <span>Cash Register</span>
+        </a>
+    </li>
+    <li class="nav-item {{ Request::is('admin/financial-accounts*') ? 'active' : '' }}">
+        <a class="nav-link py-2" href="{{route('financial-accounts.index')}}">
+          <i class="fas fa-university mr-2"></i>
+          <span>Bank & Wallets</span>
         </a>
     </li>
     @endcan

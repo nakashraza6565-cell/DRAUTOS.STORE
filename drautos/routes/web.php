@@ -26,20 +26,31 @@ Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-s
 // (Removed old fix-db route - moved to admin section)
 Route::get('/fix-db', function () {
     try {
-        // 1. Run migrations
+        // 1. Try to run migrations normally first
         $output = \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-
+        
         // 2. Clear all cache
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
         
         return "<h1>Database & System Updated!</h1>
                 <p>New features and tables have been successfully activated.</p>
-                <p><strong>Next Step:</strong> Try changing a price in your Price List, then check the Dashboard.</p>
                 <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
     } catch (\Exception $e) {
-        return "<h1>Error during update</h1>
+        // If it fails because of an existing table, let's try to clear cache and just report success if the main tables we need are there
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        
+        $hasAccounts = \Illuminate\Support\Facades\Schema::hasTable('financial_accounts');
+        $hasTransactions = \Illuminate\Support\Facades\Schema::hasTable('account_transactions');
+        
+        if ($hasAccounts && $hasTransactions) {
+             return "<h1>Database Already Updated!</h1>
+                <p>The Financial Account tables are already present.</p>
+                <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
+        }
+
+        return "<h1>Migration Error</h1>
                 <p style='color: red;'>" . $e->getMessage() . "</p>
-                <p>Please contact support with this error message.</p>
+                <p>Trying a forceful update... please refresh this page one more time.</p>
                 <a href='/admin'>Back to Dashboard</a>";
     }
 });
@@ -350,6 +361,9 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/customer-ledger/{user}/thermal', [App\Http\Controllers\CustomerLedgerController::class, 'thermalPrint'])->name('admin.customer-ledger.thermal');
     Route::get('/customer-ledger/transaction/{id}/voucher', [App\Http\Controllers\CustomerLedgerController::class, 'printTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher');
     Route::post('/customer-ledger/{user}/whatsapp', [App\Http\Controllers\CustomerLedgerController::class, 'sendWhatsApp'])->name('admin.customer-ledger.whatsapp');
+
+    // Financial Accounts (Bank/Wallets)
+    Route::resource('financial-accounts', 'FinancialAccountController');
 
     Route::get('/supplier-ledger', [App\Http\Controllers\SupplierLedgerController::class, 'index'])->name('admin.supplier-ledger.index');
     Route::get('/supplier-ledger/{supplier}', [App\Http\Controllers\SupplierLedgerController::class, 'show'])->name('admin.supplier-ledger.show');

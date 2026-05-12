@@ -55,8 +55,9 @@ class SupplierLedgerController extends Controller
         }
 
         $ledger = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(5000);
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
-        return view('backend.supplier_ledger.show', compact('supplier', 'ledger', 'graphLabels', 'balanceHistory'));
+        return view('backend.supplier_ledger.show', compact('supplier', 'ledger', 'graphLabels', 'balanceHistory', 'accounts'));
     }
 
     public function store(Request $request)
@@ -69,7 +70,8 @@ class SupplierLedgerController extends Controller
             'description' => 'required|string',
             'category' => 'required|in:manual,payment,purchase,return',
             'payment_method' => 'nullable|string',
-            'payment_details' => 'nullable|array'
+            'payment_details' => 'nullable|array',
+            'financial_account_id' => 'nullable|exists:financial_accounts,id'
         ]);
 
         try {
@@ -108,15 +110,16 @@ class SupplierLedgerController extends Controller
             }
 
             SupplierLedger::record(
-                $request->supplier_id,
-                $request->transaction_date,
-                $request->type,
-                $request->category,
-                $request->description,
-                $request->amount,
+                $validated['supplier_id'],
+                $validated['transaction_date'],
+                $validated['type'],
+                $validated['category'],
+                $validated['description'],
+                $validated['amount'],
                 $referenceId,
                 $paymentMethod,
-                $paymentDetails
+                $paymentDetails,
+                $validated['financial_account_id'] ?? null
             );
 
             DB::commit();

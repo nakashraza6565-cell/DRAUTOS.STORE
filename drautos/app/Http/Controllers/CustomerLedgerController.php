@@ -60,11 +60,9 @@ class CustomerLedgerController extends Controller
         }
 
         $ledger = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(5000);
-        // The original method signature includes `User $user`, so we should use that.
-        // If this method is intended for the authenticated user, the signature should be changed.
-        // For now, we keep the passed $user object.
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
-        return view('backend.customer_ledger.show', compact('user', 'ledger', 'graphLabels', 'balanceHistory'));
+        return view('backend.customer_ledger.show', compact('user', 'ledger', 'graphLabels', 'balanceHistory', 'accounts'));
     }
 
     public function store(Request $request)
@@ -75,7 +73,8 @@ class CustomerLedgerController extends Controller
             'type' => 'required|in:credit,debit',
             'amount' => 'required|numeric|min:0',
             'description' => 'required|string',
-            'category' => 'required|in:manual,payment,order,return'
+            'category' => 'required|in:manual,payment,order,return',
+            'financial_account_id' => 'nullable|exists:financial_accounts,id'
         ]);
 
         try {
@@ -85,7 +84,11 @@ class CustomerLedgerController extends Controller
                 $validated['type'],
                 $validated['category'],
                 $validated['description'],
-                $validated['amount']
+                $validated['amount'],
+                null,
+                null,
+                null,
+                $validated['financial_account_id'] ?? null
             );
 
             return redirect()->back()->with('success', 'Transaction recorded successfully');

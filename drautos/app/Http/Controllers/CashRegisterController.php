@@ -65,8 +65,9 @@ class CashRegisterController extends Controller
 
         // History
         $history = CashRegister::with('user')->orderBy('id', 'DESC')->get();
+        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
 
-        return view('backend.pos.cash-register', compact('activeRegister', 'history', 'summary'));
+        return view('backend.pos.cash-register', compact('activeRegister', 'history', 'summary', 'financialAccounts'));
     }
 
     public function store(Request $request)

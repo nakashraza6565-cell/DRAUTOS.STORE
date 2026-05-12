@@ -10,7 +10,7 @@ class SupplierLedger extends Model
     use HasFactory;
 
     protected $fillable = [
-        'supplier_id', 'transaction_date', 'type', 'category', 'description', 'amount', 'balance', 'reference_id', 'payment_method', 'payment_details'
+        'supplier_id', 'financial_account_id', 'transaction_date', 'type', 'category', 'description', 'amount', 'balance', 'reference_id', 'payment_method', 'payment_details'
     ];
 
     protected $casts = [
@@ -25,7 +25,7 @@ class SupplierLedger extends Model
         return $this->belongsTo(Supplier::class);
     }
 
-    public static function record($supplierId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null)
+    public static function record($supplierId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null, $financialAccountId = null)
     {
         // Ensure columns exist before inserting
         if (!\Illuminate\Support\Facades\Schema::hasColumn('supplier_ledgers', 'payment_method')) {
@@ -37,6 +37,7 @@ class SupplierLedger extends Model
 
         $ledger = self::create([
             'supplier_id' => $supplierId,
+            'financial_account_id' => $financialAccountId,
             'transaction_date' => $date,
             'type' => $type,
             'category' => $category,
@@ -47,6 +48,21 @@ class SupplierLedger extends Model
             'payment_details' => $paymentDetails
         ]);
         self::updateBalance($supplierId);
+        
+        // Record Account Transaction if financial account is provided
+        if ($financialAccountId && $amount > 0) {
+            $accType = ($type == 'debit') ? 'out' : 'in'; // For supplier: debit = payment made (OUT)
+            \App\Models\AccountTransaction::record(
+                $financialAccountId, 
+                $amount, 
+                $accType, 
+                'SupplierLedger', 
+                $ledger->id, 
+                $description, 
+                $date
+            );
+        }
+        
         return $ledger;
     }
 

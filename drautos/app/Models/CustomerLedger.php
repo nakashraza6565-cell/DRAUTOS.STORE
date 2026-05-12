@@ -11,7 +11,7 @@ class CustomerLedger extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'transaction_date', 'type', 'category', 'description', 'amount', 'balance', 'reference_id', 'payment_method', 'payment_details'
+        'user_id', 'financial_account_id', 'transaction_date', 'type', 'category', 'description', 'amount', 'balance', 'reference_id', 'payment_method', 'payment_details'
     ];
 
     protected $casts = [
@@ -26,7 +26,7 @@ class CustomerLedger extends Model
         return $this->belongsTo(User::class);
     }
 
-    public static function record($userId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null)
+    public static function record($userId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null, $financialAccountId = null)
     {
         // Ensure columns exist before inserting
         if (!\Illuminate\Support\Facades\Schema::hasColumn('customer_ledgers', 'payment_method')) {
@@ -38,6 +38,7 @@ class CustomerLedger extends Model
 
         $ledger = self::create([
             'user_id' => $userId,
+            'financial_account_id' => $financialAccountId,
             'transaction_date' => $date,
             'type' => $type,
             'category' => $category,
@@ -48,6 +49,21 @@ class CustomerLedger extends Model
             'payment_details' => $paymentDetails
         ]);
         self::updateBalance($userId);
+        
+        // Record Account Transaction if financial account is provided
+        if ($financialAccountId && $amount > 0) {
+            $accType = ($type == 'credit') ? 'in' : 'out'; // For customer: credit = payment received (IN)
+            \App\Models\AccountTransaction::record(
+                $financialAccountId, 
+                $amount, 
+                $accType, 
+                'CustomerLedger', 
+                $ledger->id, 
+                $description, 
+                $date
+            );
+        }
+        
         return $ledger;
     }
 
