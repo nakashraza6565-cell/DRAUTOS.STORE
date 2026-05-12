@@ -49,6 +49,13 @@
                                 <button class="btn btn-primary btn-sm rounded-circle" data-toggle="modal" data-target="#editModal{{$account->id}}">
                                     <i class="fas fa-edit fa-sm"></i>
                                 </button>
+                                <form method="POST" action="{{ route('financial-accounts.destroy', $account->id) }}" style="display:inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm rounded-circle dltBtn" title="Delete Account" onclick="return confirm('Are you sure you want to delete this account? All associated transaction history will be lost.')">
+                                        <i class="fas fa-trash fa-sm"></i>
+                                    </button>
+                                </form>
                             </td>
                         </tr>
 
