@@ -23,58 +23,46 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. If a specific customer is selected, show their billing (ledger)
-        if ($request->user_id) {
-            return redirect()->route('admin.customer-ledger.show', $request->user_id);
+        $userId = $request->get('user_id');
+
+        // 1. Detailed View for one Customer
+        if ($userId) {
+            $user = User::findOrFail($userId);
+            $orders = Order::with(['user', 'staff'])
+                ->where('user_id', $userId)
+                ->when($request->status, function($q) use ($request) {
+                    return $q->where('status', $request->status);
+                })
+                ->orderBy('created_at','DESC')
+                ->paginate(5000);
+                
+            $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city');
+            $staffs = User::whereIn('role', ['admin', 'staff'])->orderBy('name', 'ASC')->get();
+            
+            return view('backend.order.index', compact('orders', 'user', 'cities', 'staffs'));
         }
 
-        // 2. If "show_all" is requested, show the traditional global order list
+        // 2. Global View (if explicitly requested)
         if ($request->has('show_all')) {
             $orders = Order::with(['user', 'staff'])
                 ->when($request->status, function($q) use ($request) {
                     return $q->where('status', $request->status);
                 })
-                ->when($request->city, function($q) use ($request) {
-                    return $q->whereHas('user', function($sq) use ($request) {
-                        $sq->where('city', $request->city);
-                    })->orWhere('address1', 'LIKE', "%{$request->city}%");
-                })
-                ->when($request->type, function($q) use ($request) {
-                    if($request->type == 'website') {
-                        return $q->where('order_type', '!=', 'local')->orWhereNull('order_type');
-                    } elseif($request->type == 'local') {
-                        return $q->where('order_type', 'local');
-                    }
-                })
-                ->when($request->staff_id, function($q) use ($request) {
-                    return $q->where('staff_id', $request->staff_id);
-                })
                 ->orderBy('pinned','DESC')->orderBy('created_at','DESC')->paginate(5000);
-                
-            $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city');
-            $staffs = User::whereIn('role', ['admin', 'staff'])->orderBy('name', 'ASC')->get();
-            return view('backend.order.index')->with('orders',$orders)->with('cities', $cities)->with('staffs', $staffs);
+            return view('backend.order.index', compact('orders'));
         }
 
-        // 3. Default View: Customer-Based (List customers with their balances)
-        $query = User::whereIn('role', ['user', 'customer']);
-        
-        if ($request->search) {
-            $query->where(function($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('phone', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        // 3. Overview View: List customers who have orders
+        $customersWithOrders = User::whereHas('orders')
+            ->withCount(['orders as orders_count'])
+            ->get()
+            ->map(function($user) {
+                $user->total_sales = $user->orders()->sum('total_amount');
+                $user->last_order = $user->orders()->latest()->first();
+                return $user;
             });
-        }
 
-        if ($request->city) {
-            $query->where('city', $request->city);
-        }
-
-        $customers = $query->with('latestPayment')->orderBy('updated_at', 'desc')->paginate(5000);
-        $cities = User::whereIn('role', ['user', 'customer'])->whereNotNull('city')->distinct()->pluck('city');
-        
-        return view('backend.order.index_customers', compact('customers', 'cities'));
+        return view('backend.order.customer_overview', compact('customersWithOrders'));
     }
 
     /**

@@ -4,10 +4,7 @@
 <div class="container-fluid">
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Orders & Billing (Select Customer)</h6>
-            <a href="{{route('order.index')}}" class="btn btn-outline-primary btn-sm shadow-sm">
-                <i class="fas fa-list-check mr-1"></i> Global Order List
-            </a>
+            <h6 class="m-0 font-weight-bold text-primary">Customer Ledgers</h6>
         </div>
         <div class="card-body">
             <form method="GET" class="mb-4" id="ledger-filter-form">

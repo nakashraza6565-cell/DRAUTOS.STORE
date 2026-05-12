@@ -8,11 +8,24 @@
             @include('backend.layouts.notification')
          </div>
      </div>
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary float-left">Global Order List</h6>
-      <a href="{{route('admin.customer-ledger.index')}}" class="btn btn-outline-primary btn-sm ml-3">
-          <i class="fas fa-users mr-1"></i> Back to Customer Based View
-      </a>
+    <div class="card-header py-3 d-flex align-items-center justify-content-between bg-white">
+      <div>
+          <a href="{{route('order.index')}}" class="btn btn-outline-secondary btn-sm mr-3">
+              <i class="fas fa-chevron-left mr-1"></i> Back to Customers
+          </a>
+          <h6 class="m-0 font-weight-bold text-primary d-inline-block">
+              @if(isset($user))
+                Orders for: <span class="text-dark">{{$user->name}}</span>
+              @else
+                Global Order List
+              @endif
+          </h6>
+      </div>
+      <div class="d-flex" style="gap: 10px;">
+          <a href="{{route('admin.pos')}}" class="btn btn-success btn-sm shadow-sm px-3">
+              <i class="fas fa-plus mr-1"></i> Create New Sale
+          </a>
+      </div>
     </div>
     <div class="card-body">
       <!-- Filters -->
