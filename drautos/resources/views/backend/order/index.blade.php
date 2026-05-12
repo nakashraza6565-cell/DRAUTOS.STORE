@@ -9,7 +9,10 @@
          </div>
      </div>
     <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary float-left">Order Lists</h6>
+      <h6 class="m-0 font-weight-bold text-primary float-left">Global Order List</h6>
+      <a href="{{route('admin.customer-ledger.index')}}" class="btn btn-outline-primary btn-sm ml-3">
+          <i class="fas fa-users mr-1"></i> Back to Customer Based View
+      </a>
     </div>
     <div class="card-body">
       <!-- Filters -->

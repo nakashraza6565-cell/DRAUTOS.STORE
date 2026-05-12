@@ -93,14 +93,8 @@
     @endcan
 
     @can('view-order')
-    <li class="nav-item {{ Request::is('admin/users*') ? 'active' : '' }}">
-        <a class="nav-link py-2" href="{{route('users.index')}}">
-          <i class="fas fa-users mr-2"></i>
-          <span>Customers Base</span>
-        </a>
-    </li>
-    <li class="nav-item {{ Request::is('admin/order*') ? 'active' : '' }}">
-        <a class="nav-link py-2" href="{{route('order.index')}}">
+    <li class="nav-item {{ Request::is('admin/order*') || Request::is('admin/customer-ledger*') ? 'active' : '' }}">
+        <a class="nav-link py-2" href="{{route('admin.customer-ledger.index')}}">
           <i class="fas fa-cart-shopping mr-2"></i>
           <span>Orders & Billing</span>
         </a>
@@ -377,6 +371,7 @@
             <a class="collapse-item" href="{{route('staff.index')}}">Staff Management</a>
             <a class="collapse-item" href="{{route('roles.index')}}">Roles & Permissions</a>
             <a class="collapse-item" href="{{route('expenses.index')}}">Expenses</a>
+            <a class="collapse-item" href="{{route('users.index')}}">Customers (Users)</a>
             <a class="collapse-item" href="{{route('users.pending')}}" style="color: #e6a817; font-weight: 600;">
                 <i class="fas fa-user-clock fa-sm mr-1"></i> Pending Registrations
                 @php $pendingSidebarCount = \App\User::where('status','pending')->count(); @endphp
