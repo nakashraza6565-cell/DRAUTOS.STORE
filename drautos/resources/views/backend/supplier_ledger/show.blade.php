@@ -221,12 +221,19 @@
 
                     <div class="form-group">
                         <label>Financial Account (Optional)</label>
-                        <select name="financial_account_id" class="form-control">
-                            <option value="">-- Cash (Registers in Daily Drawer) --</option>
-                            @foreach($accounts->where('type', '!=', 'cash') as $acc)
-                                <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <select name="financial_account_id" id="financial_account_id" class="form-control">
+                                <option value="">-- Cash (Registers in Daily Drawer) --</option>
+                                @foreach($accounts->where('type', '!=', 'cash') as $acc)
+                                    <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
+                                @endforeach
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#quickAddAccountModal">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
                         <small class="text-muted">Select a Bank/Wallet. Leave empty for <strong>Cash</strong> payments.</small>
                     </div>
                     <div class="form-group">
@@ -384,6 +391,70 @@
         if ($('.modal:visible').length) {
             $('body').addClass('modal-open');
         }
+    });
+</script>
+@endpush
+<!-- Quick Add Account Modal -->
+<div class="modal fade" id="quickAddAccountModal" tabindex="-1" role="dialog" style="z-index: 1060;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Add Bank/Wallet</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Account Name</label>
+                    <input type="text" id="quick_acc_name" class="form-control" placeholder="e.g. HBL Main, JazzCash Shop">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="quick_acc_type" class="form-control">
+                        <option value="bank">Bank</option>
+                        <option value="wallet">Mobile Wallet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Opening Balance</label>
+                    <input type="number" id="quick_acc_balance" class="form-control" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveQuickAccount">Save Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    $('#saveQuickAccount').click(function() {
+        var name = $('#quick_acc_name').val();
+        var type = $('#quick_acc_type').val();
+        var balance = $('#quick_acc_balance').val();
+
+        if(!name) { alert('Please enter account name'); return; }
+
+        $(this).prop('disabled', true).text('Saving...');
+
+        $.ajax({
+            url: "{{route('financial-accounts.store')}}",
+            type: "POST",
+            data: {
+                _token: "{{csrf_token()}}",
+                name: name,
+                type: type,
+                opening_balance: balance
+            },
+            success: function(res) {
+                location.reload();
+            },
+            error: function() {
+                alert('Error saving account. Please check if columns exist.');
+                $('#saveQuickAccount').prop('disabled', false).text('Save Account');
+            }
+        });
     });
 </script>
 @endpush
