@@ -30,7 +30,8 @@ Route::get('/fix-db', function () {
         $migrations = [
             '2026_05_12_000001_create_financial_accounts_table.php',
             '2026_05_12_000002_create_account_transactions_table.php',
-            '2026_05_12_000003_add_financial_account_id_to_ledgers.php'
+            '2026_05_12_000003_add_financial_account_id_to_ledgers.php',
+            '2026_05_12_000004_add_opening_balance_to_financial_accounts.php'
         ];
 
         foreach ($migrations as $file) {
