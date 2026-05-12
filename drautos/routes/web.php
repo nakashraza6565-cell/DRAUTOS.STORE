@@ -59,6 +59,29 @@ Route::get('/fix-db', function () {
     }
 });
 
+Route::get('/fix-balances', function () {
+    try {
+        $transactions = \App\Models\AccountTransaction::where('reference_type', 'SupplierLedger')->get();
+        $count = 0;
+        foreach ($transactions as $t) {
+            if ($t->type == 'in') {
+                $t->type = 'out';
+                $t->save();
+                $count++;
+            }
+        }
+
+        $accounts = \App\Models\FinancialAccount::all();
+        foreach ($accounts as $acc) {
+            \App\Models\FinancialAccount::updateBalance($acc->id);
+        }
+
+        return "<h1>Balances Fixed!</h1><p>Swapped $count supplier payments from 'In' to 'Out' and recalculated all balances.</p><a href='/admin/financial-accounts'>Back to Accounts</a>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
 // ===== OpenRouter AI Test Route =====
 Route::get('/test-ai', function () {
     $apiKey = env('OPENROUTER_API_KEY');

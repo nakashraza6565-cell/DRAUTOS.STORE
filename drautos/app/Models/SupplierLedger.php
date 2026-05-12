@@ -51,7 +51,7 @@ class SupplierLedger extends Model
         
         // Record Account Transaction if financial account is provided
         if ($financialAccountId && $amount > 0) {
-            $accType = ($type == 'debit') ? 'out' : 'in'; // For supplier: debit = payment made (OUT)
+            $accType = ($type == 'credit') ? 'out' : 'in'; // For supplier: credit = payment made (OUT)
             \App\Models\AccountTransaction::record(
                 $financialAccountId, 
                 $amount, 
