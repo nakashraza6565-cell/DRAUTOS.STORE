@@ -50,6 +50,9 @@ Route::get('/fix-db', function () {
                 ['type' => 'cash', 'opening_balance' => 0, 'status' => 'active']
             );
         }
+
+        // Remove legacy admin accounts if they exist
+        \App\Models\FinancialAccount::whereIn('name', ['Admin 2 Cash', 'Admin 3 Cash'])->delete();
         
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
         
