@@ -511,7 +511,7 @@
             </div>
             <div class="modal-footer border-0 p-4">
                 <div class="custom-control custom-checkbox mr-auto">
-                    <input type="checkbox" class="custom-control-input" id="print-receipt-toggle" checked>
+                    <input type="checkbox" class="custom-control-input" id="print-receipt-toggle">
                     <label class="custom-control-label font-weight-bold text-success" for="print-receipt-toggle">
                         <i class="fas fa-print mr-1"></i> Print Thermal Receipt
                     </label>
