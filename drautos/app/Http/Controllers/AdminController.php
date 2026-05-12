@@ -322,8 +322,9 @@ class AdminController extends Controller
         // Get unique cities for search dropdown
         $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city')->sort();
         $units = \App\Models\Unit::orderBy('name')->get();
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
-        return view('backend.pos.index', compact('customers', 'categories', 'brands', 'product_models', 'cities', 'suppliers', 'units'));
+        return view('backend.pos.index', compact('customers', 'categories', 'brands', 'product_models', 'cities', 'suppliers', 'units', 'accounts'));
     }
 
     public function storePosOrder(Request $request)
@@ -406,15 +407,23 @@ class AdminController extends Controller
 
         // Ledger Integration
         if ($user) {
-            // Only link to Cash Register if payment method is "cash"
-            $activeRegister = \App\Models\CashRegister::where('status', 'open')
-                ->where('user_id', auth()->id())
-                ->latest()
-                ->first();
-                
-            $financialAccountId = null;
-            if ($activeRegister && strtolower($data['payment_method']) == 'cash') {
-                $financialAccountId = $activeRegister->financial_account_id;
+            // Determine Financial Account from payment method
+            $financialAccountId = is_numeric($data['payment_method']) ? $data['payment_method'] : null;
+            
+            // Fallback for legacy "cash" method
+            if (!$financialAccountId && strtolower($data['payment_method']) == 'cash') {
+                $activeRegister = \App\Models\CashRegister::where('status', 'open')
+                    ->where('user_id', auth()->id())
+                    ->latest()
+                    ->first();
+                $financialAccountId = $activeRegister ? $activeRegister->financial_account_id : null;
+            }
+
+            // For the description string
+            $methodName = $data['payment_method'];
+            if ($financialAccountId) {
+                $acc = \App\Models\FinancialAccount::find($financialAccountId);
+                $methodName = $acc ? $acc->name : 'Account';
             }
 
             // record the debt (Always debit)
@@ -435,7 +444,7 @@ class AdminController extends Controller
                     now(),
                     'credit',
                     'payment',
-                    'Payment for Order #' . $order->order_number . ' via ' . ($financialAccountId ? 'Register' : $order->payment_method),
+                    'Payment for Order #' . $order->order_number . ' via ' . $methodName,
                     $amount_paid,
                     $order->id,
                     null, // paymentMethod

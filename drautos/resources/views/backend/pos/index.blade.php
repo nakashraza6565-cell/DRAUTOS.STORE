@@ -450,27 +450,25 @@
                         <label class="font-weight-bold text-uppercase small text-muted mb-3 d-block">Select Payment Method</label>
 
                         <div class="row no-gutters mb-4" id="payment-methods-grid">
-                            <div class="col-6 p-1">
-                                <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="cash">
-                                    <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
-                                    <i class="fas fa-money-bill-wave fa-lg text-success mb-2"></i>
-                                    <div class="small font-weight-bold">CASH</div>
+                            <!-- Show Active Cash Register as first option if exists -->
+                            @php
+                                $activeReg = \App\Models\CashRegister::where('status', 'open')->where('user_id', auth()->id())->first();
+                                $activeAccountId = $activeReg ? $activeReg->financial_account_id : null;
+                            @endphp
+                            
+                            @foreach($accounts as $acc)
+                                <div class="col-6 p-1">
+                                    <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all {{ $acc->id == $activeAccountId ? 'active' : '' }}" 
+                                         data-method="{{ $acc->id }}" 
+                                         data-is-cash="{{ $acc->type == 'cash' ? 'yes' : 'no' }}">
+                                        <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
+                                        <i class="fas fa-{{$acc->type == 'bank' ? 'university' : ($acc->type == 'wallet' ? 'mobile-alt' : 'money-bill-wave')}} fa-lg text-{{$acc->type == 'cash' ? 'success' : ($acc->type == 'wallet' ? 'warning' : 'primary')}} mb-2"></i>
+                                        <div class="small font-weight-bold text-uppercase">{{$acc->name}}</div>
+                                        <div style="font-size: 10px;" class="text-muted">Bal: Rs. {{ number_format($acc->current_balance, 0) }}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-6 p-1">
-                                <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="wallet">
-                                    <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
-                                    <i class="fas fa-wallet fa-lg text-warning mb-2"></i>
-                                    <div class="small font-weight-bold">WALLET TRANSFER</div>
-                                </div>
-                            </div>
-                            <div class="col-6 p-1">
-                                <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="bank">
-                                    <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
-                                    <i class="fas fa-university fa-lg text-primary mb-2"></i>
-                                    <div class="small font-weight-bold">BANK / CARD</div>
-                                </div>
-                            </div>
+                            @endforeach
+
                             <div class="col-6 p-1">
                                 <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="credit">
                                     <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
