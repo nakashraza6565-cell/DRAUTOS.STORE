@@ -404,8 +404,16 @@ class AdminController extends Controller
         // Log the phone number found
         \Log::info("POS Order Created. Customer ID: {$data['customer_id']}, Phone: {$order->phone}");
 
-        // Ledger Integration - SKIP for Walk-in Customer (ID 1)
-        if ($user && $user->id != 1) {
+        // Ledger Integration
+        if ($user) {
+            // Find active cash register for this admin to link payment
+            $activeRegister = \App\Models\CashRegister::where('status', 'open')
+                ->where('user_id', auth()->id())
+                ->latest()
+                ->first();
+            $financialAccountId = $activeRegister ? $activeRegister->financial_account_id : null;
+
+            // record the debt (Always debit)
             CustomerLedger::record(
                 $user->id,
                 now(),
@@ -417,14 +425,16 @@ class AdminController extends Controller
             );
             
             if ($amount_paid > 0) {
+                // record the payment (Always credit)
                 CustomerLedger::record(
                     $user->id,
                     now(),
                     'credit',
                     'payment',
-                    'Payment for Order #' . $order->order_number . ' via ' . $order->payment_method,
+                    'Payment for Order #' . $order->order_number . ' via ' . ($financialAccountId ? 'Register' : $order->payment_method),
                     $amount_paid,
-                    $order->id
+                    $order->id,
+                    $financialAccountId // NEW: Pass the financial account ID from the active register
                 );
             }
         }

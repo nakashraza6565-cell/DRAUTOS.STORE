@@ -13,6 +13,7 @@
             <tr>
               <th>Date</th>
               <th>Title</th>
+              <th>Account</th>
               <th>Description</th>
               <th>Amount</th>
               <th>Action</th>
@@ -23,6 +24,13 @@
                 <tr>
                     <td>{{$expense->date}}</td>
                     <td>{{$expense->title}}</td>
+                    <td>
+                        @if($expense->financialAccount)
+                            <span class="badge badge-info">{{$expense->financialAccount->name}}</span>
+                        @else
+                            <span class="badge badge-secondary">Manual</span>
+                        @endif
+                    </td>
                     <td>{{$expense->description}}</td>
                     <td>Rs. {{number_format($expense->amount, 2)}}</td>
                     <td>

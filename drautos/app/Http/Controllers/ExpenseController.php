@@ -10,14 +10,14 @@ class ExpenseController extends Controller
 {
     public function index()
     {
-        // Simple model definition inline or use DB if model not made yet (I will make model)
-        $expenses = DB::table('expenses')->orderBy('date', 'DESC')->get();
+        $expenses = Expense::with('financialAccount')->orderBy('date', 'DESC')->get();
         return view('backend.expense.index', compact('expenses'));
     }
 
     public function create()
     {
-        return view('backend.expense.create');
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        return view('backend.expense.create', compact('accounts'));
     }
 
     public function store(Request $request)
@@ -25,24 +25,45 @@ class ExpenseController extends Controller
         $request->validate([
             'title' => 'required|string',
             'amount' => 'required|numeric',
-            'date' => 'required|date'
+            'date' => 'required|date',
+            'financial_account_id' => 'nullable|exists:financial_accounts,id'
         ]);
 
-        DB::table('expenses')->insert([
+        $expense = Expense::create([
             'title' => $request->title,
             'amount' => $request->amount,
             'date' => $request->date,
             'description' => $request->description,
-            'created_at' => now(),
-            'updated_at' => now()
+            'financial_account_id' => $request->financial_account_id,
+            'user_id' => auth()->id()
         ]);
+
+        if ($request->financial_account_id && $request->amount > 0) {
+            \App\Models\AccountTransaction::record(
+                $request->financial_account_id,
+                $request->amount,
+                'out',
+                'Expense',
+                $expense->id,
+                'Expense: ' . $request->title,
+                $request->date
+            );
+        }
 
         return redirect()->route('expenses.index')->with('success', 'Expense created successfully');
     }
 
     public function destroy($id)
     {
-        DB::table('expenses')->where('id', $id)->delete();
+        $expense = Expense::findOrFail($id);
+        
+        // Remove linked transaction if exists
+        \App\Models\AccountTransaction::where('reference_type', 'Expense')
+            ->where('reference_id', $expense->id)
+            ->delete();
+            
+        $expense->delete();
+
         return back()->with('success', 'Expense deleted');
     }
 }

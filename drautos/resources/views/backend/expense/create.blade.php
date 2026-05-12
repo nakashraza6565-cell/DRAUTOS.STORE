@@ -22,6 +22,16 @@
             <label>Description</label>
             <textarea name="description" class="form-control" rows="3"></textarea>
         </div>
+        <div class="form-group">
+            <label>Deduct From (Financial Account)</label>
+            <select name="financial_account_id" class="form-control">
+                <option value="">-- No Account (Manual Tracking) --</option>
+                @foreach($accounts as $acc)
+                    <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
+                @endforeach
+            </select>
+            <small class="text-muted">Select an account to automatically record the cash outflow.</small>
+        </div>
         <button class="btn btn-success" type="submit">Submit</button>
       </form>
     </div>
