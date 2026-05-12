@@ -233,17 +233,23 @@
             @php
                 $amount_paid = $order->amount_paid ?? 0;
                 $current_bill_unpaid = $order->total_amount - $amount_paid;
-                $current_user_balance = $order->user->current_balance ?? 0;
                 
-                // Check if this order is already recorded in the ledger
-                $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
-
-                if($is_in_ledger) {
-                    $previous_balance = $current_user_balance - $current_bill_unpaid;
+                if($order->user_id == 1) {
+                    $previous_balance = 0;
+                    $final_balance_due = $current_bill_unpaid;
                 } else {
-                    $previous_balance = $current_user_balance;
+                    $current_user_balance = $order->user->current_balance ?? 0;
+                    
+                    // Check if this order is already recorded in the ledger
+                    $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
+
+                    if($is_in_ledger) {
+                        $previous_balance = $current_user_balance - $current_bill_unpaid;
+                    } else {
+                        $previous_balance = $current_user_balance;
+                    }
+                    $final_balance_due = $previous_balance + $current_bill_unpaid;
                 }
-                $final_balance_due = $previous_balance + $current_bill_unpaid;
             @endphp
 
             <div class="info-grid" style="margin-top: 10px;">

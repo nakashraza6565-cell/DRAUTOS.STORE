@@ -117,7 +117,9 @@
             <td width="30%">
                 <div class="info-title">Account Status</div>
                 <div class="info-content">
-                    Current Balance: <strong style="font-size:12px;">Rs. {{ number_format($order->user->current_balance ?? $order->total_amount, 2) }}</strong><br>
+                    @if($order->user_id != 1)
+                        Current Balance: <strong style="font-size:12px;">Rs. {{ number_format($order->user->current_balance ?? $order->total_amount, 2) }}</strong><br>
+                    @endif
                     Payment Status: {{ strtoupper($order->payment_status) }}
                 </div>
             </td>
@@ -240,21 +242,26 @@
                 $amount_paid = $order->amount_paid ?? 0;
                 $current_bill_unpaid = $order->total_amount - $amount_paid;
                 
-                // Get Current Ledger Balance
-                $current_user_balance = $order->user->current_balance ?? 0;
-                
-                // Check if this order is already recorded in the ledger
-                $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
-                
-                // If it's in the ledger, the current_balance already includes this bill.
-                // We subtract the unpaid portion to find what the balance was BEFORE this bill.
-                if($is_in_ledger) {
-                    $previous_balance = $current_user_balance - $current_bill_unpaid;
+                if($order->user_id == 1) {
+                    $previous_balance = 0;
+                    $final_balance_due = $current_bill_unpaid;
                 } else {
-                    $previous_balance = $current_user_balance;
+                    // Get Current Ledger Balance
+                    $current_user_balance = $order->user->current_balance ?? 0;
+                    
+                    // Check if this order is already recorded in the ledger
+                    $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
+                    
+                    // If it's in the ledger, the current_balance already includes this bill.
+                    // We subtract the unpaid portion to find what the balance was BEFORE this bill.
+                    if($is_in_ledger) {
+                        $previous_balance = $current_user_balance - $current_bill_unpaid;
+                    } else {
+                        $previous_balance = $current_user_balance;
+                    }
+                    
+                    $final_balance_due = $previous_balance + $current_bill_unpaid;
                 }
-                
-                $final_balance_due = $previous_balance + $current_bill_unpaid;
             @endphp
             <tr>
                 <td class="label">Current Bill Total</td>
