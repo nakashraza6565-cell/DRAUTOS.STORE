@@ -109,12 +109,17 @@ class SupplierLedgerController extends Controller
                 $paymentDetails['all_cheque_ids'] = $chequeIds;
             }
 
+            $description = $validated['description'];
+            if (!$request->financial_account_id && in_array($validated['category'], ['payment', 'manual'])) {
+                $description .= ' (via CASH)';
+            }
+
             SupplierLedger::record(
                 $validated['supplier_id'],
                 $validated['transaction_date'],
                 $validated['type'],
                 $validated['category'],
-                $validated['description'],
+                $description,
                 $validated['amount'],
                 $referenceId,
                 $paymentMethod,

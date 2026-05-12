@@ -78,12 +78,17 @@ class CustomerLedgerController extends Controller
         ]);
 
         try {
+            $description = $validated['description'];
+            if (!$request->financial_account_id && in_array($validated['category'], ['payment', 'manual'])) {
+                $description .= ' (via CASH)';
+            }
+
             CustomerLedger::record(
                 $validated['user_id'],
                 $validated['transaction_date'],
                 $validated['type'],
                 $validated['category'],
-                $validated['description'],
+                $description,
                 $validated['amount'],
                 null,
                 null,

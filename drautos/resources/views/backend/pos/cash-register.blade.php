@@ -57,6 +57,7 @@
                         <div class="card-body py-2">
                              <div class="d-flex justify-content-between mb-1"><span>Expenses Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['expenses'], 2)}}</span></div>
                              <div class="d-flex justify-content-between mb-1"><span>Purchase Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['purchase_payments'], 2)}}</span></div>
+                             <div class="d-flex justify-content-between mb-1"><span>Supplier Ledger Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['supplier_ledger_payments'], 2)}}</span></div>
                              <div class="d-flex justify-content-between"><span>Packaging Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['packaging_payments'], 2)}}</span></div>
                              <hr class="my-2">
                              <div class="d-flex justify-content-between text-danger"><span>Total Outflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_out'], 2)}}</span></div>

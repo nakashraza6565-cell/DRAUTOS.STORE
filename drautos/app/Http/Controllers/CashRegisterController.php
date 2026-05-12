@@ -49,7 +49,16 @@ class CashRegisterController extends Controller
             $packagingPayments = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
                                 ->sum('total_price');
 
-            $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments;
+            // 6. Manual Supplier Ledger Payments (Cash Only)
+            $supplierLedgerPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+                                ->where('type', 'credit') // Payment made to supplier
+                                ->where('category', 'payment')
+                                ->where(function($q) {
+                                    $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%');
+                                })
+                                ->sum('amount');
+
+            $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments + $supplierLedgerPayments;
 
             $summary = [
                 'pos_sales' => $posSales,
@@ -57,6 +66,7 @@ class CashRegisterController extends Controller
                 'expenses' => $expenses,
                 'purchase_payments' => $purchaseOrderPayments,
                 'packaging_payments' => $packagingPayments,
+                'supplier_ledger_payments' => $supplierLedgerPayments,
                 'total_in' => $posSales + $laterPayments,
                 'total_out' => $totalOut,
                 'expected_cash' => $activeRegister->opening_amount + ($posSales + $laterPayments) - $totalOut
@@ -124,7 +134,15 @@ class CashRegisterController extends Controller
         $packagingPayments = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
                             ->sum('total_price');
 
-        $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments;
+        $supplierLedgerPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+                            ->where('type', 'credit')
+                            ->where('category', 'payment')
+                            ->where(function($q) {
+                                $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%');
+                            })
+                            ->sum('amount');
+
+        $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments + $supplierLedgerPayments;
 
         $expected_closing = $register->opening_amount + ($posSales + $laterPayments) - $totalOut;
 
