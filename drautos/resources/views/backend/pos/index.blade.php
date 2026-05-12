@@ -510,8 +510,14 @@
                 </div>
             </div>
             <div class="modal-footer border-0 p-4">
+                <div class="custom-control custom-checkbox mr-auto">
+                    <input type="checkbox" class="custom-control-input" id="print-receipt-toggle" checked>
+                    <label class="custom-control-label font-weight-bold text-success" for="print-receipt-toggle">
+                        <i class="fas fa-print mr-1"></i> Print Thermal Receipt
+                    </label>
+                </div>
                 <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success btn-lg px-5 shadow" id="complete-order">SAVE & PRINT INVOICE</button>
+                <button type="button" class="btn btn-success btn-lg px-5 shadow" id="complete-order">SAVE ORDER</button>
             </div>
         </div>
     </div>
@@ -1191,8 +1197,8 @@
             
             // Force only Cash for Walk-in Customer (ID 1)
             if (id == 1) {
-                $('.payment-option[data-method="credit"]').addClass('disabled-option').css('opacity', '0.5').css('pointer-events', 'none');
-                $('.payment-option[data-method="cod"]').addClass('disabled-option').css('opacity', '0.5').css('pointer-events', 'none');
+                $('.payment-option[data-method="credit"]').parent().hide();
+                $('.payment-option[data-method="cod"]').parent().hide();
                 
                 // Force select Cash if Credit or COD was active
                 let activeMethod = $('.payment-option.active').data('method');
@@ -1202,8 +1208,8 @@
                 // Clear payment amount for walk-in
                 $('#amount-received').val('');
             } else {
-                $('.payment-option[data-method="credit"]').removeClass('disabled-option').css('opacity', '1').css('pointer-events', 'auto');
-                $('.payment-option[data-method="cod"]').removeClass('disabled-option').css('opacity', '1').css('pointer-events', 'auto');
+                $('.payment-option[data-method="credit"]').parent().show();
+                $('.payment-option[data-method="cod"]').parent().show();
             }
 
             $('#modal-ledger-balance').text('Rs. ' + balance.toFixed(2));
@@ -1221,13 +1227,30 @@
                         item.original_price = newPrice;
                         item.price = newPrice;
                     }
-                    if (customer_id == 1) {
+                    if (id == 1) {
                         item.last_purchase = null;
                     } else {
                         fetchLastPurchase(item);
                     }
                 });
                 renderCart();
+            }
+        });
+
+        // Ensure walk-in restrictions are applied when payment modal opens
+        $('#paymentModal').on('show.bs.modal', function() {
+            let id = $('#customer-select').val();
+            if (id == 1) {
+                $('.payment-option[data-method="credit"]').parent().hide();
+                $('.payment-option[data-method="cod"]').parent().hide();
+                
+                let activeMethod = $('.payment-option.active').data('method');
+                if (activeMethod == 'credit' || activeMethod == 'cod') {
+                    $('.payment-option[data-method="cash"]').trigger('click');
+                }
+            } else {
+                $('.payment-option[data-method="credit"]').parent().show();
+                $('.payment-option[data-method="cod"]').parent().show();
             }
         });
 
@@ -1916,33 +1939,33 @@
             data: payload,
             success: function(response) {
                 if (response.status == 'success') {
-                    // Handle Printing via hidden iframe
-                    if (response.thermal_url) {
+                    // Handle Printing via hidden iframe only if toggled ON
+                    if ($('#print-receipt-toggle').is(':checked') && response.thermal_url) {
                         $('#print-iframe').attr('src', response.thermal_url);
                     }
 
                     if (response.wa_sent) {
-
                         Swal.fire({
                             title: 'Success!',
-                            text: 'Order saved and Receipt Printed.',
+                            text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
                             icon: 'success',
-                            timer: 2000
+                            timer: 4000
                         }).then(() => {
                             location.reload();
                         });
                     } else {
                         Swal.fire({
                             title: 'Order Saved',
-                            text: 'Order created and Receipt Sent to Printer, but WhatsApp could not be sent.',
-                            icon: 'warning'
+                            text: 'Order created' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Sent to Printer' : '') + ', but WhatsApp could not be sent.',
+                            icon: 'warning',
+                            timer: 5000
                         }).then(() => {
                             location.reload();
                         });
                     }
                 } else {
                     Swal.fire('Error', response.message, 'error');
-                    $('#complete-order').prop('disabled', false).text('SAVE & PRINT INVOICE');
+                    $('#complete-order').prop('disabled', false).text('SAVE ORDER');
                 }
             },
             error: function(err) {
@@ -1957,7 +1980,7 @@
                 } else {
                     alert('Something went wrong! Check console.');
                 }
-                $('#complete-order').prop('disabled', false).text('SAVE & PRINT INVOICE');
+                $('#complete-order').prop('disabled', false).text('SAVE ORDER');
             }
         });
     });
