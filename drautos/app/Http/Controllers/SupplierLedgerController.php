@@ -109,9 +109,22 @@ class SupplierLedgerController extends Controller
                 $paymentDetails['all_cheque_ids'] = $chequeIds;
             }
 
+            $financialAccountId = $validated['financial_account_id'] ?? null;
             $description = $validated['description'];
-            if (!$request->financial_account_id && in_array($validated['category'], ['payment', 'manual'])) {
-                $description .= ' (via CASH)';
+
+            // Auto-detect active register if no account selected for cash transactions
+            if (!$financialAccountId && in_array($validated['category'], ['payment', 'manual'])) {
+                $activeRegister = \App\Models\CashRegister::where('status', 'open')
+                    ->where('user_id', auth()->id())
+                    ->latest()
+                    ->first();
+                
+                if ($activeRegister) {
+                    $financialAccountId = $activeRegister->financial_account_id;
+                    $description .= ' (Auto-linked to Register)';
+                } else {
+                    $description .= ' (via CASH)';
+                }
             }
 
             SupplierLedger::record(
@@ -124,7 +137,7 @@ class SupplierLedgerController extends Controller
                 $referenceId,
                 $paymentMethod,
                 $paymentDetails,
-                $validated['financial_account_id'] ?? null
+                $financialAccountId
             );
 
             DB::commit();

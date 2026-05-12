@@ -42,8 +42,8 @@ Route::get('/fix-db', function () {
             ]);
         }
 
-        // Seed 3 Admin Cash accounts if they don't exist
-        $admins = ['Naqash Cash', 'Admin 2 Cash', 'Admin 3 Cash'];
+        // Seed Staff Cash accounts if they don't exist
+        $admins = ['Naqash Cash', 'Tamoor Cash', 'Danial Cash'];
         foreach ($admins as $name) {
             \App\Models\FinancialAccount::firstOrCreate(
                 ['name' => $name],

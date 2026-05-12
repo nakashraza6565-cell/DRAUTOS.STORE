@@ -78,9 +78,22 @@ class CustomerLedgerController extends Controller
         ]);
 
         try {
+            $financialAccountId = $validated['financial_account_id'] ?? null;
             $description = $validated['description'];
-            if (!$request->financial_account_id && in_array($validated['category'], ['payment', 'manual'])) {
-                $description .= ' (via CASH)';
+
+            // Auto-detect active register if no account selected for cash transactions
+            if (!$financialAccountId && in_array($validated['category'], ['payment', 'manual'])) {
+                $activeRegister = \App\Models\CashRegister::where('status', 'open')
+                    ->where('user_id', auth()->id())
+                    ->latest()
+                    ->first();
+                
+                if ($activeRegister) {
+                    $financialAccountId = $activeRegister->financial_account_id;
+                    $description .= ' (Auto-linked to Register)';
+                } else {
+                    $description .= ' (via CASH)';
+                }
             }
 
             CustomerLedger::record(
@@ -93,7 +106,7 @@ class CustomerLedgerController extends Controller
                 null,
                 null,
                 null,
-                $validated['financial_account_id'] ?? null
+                $financialAccountId
             );
 
             return redirect()->back()->with('success', 'Transaction recorded successfully');
