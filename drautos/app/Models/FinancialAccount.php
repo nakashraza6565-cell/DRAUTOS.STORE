@@ -9,7 +9,7 @@ class FinancialAccount extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type', 'account_number', 'current_balance', 'status'];
+    protected $fillable = ['name', 'type', 'account_number', 'opening_balance', 'current_balance', 'status'];
 
     public function transactions()
     {
@@ -24,7 +24,7 @@ class FinancialAccount extends Model
         $in = AccountTransaction::where('financial_account_id', $accountId)->where('type', 'in')->sum('amount');
         $out = AccountTransaction::where('financial_account_id', $accountId)->where('type', 'out')->sum('amount');
 
-        $account->current_balance = $in - $out;
+        $account->current_balance = $account->opening_balance + $in - $out;
         $account->save();
         
         return $account->current_balance;

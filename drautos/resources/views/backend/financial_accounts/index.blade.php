@@ -81,6 +81,10 @@
                                                 <input type="text" name="account_number" class="form-control" value="{{$account->account_number}}">
                                             </div>
                                             <div class="form-group">
+                                                <label>Opening Balance</label>
+                                                <input type="number" name="opening_balance" class="form-control" value="{{$account->opening_balance}}" step="0.01">
+                                            </div>
+                                            <div class="form-group">
                                                 <label>Status</label>
                                                 <select name="status" class="form-control">
                                                     <option value="active" {{$account->status == 'active' ? 'selected' : ''}}>Active</option>
@@ -130,6 +134,10 @@
                     <div class="form-group">
                         <label>Account Number</label>
                         <input type="text" name="account_number" class="form-control" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label>Opening Balance</label>
+                        <input type="number" name="opening_balance" class="form-control" placeholder="0.00" step="0.01">
                     </div>
                 </div>
                 <div class="modal-footer">

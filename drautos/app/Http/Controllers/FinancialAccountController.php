@@ -20,9 +20,11 @@ class FinancialAccountController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'nullable|string',
             'account_number' => 'nullable|string',
+            'opening_balance' => 'nullable|numeric',
         ]);
 
-        FinancialAccount::create($request->all());
+        $account = FinancialAccount::create($request->all());
+        FinancialAccount::updateBalance($account->id);
 
         request()->session()->flash('success', 'Account created successfully');
         return back();
@@ -43,6 +45,7 @@ class FinancialAccountController extends Controller
     {
         $account = FinancialAccount::findOrFail($id);
         $account->update($request->all());
+        FinancialAccount::updateBalance($id);
         
         request()->session()->flash('success', 'Account updated successfully');
         return back();
