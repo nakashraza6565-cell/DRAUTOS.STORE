@@ -27,6 +27,9 @@ class OrderController extends Controller
             ->when($request->status, function($q) use ($request) {
                 return $q->where('status', $request->status);
             })
+            ->when($request->user_id, function($q) use ($request) {
+                return $q->where('user_id', $request->user_id);
+            })
             ->when($request->city, function($q) use ($request) {
                 return $q->whereHas('user', function($sq) use ($request) {
                     $sq->where('city', $request->city);

@@ -206,7 +206,7 @@ class UsersController extends Controller
      */
     public function show($id)
     {
-        //
+        return redirect()->route('admin.customer-ledger.show', $id);
     }
 
     /**

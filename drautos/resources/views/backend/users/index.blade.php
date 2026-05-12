@@ -117,7 +117,7 @@
                                     {{$user->role}}
                                 </div>
                                 <div class="h5 mb-2 font-weight-bold text-gray-800">
-                                    {{$user->name}}
+                                    <a href="{{route('users.show', $user->id)}}" class="text-gray-800 text-decoration-none" title="View Ledger">{{$user->name}}</a>
                                 </div>
                                 <div class="mb-3 text-muted small">
                                     <div class="text-truncate"><i class="fas fa-envelope fa-sm mr-1"></i> {{$user->email}}</div>
@@ -168,6 +168,12 @@
                                     @endif
                                     <a href="{{route('sales-orders.create')}}?user_id={{$user->id}}" class="btn btn-success btn-circle btn-sm shadow-sm" title="Create Sale Order">
                                         <i class="fas fa-cart-plus"></i>
+                                    </a>
+                                    <a href="{{route('users.show', $user->id)}}" class="btn btn-info btn-circle btn-sm shadow-sm" title="View Billing/Ledger">
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    </a>
+                                    <a href="{{route('order.index')}}?user_id={{$user->id}}" class="btn btn-secondary btn-circle btn-sm shadow-sm" title="View All Orders">
+                                        <i class="fas fa-list-alt"></i>
                                     </a>
                                     <a href="{{route('users.edit',$user->id)}}" class="btn btn-primary btn-circle btn-sm" title="Edit">
                                         <i class="fas fa-edit"></i>

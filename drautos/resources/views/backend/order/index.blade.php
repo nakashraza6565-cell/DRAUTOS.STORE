@@ -76,7 +76,9 @@
                 <tr>
                     <td data-title="S.N.">{{$loop->iteration}}</td>
                     <td data-title="Customer">
-                        <div class="font-weight-bold">{{$order->first_name}} {{$order->last_name}}</div>
+                        <div class="font-weight-bold">
+                            <a href="{{ $order->user_id ? route('users.show', $order->user_id) : '#' }}" class="text-primary">{{$order->first_name}} {{$order->last_name}}</a>
+                        </div>
                         <div class="d-flex align-items-center">
                             <small class="text-muted mr-2">{{$order->order_number}}</small>
                             @if($order->sales_order_id)
