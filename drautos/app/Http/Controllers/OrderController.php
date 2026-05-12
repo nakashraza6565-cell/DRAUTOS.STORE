@@ -53,8 +53,17 @@ class OrderController extends Controller
         }
 
         // 3. Overview View: List customers who have orders
-        $customersWithOrders = User::whereHas('orders')
-            ->withCount(['orders as orders_count'])
+        $query = User::whereHas('orders');
+        
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->search . '%')
+                  ->orWhere('phone', 'LIKE', '%' . $request->search . '%')
+                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+            });
+        }
+
+        $customersWithOrders = $query->withCount(['orders as orders_count'])
             ->get()
             ->map(function($user) {
                 $user->total_sales = $user->orders()->sum('total_amount');

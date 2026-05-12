@@ -15,6 +15,21 @@
             </div>
         </div>
         <div class="card-body">
+            <form method="GET" class="mb-4">
+                <div class="input-group shadow-sm">
+                    <input type="text" name="search" class="form-control border-0 bg-light" placeholder="Search customer by name, phone or email..." value="{{request()->search}}">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary px-4" type="submit">
+                            <i class="fas fa-search mr-2"></i> Search
+                        </button>
+                        @if(request()->search)
+                            <a href="{{route('order.index')}}" class="btn btn-secondary px-3">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
             <div class="table-responsive">
                 @if(count($customersWithOrders) > 0)
                 <table class="table table-hover responsive-table-to-cards" id="customer-orders-table" width="100%" cellspacing="0">
