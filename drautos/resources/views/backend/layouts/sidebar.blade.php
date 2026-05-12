@@ -93,8 +93,8 @@
     @endcan
 
     @can('view-order')
-    <li class="nav-item {{ Request::is('admin/order*') || Request::is('admin/customer-ledger*') ? 'active' : '' }}">
-        <a class="nav-link py-2" href="{{route('admin.customer-ledger.index')}}">
+    <li class="nav-item {{ Request::is('admin/order*') ? 'active' : '' }}">
+        <a class="nav-link py-2" href="{{route('order.index')}}">
           <i class="fas fa-cart-shopping mr-2"></i>
           <span>Orders & Billing</span>
         </a>
