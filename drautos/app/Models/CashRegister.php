@@ -7,7 +7,7 @@ use App\User;
 
 class CashRegister extends Model
 {
-    protected $fillable = ['user_id', 'opening_amount', 'closing_amount', 'status', 'opened_at', 'closed_at', 'note'];
+    protected $fillable = ['user_id', 'financial_account_id', 'opening_amount', 'closing_amount', 'status', 'opened_at', 'closed_at', 'note'];
 
     protected $casts = [
         'opened_at' => 'datetime',
@@ -16,5 +16,10 @@ class CashRegister extends Model
 
     public function user() {
         return $this->belongsTo(\App\User::class, 'user_id');
+    }
+
+    public function financialAccount()
+    {
+        return $this->belongsTo(\App\Models\FinancialAccount::class, 'financial_account_id');
     }
 }

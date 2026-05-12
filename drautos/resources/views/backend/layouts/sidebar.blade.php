@@ -90,12 +90,6 @@
           <span>Cash Register</span>
         </a>
     </li>
-    <li class="nav-item {{ Request::is('admin/financial-accounts*') ? 'active' : '' }}">
-        <a class="nav-link py-2" href="{{route('financial-accounts.index')}}">
-          <i class="fas fa-university mr-2"></i>
-          <span>Bank & Wallets</span>
-        </a>
-    </li>
     @endcan
 
     @can('view-order')

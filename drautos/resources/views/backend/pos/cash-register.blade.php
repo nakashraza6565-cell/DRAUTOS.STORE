@@ -15,7 +15,8 @@
                     <div class="border rounded p-3 bg-light border-left-success" style="border-left: 5px solid #1cc88a !important;">
                         <small class="text-uppercase font-weight-bold text-muted">Register Status</small>
                         <h4 class="text-success mt-1">OPEN</h4>
-                        <small>Opened by: {{$activeRegister->user->name ?? 'Admin'}} at {{$activeRegister->opened_at->format('d M, h:i A')}}</small>
+                        <small>Account: <strong>{{$activeRegister->financialAccount->name ?? 'Default Cash'}}</strong></small><br>
+                        <small>By: {{$activeRegister->user->name ?? 'Admin'}} at {{$activeRegister->opened_at->format('d M, h:i A')}}</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -37,7 +38,7 @@
                      </button>
                 </div>
             </div>
-
+            @if($activeRegister)
             <!-- Detailed Breakdown -->
             <div class="row mb-4">
                 <div class="col-md-6">
@@ -65,17 +66,18 @@
                     </div>
                 </div>
             </div>
+            @endif
 
-            <!-- Financial Accounts Section -->
-            <h5 class="mb-3 font-weight-bold text-gray-800 mt-4">Bank & Wallet Balances</h5>
+            <!-- Unified Account Balances (Banks, Wallets, and Physical Registers) -->
+            <h5 class="mb-3 font-weight-bold text-gray-800 mt-4">All Accounts & Balances</h5>
             <div class="row mb-4">
-                @forelse($financialAccounts as $acc)
+                @foreach($financialAccounts as $acc)
                 <div class="col-md-3 mb-3">
-                    <div class="card border-left-{{$acc->current_balance >= 0 ? 'info' : 'danger'}} shadow-sm h-100 py-2">
+                    <div class="card border-left-{{$acc->type == 'cash' ? 'primary' : 'info'}} shadow-sm h-100 py-2">
                         <div class="card-body py-1">
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">{{$acc->name}}</div>
+                                    <div class="text-xs font-weight-bold text-{{$acc->type == 'cash' ? 'primary' : 'info'}} text-uppercase mb-1">{{$acc->name}}</div>
                                     <div class="h6 mb-0 font-weight-bold text-gray-800">Rs. {{number_format($acc->current_balance, 2)}}</div>
                                 </div>
                                 <div class="col-auto">
@@ -83,31 +85,41 @@
                                 </div>
                             </div>
                             <div class="mt-2 text-right">
-                                <a href="{{route('financial-accounts.show', $acc->id)}}" class="text-xs text-primary font-weight-bold">View Ledger</a>
+                                <a href="{{route('financial-accounts.show', $acc->id)}}" class="text-xs text-primary font-weight-bold">View History</a>
                             </div>
                         </div>
                     </div>
                 </div>
-                @empty
-                <div class="col-12">
-                    <div class="alert alert-light border">No financial accounts linked. <a href="{{route('financial-accounts.index')}}">Add Accounts</a></div>
-                </div>
-                @endforelse
+                @endforeach
             </div>
-            @else
-            <!-- Closed State - Open New -->
-            <div class="text-center py-5 border rounded bg-white shadow-sm">
+
+            <!-- Open New Register (If some accounts are closed) -->
+            @if(!$activeRegister)
+            <div class="text-center py-5 border rounded bg-white shadow-sm mb-4">
                 <i class="fas fa-cash-register fa-4x text-gray-300 mb-3"></i>
-                <h4 class="mb-3">Register is Closed</h4>
-                <form action="{{route('cash-register.open')}}" method="POST" class="d-inline-block form-inline">
+                <h4 class="mb-3">Open a Cash Register</h4>
+                <form action="{{route('cash-register.open')}}" method="POST" class="d-inline-block text-left" style="max-width: 400px;">
                     @csrf
-                    <input type="number" name="opening_amount" class="form-control mr-2" placeholder="Opening Cash Amount" required min="0">
-                    <button type="submit" class="btn btn-primary shadow-sm">
-                        <i class="fas fa-check mr-2"></i> OPEN REGISTER FOR NEW SESSION
+                    <div class="form-group">
+                        <label>Select Admin / Cash Account</label>
+                        <select name="financial_account_id" class="form-control" required>
+                            @foreach($cashAccounts as $acc)
+                                <option value="{{$acc->id}}">{{$acc->name}} (Current: Rs. {{number_format($acc->current_balance, 0)}})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Opening Amount (Leave empty to use Current Balance)</label>
+                        <input type="number" name="opening_amount" class="form-control" placeholder="Optional" min="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block shadow-sm">
+                        <i class="fas fa-check mr-2"></i> OPEN REGISTER SESSION
                     </button>
                 </form>
             </div>
             @endif
+
+            @if($activeRegister)
 
             <hr class="my-5">
             <h5 class="mb-3 font-weight-bold text-gray-800">Register History</h5>

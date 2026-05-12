@@ -26,12 +26,12 @@ Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-s
 // (Removed old fix-db route - moved to admin section)
 Route::get('/fix-db', function () {
     try {
-        // Run only the specific migrations for Financial Accounts
         $migrations = [
             '2026_05_12_000001_create_financial_accounts_table.php',
             '2026_05_12_000002_create_account_transactions_table.php',
             '2026_05_12_000003_add_financial_account_id_to_ledgers.php',
-            '2026_05_12_000004_add_opening_balance_to_financial_accounts.php'
+            '2026_05_12_000004_add_opening_balance_to_financial_accounts.php',
+            '2026_05_12_000005_add_financial_account_id_to_cash_registers.php'
         ];
 
         foreach ($migrations as $file) {
@@ -40,22 +40,24 @@ Route::get('/fix-db', function () {
                 '--force' => true
             ]);
         }
+
+        // Seed 3 Admin Cash accounts if they don't exist
+        $admins = ['Naqash Cash', 'Admin 2 Cash', 'Admin 3 Cash'];
+        foreach ($admins as $name) {
+            \App\Models\FinancialAccount::firstOrCreate(
+                ['name' => $name],
+                ['type' => 'cash', 'opening_balance' => 0, 'status' => 'active']
+            );
+        }
         
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
         
-        return "<h1>Success!</h1>
-                <p>Financial Account features have been activated.</p>
-                <a href='/admin' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Back to Dashboard</a>";
+        return "<h1>Unified System Activated!</h1>
+                <p>Cash Registers and Financial Accounts have been merged.</p>
+                <a href='/admin/cash-register' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Go to Cash Register</a>";
     } catch (\Exception $e) {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        return "<h1>Status Check</h1>
-                <p>Checking tables...</p>
-                <ul>
-                    <li>Financial Accounts: " . (\Illuminate\Support\Facades\Schema::hasTable('financial_accounts') ? 'OK' : 'Missing') . "</li>
-                    <li>Transactions: " . (\Illuminate\Support\Facades\Schema::hasTable('account_transactions') ? 'OK' : 'Missing') . "</li>
-                </ul>
-                <p>Error if any: " . $e->getMessage() . "</p>
-                <a href='/admin'>Back to Dashboard</a>";
+        return "<h1>Status Check</h1><p>Error: " . $e->getMessage() . "</p>";
     }
 });
 
