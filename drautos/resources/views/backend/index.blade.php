@@ -408,7 +408,11 @@
                         <label class="small font-weight-bold">Deduct From <span class="text-danger">*</span></label>
                         <select name="financial_account_id" class="form-control border-0 bg-light" required>
                             @php
-                                $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
+                                try {
+                                    $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
+                                } catch (\Throwable $e) {
+                                    $staffAccId = null;
+                                }
                             @endphp
                             <option value="">-- Select Account --</option>
                             @foreach($accounts as $acc)

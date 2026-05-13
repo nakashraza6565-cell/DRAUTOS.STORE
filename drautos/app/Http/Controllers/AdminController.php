@@ -179,10 +179,44 @@ class AdminController extends Controller
             'money_in', 'money_out', 'accounts'
         ));
         } catch (\Throwable $e) {
-            return "<h1>Dashboard Error</h1>
-                    <p>Message: " . $e->getMessage() . "</p>
-                    <p>File: " . $e->getFile() . "</p>
-                    <p>Line: " . $e->getLine() . "</p>";
+            // Log the error
+            \Log::error("Dashboard Error: " . $e->getMessage());
+            
+            // Return a VERY basic version of the dashboard to keep the user working
+            return view('backend.index')->with([
+                'users' => json_encode([]),
+                'order_labels' => json_encode([]),
+                'order_counts' => json_encode([]),
+                'order_amounts' => json_encode([]),
+                'money_in' => json_encode([]),
+                'money_out' => json_encode([]),
+                'accounts' => collect([]),
+                'activity_logs' => collect([]),
+                'ai_headlines' => null,
+                'staff_count' => 0,
+                'category_count' => 0,
+                'product_count' => 0,
+                'order_count' => 0,
+                'today_sales' => 0,
+                'yesterday_sales' => 0,
+                'best_sellers' => collect([]),
+                'recent_customers' => collect([]),
+                'supplier_count' => 0,
+                'total_stock_value' => 0,
+                'active_register' => null,
+                'today_tasks' => collect([]),
+                'new_products' => collect([]),
+                'register_balance' => 0,
+                'today_reminders' => collect([]),
+                'low_stock_count' => 0,
+                'sticker_count' => 0,
+                'box_count' => 0,
+                'today_attendance' => collect([]),
+                'present_staff_count' => 0,
+                'all_staff' => collect([]),
+                'total_payables' => 0,
+                'total_receivables' => 0
+            ]);
         }
     }
 
