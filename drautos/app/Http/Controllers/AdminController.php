@@ -100,14 +100,39 @@ class AdminController extends Controller
             $order_amounts[] = $stat ? (float)$stat->amount : 0;
         }
 
-        // Cash Register Current Balance
+        // Cash Register Current Balance (Expected)
         $register_balance = 0;
         if ($active_register) {
-            $sales = \App\Models\Order::where('created_at', '>=', $active_register->opened_at)
-                ->whereIn('payment_method', ['cod', 'cash'])
-                ->where('status', '!=', 'cancel')
-                ->sum('total_amount');
-            $register_balance = ($active_register->opening_amount ?? 0) + $sales;
+            $opened_at = $active_register->opened_at;
+            $accountId = $active_register->financial_account_id;
+            $now = Carbon::now();
+
+            // Total In (Sales)
+            $posSales = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->where('type', 'credit')
+                        ->where('category', 'payment')
+                        ->sum('amount');
+
+            // Total Out (Expenses + Supplier Payments)
+            $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('amount');
+
+            $supplierPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+                                ->where('financial_account_id', $accountId)
+                                ->where('type', 'credit')
+                                ->where('category', 'payment')
+                                ->sum('amount');
+            
+            $others = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('paid_amount') + 
+                      \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('total_price');
+
+            $register_balance = ($active_register->opening_amount ?? 0) + $posSales - ($expenses + $supplierPayments + $others);
         }
 
         // Today's Payment Reminders for Modal

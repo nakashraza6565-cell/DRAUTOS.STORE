@@ -22,52 +22,50 @@ class CashRegisterController extends Controller
             $now = Carbon::now();
             $accountId = $activeRegister->financial_account_id;
 
-            // 1. Sales - Initial payments at counter (Cash Only)
-            $posSalesQuery = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
-                        ->where('type', 'credit')
-                        ->where('category', 'payment');
-            if($accountId) $posSalesQuery->where('financial_account_id', $accountId);
-            else $posSalesQuery->where('description', 'LIKE', '%via CASH%');
-            $posSales = $posSalesQuery->sum('amount');
-
-            // 2. Later Payments - Payments received via Ledger/Collections (Cash Only)
-            $laterPaymentsQuery = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
+            // --- CASH INFLOW ---
+            // 1. Sales Payments (from customers)
+            $posSales = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
                         ->where('type', 'credit')
                         ->where('category', 'payment')
-                        ->where('description', 'NOT LIKE', '%Order #%');
-            if($accountId) $laterPaymentsQuery->where('financial_account_id', $accountId);
-            else $laterPaymentsQuery->where(function($q) { $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%'); });
-            $laterPayments = $laterPaymentsQuery->sum('amount');
+                        ->sum('amount');
 
-            // 3. Expenses
-            $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])->sum('amount');
+            // --- CASH OUTFLOW ---
+            // 2. Expenses
+            $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('amount');
 
-            // 4. Purchase Payments - Initial payments to suppliers
-            $purchaseOrderPayments = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])->sum('paid_amount');
-
-            // 5. Packaging Purchases
-            $packagingPayments = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])->sum('total_price');
-
-            // 6. Manual Supplier Ledger Payments (Cash Only)
-            $supplierLedgerPaymentsQuery = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+            // 3. Supplier Payments (from Ledger or Orders)
+            $supplierPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+                                ->where('financial_account_id', $accountId)
                                 ->where('type', 'credit') // Payment made to supplier
-                                ->where('category', 'payment');
-            if($accountId) $supplierLedgerPaymentsQuery->where('financial_account_id', $accountId);
-            else $supplierLedgerPaymentsQuery->where(function($q) { $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%'); });
-            $supplierLedgerPayments = $supplierLedgerPaymentsQuery->sum('amount');
+                                ->where('category', 'payment')
+                                ->sum('amount');
 
-            $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments + $supplierLedgerPayments;
+            // 4. Other Outflows (Purchase Orders / Packaging if direct account used)
+            $otherOut = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('paid_amount');
+            
+            $packagingOut = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
+                        ->where('financial_account_id', $accountId)
+                        ->sum('total_price');
+
+            $totalIn = $posSales;
+            $totalOut = $expenses + $supplierPayments + $otherOut + $packagingOut;
 
             $summary = [
-                'pos_sales' => $posSales,
-                'collections' => $laterPayments,
-                'expenses' => $expenses,
-                'purchase_payments' => $purchaseOrderPayments,
-                'packaging_payments' => $packagingPayments,
-                'supplier_ledger_payments' => $supplierLedgerPayments,
-                'total_in' => $posSales + $laterPayments,
+                'total_in' => $totalIn,
                 'total_out' => $totalOut,
-                'expected_cash' => $activeRegister->opening_amount + ($posSales + $laterPayments) - $totalOut
+                'opening' => $activeRegister->opening_amount,
+                'expected_cash' => $activeRegister->opening_amount + $totalIn - $totalOut,
+                'breakdown' => [
+                    'sales' => $posSales,
+                    'expenses' => $expenses,
+                    'supplier_payments' => $supplierPayments,
+                    'others' => $otherOut + $packagingOut
+                ]
             ];
         }
 
@@ -114,33 +112,34 @@ class CashRegisterController extends Controller
         $accountId = $register->financial_account_id;
 
         // 1. Sales
-        $posSalesQuery = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
-                    ->where('type', 'credit')->where('category', 'payment');
-        if($accountId) $posSalesQuery->where('financial_account_id', $accountId);
-        else $posSalesQuery->where('description', 'LIKE', '%via CASH%');
-        $posSales = $posSalesQuery->sum('amount');
+        $posSales = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
+                    ->where('financial_account_id', $accountId)
+                    ->where('type', 'credit')->where('category', 'payment')
+                    ->sum('amount');
 
-        // 2. Later Payments
-        $laterPaymentsQuery = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
-                    ->where('type', 'credit')->where('category', 'payment')->where('description', 'NOT LIKE', '%Order #%');
-        if($accountId) $laterPaymentsQuery->where('financial_account_id', $accountId);
-        else $laterPaymentsQuery->where(function($q) { $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%'); });
-        $laterPayments = $laterPaymentsQuery->sum('amount');
+        // 2. Expenses
+        $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])
+                    ->where('financial_account_id', $accountId)
+                    ->sum('amount');
 
-        $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])->sum('amount');
-        $purchaseOrderPayments = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])->sum('paid_amount');
-        $packagingPayments = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])->sum('total_price');
+        // 3. Supplier Payments
+        $supplierPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+                            ->where('financial_account_id', $accountId)
+                            ->where('type', 'credit')->where('category', 'payment')
+                            ->sum('amount');
 
-        // 6. Manual Supplier Ledger
-        $supplierLedgerPaymentsQuery = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
-                            ->where('type', 'credit')->where('category', 'payment');
-        if($accountId) $supplierLedgerPaymentsQuery->where('financial_account_id', $accountId);
-        else $supplierLedgerPaymentsQuery->where(function($q) { $q->where('description', 'LIKE', '%cash%')->orWhere('description', 'LIKE', '%Cash%'); });
-        $supplierLedgerPayments = $supplierLedgerPaymentsQuery->sum('amount');
+        // 4. Others
+        $others = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
+                    ->where('financial_account_id', $accountId)
+                    ->sum('paid_amount') +
+                  \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
+                    ->where('financial_account_id', $accountId)
+                    ->sum('total_price');
 
-        $totalOut = $expenses + $purchaseOrderPayments + $packagingPayments + $supplierLedgerPayments;
+        $totalIn = $posSales;
+        $totalOut = $expenses + $supplierPayments + $others;
 
-        $expected_closing = $register->opening_amount + ($posSales + $laterPayments) - $totalOut;
+        $expected_closing = $register->opening_amount + $totalIn - $totalOut;
 
         $register->update([
             'closing_amount' => $expected_closing,

@@ -42,26 +42,40 @@
                 <!-- Detailed Breakdown -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-success">Cash Inflow (+)</h6></div>
-                            <div class="card-body py-2">
-                                 <div class="d-flex justify-content-between mb-1"><span>POS Cash Sales:</span><span class="font-weight-bold">Rs. {{number_format($summary['pos_sales'], 2)}}</span></div>
-                                 <div class="d-flex justify-content-between"><span>Later Cash Collections:</span><span class="font-weight-bold">Rs. {{number_format($summary['collections'], 2)}}</span></div>
-                                 <hr class="my-2">
-                                 <div class="d-flex justify-content-between text-success"><span>Total Inflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_in'], 2)}}</span></div>
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white py-3"><h6 class="m-0 font-weight-bold text-success"><i class="fas fa-plus-circle mr-2"></i>Cash In (Received)</h6></div>
+                            <div class="card-body py-4 text-center">
+                                 <h2 class="text-success font-weight-bold">Rs. {{number_format($summary['total_in'], 2)}}</h2>
+                                 <p class="text-muted small">Total amount received in this account since opening</p>
+                                 <div class="border-top pt-3 mt-3 text-left">
+                                     <div class="d-flex justify-content-between mb-1">
+                                         <span>Total Sales & Collections:</span>
+                                         <span class="font-weight-bold">Rs. {{number_format($summary['breakdown']['sales'], 2)}}</span>
+                                     </div>
+                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-header bg-white py-2"><h6 class="m-0 font-weight-bold text-danger">Cash Outflow (-)</h6></div>
-                            <div class="card-body py-2">
-                                 <div class="d-flex justify-content-between mb-1"><span>Expenses Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['expenses'], 2)}}</span></div>
-                                 <div class="d-flex justify-content-between mb-1"><span>Purchase Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['purchase_payments'], 2)}}</span></div>
-                                 <div class="d-flex justify-content-between mb-1"><span>Supplier Ledger Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['supplier_ledger_payments'], 2)}}</span></div>
-                                 <div class="d-flex justify-content-between"><span>Packaging Paid:</span><span class="font-weight-bold">Rs. {{number_format($summary['packaging_payments'], 2)}}</span></div>
-                                 <hr class="my-2">
-                                 <div class="d-flex justify-content-between text-danger"><span>Total Outflow:</span><span class="font-weight-bold">Rs. {{number_format($summary['total_out'], 2)}}</span></div>
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white py-3"><h6 class="m-0 font-weight-bold text-danger"><i class="fas fa-minus-circle mr-2"></i>Cash Out (Paid)</h6></div>
+                            <div class="card-body py-4 text-center">
+                                 <h2 class="text-danger font-weight-bold">Rs. {{number_format($summary['total_out'], 2)}}</h2>
+                                 <p class="text-muted small">Total amount paid out from this account</p>
+                                 <div class="border-top pt-3 mt-3 text-left">
+                                     <div class="d-flex justify-content-between mb-1">
+                                         <span>Daily Expenses:</span>
+                                         <span class="font-weight-bold">Rs. {{number_format($summary['breakdown']['expenses'], 2)}}</span>
+                                     </div>
+                                     <div class="d-flex justify-content-between mb-1">
+                                         <span>Supplier Payments:</span>
+                                         <span class="font-weight-bold">Rs. {{number_format($summary['breakdown']['supplier_payments'], 2)}}</span>
+                                     </div>
+                                     <div class="d-flex justify-content-between mb-1">
+                                         <span>Other Purchases:</span>
+                                         <span class="font-weight-bold">Rs. {{number_format($summary['breakdown']['others'], 2)}}</span>
+                                     </div>
+                                 </div>
                             </div>
                         </div>
                     </div>
