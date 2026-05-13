@@ -181,11 +181,8 @@ class AdminController extends Controller
                 'money_in', 'money_out', 'accounts', 'staffAccId'
             ));
         } catch (\Throwable $e) {
-            \Log::error("Dashboard Error: " . $e->getMessage());
-            return "<h1>Dashboard Error</h1>
-                    <p>Message: " . $e->getMessage() . "</p>
-                    <p>File: " . $e->getFile() . "</p>
-                    <p>Line: " . $e->getLine() . "</p>";
+            \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            throw $e;
         }
     }
 
