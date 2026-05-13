@@ -44,7 +44,14 @@
                 <tr>
                     <td data-title="S.N.">{{$loop->iteration}}</td>
                     <td data-title="Product">
-                        <div class="font-weight-bold editable-title" data-id="{{$product->id}}" style="cursor: pointer;" title="Click to edit title">{{$product->title}}</div>
+                        <div class="d-flex align-items-center mb-1">
+                            <div class="font-weight-bold editable-title mr-2" data-id="{{$product->id}}" style="cursor: pointer;" title="Click to edit title">{{$product->title}}</div>
+                            <button type="button" class="btn btn-info btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
+                                style="width: 22px; height: 22px; padding: 0; font-size: 10px;" 
+                                onclick="showProductHistory({{$product->id}}, 'product')" title="Selling History">
+                                <i class="fas fa-info text-white"></i>
+                            </button>
+                        </div>
                         <small class="text-muted d-block">SKU: {{$product->sku}}</small>
                         @if($product->is_featured) <span class="badge badge-warning" style="font-size: 10px;">Featured</span> @endif
                     </td>
@@ -241,11 +248,61 @@
         ]
       });
 
-        // Sweet alert
-
-        function deleteData(id){
-
-        }
+    function showProductHistory(pid, type) {
+        Swal.fire({
+            title: '<i class="fas fa-info-circle mr-2 text-info"></i> Selling History',
+            html: '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-muted"></i></div>',
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '450px',
+            didOpen: () => {
+                $.get("{{ route('admin.product-selling-history') }}", { product_id: pid, item_type: type }, function(res) {
+                    if (res.success) {
+                        let historyHtml = `
+                            <div class="text-left px-1" style="font-family: 'Inter', sans-serif;">
+                                <div class="alert alert-light border mb-3 p-2 d-flex justify-content-between align-items-center" style="border-radius: 10px; background: #f8fafc;">
+                                    <div class="small font-weight-bold text-uppercase text-muted">Price Range</div>
+                                    <div class="font-weight-bold text-primary">Rs. ${res.min_price.toLocaleString()} - Rs. ${res.max_price.toLocaleString()}</div>
+                                </div>
+                                
+                                <label class="small font-weight-bold text-uppercase text-muted mb-2">Last 5 Sales</label>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
+                                        <thead>
+                                            <tr class="border-bottom">
+                                                <th style="color: #64748b;">Customer</th>
+                                                <th class="text-center" style="color: #64748b;">Qty</th>
+                                                <th class="text-right" style="color: #64748b;">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${res.history.length > 0 ? res.history.map(s => `
+                                                <tr class="border-bottom">
+                                                    <td>
+                                                        <div class="font-weight-bold text-dark">${s.customer}</div>
+                                                        <div class="text-muted" style="font-size: 10px;">${s.date}</div>
+                                                    </td>
+                                                    <td class="text-center align-middle">${s.qty}</td>
+                                                    <td class="text-right align-middle font-weight-bold text-success">Rs. ${s.price.toLocaleString()}</td>
+                                                </tr>
+                                            `).join('') : '<tr><td colspan="3" class="text-center py-3 text-muted">No sales history found</td></tr>'}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                        Swal.update({
+                            html: historyHtml
+                        });
+                    } else {
+                        Swal.update({
+                            html: '<div class="text-center py-3 text-danger">Failed to load history</div>'
+                        });
+                    }
+                });
+            }
+        });
+    }
   </script>
   <script>
       $(document).ready(function(){

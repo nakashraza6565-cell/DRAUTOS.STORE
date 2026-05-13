@@ -764,4 +764,57 @@ class AdminController extends Controller
 
         return redirect()->back();
     }
+    public function getProductSellingHistory(Request $request)
+    {
+        $productId = $request->get('product_id');
+        $itemType = $request->get('item_type') ?? 'product';
+
+        if (!$productId) return response()->json(['success' => false]);
+
+        // Fetch last 5 sales with customer info
+        $sales = \App\Models\Cart::with(['order.user'])
+            ->whereHas('order', function($q) {
+                // Exclude cancelled orders
+                $q->where('status', '!=', 'cancel');
+            })
+            ->where('item_type', $itemType)
+            ->when($itemType == 'product', function($q) use ($productId) {
+                $q->where('product_id', $productId);
+            })
+            ->when($itemType == 'bundle', function($q) use ($productId) {
+                $q->where('bundle_id', $productId);
+            })
+            ->orderBy('id', 'DESC')
+            ->limit(5)
+            ->get()
+            ->map(function($cart) {
+                return [
+                    'customer' => $cart->order->user->name ?? 'Walk-in Customer',
+                    'price' => (float)$cart->price,
+                    'qty' => (float)$cart->quantity,
+                    'date' => $cart->created_at->format('d M, Y')
+                ];
+            });
+
+        // Min/Max Prices in history
+        $prices = \App\Models\Cart::where('item_type', $itemType)
+            ->when($itemType == 'product', function($q) use ($productId) {
+                $q->where('product_id', $productId);
+            })
+            ->when($itemType == 'bundle', function($q) use ($productId) {
+                $q->where('bundle_id', $productId);
+            })
+            ->whereHas('order', function($q) {
+                $q->where('status', '!=', 'cancel');
+            })
+            ->select(\DB::raw('MIN(price) as min_price'), \DB::raw('MAX(price) as max_price'))
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'history' => $sales,
+            'min_price' => (float)($prices->min_price ?? 0),
+            'max_price' => (float)($prices->max_price ?? 0)
+        ]);
+    }
 }

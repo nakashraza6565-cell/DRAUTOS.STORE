@@ -1446,26 +1446,91 @@
                     <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
                         <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
                         <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
-                        
                         <img src="${photoSrc}" class="thumbnail-elite" alt="Product Image" onerror="this.src='{{asset('backend/img/thumbnail-default.jpg')}}'">
                         
                         <div class="glass-overlay">
                             ${itemTypeBadge}
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="elite-title text-truncate" title="${p.title}" style="max-width: 80%; margin-bottom: 0;">${p.title}</div>
-                                <button class="btn btn-sm btn-light shadow-sm" 
-                                    style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
-                                    onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
-                                    <i class="fas fa-edit text-primary"></i>
-                                </button>
+                                <div class="elite-title text-truncate" title="${p.title}" style="max-width: 85%; margin-bottom: 0;">${p.title}</div>
+                                <div class="d-flex" style="gap: 4px;">
+                                    <button class="btn btn-sm btn-light shadow-sm" 
+                                        style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
+                                        onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
+                                        <i class="fas fa-edit text-primary"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="elite-meta text-truncate">${brandName} | ${modelName}</div>
                         </div>
+                        <button class="btn btn-info shadow-sm position-absolute" 
+                            style="top: 35px; left: 6px; width: 24px; height: 24px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20; border: 2px solid #fff;" 
+                            onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
+                            <i class="fas fa-info text-white"></i>
+                        </button>
                     </div>
                 </div>
             `;
         });
         $('#products-grid').html(html || '<div class="col-12 text-center py-5"><h5 class="text-muted">No items match your search</h5></div>');
+    }
+
+    function showProductHistory(pid, type) {
+        let product = products.find(p => p.id == pid && p.item_type == type);
+        if (!product) return;
+
+        Swal.fire({
+            title: '<i class="fas fa-info-circle mr-2 text-info"></i> Selling History',
+            html: '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-muted"></i></div>',
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '450px',
+            didOpen: () => {
+                $.get("{{ route('admin.product-selling-history') }}", { product_id: pid, item_type: type }, function(res) {
+                    if (res.success) {
+                        let historyHtml = `
+                            <div class="text-left px-1">
+                                <div class="alert alert-light border mb-3 p-2 d-flex justify-content-between align-items-center">
+                                    <div class="small font-weight-bold text-uppercase text-muted">Price Range</div>
+                                    <div class="font-weight-bold text-primary">Rs. ${res.min_price.toLocaleString()} - Rs. ${res.max_price.toLocaleString()}</div>
+                                </div>
+                                
+                                <label class="small font-weight-bold text-uppercase text-muted mb-2">Last 5 Sales</label>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
+                                        <thead>
+                                            <tr class="border-bottom">
+                                                <th>Customer</th>
+                                                <th class="text-center">Qty</th>
+                                                <th class="text-right">Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${res.history.length > 0 ? res.history.map(s => `
+                                                <tr class="border-bottom">
+                                                    <td>
+                                                        <div class="font-weight-bold">${s.customer}</div>
+                                                        <div class="text-muted" style="font-size: 10px;">${s.date}</div>
+                                                    </td>
+                                                    <td class="text-center align-middle">${s.qty}</td>
+                                                    <td class="text-right align-middle font-weight-bold text-success">Rs. ${s.price.toLocaleString()}</td>
+                                                </tr>
+                                            `).join('') : '<tr><td colspan="3" class="text-center py-3 text-muted">No sales history found</td></tr>'}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                        Swal.update({
+                            html: historyHtml
+                        });
+                    } else {
+                        Swal.update({
+                            html: '<div class="text-center py-3 text-danger">Failed to load history</div>'
+                        });
+                    }
+                });
+            }
+        });
     }
 
     function addToCart(pid, type, event) {
@@ -1645,7 +1710,14 @@
                 <div class="cart-item d-flex align-items-center p-2 mb-1 border-bottom" style="background: #fff; min-height: 45px;">
                     <div class="flex-grow-1 min-width-0">
                         <div class="d-flex align-items-center flex-wrap overflow-hidden">
-                            <h6 class="font-weight-bold m-0 text-dark text-truncate" style="font-size: 13px; line-height: 1.1;">${item.title}</h6>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="font-weight-bold m-0 text-dark text-truncate" style="font-size: 13px; line-height: 1.1; max-width: 85%;">${item.title}</h6>
+                                <button class="btn btn-sm btn-info p-0 d-flex align-items-center justify-content-center shadow-sm" 
+                                    style="width: 18px; height: 18px; border-radius: 4px; font-size: 10px;" 
+                                    onclick="showProductHistory(${item.id}, '${item.type}')" title="Selling History">
+                                    <i class="fas fa-info-circle text-white" style="font-size: 10px;"></i>
+                                </button>
+                            </div>
                             ${item.last_purchase ? `<div class="w-100 mt-1 mb-1"><span class="badge badge-soft-info" style="font-size: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 6px; border-radius: 4px;"><i class="fas fa-history mr-1"></i>${item.last_purchase}</span></div>` : ''}
                         </div>
                         <div class="d-flex align-items-center mt-1" style="gap: 4px;">

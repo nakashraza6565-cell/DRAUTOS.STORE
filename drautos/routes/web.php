@@ -398,6 +398,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     // Financial Accounts (Bank/Wallets)
     Route::resource('financial-accounts', 'FinancialAccountController');
 
+    Route::get('/product-selling-history', [AdminController::class, 'getProductSellingHistory'])->name('admin.product-selling-history');
     Route::get('/supplier-ledger', [App\Http\Controllers\SupplierLedgerController::class, 'index'])->name('admin.supplier-ledger.index');
     Route::get('/supplier-ledger/{supplier}', [App\Http\Controllers\SupplierLedgerController::class, 'show'])->name('admin.supplier-ledger.show');
     Route::post('/supplier-ledger/store', [App\Http\Controllers\SupplierLedgerController::class, 'store'])->name('admin.supplier-ledger.store');
