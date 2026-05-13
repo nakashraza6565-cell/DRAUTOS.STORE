@@ -9,10 +9,10 @@
     <div class="row mb-4 align-items-center">
         <div class="col-lg-6 mb-3 mb-lg-0 text-center text-lg-left">
             <h1 class="font-weight-bolder text-gray-900 mb-1 d-none d-md-block" style="font-size: 2.2rem; letter-spacing: -0.5px;">
-                Good {{ (date('H') < 12) ? 'Morning' : ((date('H') < 17) ? 'Afternoon' : 'Evening') }}, {{ Auth::user()->name ?? 'Admin' }}! 👋
+                Good {{ (date('H') < 12) ? 'Morning' : ((date('H') < 17) ? 'Afternoon' : 'Evening') }}, {{ auth()->user()->name ?? 'Admin' }}! 👋
             </h1>
             <h1 class="font-weight-bolder text-gray-900 mb-1 d-md-none" style="font-size: 1.5rem; letter-spacing: -0.5px;">
-                Hello, {{ Auth::user()->name ?? 'Admin' }}! 👋
+                Hello, {{ auth()->user()->name ?? 'Admin' }}! 👋
             </h1>
             <p class="text-muted mb-0" style="font-size: 0.95rem;">Here is what's happening today.</p>
         </div>
@@ -408,7 +408,7 @@
                         <label class="small font-weight-bold">Deduct From <span class="text-danger">*</span></label>
                         <select name="financial_account_id" class="form-control border-0 bg-light" required>
                             @php
-                                $staffAccId = \App\Models\FinancialAccount::getStaffAccount();
+                                $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
                             @endphp
                             <option value="">-- Select Account --</option>
                             @foreach($accounts as $acc)

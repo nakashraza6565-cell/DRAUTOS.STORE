@@ -140,7 +140,7 @@ class AdminController extends Controller
             ->get();
             
         // Get AI Summary Headlines
-        $ai_headlines = \App\Services\AIService::summarizeActivities($activity_logs);
+        $ai_headlines = class_exists('\App\Services\AIService') ? \App\Services\AIService::summarizeActivities($activity_logs) : null;
 
         // Cash Flow Analytics (Last 7 Days)
         $money_in = [];
