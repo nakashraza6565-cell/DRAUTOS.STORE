@@ -668,9 +668,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script>
-    // Live Clock
+    // Live Clock (Synced to Pakistan/Lahore Time)
     setInterval(() => {
-        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('en-US', { 
+            timeZone: 'Asia/Karachi',
+            hour12: true, 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit' 
+        });
     }, 1000);
 
     // Calendar
