@@ -165,58 +165,27 @@ class AdminController extends Controller
         $order_amounts = json_encode($order_amounts);
         $order_counts = json_encode($order_counts);
         $users = json_encode($array);
-
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
 
-        return view('backend.index', compact(
-            'users', 'category_count', 'product_count', 'order_count', 'today_sales',
-            'yesterday_sales', 'best_sellers', 'recent_customers', 'staff_count',
-            'supplier_count', 'total_stock_value', 'active_register', 'today_tasks',
-            'new_products', 'order_labels', 'order_counts', 'order_amounts',
-            'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
-            'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
-            'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
-            'money_in', 'money_out', 'accounts'
-        ));
+            // Get Current User's Account for pre-selection
+            $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
+
+            return view('backend.index', compact(
+                'users', 'category_count', 'product_count', 'order_count', 'today_sales',
+                'yesterday_sales', 'best_sellers', 'recent_customers', 'staff_count',
+                'supplier_count', 'total_stock_value', 'active_register', 'today_tasks',
+                'new_products', 'order_labels', 'order_counts', 'order_amounts',
+                'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
+                'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
+                'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
+                'money_in', 'money_out', 'accounts', 'staffAccId'
+            ));
         } catch (\Throwable $e) {
-            // Log the error
             \Log::error("Dashboard Error: " . $e->getMessage());
-            
-            // Return a VERY basic version of the dashboard to keep the user working
-            return view('backend.index')->with([
-                'users' => json_encode([]),
-                'order_labels' => json_encode([]),
-                'order_counts' => json_encode([]),
-                'order_amounts' => json_encode([]),
-                'money_in' => json_encode([]),
-                'money_out' => json_encode([]),
-                'accounts' => collect([]),
-                'activity_logs' => collect([]),
-                'ai_headlines' => null,
-                'staff_count' => 0,
-                'category_count' => 0,
-                'product_count' => 0,
-                'order_count' => 0,
-                'today_sales' => 0,
-                'yesterday_sales' => 0,
-                'best_sellers' => collect([]),
-                'recent_customers' => collect([]),
-                'supplier_count' => 0,
-                'total_stock_value' => 0,
-                'active_register' => null,
-                'today_tasks' => collect([]),
-                'new_products' => collect([]),
-                'register_balance' => 0,
-                'today_reminders' => collect([]),
-                'low_stock_count' => 0,
-                'sticker_count' => 0,
-                'box_count' => 0,
-                'today_attendance' => collect([]),
-                'present_staff_count' => 0,
-                'all_staff' => collect([]),
-                'total_payables' => 0,
-                'total_receivables' => 0
-            ]);
+            return "<h1>Dashboard Error</h1>
+                    <p>Message: " . $e->getMessage() . "</p>
+                    <p>File: " . $e->getFile() . "</p>
+                    <p>Line: " . $e->getLine() . "</p>";
         }
     }
 
