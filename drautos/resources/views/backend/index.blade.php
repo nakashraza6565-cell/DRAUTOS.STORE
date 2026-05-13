@@ -16,6 +16,7 @@
             </h1>
             <p class="text-muted mb-0" style="font-size: 0.95rem;">Here is what's happening today.</p>
         </div>
+        <div class="col-lg-6 text-center text-lg-right d-flex flex-column flex-md-row align-items-center justify-content-lg-end">
             <!-- Quick Expense Button -->
             <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm font-weight-bold mr-0 mr-md-2 h-100 py-3 py-md-2 w-100 w-md-auto mb-2 mb-md-0">
                 <i class="fas fa-minus-circle mr-1"></i> ADD EXPENSE
