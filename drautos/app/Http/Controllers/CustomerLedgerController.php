@@ -83,14 +83,10 @@ class CustomerLedgerController extends Controller
 
             // Auto-detect active register if no account selected for cash transactions
             if (!$financialAccountId && in_array($validated['category'], ['payment', 'manual'])) {
-                $activeRegister = \App\Models\CashRegister::where('status', 'open')
-                    ->where('user_id', auth()->id())
-                    ->latest()
-                    ->first();
+                $financialAccountId = \App\Models\FinancialAccount::getStaffAccount();
                 
-                if ($activeRegister) {
-                    $financialAccountId = $activeRegister->financial_account_id;
-                    $description .= ' (Auto-linked to Register)';
+                if ($financialAccountId) {
+                    $description .= ' (Staff Cash Account)';
                 } else {
                     $description .= ' (via CASH)';
                 }

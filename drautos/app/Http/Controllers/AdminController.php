@@ -410,13 +410,9 @@ class AdminController extends Controller
             // Determine Financial Account from payment method
             $financialAccountId = is_numeric($data['payment_method']) ? $data['payment_method'] : null;
             
-            // Fallback for legacy "cash" method
+            // Fallback for legacy "cash" method or if no register is explicitly opened
             if (!$financialAccountId && strtolower($data['payment_method']) == 'cash') {
-                $activeRegister = \App\Models\CashRegister::where('status', 'open')
-                    ->where('user_id', auth()->id())
-                    ->latest()
-                    ->first();
-                $financialAccountId = $activeRegister ? $activeRegister->financial_account_id : null;
+                $financialAccountId = \App\Models\FinancialAccount::getStaffAccount();
             }
 
             // For the description string
