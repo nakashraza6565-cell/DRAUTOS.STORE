@@ -176,6 +176,7 @@ class AdminController extends Controller
             'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
             'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
             'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
+            'money_in', 'money_out', 'accounts'
         ));
         } catch (\Throwable $e) {
             return "<h1>Dashboard Error</h1>
