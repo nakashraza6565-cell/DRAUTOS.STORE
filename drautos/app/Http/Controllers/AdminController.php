@@ -158,32 +158,23 @@ class AdminController extends Controller
             $money_out[] = (float)$out;
         }
 
-        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        $money_in = json_encode($money_in);
+        $money_out = json_encode($money_out);
+        $order_labels = json_encode($order_labels);
+        $order_amounts = json_encode($order_amounts);
+        $order_counts = json_encode($order_counts);
+        $users = json_encode($array);
 
-        return view('backend.index')
-            ->with('users', json_encode($array))
-            ->with('category_count', $category_count)
-            ->with('product_count', $product_count)
-            ->with('today_reminders', $today_reminders)
-            ->with('today_attendance', $today_attendance)
-            ->with('present_staff_count', $present_staff_count)
-            ->with('all_staff', $all_staff)
-            ->with('staff_count', $staff_count)
-            ->with('total_payables', $total_payables)
-            ->with('total_receivables', $total_receivables)
-            ->with('activity_logs', $activity_logs)
-            ->with('ai_headlines', $ai_headlines)
-            ->with('register_balance', $register_balance)
-            ->with('active_register', $active_register)
-            ->with('total_stock_value', $total_stock_value)
-            ->with('best_sellers', $best_sellers)
-            ->with('order_labels', json_encode($order_labels))
-            ->with('order_amounts', json_encode($order_amounts))
-            ->with('money_in', json_encode($money_in))
-            ->with('money_out', json_encode($money_out))
-            ->with('accounts', $accounts)
-            ->with('sticker_count', $sticker_count)
-            ->with('box_count', $box_count);
+        return view('backend.index', compact(
+            'users', 'category_count', 'product_count', 'order_count', 'today_sales',
+            'yesterday_sales', 'best_sellers', 'recent_customers', 'staff_count',
+            'supplier_count', 'total_stock_value', 'active_register', 'today_tasks',
+            'new_products', 'order_labels', 'order_counts', 'order_amounts',
+            'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
+            'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
+            'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
+            'money_in', 'money_out', 'accounts'
+        ));
     }
 
     public function whatsappSettings()
