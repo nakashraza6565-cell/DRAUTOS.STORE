@@ -142,28 +142,28 @@ class AdminController extends Controller
         // Get AI Summary Headlines
         $ai_headlines = \App\Services\AIService::summarizeActivities($activity_logs);
 
+        // Cash Flow Analytics (Last 7 Days)
+        $money_in = [];
+        $money_out = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i)->format('Y-m-d');
+            $in = \App\Models\AccountTransaction::whereDate('transaction_date', $date)
+                ->where('type', 'in')
+                ->sum('amount');
+            $out = \App\Models\AccountTransaction::whereDate('transaction_date', $date)
+                ->where('type', 'out')
+                ->sum('amount');
+            
+            $money_in[] = (float)$in;
+            $money_out[] = (float)$out;
+        }
+
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+
         return view('backend.index')
             ->with('users', json_encode($array))
             ->with('category_count', $category_count)
             ->with('product_count', $product_count)
-            ->with('low_stock_count', $low_stock_count)
-            ->with('sticker_count', $sticker_count)
-            ->with('box_count', $box_count)
-            ->with('order_count', $order_count)
-            ->with('today_sales', $today_sales)
-            ->with('yesterday_sales', $yesterday_sales)
-            ->with('best_sellers', $best_sellers)
-            ->with('recent_customers', $recent_customers)
-            ->with('staff_count', $staff_count)
-            ->with('supplier_count', $supplier_count)
-            ->with('total_stock_value', $total_stock_value)
-            ->with('active_register', $active_register)
-            ->with('register_balance', $register_balance)
-            ->with('today_tasks', $today_tasks)
-            ->with('new_products', $new_products)
-            ->with('order_labels', json_encode($order_labels))
-            ->with('order_counts', json_encode($order_counts))
-            ->with('order_amounts', json_encode($order_amounts))
             ->with('today_reminders', $today_reminders)
             ->with('today_attendance', $today_attendance)
             ->with('present_staff_count', $present_staff_count)
@@ -171,7 +171,16 @@ class AdminController extends Controller
             ->with('total_payables', $total_payables)
             ->with('total_receivables', $total_receivables)
             ->with('activity_logs', $activity_logs)
-            ->with('ai_headlines', $ai_headlines);
+            ->with('ai_headlines', $ai_headlines)
+            ->with('register_balance', $register_balance)
+            ->with('active_register', $active_register)
+            ->with('total_stock_value', $total_stock_value)
+            ->with('best_sellers', $best_sellers)
+            ->with('order_labels', json_encode($order_labels))
+            ->with('order_amounts', json_encode($order_amounts))
+            ->with('money_in', json_encode($money_in))
+            ->with('money_out', json_encode($money_out))
+            ->with('accounts', $accounts);
     }
 
     public function whatsappSettings()

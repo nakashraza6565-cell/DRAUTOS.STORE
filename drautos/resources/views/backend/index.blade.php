@@ -16,7 +16,11 @@
             </h1>
             <p class="text-muted mb-0" style="font-size: 0.95rem;">Here is what's happening today.</p>
         </div>
-        <div class="col-lg-6 d-flex flex-column flex-md-row justify-content-lg-end gap-3 align-items-center mt-3 mt-lg-0">
+            <!-- Quick Expense Button -->
+            <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm font-weight-bold mr-0 mr-md-2 h-100 py-3 py-md-2 w-100 w-md-auto mb-2 mb-md-0">
+                <i class="fas fa-minus-circle mr-1"></i> ADD EXPENSE
+            </button>
+
             <!-- Staff Attendance Glass Card -->
             <a href="javascript:void(0)" data-toggle="modal" data-target="#quickAttendanceModal" class="text-decoration-none w-100 w-md-auto mb-2 mb-md-0">
                 <div class="glass-card px-3 py-2 mr-0 mr-md-3 d-flex align-items-center shadow-sm justify-content-center" style="cursor: pointer; transition: transform 0.2s;">
@@ -357,6 +361,78 @@
     </div>
   </div>
 
+    <!-- Row 4: Cash Flow Chart -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="premium-panel shadow-sm border-left-primary">
+                <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
+                    <h5 class="m-0 font-weight-bolder text-gray-800">
+                        <div class="icon-box bg-success-light mr-3"><i class="fas fa-money-bill-trend-up text-success"></i></div>
+                        Money In vs Money Out (Cash Flow)
+                    </h5>
+                    <div class="small text-muted font-weight-bold">Last 7 Days Analysis</div>
+                </div>
+                <div class="panel-body p-4">
+                    <div class="chart-area" style="height: 300px;">
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Quick Expense Modal -->
+<div class="modal fade" id="quickExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-minus-circle mr-2"></i> Record Quick Expense</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form action="{{ route('expense.store') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Amount (Rs.) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-light border-0">Rs.</span>
+                            </div>
+                            <input type="number" name="amount" class="form-control form-control-lg border-0 bg-light" placeholder="0.00" required autofocus>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Deduct From <span class="text-danger">*</span></label>
+                        <select name="financial_account_id" class="form-control border-0 bg-light" required>
+                            @php
+                                $staffAccId = \App\Models\FinancialAccount::getStaffAccount();
+                            @endphp
+                            <option value="">-- Select Account --</option>
+                            @foreach($accounts as $acc)
+                                <option value="{{ $acc->id }}" {{ $acc->id == $staffAccId ? 'selected' : '' }}>
+                                    {{ $acc->name }} (Bal: Rs. {{ number_format($acc->current_balance) }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold">Description <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control border-0 bg-light" rows="3" placeholder="What was this expense for?" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 shadow">SAVE EXPENSE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -626,6 +702,67 @@
                     callbacks: {
                         label: function(tooltipItem, chart) {
                             return 'Revenue: Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cash Flow Bar Chart
+        var ctxFlow = document.getElementById("cashFlowChart").getContext('2d');
+        new Chart(ctxFlow, {
+            type: 'bar',
+            data: {
+                labels: {!! $order_labels !!},
+                datasets: [
+                    {
+                        label: "Money In",
+                        backgroundColor: "#10b981",
+                        hoverBackgroundColor: "#059669",
+                        borderColor: "#10b981",
+                        data: {!! $money_in !!},
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.5
+                    },
+                    {
+                        label: "Money Out",
+                        backgroundColor: "#ef4444",
+                        hoverBackgroundColor: "#dc2626",
+                        borderColor: "#ef4444",
+                        data: {!! $money_out !!},
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.5
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
+                scales: {
+                    xAxes: [{ gridLines: { display: false, drawBorder: false } }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value) { return 'Rs ' + Number(value).toLocaleString(); }
+                        },
+                        gridLines: { color: "rgba(0, 0, 0, .05)", zeroLineColor: "transparent", drawBorder: false, borderDash: [5, 5] }
+                    }],
+                },
+                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, fontStyle: 'bold' } },
+                tooltips: {
+                    backgroundColor: "#1e293b",
+                    bodyFontColor: "#fff",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#e2e8f0',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            var label = chart.datasets[tooltipItem.datasetIndex].label || '';
+                            return label + ': Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
                         }
                     }
                 }
