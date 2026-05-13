@@ -78,7 +78,8 @@ class InventoryIncomingController extends Controller
                         'title' => $item->product->title ?? 'Unknown',
                         'quantity' => $item->quantity,
                         'unit_cost' => $item->unit_price,
-                        'sku' => $item->product->sku ?? ''
+                        'sku' => $item->product->sku ?? '',
+                        'stock' => $item->product->stock ?? 0
                     ];
                 }
             }
@@ -106,6 +107,7 @@ class InventoryIncomingController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit_cost' => 'required|numeric|min:0',
+            'items.*.available_stock' => 'nullable|numeric',
             'items.*.batch_number' => 'nullable|string',
             'items.*.packaging_item_id' => 'nullable|exists:packaging_items,id',
             'items.*.packaging_quantity' => 'nullable|numeric|min:0',
@@ -155,9 +157,13 @@ class InventoryIncomingController extends Controller
                     'barcode_printed' => false,
                 ]);
 
-                // Update product stock and purchase price
+                // Update product stock (Correct current stock first, then add new quantity)
                 $product = Product::find($item['product_id']);
-                $product->stock += $item['quantity'];
+                if (isset($item['available_stock'])) {
+                    $product->stock = (float)$item['available_stock'] + (float)$item['quantity'];
+                } else {
+                    $product->stock += $item['quantity'];
+                }
                 $product->purchase_price = $item['unit_cost'];
                 
                 if ($request->warehouse_id) {

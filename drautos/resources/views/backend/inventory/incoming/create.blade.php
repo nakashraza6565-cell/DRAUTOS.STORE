@@ -109,9 +109,10 @@
                                 <table class="table table-hover mb-0 responsive-table-to-cards" id="incoming-items-table">
                                     <thead class="bg-light small font-weight-bold text-uppercase">
                                         <tr>
-                                            <th style="width: 40%;">Product / Description</th>
-                                            <th style="width: 15%;">Quantity</th>
-                                            <th style="width: 20%;">Unit Cost (Rs.)</th>
+                                            <th style="width: 30%;">Product / Description</th>
+                                            <th style="width: 15%;">Avail. Stock</th>
+                                            <th style="width: 15%;">New Qty</th>
+                                            <th style="width: 15%;">Unit Cost (Rs.)</th>
                                             <th style="width: 20%;">Line Total</th>
                                             <th style="width: 5%;"></th>
                                         </tr>
@@ -244,7 +245,7 @@ function addItemRow(product = null) {
                     <select name="items[${itemIndex}][product_id]" class="form-control select2-dynamic product-select" required>
                         <option value="">Select Product</option>
                         @foreach($products as $p)
-                            <option value="{{$p->id}}" data-cost="{{$p->purchase_price}}" ${product && product.id == {{$p->id}} ? 'selected' : ''}>
+                            <option value="{{$p->id}}" data-cost="{{$p->purchase_price}}" data-stock="{{$p->stock}}" ${product && product.id == {{$p->id}} ? 'selected' : ''}>
                                 {{$p->title}} | {{ $p->brand->title ?? 'No Brand' }} | Rs. {{ number_format($p->purchase_price, 2) }}
                             </option>
                         @endforeach
@@ -255,8 +256,12 @@ function addItemRow(product = null) {
                 </div>
                 <div class="current-cost-info mt-1 small text-muted"></div>
             </td>
-            <td class="align-middle border-0" data-title="Quantity">
-                <input type="number" name="items[${itemIndex}][quantity]" class="form-control qty-input" min="1" value="${product ? product.qty : 1}" required>
+            <td class="align-middle border-0" data-title="Avail. Stock">
+                <input type="number" name="items[${itemIndex}][available_stock]" class="form-control stock-input bg-light font-weight-bold" value="${product ? (product.stock || 0) : 0}" required>
+                <small class="text-muted d-block mt-1">Live Correction</small>
+            </td>
+            <td class="align-middle border-0" data-title="New Qty">
+                <input type="number" name="items[${itemIndex}][quantity]" class="form-control qty-input" min="0.01" step="0.01" value="${product ? product.qty : 1}" required>
             </td>
             <td class="align-middle border-0" data-title="Unit Cost">
                 <input type="number" step="0.01" name="items[${itemIndex}][unit_cost]" class="form-control cost-input" min="0" value="${product ? product.cost : 0}" required>
@@ -291,12 +296,16 @@ function addItemRow(product = null) {
     
     $html.find('.product-select').on('change', function() {
         let cost = $(this).find(':selected').data('cost');
+        let stock = $(this).find(':selected').data('stock');
         let $row = $(this).closest('.item-row');
-        if(cost) {
+        if(cost !== undefined) {
             $row.find('.current-cost-info').html('<i class="fas fa-info-circle mr-1"></i> Prev Cost: Rs. ' + parseFloat(cost).toFixed(2));
             $row.find('.cost-input').val(cost);
         } else {
             $row.find('.current-cost-info').empty();
+        }
+        if(stock !== undefined) {
+            $row.find('.stock-input').val(stock);
         }
         updateGrandTotal();
     });
