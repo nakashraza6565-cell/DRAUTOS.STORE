@@ -206,8 +206,8 @@
                         <label>Financial Account (Optional)</label>
                         <div class="input-group">
                             <select name="financial_account_id" id="financial_account_id" class="form-control">
-                                <option value="">-- Cash (Registers in Daily Drawer) --</option>
-                                @foreach($accounts->where('type', '!=', 'cash') as $acc)
+                                <option value="">-- Auto-detect Active Register --</option>
+                                @foreach($accounts as $acc)
                                     <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
                                 @endforeach
                             </select>
@@ -217,7 +217,7 @@
                                 </button>
                             </div>
                         </div>
-                        <small class="text-muted">Select a Bank/Wallet. Leave empty for <strong>Cash</strong> payments.</small>
+                        <small class="text-muted">Select an account or leave for <strong>Automatic Register</strong> linking.</small>
                     </div>
                     <div class="form-group">
                         <label>Amount (Rs.)</label>
