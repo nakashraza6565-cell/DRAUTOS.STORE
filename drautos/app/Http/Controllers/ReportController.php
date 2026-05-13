@@ -144,24 +144,36 @@ class ReportController extends Controller
 
     public function payables()
     {
-        $payables = PaymentReminder::where('type', 'payable')->where('status', '!=', 'completed')->get();
-        $totalPayable = $payables->sum('amount');
-        
-        $bySupplier = PaymentReminder::where('type', 'payable')
-            ->where('status', '!=', 'completed')
-            ->select('party_type', 'party_id', DB::raw('sum(amount) as total'), DB::raw('min(due_date) as earliest_due_date'))
-            ->groupBy('party_type', 'party_id')
-            ->with(['party' => function($query) {
-                // withTrashed if supplier supports soft deletes
-            }])
+        // Fetch all suppliers who have a pending balance in their ledger
+        $suppliers = Supplier::where('current_balance', '>', 0)
+            ->orderBy('current_balance', 'DESC')
             ->get();
 
-        // Chart Logic: Split by Supplier
-        $chartTitle = "Payable Split by Supplier";
-        $chartLabels = $bySupplier->map(function($s) { return $s->party->name ?? $s->party->company_name ?? 'Unknown'; })->values();
-        $chartData = $bySupplier->pluck('total')->values();
+        $totalPayable = $suppliers->sum('current_balance');
 
-        return view('backend.reports.payables', compact('payables', 'totalPayable', 'bySupplier', 'chartLabels', 'chartData', 'chartTitle'));
+        // Map to the format expected by the existing view to avoid breaking it
+        $bySupplier = $suppliers->map(function($supplier) {
+            // Check if there are any specific payment reminders for this supplier to get the earliest due date
+            $earliestReminder = PaymentReminder::where('party_id', $supplier->id)
+                ->where('party_type', 'App\Models\Supplier')
+                ->where('status', '!=', 'completed')
+                ->orderBy('due_date', 'asc')
+                ->first();
+
+            return (object) [
+                'party' => $supplier,
+                'party_id' => $supplier->id,
+                'total' => $supplier->current_balance,
+                'earliest_due_date' => $earliestReminder ? $earliestReminder->due_date : null
+            ];
+        });
+
+        // Chart Logic: Split by Supplier
+        $chartTitle = "Payable Ledger Balance by Supplier";
+        $chartLabels = $suppliers->pluck('name')->values();
+        $chartData = $suppliers->pluck('current_balance')->values();
+
+        return view('backend.reports.payables', compact('totalPayable', 'bySupplier', 'chartLabels', 'chartData', 'chartTitle'));
     }
 
     public function receivables(Request $request)
