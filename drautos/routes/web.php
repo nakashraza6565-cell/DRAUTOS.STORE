@@ -37,7 +37,7 @@ Route::get('/fix-db', function () {
 
         foreach ($migrations as $file) {
             \Illuminate\Support\Facades\Artisan::call('migrate', [
-                '--path' => '/database/migrations/' . $file,
+                '--path' => 'database/migrations/' . $file,
                 '--force' => true
             ]);
         }
@@ -59,9 +59,9 @@ Route::get('/fix-db', function () {
         return "<h1>Unified System Activated!</h1>
                 <p>Cash Registers and Financial Accounts have been merged.</p>
                 <a href='/admin/cash-register' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Go to Cash Register</a>";
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        return "<h1>Status Check</h1><p>Error: " . $e->getMessage() . "</p>";
+        return "<h1>Status Check</h1><p>Error: " . $e->getMessage() . "</p><p>File: " . $e->getFile() . " Line: " . $e->getLine() . "</p>";
     }
 });
 

@@ -45,7 +45,7 @@ class FinancialAccount extends Model
         }
 
         // 2. Fallback: Find the personal cash account for this user (e.g., "Tamoor Cash")
-        $user = User::find($userId);
+        $user = \App\User::find($userId);
         if ($user) {
             $account = self::where('name', 'LIKE', $user->name . '%')
                 ->where('type', 'cash')
