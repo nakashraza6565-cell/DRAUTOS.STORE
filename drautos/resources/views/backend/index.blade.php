@@ -2,7 +2,7 @@
 @section('title','Danyal Autos || PREMIUM DASHBOARD')
 @section('main-content')
 
-<div class="container-fluid premium-bg" style="min-height: 100vh; padding: 1rem;">
+<div class="container-fluid premium-bg" style="padding: 1rem;">
     @include('backend.layouts.notification')
     
     <!-- Header Section -->
@@ -488,9 +488,7 @@
     }
     
     .premium-bg {
-        background-color: #f1f5f9;
-        background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-        background-blend-mode: overlay;
+        background-color: #f8fafc;
     }
 
     .glass-card {
