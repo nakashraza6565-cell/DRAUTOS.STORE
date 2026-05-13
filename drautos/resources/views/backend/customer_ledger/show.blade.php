@@ -122,7 +122,10 @@
                         @foreach($ledger as $item)
                             <tr>
                                 <td data-title="Date" data-balance="Rs. {{number_format($item->balance, 2)}}">{{$item->transaction_date->format('Y-m-d')}}</td>
-                                <td data-title="Description">{{$item->description}}</td>
+                                <td data-title="Description">
+                                    <div class="font-weight-bold text-primary">{{ $item->financialAccount->name ?? 'Cash' }}</div>
+                                    <div class="small text-dark">{{ $item->description }}</div>
+                                </td>
                                 <td data-title="Category"><span class="badge badge-light">{{$item->category}}</span></td>
                                 <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
                                 <td data-title="Credit (-)" class="text-right text-success">{{$item->type == 'credit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>

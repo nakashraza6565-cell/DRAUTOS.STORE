@@ -25,6 +25,11 @@ class SupplierLedger extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function financialAccount()
+    {
+        return $this->belongsTo(FinancialAccount::class);
+    }
+
     public static function record($supplierId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null, $financialAccountId = null)
     {
         // Ensure columns exist before inserting
