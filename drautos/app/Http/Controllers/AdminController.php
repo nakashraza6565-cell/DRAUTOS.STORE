@@ -168,6 +168,7 @@ class AdminController extends Controller
             ->with('today_attendance', $today_attendance)
             ->with('present_staff_count', $present_staff_count)
             ->with('all_staff', $all_staff)
+            ->with('staff_count', $staff_count)
             ->with('total_payables', $total_payables)
             ->with('total_receivables', $total_receivables)
             ->with('activity_logs', $activity_logs)
@@ -180,7 +181,9 @@ class AdminController extends Controller
             ->with('order_amounts', json_encode($order_amounts))
             ->with('money_in', json_encode($money_in))
             ->with('money_out', json_encode($money_out))
-            ->with('accounts', $accounts);
+            ->with('accounts', $accounts)
+            ->with('sticker_count', $sticker_count)
+            ->with('box_count', $box_count);
     }
 
     public function whatsappSettings()
