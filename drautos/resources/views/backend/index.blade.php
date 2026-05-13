@@ -5,7 +5,7 @@
 <div class="container-fluid premium-bg" style="min-height: 100vh; padding: 1rem;">
     @include('backend.layouts.notification')
     
-    <!-- Header Section: Welcome, Clock, and Staff Attendance -->
+    <!-- Header Section -->
     <div class="row mb-4 align-items-center">
         <div class="col-lg-6 mb-3 mb-lg-0 text-center text-lg-left">
             <h1 class="font-weight-bolder text-gray-900 mb-1 d-none d-md-block" style="font-size: 2.2rem; letter-spacing: -0.5px;">
@@ -17,25 +17,18 @@
             <p class="text-muted mb-0" style="font-size: 0.95rem;">Here is what's happening today.</p>
         </div>
         <div class="col-lg-6 text-center text-lg-right d-flex flex-column flex-md-row align-items-center justify-content-lg-end">
-            <!-- Quick Expense Button -->
-            <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm font-weight-bold mr-0 mr-md-2 h-100 py-3 py-md-2 w-100 w-md-auto mb-2 mb-md-0">
+             <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-danger btn-sm rounded-pill px-4 shadow-sm font-weight-bold mr-0 mr-md-2 h-100 py-3 py-md-2 w-100 w-md-auto mb-2 mb-md-0">
                 <i class="fas fa-minus-circle mr-1"></i> ADD EXPENSE
             </button>
-
-            <!-- Staff Attendance Glass Card -->
             <a href="javascript:void(0)" data-toggle="modal" data-target="#quickAttendanceModal" class="text-decoration-none w-100 w-md-auto mb-2 mb-md-0">
                 <div class="glass-card px-3 py-2 mr-0 mr-md-3 d-flex align-items-center shadow-sm justify-content-center" style="cursor: pointer; transition: transform 0.2s;">
-                    <div class="mr-3">
-                        <i class="fas fa-users-viewfinder fa-2x" style="color: #6366f1;"></i>
-                    </div>
+                    <div class="mr-3"><i class="fas fa-users-viewfinder fa-2x" style="color: #6366f1;"></i></div>
                     <div>
                         <div class="text-xs font-weight-bold text-uppercase" style="color: #6366f1; letter-spacing: 1px;">Staff Attendance</div>
                         <div class="h5 mb-0 font-weight-bolder text-gray-800">{{ $present_staff_count }} / {{ $staff_count }} Present</div>
                     </div>
                 </div>
             </a>
-            
-            <!-- Live Clock Glass Card -->
             <div class="glass-card px-3 py-2 d-flex align-items-center shadow-sm justify-content-center w-100 w-md-auto">
                 <div>
                     <div class="text-xs font-weight-bold text-muted text-uppercase text-center text-md-left" style="letter-spacing: 1px;">{{ date('l, M d, Y') }}</div>
