@@ -165,6 +165,8 @@ class AdminController extends Controller
         $order_counts = json_encode($order_counts);
         $users = json_encode($array);
 
+        $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+
         return view('backend.index', compact(
             'users', 'category_count', 'product_count', 'order_count', 'today_sales',
             'yesterday_sales', 'best_sellers', 'recent_customers', 'staff_count',
