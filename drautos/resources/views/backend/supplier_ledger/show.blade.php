@@ -122,7 +122,15 @@
                             <tr>
                                 <td data-title="Date" data-balance="Rs. {{number_format($item->balance, 2)}}">{{$item->transaction_date->format('Y-m-d')}}</td>
                                 <td data-title="Description">
-                                    <div class="font-weight-bold text-primary">{{ $item->financialAccount->name ?? 'Cash' }}</div>
+                                    <div class="font-weight-bold text-primary text-uppercase" style="font-size: 0.85rem;">
+                                        @if($item->category == 'purchase')
+                                            Purchase
+                                        @elseif($item->category == 'return')
+                                            Return
+                                        @else
+                                            {{ $item->financialAccount->name ?? 'Cash' }}
+                                        @endif
+                                    </div>
                                     <div class="small text-dark">{{ $item->description }}</div>
                                     @if($item->payment_method)
                                         <div class="small text-muted mt-1">
