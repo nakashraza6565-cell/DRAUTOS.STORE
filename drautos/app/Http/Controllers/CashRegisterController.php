@@ -36,24 +36,15 @@ class CashRegisterController extends Controller
                         ->where('financial_account_id', $accountId)
                         ->sum('amount');
 
-            // 3. Supplier Payments (from Ledger or Orders)
+            // 3. Supplier Payments (from Ledger)
             $supplierPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
                                 ->where('financial_account_id', $accountId)
                                 ->where('type', 'credit') // Payment made to supplier
                                 ->where('category', 'payment')
                                 ->sum('amount');
 
-            // 4. Other Outflows (Purchase Orders / Packaging if direct account used)
-            $otherOut = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
-                        ->where('financial_account_id', $accountId)
-                        ->sum('paid_amount');
-            
-            $packagingOut = \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
-                        ->where('financial_account_id', $accountId)
-                        ->sum('total_price');
-
             $totalIn = $posSales;
-            $totalOut = $expenses + $supplierPayments + $otherOut + $packagingOut;
+            $totalOut = $expenses + $supplierPayments;
 
             $summary = [
                 'total_in' => $totalIn,
@@ -64,7 +55,7 @@ class CashRegisterController extends Controller
                     'sales' => $posSales,
                     'expenses' => $expenses,
                     'supplier_payments' => $supplierPayments,
-                    'others' => $otherOut + $packagingOut
+                    'others' => 0
                 ]
             ];
         }
@@ -128,16 +119,8 @@ class CashRegisterController extends Controller
                             ->where('type', 'credit')->where('category', 'payment')
                             ->sum('amount');
 
-        // 4. Others
-        $others = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
-                    ->where('financial_account_id', $accountId)
-                    ->sum('paid_amount') +
-                  \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
-                    ->where('financial_account_id', $accountId)
-                    ->sum('total_price');
-
         $totalIn = $posSales;
-        $totalOut = $expenses + $supplierPayments + $others;
+        $totalOut = $expenses + $supplierPayments;
 
         $expected_closing = $register->opening_amount + $totalIn - $totalOut;
 

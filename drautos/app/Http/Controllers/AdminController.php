@@ -124,15 +124,8 @@ class AdminController extends Controller
                                 ->where('type', 'credit')
                                 ->where('category', 'payment')
                                 ->sum('amount');
-            
-            $others = \App\Models\PurchaseOrder::whereBetween('created_at', [$opened_at, $now])
-                        ->where('financial_account_id', $accountId)
-                        ->sum('paid_amount') + 
-                      \App\Models\PackagingPurchase::whereBetween('created_at', [$opened_at, $now])
-                        ->where('financial_account_id', $accountId)
-                        ->sum('total_price');
 
-            $register_balance = ($active_register->opening_amount ?? 0) + $posSales - ($expenses + $supplierPayments + $others);
+            $register_balance = ($active_register->opening_amount ?? 0) + $posSales - ($expenses + $supplierPayments);
         }
 
         // Today's Payment Reminders for Modal
