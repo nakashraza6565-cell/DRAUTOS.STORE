@@ -52,7 +52,7 @@
                     <button class="btn btn-sm btn-link text-primary p-0" data-toggle="modal" data-target="#addCustomerModal"><i class="fas fa-plus-circle fa-lg"></i></button>
                 </div>
                 <select class="form-control select2" id="customer-select">
-                    <option value="1" data-type="walkin">Walk-in Customer</option>
+                    <option value="{{$walkInId}}" data-type="walkin">Walk-in Customer</option>
                     @foreach($customers as $customer)
                     <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}">
                         {{$customer->name}} ({{$customer->phone}}) | Bal: Rs. {{number_format($customer->current_balance ?? 0, 2)}}

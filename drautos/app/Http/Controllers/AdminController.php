@@ -86,6 +86,49 @@ class AdminController extends Controller
             ->where('created_at', '>=', Carbon::today()->subDays(6))
             ->groupBy('date')
             ->get();
+        // 1. One-time Migration: Fix Walk-in Customer Conflict
+        // If User ID 1 is "Naqash Raza", we need a separate "Walk-in" user
+        $walkInUser = \App\User::where('email', 'walkin@pos.local')->first();
+        if (!$walkInUser) {
+            $walkInUser = \App\User::create([
+                'name' => 'Walk-in Customer',
+                'email' => 'walkin@pos.local',
+                'password' => bcrypt(\Illuminate\Support\Str::random(16)),
+                'role' => 'customer',
+                'status' => 'active',
+                'phone' => '0000000000'
+            ]);
+        }
+
+        // Migrate existing "Walk-in" orders from User ID 1 to the new Walk-in user
+        if ($walkInUser->id != 1) {
+            $migrated = \App\Models\Order::where('user_id', 1)
+                ->where('first_name', 'Walk-in')
+                ->update(['user_id' => $walkInUser->id]);
+            
+            if ($migrated > 0) {
+                // Also migrate ledger entries
+                \App\Models\CustomerLedger::where('user_id', 1)
+                    ->where('description', 'LIKE', '%Walk-in%')
+                    ->update(['user_id' => $walkInUser->id]);
+                
+                \App\Models\CustomerLedger::updateBalance($walkInUser->id);
+                \App\Models\CustomerLedger::updateBalance(1);
+            }
+        }
+
+        // Dashboard stats continue...
+        $active_register = \App\Models\CashRegister::where('status', 'open')->first();
+
+        // Today's Tasks
+        $today_tasks = \App\Models\Task::with('assignee')
+            ->whereDate('start_date', Carbon::today())
+            ->where('status', '!=', 'completed')
+            ->orderBy('priority', 'DESC')
+            ->get();
+
+        // New Products
+        $new_products = \App\Models\Product::orderBy('id', 'DESC')->limit(5)->get();
 
         $order_labels = [];
         $order_counts = [];
@@ -354,7 +397,10 @@ class AdminController extends Controller
         $units = \App\Models\Unit::orderBy('name')->get();
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
-        return view('backend.pos.index', compact('customers', 'categories', 'brands', 'product_models', 'cities', 'suppliers', 'units', 'accounts'));
+        $walkInUser = User::where('email', 'walkin@pos.local')->first();
+        $walkInId = $walkInUser ? $walkInUser->id : 1;
+
+        return view('backend.pos.index', compact('customers', 'categories', 'brands', 'product_models', 'cities', 'suppliers', 'units', 'accounts', 'walkInId'));
     }
 
     public function storePosOrder(Request $request)
@@ -400,13 +446,16 @@ class AdminController extends Controller
             $order->payment_status = 'unpaid';
         }
 
-        $order->status = ($data['customer_id'] == 1) ? 'delivered' : 'new'; // Walk-in is auto-delivered, others start as new
+        $walkInUser = User::where('email', 'walkin@pos.local')->first();
+        $walkInId = $walkInUser ? $walkInUser->id : 1;
+
+        $order->status = ($data['customer_id'] == $walkInId) ? 'delivered' : 'new'; // Walk-in is auto-delivered, others start as new
         $order->order_type = 'local'; // Mark as POS order
         $order->staff_id = auth()->id(); // Track which staff/admin created the POS order
         $order->shipping_id = null; // No shipping for POS likely
         // Add name/email/phone from User
         $user = User::find($data['customer_id']);
-        if ($user && $data['customer_id'] != 1) {
+        if ($user && $data['customer_id'] != $walkInId) {
             $names = explode(' ', $user->name, 2);
             $order->first_name = $names[0] ?: 'Customer';
             $order->last_name = $names[1] ?? 'Customer';

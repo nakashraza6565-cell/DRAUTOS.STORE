@@ -30,6 +30,9 @@
     <div class="card-body">
       <!-- Filters -->
       <form action="{{route('order.index')}}" method="GET" class="mb-4">
+          @if(isset($user))
+              <input type="hidden" name="user_id" value="{{$user->id}}">
+          @endif
           <div class="row align-items-end">
               <div class="col-md-3">
                   <label class="small font-weight-bold">Status</label>
