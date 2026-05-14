@@ -43,13 +43,26 @@ class OrderController extends Controller
         }
 
         // 2. Global View (if explicitly requested)
-        if ($request->has('show_all')) {
+        if ($request->has('show_all') || $request->has('status') || $request->has('city') || $request->has('type') || $request->has('staff_id')) {
             $orders = Order::with(['user', 'staff'])
                 ->when($request->status, function($q) use ($request) {
                     return $q->where('status', $request->status);
                 })
+                ->when($request->city, function($q) use ($request) {
+                    return $q->where('city', $request->city);
+                })
+                ->when($request->type, function($q) use ($request) {
+                    return $q->where('order_type', $request->type);
+                })
+                ->when($request->staff_id, function($q) use ($request) {
+                    return $q->where('staff_id', $request->staff_id);
+                })
                 ->orderBy('pinned','DESC')->orderBy('created_at','DESC')->paginate(5000);
-            return view('backend.order.index', compact('orders'));
+                
+            $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city');
+            $staffs = User::whereIn('role', ['admin', 'staff'])->orderBy('name', 'ASC')->get();
+            
+            return view('backend.order.index', compact('orders', 'cities', 'staffs'));
         }
 
         // 3. Overview View: List customers who have orders
