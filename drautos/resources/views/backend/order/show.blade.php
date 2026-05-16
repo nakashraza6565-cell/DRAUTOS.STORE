@@ -169,10 +169,13 @@
                         <td class="text-right text-danger">- Rs. {{number_format($order->coupon, 2)}}</td>
                     </tr>
                     @endif
+                    @php
+                        $dynamic_grand_total = $gross_subtotal - $item_discounts + ($order->shipping->price ?? 0) - ($order->coupon ?? 0);
+                    @endphp
                     <tr class="text-primary" style="font-size: 1.1rem; background: #fff9f0;">
                         <td colspan="4" class="text-right font-weight-bold d-none d-md-table-cell">Grand Total:</td>
                         <td class="text-right font-weight-bold d-md-none">Grand Total:</td>
-                        <td class="text-right font-weight-bolder h5 mb-0">Rs. {{number_format($order->total_amount, 2)}}</td>
+                        <td class="text-right font-weight-bolder h5 mb-0">Rs. {{number_format($dynamic_grand_total, 2)}}</td>
                     </tr>
                 </tfoot>
             </table>
