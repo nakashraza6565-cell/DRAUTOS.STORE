@@ -376,11 +376,18 @@ class OrderController extends Controller
             }
         }
 
-        $status = $order->fill($request->only([
+        $fillData = $request->only([
             'status', 'staff_id', 'staff_commission', 'first_name', 'last_name', 
             'phone', 'email', 'address1', 'courier_company', 'courier_number',
             'amount_paid', 'due_date'
-        ]))->save();
+        ]);
+        
+        // Sanitize numeric fields that might be empty strings
+        if (isset($fillData['amount_paid']) && $fillData['amount_paid'] === '') $fillData['amount_paid'] = 0;
+        if (isset($fillData['staff_commission']) && $fillData['staff_commission'] === '') $fillData['staff_commission'] = null;
+        if (isset($fillData['due_date']) && $fillData['due_date'] === '') $fillData['due_date'] = null;
+
+        $status = $order->fill($fillData)->save();
         
         // Update Commission
         if ($request->staff_id && $request->staff_commission) {
@@ -400,7 +407,7 @@ class OrderController extends Controller
 
         // --- SENSITIVE PAYMENT & LEDGER SYNC LOGIC ---
         $new_total = $order->total_amount;
-        $amount_paid_at_counter = $request->amount_paid ?? 0;
+        $amount_paid_at_counter = is_numeric($request->amount_paid) ? (float)$request->amount_paid : 0;
         
         if ($order->user_id) {
             if ($order->status == 'delivered') {
