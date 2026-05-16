@@ -315,7 +315,15 @@ class OrderController extends Controller
                 $cart = new Cart();
                 $cart->order_id = $order->id;
                 $cart->user_id = $order->user_id;
-                $cart->product_id = $item['id'];
+                
+                // Handle product_id vs bundle_id safely
+                if (isset($item['is_bundle']) && $item['is_bundle'] == '1') {
+                    $cart->bundle_id = (!empty($item['bundle_id']) && $item['bundle_id'] !== 'null') ? $item['bundle_id'] : null;
+                    $cart->product_id = null;
+                } else {
+                    $cart->product_id = (!empty($item['id']) && $item['id'] !== 'null') ? $item['id'] : null;
+                }
+                
                 $cart->price = $item['price'];
                 $cart->quantity = $item['qty'];
                 $cart->amount = $item['price'] * $item['qty'];
@@ -328,16 +336,24 @@ class OrderController extends Controller
             
             // 4. Update Order Totals
             $order->sub_total = $total_amount;
-            $order->total_amount = $total_amount; // Assuming no shipping/coupon re-calc for now
+            $shipping_fee = $order->shipping ? $order->shipping->price : 0;
+            $coupon_discount = $order->coupon ?: 0;
+            $order->total_amount = $total_amount + $shipping_fee - $coupon_discount;
             $order->quantity = $total_qty;
             
             // 5. Deduct Stock if new status is delivered
             if ($request->status == 'delivered') {
                 foreach($request->items as $item) {
-                     $product = \App\Models\Product::find($item['id']);
-                     if($product) {
-                         $product->stock -= $item['qty'];
-                         $product->save();
+                     if (isset($item['is_bundle']) && $item['is_bundle'] == '1') {
+                         continue; // Bundles have separate stock logic if needed
+                     }
+                     $p_id = (!empty($item['id']) && $item['id'] !== 'null') ? $item['id'] : null;
+                     if($p_id) {
+                         $product = \App\Models\Product::find($p_id);
+                         if($product) {
+                             $product->stock -= $item['qty'];
+                             $product->save();
+                         }
                      }
                 }
             }

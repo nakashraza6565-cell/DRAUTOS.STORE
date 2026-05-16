@@ -167,7 +167,9 @@
     $cartData = $order->cart->map(function($item) {
         return [
             'id' => $item->product_id,
-            'title' => $item->product ? $item->product->title : 'Unknown Product',
+            'bundle_id' => $item->bundle_id,
+            'is_bundle' => $item->bundle_id ? true : false,
+            'title' => $item->product ? $item->product->title : ($item->bundle ? $item->bundle->name : 'Unknown Product'),
             'price' => (float)($item->price ?? 0),
             'qty' => (int)($item->quantity ?? 1)
         ];
@@ -211,11 +213,11 @@
             let title = $(this).data('title');
             let price = parseFloat($(this).data('price'));
 
-            let existing = cart.find(i => i.id == id);
+            let existing = cart.find(i => i.id == id && !i.is_bundle);
             if(existing) {
                 existing.qty++;
             } else {
-                cart.push({id: id, title: title, price: price, qty: 1});
+                cart.push({id: id, bundle_id: null, is_bundle: false, title: title, price: price, qty: 1});
             }
             
             renderCart();
@@ -243,6 +245,8 @@
                     <td>
                         ${item.title}
                         <input type="hidden" name="items[${index}][id]" value="${item.id}">
+                        <input type="hidden" name="items[${index}][bundle_id]" value="${item.bundle_id || ''}">
+                        <input type="hidden" name="items[${index}][is_bundle]" value="${item.is_bundle ? '1' : '0'}">
                     </td>
                     <td>
                         <div class="input-group input-group-sm">
