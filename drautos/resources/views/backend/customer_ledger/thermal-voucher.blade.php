@@ -180,7 +180,6 @@
 
     <div class="footer">
         <div>Thank you for your business!</div>
-        <div style="font-size: 9px; margin-top: 5px; opacity: 0.8;">Software by Cellcity</div>
     </div>
 
 </body>
