@@ -357,6 +357,7 @@ class OrderController extends Controller
                      }
                 }
             }
+        } 
         else {
             // Legacy Status Update Only
             if($order->status != 'delivered' && $request->status == 'delivered'){
