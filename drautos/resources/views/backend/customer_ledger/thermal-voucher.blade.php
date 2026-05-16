@@ -161,8 +161,8 @@
 
     <table class="voucher-details">
         <tr>
-            <td style="width: 40%; font-size: 12px; color: #555;">Type:</td>
-            <td class="text-right text-uppercase">{{ $transaction->category }} ({{ $transaction->type }})</td>
+            <td style="width: 40%; font-size: 12px; color: #555;">Received-in:</td>
+            <td class="text-right text-uppercase">{{ $transaction->financialAccount ? $transaction->financialAccount->name : 'N/A' }}</td>
         </tr>
         <tr>
             <td style="width: 40%; font-size: 12px; color: #555;">Description:</td>
