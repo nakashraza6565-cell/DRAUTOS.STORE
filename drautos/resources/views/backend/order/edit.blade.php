@@ -196,9 +196,10 @@
                 success: function(res) {
                     let html = '';
                     res.forEach(p => {
+                        let isBundle = p.item_type === 'bundle' ? 1 : 0;
                         html += `<a href="#" class="list-group-item list-group-item-action add-item" 
-                                data-id="${p.id}" data-title="${p.title}" data-price="${p.price}">
-                                ${p.title} (Rs. ${p.price})
+                                data-id="${p.id}" data-title="${p.title}" data-price="${p.price}" data-is_bundle="${isBundle}">
+                                ${p.item_type === 'bundle' ? '<span class="text-primary">[BUNDLE]</span>' : ''} ${p.title} (Rs. ${p.price})
                                 </a>`;
                     });
                     $('#search_results').html(html).show();
@@ -212,12 +213,17 @@
             let id = $(this).data('id');
             let title = $(this).data('title');
             let price = parseFloat($(this).data('price'));
+            let isBundle = $(this).data('is_bundle') == 1;
 
-            let existing = cart.find(i => i.id == id && !i.is_bundle);
+            let existing = cart.find(i => (isBundle ? i.bundle_id == id : i.id == id) && i.is_bundle == isBundle);
             if(existing) {
                 existing.qty++;
             } else {
-                cart.push({id: id, bundle_id: null, is_bundle: false, title: title, price: price, qty: 1});
+                if(isBundle) {
+                    cart.push({id: null, bundle_id: id, is_bundle: true, title: title, price: price, qty: 1});
+                } else {
+                    cart.push({id: id, bundle_id: null, is_bundle: false, title: title, price: price, qty: 1});
+                }
             }
             
             renderCart();
