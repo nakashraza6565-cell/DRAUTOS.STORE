@@ -110,6 +110,9 @@
             text-align: center;
             font-size: 10px;
         }
+        @media print {
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body onload="window.print()">
@@ -117,6 +120,8 @@
     @php
         $settings = \App\Models\Settings::first();
     @endphp
+
+<div id="receipt-content" style="background: #fff; padding-bottom: 10px;">
 
     <div class="watermark-bg">DR</div>
 
@@ -181,6 +186,49 @@
     <div class="footer">
         <div>Thank you for your business!</div>
     </div>
+</div>
 
+    <div class="no-print" style="text-align: center; margin-top: 30px; padding: 10px; padding-bottom: 30px;">
+        <button onclick="shareReceipt()" style="background: #25D366; color: #fff; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 300px;">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+            Share Receipt
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        async function shareReceipt() {
+            const receiptElement = document.getElementById('receipt-content');
+            
+            try {
+                const canvas = await html2canvas(receiptElement, { 
+                    scale: 3, // High quality
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], "receipt_01115.png", { type: "image/png" });
+                    
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Payment Receipt',
+                            text: 'Payment Receipt from Danyal Autos'
+                        });
+                    } else {
+                        // Fallback: Download the image to gallery/files
+                        const link = document.createElement('a');
+                        link.download = 'receipt_{{ $transaction->id }}.png';
+                        link.href = canvas.toDataURL("image/png");
+                        link.click();
+                    }
+                }, "image/png");
+            } catch (err) {
+                console.error("Error sharing receipt:", err);
+                alert("Could not share receipt. Your browser might not support this feature.");
+            }
+        }
+    </script>
 </body>
 </html>
