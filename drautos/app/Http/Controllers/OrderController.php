@@ -357,21 +357,26 @@ class OrderController extends Controller
                      }
                 }
             }
-        } 
         else {
             // Legacy Status Update Only
             if($order->status != 'delivered' && $request->status == 'delivered'){
                 foreach($order->cart as $cart){
-                    $product=$cart->product;
-                    $product->stock -= $cart->quantity;
-                    $product->save();
+                     if ($cart->item_type === 'bundle') continue;
+                     $product=$cart->product;
+                     if($product) {
+                         $product->stock -= $cart->quantity;
+                         $product->save();
+                     }
                 }
             }
             elseif($order->status == 'delivered' && $request->status != 'delivered'){
                 foreach($order->cart as $cart){
-                    $product=$cart->product;
-                    $product->stock += $cart->quantity;
-                    $product->save();
+                     if ($cart->item_type === 'bundle') continue;
+                     $product=$cart->product;
+                     if($product) {
+                         $product->stock += $cart->quantity;
+                         $product->save();
+                     }
                 }
             }
         }
