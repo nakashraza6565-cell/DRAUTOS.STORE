@@ -13,7 +13,7 @@ class ManufacturingBill extends Model
     protected $fillable = [
         'bom_number', 'product_id', 'batch_quantity', 'material_cost',
         'machining_cost', 'labour_cost', 'packaging_cost', 'overhead_cost',
-        'total_cost_per_unit', 'notes', 'status', 'created_by'
+        'total_cost_per_unit', 'notes', 'status', 'created_by', 'overhead_details'
     ];
 
     protected $casts = [
@@ -24,6 +24,7 @@ class ManufacturingBill extends Model
         'packaging_cost' => 'float',
         'overhead_cost' => 'float',
         'total_cost_per_unit' => 'float',
+        'overhead_details' => 'array',
     ];
 
     public function product()

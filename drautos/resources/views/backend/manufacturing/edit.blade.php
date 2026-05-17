@@ -81,7 +81,10 @@
             </table>
 
             <hr>
-            <h5 class="mb-3">Overhead Costs (Per Batch)</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Overhead Costs (Per Batch)</h5>
+                <button type="button" class="btn btn-sm btn-info shadow-sm" id="add_custom_overhead_type_btn"><i class="fas fa-plus fa-sm text-white-50"></i> Add Custom Overhead Type</button>
+            </div>
             <table class="table table-bordered" id="overheads_table">
                 <thead>
                     <tr>
@@ -93,90 +96,117 @@
                 <tbody id="overheads_body">
                     @php
                         $overhead_index = 0;
+                        $overhead_details = $bom->overhead_details ?? [];
                         $has_overheads = false;
                     @endphp
-                    
-                    @if($bom->machining_cost > 0)
-                        @php $has_overheads = true; @endphp
-                        <tr>
-                            <td>
-                                <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
-                                    <option value="machining" selected>Machining Cost</option>
-                                    <option value="labour">Labour Cost</option>
-                                    <option value="packaging">Packaging Cost</option>
-                                    <option value="overhead">Other Overheads</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->machining_cost}}" required>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        @php $overhead_index++; @endphp
-                    @endif
 
-                    @if($bom->labour_cost > 0)
+                    @if(count($overhead_details) > 0)
                         @php $has_overheads = true; @endphp
-                        <tr>
-                            <td>
-                                <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
-                                    <option value="machining">Machining Cost</option>
-                                    <option value="labour" selected>Labour Cost</option>
-                                    <option value="packaging">Packaging Cost</option>
-                                    <option value="overhead">Other Overheads</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->labour_cost}}" required>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        @php $overhead_index++; @endphp
-                    @endif
+                        @foreach($overhead_details as $ov)
+                            <tr>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
+                                        <option value="machining" {{$ov['type'] == 'machining' ? 'selected' : ''}}>Machining Cost</option>
+                                        <option value="labour" {{$ov['type'] == 'labour' ? 'selected' : ''}}>Labour Cost</option>
+                                        <option value="packaging" {{$ov['type'] == 'packaging' ? 'selected' : ''}}>Packaging Cost</option>
+                                        <option value="overhead" {{$ov['type'] == 'overhead' ? 'selected' : ''}}>Other Overheads</option>
+                                        @if(!in_array($ov['type'], ['machining', 'labour', 'packaging', 'overhead']))
+                                            <option value="{{$ov['type']}}" selected>{{$ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type']))}}</option>
+                                        @endif
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$ov['cost']}}" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            @php $overhead_index++; @endphp
+                        @endforeach
+                    @else
+                        @if($bom->machining_cost > 0)
+                            @php $has_overheads = true; @endphp
+                            <tr>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
+                                        <option value="machining" selected>Machining Cost</option>
+                                        <option value="labour">Labour Cost</option>
+                                        <option value="packaging">Packaging Cost</option>
+                                        <option value="overhead">Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->machining_cost}}" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            @php $overhead_index++; @endphp
+                        @endif
 
-                    @if($bom->packaging_cost > 0)
-                        @php $has_overheads = true; @endphp
-                        <tr>
-                            <td>
-                                <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
-                                    <option value="machining">Machining Cost</option>
-                                    <option value="labour">Labour Cost</option>
-                                    <option value="packaging" selected>Packaging Cost</option>
-                                    <option value="overhead">Other Overheads</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->packaging_cost}}" required>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        @php $overhead_index++; @endphp
-                    @endif
+                        @if($bom->labour_cost > 0)
+                            @php $has_overheads = true; @endphp
+                            <tr>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
+                                        <option value="machining">Machining Cost</option>
+                                        <option value="labour" selected>Labour Cost</option>
+                                        <option value="packaging">Packaging Cost</option>
+                                        <option value="overhead">Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->labour_cost}}" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            @php $overhead_index++; @endphp
+                        @endif
 
-                    @if($bom->overhead_cost > 0 || !$has_overheads)
-                        <tr>
-                            <td>
-                                <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
-                                    <option value="machining">Machining Cost</option>
-                                    <option value="labour">Labour Cost</option>
-                                    <option value="packaging">Packaging Cost</option>
-                                    <option value="overhead" selected>Other Overheads</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->overhead_cost ?? 0}}" required>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-overhead-row" {{!$has_overheads ? 'disabled' : ''}}><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        @php $overhead_index++; @endphp
+                        @if($bom->packaging_cost > 0)
+                            @php $has_overheads = true; @endphp
+                            <tr>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
+                                        <option value="machining">Machining Cost</option>
+                                        <option value="labour">Labour Cost</option>
+                                        <option value="packaging" selected>Packaging Cost</option>
+                                        <option value="overhead">Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->packaging_cost}}" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            @php $overhead_index++; @endphp
+                        @endif
+
+                        @if($bom->overhead_cost > 0 || !$has_overheads)
+                            <tr>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][type]" class="form-control select2" required>
+                                        <option value="machining">Machining Cost</option>
+                                        <option value="labour">Labour Cost</option>
+                                        <option value="packaging">Packaging Cost</option>
+                                        <option value="overhead" selected>Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->overhead_cost ?? 0}}" required>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm remove-overhead-row" {{!$has_overheads ? 'disabled' : ''}}><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            @php $overhead_index++; @endphp
+                        @endif
                     @endif
                 </tbody>
                 <tfoot>
@@ -336,6 +366,40 @@
 
         $(document).on('click', '.remove-overhead-row', function() {
             $(this).closest('tr').remove();
+        });
+
+        // Add custom overhead type dynamically
+        $('#add_custom_overhead_type_btn').click(function() {
+            let typeName = prompt('Enter Custom Overhead Name (e.g. Electricity, Rent, Tooling):');
+            if (typeName && typeName.trim() !== '') {
+                typeName = typeName.trim();
+                let typeVal = typeName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                
+                // Check if already exists
+                let exists = false;
+                $('select[name="overheads[0][type]"] option').each(function() {
+                    if ($(this).val() === typeVal) {
+                        exists = true;
+                    }
+                });
+                
+                if (exists) {
+                    alert('This overhead type already exists.');
+                    return;
+                }
+                
+                let optionHtml = '<option value="' + typeVal + '">' + typeName + '</option>';
+                
+                // Add option to all existing overhead selects
+                $('select[name^="overheads"]').append(optionHtml).trigger('change');
+                
+                // Also update the hidden overhead template select box
+                let templateHtml = $('#overhead_row_template').html();
+                let updatedTemplate = templateHtml.replace('</select>', optionHtml + '</select>');
+                $('#overhead_row_template').html(updatedTemplate);
+                
+                alert('Overhead type "' + typeName + '" added successfully! You can now select it in the dropdown.');
+            }
         });
 
         // Quick Add Material Form Submission

@@ -62,23 +62,43 @@ class ManufacturingController extends Controller
             $labourCost = 0;
             $packagingCost = 0;
             $overheadCost = 0;
+            $overheadDetails = [];
 
             if ($request->has('overheads') && is_array($request->overheads)) {
                 foreach ($request->overheads as $ov) {
                     $costVal = (float) ($ov['cost'] ?? 0);
-                    switch ($ov['type'] ?? '') {
+                    $type = $ov['type'] ?? '';
+                    
+                    $name = '';
+                    switch ($type) {
                         case 'machining':
+                            $name = 'Machining Cost';
                             $machiningCost += $costVal;
                             break;
                         case 'labour':
+                            $name = 'Labour Cost';
                             $labourCost += $costVal;
                             break;
                         case 'packaging':
+                            $name = 'Packaging Cost';
                             $packagingCost += $costVal;
                             break;
                         case 'overhead':
+                            $name = 'Other Overheads';
                             $overheadCost += $costVal;
                             break;
+                        default:
+                            $name = ucfirst(str_replace('_', ' ', $type));
+                            $overheadCost += $costVal;
+                            break;
+                    }
+
+                    if ($costVal > 0 || !empty($type)) {
+                        $overheadDetails[] = [
+                            'type' => $type,
+                            'name' => $name,
+                            'cost' => $costVal
+                        ];
                     }
                 }
             }
@@ -92,6 +112,7 @@ class ManufacturingController extends Controller
             $bom->labour_cost = $labourCost;
             $bom->packaging_cost = $packagingCost;
             $bom->overhead_cost = $overheadCost;
+            $bom->overhead_details = $overheadDetails;
             $bom->notes = $request->notes;
             $bom->status = 'active';
             $bom->created_by = Auth::id();
@@ -191,23 +212,43 @@ class ManufacturingController extends Controller
             $labourCost = 0;
             $packagingCost = 0;
             $overheadCost = 0;
+            $overheadDetails = [];
 
             if ($request->has('overheads') && is_array($request->overheads)) {
                 foreach ($request->overheads as $ov) {
                     $costVal = (float) ($ov['cost'] ?? 0);
-                    switch ($ov['type'] ?? '') {
+                    $type = $ov['type'] ?? '';
+                    
+                    $name = '';
+                    switch ($type) {
                         case 'machining':
+                            $name = 'Machining Cost';
                             $machiningCost += $costVal;
                             break;
                         case 'labour':
+                            $name = 'Labour Cost';
                             $labourCost += $costVal;
                             break;
                         case 'packaging':
+                            $name = 'Packaging Cost';
                             $packagingCost += $costVal;
                             break;
                         case 'overhead':
+                            $name = 'Other Overheads';
                             $overheadCost += $costVal;
                             break;
+                        default:
+                            $name = ucfirst(str_replace('_', ' ', $type));
+                            $overheadCost += $costVal;
+                            break;
+                    }
+
+                    if ($costVal > 0 || !empty($type)) {
+                        $overheadDetails[] = [
+                            'type' => $type,
+                            'name' => $name,
+                            'cost' => $costVal
+                        ];
                     }
                 }
             }
@@ -220,6 +261,7 @@ class ManufacturingController extends Controller
             $bom->labour_cost = $labourCost;
             $bom->packaging_cost = $packagingCost;
             $bom->overhead_cost = $overheadCost;
+            $bom->overhead_details = $overheadDetails;
             $bom->notes = $request->notes;
             $bom->save();
 

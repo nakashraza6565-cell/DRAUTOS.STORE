@@ -82,10 +82,19 @@
         <hr>
         <h5>Overhead Breakdown (Batch)</h5>
         <div class="row">
-            <div class="col-md-3"><strong>Machining:</strong> Rs. {{number_format($bom->machining_cost, 2)}}</div>
-            <div class="col-md-3"><strong>Labour:</strong> Rs. {{number_format($bom->labour_cost, 2)}}</div>
-            <div class="col-md-3"><strong>Packaging:</strong> Rs. {{number_format($bom->packaging_cost, 2)}}</div>
-            <div class="col-md-3"><strong>Other:</strong> Rs. {{number_format($bom->overhead_cost, 2)}}</div>
+            @php
+                $overhead_details = $bom->overhead_details ?? [];
+            @endphp
+            @if(count($overhead_details) > 0)
+                @foreach($overhead_details as $ov)
+                    <div class="col-md-3 mb-2"><strong>{{$ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type']))}}:</strong> Rs. {{number_format($ov['cost'], 2)}}</div>
+                @endforeach
+            @else
+                <div class="col-md-3"><strong>Machining:</strong> Rs. {{number_format($bom->machining_cost, 2)}}</div>
+                <div class="col-md-3"><strong>Labour:</strong> Rs. {{number_format($bom->labour_cost, 2)}}</div>
+                <div class="col-md-3"><strong>Packaging:</strong> Rs. {{number_format($bom->packaging_cost, 2)}}</div>
+                <div class="col-md-3"><strong>Other:</strong> Rs. {{number_format($bom->overhead_cost, 2)}}</div>
+            @endif
         </div>
 
         @if($bom->productions->count() > 0)
