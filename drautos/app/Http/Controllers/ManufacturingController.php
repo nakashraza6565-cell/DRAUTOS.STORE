@@ -27,9 +27,13 @@ class ManufacturingController extends Controller
      */
     public function create()
     {
-        $products = Product::where('status', 'active')->orderBy('title')->get();
-        $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
-        return view('backend.manufacturing.create', compact('products', 'factors'));
+        try {
+            $products = Product::where('status', 'active')->orderBy('title')->get();
+            $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
+            return view('backend.manufacturing.create', compact('products', 'factors'))->render();
+        } catch (\Exception $e) {
+            dd('ERROR:', $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTraceAsString());
+        }
     }
 
     /**
