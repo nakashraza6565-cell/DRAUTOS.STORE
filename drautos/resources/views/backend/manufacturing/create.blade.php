@@ -1,6 +1,7 @@
 @extends('backend.layouts.master')
 
 @section('main-content')
+@include('backend.layouts.notification')
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h6 class="m-0 font-weight-bold text-primary">Create New Manufacturing Bill (BOM)</h6>
