@@ -38,6 +38,33 @@ class ProductionFactorController extends Controller
         return redirect()->route('production-factors.index')->with('success', 'Factor of Production added successfully.');
     }
 
+    public function quickStore(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'cost_price' => 'nullable|numeric|min:0',
+                'unit' => 'nullable|string|max:50',
+            ]);
+
+            $factor = ProductionFactor::create([
+                'name' => $request->name,
+                'type' => 'material',
+                'unit' => $request->unit ?? 'piece',
+                'cost_price' => $request->cost_price ?? 0,
+                'status' => 'active',
+                'stock_quantity' => $request->stock ?? 0,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'factor' => $factor
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
+        }
+    }
+
     public function edit($id)
     {
         $factor = ProductionFactor::findOrFail($id);

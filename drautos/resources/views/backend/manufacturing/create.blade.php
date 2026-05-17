@@ -49,8 +49,8 @@
                         <td>
                             <select name="components[0][product_id]" class="form-control select2 component-select" required>
                                 <option value="">Select Material</option>
-                                @foreach($products as $product)
-                                    <option value="{{$product->id}}">{{$product->title}} (Stock: {{$product->stock}})</option>
+                                @foreach($factors as $factor)
+                                    <option value="{{$factor->id}}">{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
                                 @endforeach
                             </select>
                         </td>
@@ -108,8 +108,8 @@
         <td>
             <select name="components[INDEX][product_id]" class="form-control select2-new component-select" required>
                 <option value="">Select Material</option>
-                @foreach($products as $product)
-                    <option value="{{$product->id}}">{{$product->title}} (Stock: {{$product->stock}})</option>
+                @foreach($factors as $factor)
+                    <option value="{{$factor->id}}">{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
                 @endforeach
             </select>
         </td>
@@ -137,17 +137,8 @@
             <form id="quickAddMaterialForm">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Material Name *</label>
-                        <input type="text" name="title" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Category *</label>
-                        <select name="cat_id" class="form-control" required>
-                            <option value="">-- Select Category --</option>
-                            @foreach($categories as $cat)
-                                <option value="{{$cat->id}}">{{$cat->title}}</option>
-                            @endforeach
-                        </select>
+                        <label>Material / Factor Name *</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Raw Steel">
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -155,18 +146,14 @@
                             <input type="number" name="stock" class="form-control" value="0" required>
                         </div>
                         <div class="form-group col-md-6">
-                            <label>Purchase Price</label>
-                            <input type="number" step="0.01" name="purchase_price" class="form-control" value="0">
+                            <label>Purchase / Cost Price</label>
+                            <input type="number" step="0.01" name="cost_price" class="form-control" value="0">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label>Unit (e.g. kg, pcs)</label>
+                        <div class="form-group col-md-12">
+                            <label>Unit (e.g. kg, pcs, hr)</label>
                             <input type="text" name="unit" class="form-control" value="piece">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Selling Price (Optional)</label>
-                            <input type="number" step="0.01" name="price" class="form-control" value="0">
                         </div>
                     </div>
                 </div>
@@ -221,19 +208,19 @@
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
             
             $.ajax({
-                url: "{{route('product.quick-store')}}",
+                url: "{{route('production-factors.quick-store')}}",
                 type: "POST",
                 data: form.serialize() + "&_token={{csrf_token()}}",
                 success: function(response) {
                     if(response.status == 'success') {
-                        let newOption = new Option(response.product.title + ' (Stock: ' + response.product.stock + ')', response.product.id, true, true);
+                        let newOption = new Option(response.factor.name + ' (Stock: ' + response.factor.stock_quantity + ' ' + response.factor.unit + ')', response.factor.id, true, true);
                         
                         // Append to all component selects
                         $('.component-select').append(newOption).trigger('change');
                         
                         // Also append to the hidden template so future rows get it
                         let templateHtml = $('#component_row_template').html();
-                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+response.product.id+'">'+response.product.title+' (Stock: '+response.product.stock+')</option></select>');
+                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+response.factor.id+'">'+response.factor.name+' (Stock: '+response.factor.stock_quantity+' ' + response.factor.unit + ')</option></select>');
                         $('#component_row_template').html(updatedTemplate);
                         
                         $('#quickAddMaterialModal').modal('hide');

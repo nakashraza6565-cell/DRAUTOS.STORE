@@ -442,6 +442,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::delete('/{id}', 'ManufacturingController@destroy')->name('destroy');
 
         // Factors of Production
+        Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');
         Route::resource('production-factors', 'ProductionFactorController');
 
         // Production

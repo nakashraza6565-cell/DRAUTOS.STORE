@@ -28,8 +28,8 @@ class ManufacturingController extends Controller
     public function create()
     {
         $products = Product::where('status', 'active')->orderBy('title')->get();
-        $categories = \App\Models\Category::where('is_parent', 1)->get();
-        return view('backend.manufacturing.create', compact('products', 'categories'));
+        $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.create', compact('products', 'factors'));
     }
 
     /**
@@ -111,8 +111,8 @@ class ManufacturingController extends Controller
     {
         $bom = ManufacturingBill::with('components')->findOrFail($id);
         $products = Product::where('status', 'active')->orderBy('title')->get();
-        $categories = \App\Models\Category::where('is_parent', 1)->get();
-        return view('backend.manufacturing.edit', compact('bom', 'products', 'categories'));
+        $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.edit', compact('bom', 'products', 'factors'));
     }
 
     /**

@@ -27,6 +27,11 @@ class ManufacturingBillComponent extends Model
 
     public function componentProduct()
     {
-        return $this->belongsTo(Product::class, 'component_product_id');
+        return $this->belongsTo(ProductionFactor::class, 'component_product_id');
+    }
+
+    public function productionFactor()
+    {
+        return $this->belongsTo(ProductionFactor::class, 'component_product_id');
     }
 }
