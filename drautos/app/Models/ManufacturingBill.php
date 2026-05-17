@@ -13,7 +13,7 @@ class ManufacturingBill extends Model
     protected $fillable = [
         'bom_number', 'product_id', 'batch_quantity', 'material_cost',
         'machining_cost', 'labour_cost', 'packaging_cost', 'overhead_cost',
-        'total_cost_per_unit', 'notes', 'status', 'created_by', 'overhead_details'
+        'total_cost_per_unit', 'notes', 'status', 'created_by', 'overhead_details', 'subcontractor_id'
     ];
 
     protected $casts = [
@@ -25,11 +25,17 @@ class ManufacturingBill extends Model
         'overhead_cost' => 'float',
         'total_cost_per_unit' => 'float',
         'overhead_details' => 'array',
+        'subcontractor_id' => 'integer',
     ];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function subcontractor()
+    {
+        return $this->belongsTo(Supplier::class, 'subcontractor_id');
     }
 
     public function creator()

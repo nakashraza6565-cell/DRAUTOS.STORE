@@ -11,11 +11,11 @@
             @method('PUT')
             
             <div class="form-row">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <label for="bom_number">BOM # <span class="text-danger">*</span></label>
                     <input type="text" name="bom_number" class="form-control" value="{{$bom->bom_number}}" required>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <label for="product_id">Finished Product <span class="text-danger">*</span></label>
                     <select name="product_id" id="product_id" class="form-control select2" required>
                         <option value="">-- Select Product --</option>
@@ -24,9 +24,17 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4 mb-3">
+                <div class="col-md-3 mb-3">
                     <label for="batch_quantity">Batch Quantity <span class="text-danger">*</span></label>
                     <input type="number" name="batch_quantity" class="form-control" value="{{$bom->batch_quantity}}" min="1" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="status">Production Status <span class="text-danger">*</span></label>
+                    <select name="status" id="status" class="form-control select2" required>
+                        <option value="wip" {{$bom->status == 'wip' ? 'selected' : ''}}>WIP (Work In Progress)</option>
+                        <option value="completed" {{$bom->status == 'completed' ? 'selected' : ''}}>Completed (Deduct stock & add finished product)</option>
+                        <option value="inactive" {{$bom->status == 'inactive' ? 'selected' : ''}}>Inactive</option>
+                    </select>
                 </div>
             </div>
 
@@ -84,6 +92,18 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Overhead Costs (Per Batch)</h5>
                 <button type="button" class="btn btn-sm btn-info shadow-sm" id="add_custom_overhead_type_btn"><i class="fas fa-plus fa-sm text-white-50"></i> Add Custom Overhead Type</button>
+            </div>
+            
+            <div class="form-row mb-3">
+                <div class="col-md-6">
+                    <label for="subcontractor_id">Subcontractor / Supplier <small class="text-muted">(Optional - For labor subcontractor ledgers)</small></label>
+                    <select name="subcontractor_id" id="subcontractor_id" class="form-control select2">
+                        <option value="">-- Select Subcontractor --</option>
+                        @foreach($suppliers as $supplier)
+                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <table class="table table-bordered" id="overheads_table">
                 <thead>

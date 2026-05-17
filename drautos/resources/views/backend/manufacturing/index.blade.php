@@ -30,19 +30,24 @@
                         <td>{{$bom->batch_quantity}}</td>
                         <td>Rs. {{number_format($bom->total_cost_per_unit, 2)}}</td>
                         <td>
-                            <span class="badge badge-{{$bom->status=='active'?'success':'warning'}}">{{ucfirst($bom->status)}}</span>
+                            @if($bom->status == 'completed')
+                                <span class="badge badge-success">Completed</span>
+                            @elseif($bom->status == 'wip')
+                                <span class="badge badge-warning">WIP (In Progress)</span>
+                            @else
+                                <span class="badge badge-secondary">{{ucfirst($bom->status)}}</span>
+                            @endif
                         </td>
                         <td>
                             <a href="{{route('manufacturing.show', $bom->id)}}" class="btn btn-info btn-sm btn-circle" title="View"><i class="fas fa-eye"></i></a>
                             <a href="{{route('manufacturing.edit', $bom->id)}}" class="btn btn-primary btn-sm btn-circle" title="Edit"><i class="fas fa-edit"></i></a>
+                            <a href="{{route('manufacturing.clone', $bom->id)}}" class="btn btn-success btn-sm btn-circle" title="Clone Recipe for New Run"><i class="fas fa-copy"></i></a>
                             
                             <form method="POST" action="{{route('manufacturing.destroy', [$bom->id])}}" class="d-inline">
                                 @csrf 
                                 @method('delete')
                                 <button class="btn btn-danger btn-sm btn-circle dltBtn" data-id="{{$bom->id}}" title="Delete"><i class="fas fa-trash"></i></button>
                             </form>
-                            
-                            <a href="{{route('manufacturing.production.create', ['bom_id' => $bom->id])}}" class="btn btn-secondary btn-sm" title="Produce This"><i class="fas fa-cogs"></i> Produce</a>
                         </td>
                     </tr>
                     @endforeach

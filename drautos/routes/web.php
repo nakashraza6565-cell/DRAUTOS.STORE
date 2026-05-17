@@ -36,7 +36,9 @@ Route::get('/fix-db', function () {
             '2026_05_16_150700_create_production_factors_table.php',
             '2026_05_17_150700_alter_manufacturing_bill_components_foreign_key.php',
             '2026_05_17_160700_add_ingredient_type_to_manufacturing_bill_components_table.php',
-            '2026_05_17_170700_add_overhead_details_to_manufacturing_bills_table.php'
+            '2026_05_17_170700_add_overhead_details_to_manufacturing_bills_table.php',
+            '2026_05_17_180700_alter_status_in_manufacturing_bills_table.php',
+            '2026_05_17_190700_add_subcontractor_id_to_manufacturing_bills_table.php'
         ];
 
         foreach ($migrations as $file) {
@@ -443,6 +445,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::get('/{id}/edit', 'ManufacturingController@edit')->name('edit');
         Route::put('/{id}', 'ManufacturingController@update')->name('update');
         Route::delete('/{id}', 'ManufacturingController@destroy')->name('destroy');
+        Route::get('/{id}/clone', 'ManufacturingController@cloneRecipe')->name('clone');
 
         // Factors of Production
         Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');

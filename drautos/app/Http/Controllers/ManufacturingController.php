@@ -30,7 +30,8 @@ class ManufacturingController extends Controller
         try {
             $products = Product::where('status', 'active')->orderBy('title')->get();
             $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
-            return view('backend.manufacturing.create', compact('products', 'factors'))->render();
+            $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
+            return view('backend.manufacturing.create', compact('products', 'factors', 'suppliers'))->render();
         } catch (\Exception $e) {
             dd('ERROR:', $e->getMessage(), $e->getFile(), $e->getLine(), $e->getTraceAsString());
         }
@@ -51,10 +52,38 @@ class ManufacturingController extends Controller
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
             'overheads.*.cost' => 'required|numeric|min:0',
+            'status' => 'required|in:wip,completed,inactive',
+            'subcontractor_id' => 'nullable|exists:suppliers,id',
         ]);
 
         DB::beginTransaction();
         try {
+            // Check Stock Availability first if status is completed
+            if ($request->status === 'completed') {
+                foreach ($request->components as $componentData) {
+                    $rawId = $componentData['product_id'];
+                    $qty = (float) $componentData['quantity'];
+                    
+                    if (str_starts_with($rawId, 'factor_')) {
+                        $factorId = (int) str_replace('factor_', '', $rawId);
+                        $factor = \App\Models\ProductionFactor::find($factorId);
+                        if ($factor && $factor->type === 'material') {
+                            if ($factor->stock_quantity < $qty) {
+                                throw new \Exception("Insufficient stock for material: {$factor->name}. Required: {$qty}, Available: {$factor->stock_quantity}");
+                            }
+                        }
+                    } else {
+                        $productId = (int) str_replace('product_', '', $rawId);
+                        $product = Product::find($productId);
+                        if ($product) {
+                            if ($product->stock < $qty) {
+                                throw new \Exception("Insufficient stock for product: {$product->title}. Required: {$qty}, Available: {$product->stock}");
+                            }
+                        }
+                    }
+                }
+            }
+
             $totalMaterialCost = 0;
 
             // Map Overheads Array
@@ -113,8 +142,9 @@ class ManufacturingController extends Controller
             $bom->packaging_cost = $packagingCost;
             $bom->overhead_cost = $overheadCost;
             $bom->overhead_details = $overheadDetails;
+            $bom->subcontractor_id = $request->subcontractor_id;
             $bom->notes = $request->notes;
-            $bom->status = 'active';
+            $bom->status = $request->status ?? 'wip';
             $bom->created_by = Auth::id();
             $bom->save();
 
@@ -157,6 +187,45 @@ class ManufacturingController extends Controller
             $bom->material_cost = $totalMaterialCost;
             $bom->calculateCost(); // This saves the model
 
+            // If completed, deduct stock and add finished product
+            if ($bom->status === 'completed') {
+                $totalLaborCost = $labourCost; // starts with labor overhead cost
+
+                foreach ($bom->components as $component) {
+                    if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
+                        $factor = \App\Models\ProductionFactor::find($component->component_product_id);
+                        if ($factor) {
+                            if ($factor->type === 'material') {
+                                $factor->decrement('stock_quantity', $component->quantity_required);
+                            } elseif ($factor->type === 'labor') {
+                                $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
+                            }
+                        }
+                    } else {
+                        $product = Product::find($component->component_product_id);
+                        if ($product) {
+                            $product->decrement('stock', $component->quantity_required);
+                        }
+                    }
+                }
+
+                // Increment finished goods stock
+                Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
+
+                // Subcontractor Ledger Automation Hook
+                if ($bom->subcontractor_id && $totalLaborCost > 0) {
+                    \App\Models\SupplierLedger::record(
+                        $bom->subcontractor_id,
+                        now()->toDateString(),
+                        'debit',
+                        'purchase',
+                        "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $totalLaborCost,
+                        'bom_' . $bom->id
+                    );
+                }
+            }
+
             DB::commit();
             return redirect()->route('manufacturing.index')->with('success', 'Manufacturing Bill created successfully.');
 
@@ -183,7 +252,8 @@ class ManufacturingController extends Controller
         $bom = ManufacturingBill::with('components')->findOrFail($id);
         $products = Product::where('status', 'active')->orderBy('title')->get();
         $factors = \App\Models\ProductionFactor::where('status', 'active')->orderBy('name')->get();
-        return view('backend.manufacturing.edit', compact('bom', 'products', 'factors'));
+        $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.edit', compact('bom', 'products', 'factors', 'suppliers'));
     }
 
     /**
@@ -203,10 +273,41 @@ class ManufacturingController extends Controller
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
             'overheads.*.cost' => 'required|numeric|min:0',
+            'status' => 'required|in:wip,completed,inactive',
+            'subcontractor_id' => 'nullable|exists:suppliers,id',
         ]);
+
+        $wasCompleted = $bom->status === 'completed';
+        $isCompleted = $request->status === 'completed';
 
         DB::beginTransaction();
         try {
+            // Check Stock Availability first if transitioning to completed
+            if (!$wasCompleted && $isCompleted) {
+                foreach ($request->components as $componentData) {
+                    $rawId = $componentData['product_id'];
+                    $qty = (float) $componentData['quantity'];
+                    
+                    if (str_starts_with($rawId, 'factor_')) {
+                        $factorId = (int) str_replace('factor_', '', $rawId);
+                        $factor = \App\Models\ProductionFactor::find($factorId);
+                        if ($factor && $factor->type === 'material') {
+                            if ($factor->stock_quantity < $qty) {
+                                throw new \Exception("Insufficient stock for material: {$factor->name}. Required: {$qty}, Available: {$factor->stock_quantity}");
+                            }
+                        }
+                    } else {
+                        $productId = (int) str_replace('product_', '', $rawId);
+                        $product = Product::find($productId);
+                        if ($product) {
+                            if ($product->stock < $qty) {
+                                throw new \Exception("Insufficient stock for product: {$product->title}. Required: {$qty}, Available: {$product->stock}");
+                            }
+                        }
+                    }
+                }
+            }
+
             // Map Overheads Array
             $machiningCost = 0;
             $labourCost = 0;
@@ -262,7 +363,9 @@ class ManufacturingController extends Controller
             $bom->packaging_cost = $packagingCost;
             $bom->overhead_cost = $overheadCost;
             $bom->overhead_details = $overheadDetails;
+            $bom->subcontractor_id = $request->subcontractor_id;
             $bom->notes = $request->notes;
+            $bom->status = $request->status ?? 'wip';
             $bom->save();
 
             // Clear existing components
@@ -307,6 +410,45 @@ class ManufacturingController extends Controller
             $bom->material_cost = $totalMaterialCost;
             $bom->calculateCost();
 
+            // Perform stock actions if transitioning to completed
+            if (!$wasCompleted && $isCompleted) {
+                $totalLaborCost = $labourCost; // starts with labor overhead cost
+
+                foreach ($bom->components as $component) {
+                    if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
+                        $factor = \App\Models\ProductionFactor::find($component->component_product_id);
+                        if ($factor) {
+                            if ($factor->type === 'material') {
+                                $factor->decrement('stock_quantity', $component->quantity_required);
+                            } elseif ($factor->type === 'labor') {
+                                $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
+                            }
+                        }
+                    } else {
+                        $product = Product::find($component->component_product_id);
+                        if ($product) {
+                            $product->decrement('stock', $component->quantity_required);
+                        }
+                    }
+                }
+
+                // Increment finished goods stock
+                Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
+
+                // Subcontractor Ledger Automation Hook
+                if ($bom->subcontractor_id && $totalLaborCost > 0) {
+                    \App\Models\SupplierLedger::record(
+                        $bom->subcontractor_id,
+                        now()->toDateString(),
+                        'debit',
+                        'purchase',
+                        "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $totalLaborCost,
+                        'bom_' . $bom->id
+                    );
+                }
+            }
+
             DB::commit();
             return redirect()->route('manufacturing.index')->with('success', 'Manufacturing Bill updated successfully.');
 
@@ -324,6 +466,47 @@ class ManufacturingController extends Controller
         $bom = ManufacturingBill::findOrFail($id);
         $bom->delete();
         return redirect()->route('manufacturing.index')->with('success', 'Manufacturing Bill deleted successfully.');
+    }
+
+    /**
+     * Clone an existing recipe to start a new WIP batch.
+     */
+    public function cloneRecipe($id)
+    {
+        $bom = ManufacturingBill::with('components')->findOrFail($id);
+        
+        $newBom = new ManufacturingBill();
+        $newBom->bom_number = 'BOM-' . strtoupper(uniqid());
+        $newBom->product_id = $bom->product_id;
+        $newBom->batch_quantity = $bom->batch_quantity;
+        $newBom->machining_cost = $bom->machining_cost;
+        $newBom->labour_cost = $bom->labour_cost;
+        $newBom->packaging_cost = $bom->packaging_cost;
+        $newBom->overhead_cost = $bom->overhead_cost;
+        $newBom->overhead_details = $bom->overhead_details;
+        $newBom->subcontractor_id = $bom->subcontractor_id;
+        $newBom->notes = "Cloned from {$bom->bom_number}. " . $bom->notes;
+        $newBom->status = 'wip';
+        $newBom->created_by = Auth::id();
+        $newBom->save();
+
+        foreach ($bom->components as $component) {
+            $newComp = new ManufacturingBillComponent();
+            $newComp->manufacturing_bill_id = $newBom->id;
+            $newComp->component_product_id = $component->component_product_id;
+            $newComp->ingredient_type = $component->ingredient_type;
+            $newComp->quantity_required = $component->quantity_required;
+            $newComp->unit = $component->unit;
+            $newComp->cost_per_unit = $component->cost_per_unit;
+            $newComp->total_cost = $component->total_cost;
+            $newComp->save();
+        }
+
+        $newBom->material_cost = $bom->material_cost;
+        $newBom->total_cost_per_unit = $bom->total_cost_per_unit;
+        $newBom->save();
+
+        return redirect()->route('manufacturing.index')->with('success', "Recipe cloned successfully as {$newBom->bom_number} (WIP). Ready to edit!");
     }
 
     // --- Production Logic ---
