@@ -56,6 +56,7 @@
                       @endif
                   </td>
                   <td>
+                      <button type="button" class="btn btn-info btn-sm float-left mr-1 purchase-btn" data-id="{{$factor->id}}" data-name="{{$factor->name}}" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="Log Purchase" data-placement="bottom"><i class="fas fa-shopping-cart"></i></button>
                       <a href="{{route('manufacturing.production-factors.edit',$factor->id)}}" class="btn btn-primary btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
                       <form method="POST" action="{{route('manufacturing.production-factors.destroy',[$factor->id])}}">
                         @csrf
@@ -75,6 +76,52 @@
     </div>
 </div>
 @endsection
+
+<!-- Purchase Modal -->
+<div class="modal fade" id="purchaseModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Log Purchase: <span id="purchaseMaterialName"></span></h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="purchaseForm" method="POST" action="">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Supplier <span class="text-danger">*</span></label>
+                        <select name="supplier_id" class="form-control" required>
+                            <option value="">-- Select Supplier --</option>
+                            @foreach($suppliers as $supplier)
+                                <option value="{{$supplier->id}}">{{$supplier->name}} (Balance: {{$supplier->current_balance}})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Quantity <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="quantity" class="form-control" required placeholder="e.g. 10">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Total Cost <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="total_cost" class="form-control" required placeholder="e.g. 5000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="date" class="form-control" value="{{date('Y-m-d')}}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">Save Purchase</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('styles')
   <link href="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
@@ -102,6 +149,21 @@
                 }
             ]
         });
+
+        // Open Purchase Modal
+        $('.purchase-btn').click(function() {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            $('#purchaseMaterialName').text(name);
+            
+            // Set form action dynamically
+            var url = "{{route('manufacturing.production-factors.purchase', ':id')}}";
+            url = url.replace(':id', id);
+            $('#purchaseForm').attr('action', url);
+            
+            $('#purchaseModal').modal('show');
+        });
+
         $('.dltBtn').click(function(e){
           var form=$(this).closest('form');
           var dataID=$(this).data('id');

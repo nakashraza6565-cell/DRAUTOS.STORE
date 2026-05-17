@@ -10,7 +10,8 @@ class ProductionFactorController extends Controller
     public function index()
     {
         $factors = ProductionFactor::orderBy('created_at', 'DESC')->paginate(50);
-        return view('backend.manufacturing.factors.index', compact('factors'));
+        $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.factors.index', compact('factors', 'suppliers'));
     }
 
     public function create()
@@ -63,6 +64,39 @@ class ProductionFactorController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
         }
+    }
+
+    public function purchase(Request $request, $id)
+    {
+        $factor = ProductionFactor::findOrFail($id);
+
+        $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'quantity' => 'required|numeric|min:0.01',
+            'total_cost' => 'required|numeric|min:0',
+            'date' => 'required|date'
+        ]);
+
+        // Update Stock (only for materials)
+        if ($factor->type == 'material') {
+            $factor->stock_quantity += $request->quantity;
+        }
+        
+        // Optionally update the default cost price if they want the moving average, but for now just leave default cost.
+        $factor->save();
+
+        // Update Supplier Ledger (Debit because we owe them)
+        \App\Models\SupplierLedger::record(
+            $request->supplier_id,
+            $request->date,
+            'debit',
+            'purchase',
+            "Purchased {$request->quantity} {$factor->unit} of {$factor->name}",
+            $request->total_cost,
+            'factor_'.$factor->id
+        );
+
+        return redirect()->back()->with('success', 'Purchase logged successfully! Stock and Supplier Ledger have been updated.');
     }
 
     public function edit($id)

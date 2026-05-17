@@ -443,6 +443,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
 
         // Factors of Production
         Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');
+        Route::post('production-factors/{id}/purchase', 'ProductionFactorController@purchase')->name('production-factors.purchase');
         Route::resource('production-factors', 'ProductionFactorController');
 
         // Production
