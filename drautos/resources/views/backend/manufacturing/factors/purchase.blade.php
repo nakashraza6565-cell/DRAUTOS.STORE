@@ -12,12 +12,19 @@
             <div class="row">
                 <div class="col-md-6 form-group">
                     <label>Supplier <span class="text-danger">*</span></label>
-                    <select name="supplier_id" class="form-control select2" required>
-                        <option value="">-- Select Supplier --</option>
-                        @foreach($suppliers as $supplier)
-                            <option value="{{$supplier->id}}">{{$supplier->name}} (Balance: {{$supplier->current_balance}})</option>
-                        @endforeach
-                    </select>
+                    <div class="input-group">
+                        <select name="supplier_id" id="supplier_select" class="form-control select2" required>
+                            <option value="">-- Select Supplier --</option>
+                            @foreach($suppliers as $supplier)
+                                <option value="{{$supplier->id}}">{{$supplier->name}} (Balance: {{$supplier->current_balance}})</option>
+                            @endforeach
+                        </select>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#quickAddSupplierModal" title="Quick Add Supplier">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6 form-group">
                     <label>Date <span class="text-danger">*</span></label>
@@ -102,6 +109,46 @@
     </tr>
 </template>
 
+<!-- Quick Add Supplier Modal -->
+<div class="modal fade" id="quickAddSupplierModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Quick Add Supplier</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="quickAddSupplierForm">
+                @csrf
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Supplier Name *</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input type="text" name="company_name" class="form-control" placeholder="e.g. Steel Mill Ltd">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" class="form-control" placeholder="e.g. 03001234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" name="address" class="form-control" placeholder="e.g. Industrial Area Lahore">
+                    </div>
+                    <input type="hidden" name="status" value="active">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveSupplierBtn">Save Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -158,6 +205,42 @@
 
         $(document).on('input', '.cost-input', function() {
             updateGrandTotal();
+        });
+
+        // Quick Add Supplier AJAX Submission
+        $('#quickAddSupplierForm').submit(function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let btn = $('#saveSupplierBtn');
+            
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+            
+            $.ajax({
+                url: "{{route('supplier.quick-store')}}",
+                type: "POST",
+                data: form.serialize(),
+                success: function(response) {
+                    btn.prop('disabled', false).text('Save Supplier');
+                    if (response.status === 'success') {
+                        // Append new option to select dropdown and select it
+                        let newOption = new Option(response.supplier.name + ' (Balance: 0.00)', response.supplier.id, true, true);
+                        $('#supplier_select').append(newOption).trigger('change');
+                        
+                        // Reset and close modal
+                        form[0].reset();
+                        $('#quickAddSupplierModal').modal('hide');
+                        
+                        alert('Supplier added successfully!');
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function(xhr) {
+                    btn.prop('disabled', false).text('Save Supplier');
+                    let errors = xhr.responseJSON;
+                    alert('Error: ' + (errors ? errors.message : 'Something went wrong'));
+                }
+            });
         });
 
         $('#purchaseForm').submit(function() {
