@@ -6,7 +6,7 @@
         <h6 class="m-0 font-weight-bold text-primary">Add New Factor (Material/Labor)</h6>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{route('production-factors.store')}}">
+        <form method="POST" action="{{route('manufacturing.production-factors.store')}}">
             {{csrf_field()}}
             <div class="form-group">
                 <label for="name">Name <span class="text-danger">*</span></label>

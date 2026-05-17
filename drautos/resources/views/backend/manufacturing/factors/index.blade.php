@@ -5,7 +5,7 @@
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
       <h6 class="m-0 font-weight-bold text-primary">Factors of Production (Raw Materials & Labor)</h6>
-      <a href="{{route('production-factors.create')}}" class="btn btn-primary btn-sm float-right" data-toggle="tooltip" data-placement="bottom" title="Add New"><i class="fas fa-plus"></i> Add New Factor</a>
+      <a href="{{route('manufacturing.production-factors.create')}}" class="btn btn-primary btn-sm float-right" data-toggle="tooltip" data-placement="bottom" title="Add New"><i class="fas fa-plus"></i> Add New Factor</a>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -56,8 +56,8 @@
                       @endif
                   </td>
                   <td>
-                      <a href="{{route('production-factors.edit',$factor->id)}}" class="btn btn-primary btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
-                      <form method="POST" action="{{route('production-factors.destroy',[$factor->id])}}">
+                      <a href="{{route('manufacturing.production-factors.edit',$factor->id)}}" class="btn btn-primary btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
+                      <form method="POST" action="{{route('manufacturing.production-factors.destroy',[$factor->id])}}">
                         @csrf
                         @method('delete')
                             <button class="btn btn-danger btn-sm dltBtn" data-id={{$factor->id}} style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>

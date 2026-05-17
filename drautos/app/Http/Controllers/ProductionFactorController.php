@@ -35,7 +35,7 @@ class ProductionFactorController extends Controller
 
         ProductionFactor::create($data);
 
-        return redirect()->route('production-factors.index')->with('success', 'Factor of Production added successfully.');
+        return redirect()->route('manufacturing.production-factors.index')->with('success', 'Factor of Production added successfully.');
     }
 
     public function quickStore(Request $request)
@@ -88,7 +88,7 @@ class ProductionFactorController extends Controller
 
         $factor->update($data);
 
-        return redirect()->route('production-factors.index')->with('success', 'Factor of Production updated successfully.');
+        return redirect()->route('manufacturing.production-factors.index')->with('success', 'Factor of Production updated successfully.');
     }
 
     public function destroy($id)
@@ -96,6 +96,6 @@ class ProductionFactorController extends Controller
         $factor = ProductionFactor::findOrFail($id);
         $factor->delete();
 
-        return redirect()->route('production-factors.index')->with('success', 'Factor of Production deleted successfully.');
+        return redirect()->route('manufacturing.production-factors.index')->with('success', 'Factor of Production deleted successfully.');
     }
 }

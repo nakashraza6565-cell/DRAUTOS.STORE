@@ -6,7 +6,7 @@
         <h6 class="m-0 font-weight-bold text-primary">Edit Factor: {{$factor->name}}</h6>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{route('production-factors.update', $factor->id)}}">
+        <form method="POST" action="{{route('manufacturing.production-factors.update', $factor->id)}}">
             @csrf
             @method('PATCH')
             <div class="form-group">
