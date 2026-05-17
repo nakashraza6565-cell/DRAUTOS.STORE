@@ -84,36 +84,44 @@ class ProductionFactorController extends Controller
             'items.*.total_cost' => 'required|numeric|min:0',
         ]);
 
-        $grandTotal = 0;
-        $descriptionParts = [];
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $grandTotal = 0;
+            $descriptionParts = [];
 
-        foreach ($request->items as $item) {
-            $factor = ProductionFactor::findOrFail($item['factor_id']);
-            
-            // Update Stock
-            if ($factor->type == 'material') {
-                $factor->stock_quantity += $item['quantity'];
-                $factor->save();
+            foreach ($request->items as $item) {
+                $factor = ProductionFactor::findOrFail($item['factor_id']);
+                
+                // Update Stock
+                if ($factor->type == 'material') {
+                    $factor->stock_quantity += $item['quantity'];
+                    $factor->save();
+                }
+
+                $grandTotal += $item['total_cost'];
+                $descriptionParts[] = $item['quantity'] . ' ' . ($factor->unit ?? 'pcs') . ' of ' . $factor->name;
             }
 
-            $grandTotal += $item['total_cost'];
-            $descriptionParts[] = $item['quantity'] . ' ' . ($factor->unit ?? 'pcs') . ' of ' . $factor->name;
+            $description = "Purchased: " . implode(', ', $descriptionParts);
+
+            // Update Supplier Ledger (Debit because we owe them)
+            \App\Models\SupplierLedger::record(
+                $request->supplier_id,
+                $request->date,
+                'debit',
+                'purchase',
+                $description,
+                $grandTotal,
+                'multi_factor_purchase'
+            );
+
+            \Illuminate\Support\Facades\DB::commit();
+            return redirect()->route('manufacturing.production-factors.index')->with('success', 'Purchase logged successfully! Stock and Supplier Ledger have been updated.');
+        
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return redirect()->back()->with('error', 'Error logging purchase: ' . $e->getMessage())->withInput();
         }
-
-        $description = "Purchased: " . implode(', ', $descriptionParts);
-
-        // Update Supplier Ledger (Debit because we owe them)
-        \App\Models\SupplierLedger::record(
-            $request->supplier_id,
-            $request->date,
-            'debit',
-            'purchase',
-            $description,
-            $grandTotal,
-            'multi_factor_purchase'
-        );
-
-        return redirect()->route('manufacturing.production-factors.index')->with('success', 'Purchase logged successfully! Stock and Supplier Ledger have been updated.');
     }
 
     public function edit($id)
