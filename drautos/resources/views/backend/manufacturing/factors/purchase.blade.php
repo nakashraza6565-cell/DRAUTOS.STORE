@@ -41,10 +41,11 @@
                 <table class="table table-bordered" id="itemsTable">
                     <thead class="bg-primary text-white">
                         <tr>
-                            <th width="40%">Raw Material / Factor</th>
-                            <th width="15%">Quantity</th>
-                            <th width="15%">Unit</th>
-                            <th width="20%">Total Cost</th>
+                            <th width="30%">Raw Material / Factor</th>
+                            <th width="12%">Quantity</th>
+                            <th width="15%">Per Unit Cost</th>
+                            <th width="10%">Unit</th>
+                            <th width="18%">Total Cost</th>
                             <th width="10%">Action</th>
                         </tr>
                     </thead>
@@ -54,12 +55,15 @@
                                 <select name="items[0][factor_id]" class="form-control select2 factor-select" required>
                                     <option value="">-- Select Material --</option>
                                     @foreach($factors as $factor)
-                                        <option value="{{$factor->id}}" data-unit="{{$factor->unit}}">{{$factor->name}} ({{$factor->unit}})</option>
+                                        <option value="{{$factor->id}}" data-unit="{{$factor->unit}}" data-cost="{{$factor->cost_price}}">{{$factor->name}} ({{$factor->unit}})</option>
                                     @endforeach
                                 </select>
                             </td>
                             <td>
                                 <input type="number" step="0.01" name="items[0][quantity]" class="form-control quantity-input" placeholder="Qty" required>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" name="items[0][per_unit_cost]" class="form-control per-unit-cost-input" placeholder="Cost/Unit" required>
                             </td>
                             <td class="align-middle text-center">
                                 <span class="unit-display font-weight-bold text-muted">-</span>
@@ -74,12 +78,12 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <button type="button" class="btn btn-success btn-sm" id="addRowBtn"><i class="fas fa-plus"></i> Add Another Item</button>
                             </td>
                         </tr>
                         <tr>
-                            <th colspan="3" class="text-right">Grand Total:</th>
+                            <th colspan="4" class="text-right">Grand Total:</th>
                             <th colspan="2" id="grandTotalDisplay">Rs. 0.00</th>
                         </tr>
                     </tfoot>
@@ -100,12 +104,15 @@
             <select name="items[INDEX][factor_id]" class="form-control factor-select" required>
                 <option value="">-- Select Material --</option>
                 @foreach($factors as $factor)
-                    <option value="{{$factor->id}}" data-unit="{{$factor->unit}}">{{$factor->name}} ({{$factor->unit}})</option>
+                    <option value="{{$factor->id}}" data-unit="{{$factor->unit}}" data-cost="{{$factor->cost_price}}">{{$factor->name}} ({{$factor->unit}})</option>
                 @endforeach
             </select>
         </td>
         <td>
             <input type="number" step="0.01" name="items[INDEX][quantity]" class="form-control quantity-input" placeholder="Qty" required>
+        </td>
+        <td>
+            <input type="number" step="0.01" name="items[INDEX][per_unit_cost]" class="form-control per-unit-cost-input" placeholder="Cost/Unit" required>
         </td>
         <td class="align-middle text-center">
             <span class="unit-display font-weight-bold text-muted">-</span>
@@ -240,15 +247,53 @@
             $('#grandTotalDisplay').text('Rs. ' + total.toFixed(2));
         }
 
-        // Handle unit display update on material selection change
+        // Handle unit display update and default cost preloading on material selection change
         $(document).on('change', '.factor-select', function() {
             let selectedOption = $(this).find(':selected');
             let unit = selectedOption.data('unit') || '-';
-            $(this).closest('tr').find('.unit-display').text(unit);
+            let cost = parseFloat(selectedOption.data('cost')) || 0;
+            
+            let row = $(this).closest('tr');
+            row.find('.unit-display').text(unit);
+            
+            // Preload default cost if not already filled or if just changed
+            if (cost > 0) {
+                row.find('.per-unit-cost-input').val(cost);
+                
+                // If quantity exists, calculate total
+                let qty = parseFloat(row.find('.quantity-input').val()) || 0;
+                if (qty > 0) {
+                    row.find('.cost-input').val((qty * cost).toFixed(2));
+                    updateGrandTotal();
+                }
+            }
         });
 
         // Trigger change initially to set correct unit display for initial row
         $('.factor-select').trigger('change');
+
+        // Bidirectional Calculations
+        $(document).on('input', '.quantity-input, .per-unit-cost-input', function() {
+            let row = $(this).closest('tr');
+            let qty = parseFloat(row.find('.quantity-input').val()) || 0;
+            let rate = parseFloat(row.find('.per-unit-cost-input').val()) || 0;
+            
+            if (qty >= 0 && rate >= 0) {
+                row.find('.cost-input').val((qty * rate).toFixed(2));
+            }
+            updateGrandTotal();
+        });
+
+        $(document).on('input', '.cost-input', function() {
+            let row = $(this).closest('tr');
+            let qty = parseFloat(row.find('.quantity-input').val()) || 0;
+            let total = parseFloat(row.find('.cost-input').val()) || 0;
+            
+            if (qty > 0 && total >= 0) {
+                row.find('.per-unit-cost-input').val((total / qty).toFixed(2));
+            }
+            updateGrandTotal();
+        });
 
         $('#addRowBtn').click(function() {
             let html = $('#rowTemplate').html().replace(/INDEX/g, rowIdx);
@@ -323,12 +368,13 @@
                         let optionText = response.factor.name + ' (' + response.factor.unit + ')';
                         let factorId = response.factor.id;
                         let factorUnit = response.factor.unit;
+                        let factorCost = response.factor.cost_price ?? 0;
                         
                         // Form option
                         let newOption = $('<option>', {
                             value: factorId,
                             text: optionText
-                        }).attr('data-unit', factorUnit);
+                        }).attr('data-unit', factorUnit).attr('data-cost', factorCost);
                         
                         // Append to all current selects and select it in the active/focused select row if possible,
                         // or just append to all .factor-select dropdowns
@@ -336,7 +382,7 @@
                         
                         // Also append to the rowTemplate for future added rows
                         let templateHtml = $('#rowTemplate').html();
-                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+factorId+'" data-unit="'+factorUnit+'">'+optionText+'</option></select>');
+                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+factorId+'" data-unit="'+factorUnit+'" data-cost="'+factorCost+'">'+optionText+'</option></select>');
                         $('#rowTemplate').html(updatedTemplate);
                         
                         // Reset and close modal
