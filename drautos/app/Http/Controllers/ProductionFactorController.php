@@ -61,29 +61,41 @@ class ProductionFactorController extends Controller
                 'status' => 'success',
                 'factor' => $factor
             ]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
-        }
+    public function purchaseForm()
+    {
+        $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
+        $factors = ProductionFactor::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.factors.purchase', compact('suppliers', 'factors'));
     }
 
-    public function purchase(Request $request, $id)
+    public function purchaseStore(Request $request)
     {
-        $factor = ProductionFactor::findOrFail($id);
-
         $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
-            'quantity' => 'required|numeric|min:0.01',
-            'total_cost' => 'required|numeric|min:0',
-            'date' => 'required|date'
+            'date' => 'required|date',
+            'items' => 'required|array|min:1',
+            'items.*.factor_id' => 'required|exists:production_factors,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.total_cost' => 'required|numeric|min:0',
         ]);
 
-        // Update Stock (only for materials)
-        if ($factor->type == 'material') {
-            $factor->stock_quantity += $request->quantity;
+        $grandTotal = 0;
+        $descriptionParts = [];
+
+        foreach ($request->items as $item) {
+            $factor = ProductionFactor::findOrFail($item['factor_id']);
+            
+            // Update Stock
+            if ($factor->type == 'material') {
+                $factor->stock_quantity += $item['quantity'];
+                $factor->save();
+            }
+
+            $grandTotal += $item['total_cost'];
+            $descriptionParts[] = $item['quantity'] . ' ' . ($factor->unit ?? 'pcs') . ' of ' . $factor->name;
         }
-        
-        // Optionally update the default cost price if they want the moving average, but for now just leave default cost.
-        $factor->save();
+
+        $description = "Purchased: " . implode(', ', $descriptionParts);
 
         // Update Supplier Ledger (Debit because we owe them)
         \App\Models\SupplierLedger::record(
@@ -91,12 +103,12 @@ class ProductionFactorController extends Controller
             $request->date,
             'debit',
             'purchase',
-            "Purchased {$request->quantity} {$factor->unit} of {$factor->name}",
-            $request->total_cost,
-            'factor_'.$factor->id
+            $description,
+            $grandTotal,
+            'multi_factor_purchase'
         );
 
-        return redirect()->back()->with('success', 'Purchase logged successfully! Stock and Supplier Ledger have been updated.');
+        return redirect()->route('manufacturing.production-factors.index')->with('success', 'Purchase logged successfully! Stock and Supplier Ledger have been updated.');
     }
 
     public function edit($id)

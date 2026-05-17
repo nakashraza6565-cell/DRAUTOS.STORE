@@ -443,7 +443,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
 
         // Factors of Production
         Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');
-        Route::post('production-factors/{id}/purchase', 'ProductionFactorController@purchase')->name('production-factors.purchase');
+        Route::get('production-factors/purchase', 'ProductionFactorController@purchaseForm')->name('production-factors.purchase.create');
+        Route::post('production-factors/purchase', 'ProductionFactorController@purchaseStore')->name('production-factors.purchase.store');
         Route::resource('production-factors', 'ProductionFactorController');
 
         // Production
