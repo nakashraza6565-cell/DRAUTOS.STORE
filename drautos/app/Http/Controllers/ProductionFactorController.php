@@ -61,6 +61,11 @@ class ProductionFactorController extends Controller
                 'status' => 'success',
                 'factor' => $factor
             ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
+        }
+    }
+
     public function purchaseForm()
     {
         $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
