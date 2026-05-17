@@ -190,6 +190,7 @@ class ManufacturingController extends Controller
             // If completed, deduct stock and add finished product
             if ($bom->status === 'completed') {
                 $totalLaborCost = $labourCost; // starts with labor overhead cost
+                $totalMaterialIngredientsCost = 0;
 
                 foreach ($bom->components as $component) {
                     if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
@@ -197,6 +198,7 @@ class ManufacturingController extends Controller
                         if ($factor) {
                             if ($factor->type === 'material') {
                                 $factor->decrement('stock_quantity', $component->quantity_required);
+                                $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             } elseif ($factor->type === 'labor') {
                                 $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
                             }
@@ -205,6 +207,7 @@ class ManufacturingController extends Controller
                         $product = Product::find($component->component_product_id);
                         if ($product) {
                             $product->decrement('stock', $component->quantity_required);
+                            $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                         }
                     }
                 }
@@ -213,16 +216,19 @@ class ManufacturingController extends Controller
                 Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
 
                 // Subcontractor Ledger Automation Hook
-                if ($bom->subcontractor_id && $totalLaborCost > 0) {
-                    \App\Models\SupplierLedger::record(
-                        $bom->subcontractor_id,
-                        now()->toDateString(),
-                        'debit',
-                        'purchase',
-                        "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                        $totalLaborCost,
-                        'bom_' . $bom->id
-                    );
+                if ($bom->subcontractor_id) {
+                    $totalSubcontractCost = $totalLaborCost + $totalMaterialIngredientsCost;
+                    if ($totalSubcontractCost > 0) {
+                        \App\Models\SupplierLedger::record(
+                            $bom->subcontractor_id,
+                            now()->toDateString(),
+                            'debit',
+                            'purchase',
+                            "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                            $totalSubcontractCost,
+                            'bom_' . $bom->id
+                        );
+                    }
                 }
             }
 
@@ -413,6 +419,7 @@ class ManufacturingController extends Controller
             // Perform stock actions if transitioning to completed
             if (!$wasCompleted && $isCompleted) {
                 $totalLaborCost = $labourCost; // starts with labor overhead cost
+                $totalMaterialIngredientsCost = 0;
 
                 foreach ($bom->components as $component) {
                     if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
@@ -420,6 +427,7 @@ class ManufacturingController extends Controller
                         if ($factor) {
                             if ($factor->type === 'material') {
                                 $factor->decrement('stock_quantity', $component->quantity_required);
+                                $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             } elseif ($factor->type === 'labor') {
                                 $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
                             }
@@ -428,6 +436,7 @@ class ManufacturingController extends Controller
                         $product = Product::find($component->component_product_id);
                         if ($product) {
                             $product->decrement('stock', $component->quantity_required);
+                            $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                         }
                     }
                 }
@@ -436,16 +445,19 @@ class ManufacturingController extends Controller
                 Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
 
                 // Subcontractor Ledger Automation Hook
-                if ($bom->subcontractor_id && $totalLaborCost > 0) {
-                    \App\Models\SupplierLedger::record(
-                        $bom->subcontractor_id,
-                        now()->toDateString(),
-                        'debit',
-                        'purchase',
-                        "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                        $totalLaborCost,
-                        'bom_' . $bom->id
-                    );
+                if ($bom->subcontractor_id) {
+                    $totalSubcontractCost = $totalLaborCost + $totalMaterialIngredientsCost;
+                    if ($totalSubcontractCost > 0) {
+                        \App\Models\SupplierLedger::record(
+                            $bom->subcontractor_id,
+                            now()->toDateString(),
+                            'debit',
+                            'purchase',
+                            "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                            $totalSubcontractCost,
+                            'bom_' . $bom->id
+                        );
+                    }
                 }
             }
 
