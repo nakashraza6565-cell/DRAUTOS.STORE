@@ -49,10 +49,17 @@
                     <tr>
                         <td>
                             <select name="components[{{$index}}][product_id]" class="form-control select2 component-select" required>
-                                <option value="">Select Material</option>
-                                @foreach($factors as $factor)
-                                    <option value="{{$factor->id}}" {{$component->component_product_id == $factor->id ? 'selected' : ''}}>{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
-                                @endforeach
+                                <option value="">Select Ingredient</option>
+                                <optgroup label="Raw Materials & Labor" class="factors-group">
+                                    @foreach($factors as $factor)
+                                        <option value="factor_{{$factor->id}}" {{($component->ingredient_type === 'App\Models\ProductionFactor' && $component->component_product_id == $factor->id) ? 'selected' : ''}}>{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="Products (Intermediate/Finished)" class="products-group">
+                                    @foreach($products as $product)
+                                        <option value="product_{{$product->id}}" {{($component->ingredient_type === 'App\Models\Product' && $component->component_product_id == $product->id) ? 'selected' : ''}}>{{$product->title}} (Stock: {{$product->stock}})</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                         </td>
                         <td>
@@ -108,10 +115,17 @@
     <tr>
         <td>
             <select name="components[INDEX][product_id]" class="form-control select2-new component-select" required>
-                <option value="">Select Material</option>
-                @foreach($factors as $factor)
-                    <option value="{{$factor->id}}">{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
-                @endforeach
+                <option value="">Select Ingredient</option>
+                <optgroup label="Raw Materials & Labor" class="factors-group">
+                    @foreach($factors as $factor)
+                        <option value="factor_{{$factor->id}}">{{$factor->name}} (Stock: {{$factor->stock_quantity}} {{$factor->unit}})</option>
+                    @endforeach
+                </optgroup>
+                <optgroup label="Products (Intermediate/Finished)" class="products-group">
+                    @foreach($products as $product)
+                        <option value="product_{{$product->id}}">{{$product->title}} (Stock: {{$product->stock}})</option>
+                    @endforeach
+                </optgroup>
             </select>
         </td>
         <td>
@@ -213,14 +227,14 @@
                 data: form.serialize() + "&_token={{csrf_token()}}",
                 success: function(response) {
                     if(response.status == 'success') {
-                        let newOption = new Option(response.factor.name + ' (Stock: ' + response.factor.stock_quantity + ' ' + response.factor.unit + ')', response.factor.id, true, true);
+                        let newOption = new Option(response.factor.name + ' (Stock: ' + response.factor.stock_quantity + ' ' + response.factor.unit + ')', 'factor_' + response.factor.id, true, true);
                         
-                        // Append to all component selects
-                        $('.component-select').append(newOption).trigger('change');
+                        // Append to factors-group in all component selects
+                        $('.component-select .factors-group').append(newOption).trigger('change');
                         
                         // Also append to the hidden template so future rows get it
                         let templateHtml = $('#component_row_template').html();
-                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+response.factor.id+'">'+response.factor.name+' (Stock: '+response.factor.stock_quantity+' ' + response.factor.unit + ')</option></select>');
+                        let updatedTemplate = templateHtml.replace('</optgroup>', '<option value="factor_'+response.factor.id+'">'+response.factor.name+' (Stock: '+response.factor.stock_quantity+' ' + response.factor.unit + ')</option></optgroup>');
                         $('#component_row_template').html(updatedTemplate);
                         
                         $('#quickAddMaterialModal').modal('hide');

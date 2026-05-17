@@ -27,7 +27,7 @@ class ManufacturingBillComponent extends Model
 
     public function componentProduct()
     {
-        return $this->belongsTo(ProductionFactor::class, 'component_product_id');
+        return $this->morphTo('componentProduct', 'ingredient_type', 'component_product_id');
     }
 
     public function productionFactor()

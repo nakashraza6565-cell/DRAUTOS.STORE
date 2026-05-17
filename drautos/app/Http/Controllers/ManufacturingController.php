@@ -46,7 +46,7 @@ class ManufacturingController extends Controller
             'product_id' => 'required|exists:products,id',
             'batch_quantity' => 'required|integer|min:1',
             'components' => 'required|array|min:1',
-            'components.*.product_id' => 'required|exists:production_factors,id',
+            'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -70,15 +70,32 @@ class ManufacturingController extends Controller
 
             // Add Components
             foreach ($request->components as $componentData) {
-                $factor = \App\Models\ProductionFactor::find($componentData['product_id']);
-                $costPerUnit = $factor->cost_price ?? 0;
+                $rawId = $componentData['product_id'];
+                
+                if (str_starts_with($rawId, 'factor_')) {
+                    $factorId = (int) str_replace('factor_', '', $rawId);
+                    $factor = \App\Models\ProductionFactor::find($factorId);
+                    $costPerUnit = $factor->cost_price ?? 0;
+                    $unit = $factor->unit ?? 'pcs';
+                    $ingredientType = 'App\\Models\\ProductionFactor';
+                    $componentProductId = $factorId;
+                } else {
+                    $productId = (int) str_replace('product_', '', $rawId);
+                    $product = Product::find($productId);
+                    $costPerUnit = $product->purchase_price ?? ($product->price ?? 0);
+                    $unit = 'pcs';
+                    $ingredientType = 'App\\Models\\Product';
+                    $componentProductId = $productId;
+                }
+
                 $totalCost = $costPerUnit * $componentData['quantity'];
 
                 $component = new ManufacturingBillComponent();
                 $component->manufacturing_bill_id = $bom->id;
-                $component->component_product_id = $componentData['product_id'];
+                $component->component_product_id = $componentProductId;
+                $component->ingredient_type = $ingredientType;
                 $component->quantity_required = $componentData['quantity'];
-                $component->unit = $factor->unit ?? 'pcs';
+                $component->unit = $unit;
                 $component->cost_per_unit = $costPerUnit;
                 $component->total_cost = $totalCost;
                 $component->save();
@@ -131,7 +148,7 @@ class ManufacturingController extends Controller
             'product_id' => 'required|exists:products,id',
             'batch_quantity' => 'required|integer|min:1',
             'components' => 'required|array|min:1',
-            'components.*.product_id' => 'required|exists:production_factors,id',
+            'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -154,15 +171,32 @@ class ManufacturingController extends Controller
             $totalMaterialCost = 0;
 
             foreach ($request->components as $componentData) {
-                $factor = \App\Models\ProductionFactor::find($componentData['product_id']);
-                $costPerUnit = $factor->cost_price ?? 0;
+                $rawId = $componentData['product_id'];
+                
+                if (str_starts_with($rawId, 'factor_')) {
+                    $factorId = (int) str_replace('factor_', '', $rawId);
+                    $factor = \App\Models\ProductionFactor::find($factorId);
+                    $costPerUnit = $factor->cost_price ?? 0;
+                    $unit = $factor->unit ?? 'pcs';
+                    $ingredientType = 'App\\Models\\ProductionFactor';
+                    $componentProductId = $factorId;
+                } else {
+                    $productId = (int) str_replace('product_', '', $rawId);
+                    $product = Product::find($productId);
+                    $costPerUnit = $product->purchase_price ?? ($product->price ?? 0);
+                    $unit = 'pcs';
+                    $ingredientType = 'App\\Models\\Product';
+                    $componentProductId = $productId;
+                }
+
                 $totalCost = $costPerUnit * $componentData['quantity'];
 
                 $component = new ManufacturingBillComponent();
                 $component->manufacturing_bill_id = $bom->id;
-                $component->component_product_id = $componentData['product_id'];
+                $component->component_product_id = $componentProductId;
+                $component->ingredient_type = $ingredientType;
                 $component->quantity_required = $componentData['quantity'];
-                $component->unit = $factor->unit ?? 'pcs';
+                $component->unit = $unit;
                 $component->cost_per_unit = $costPerUnit;
                 $component->total_cost = $totalCost;
                 $component->save();
@@ -234,14 +268,23 @@ class ManufacturingController extends Controller
 
         DB::beginTransaction();
         try {
-            // Check Stock Availability first for materials only
+            // Check Stock Availability first
             foreach ($bom->components as $component) {
                 $requiredQty = $component->quantity_required * $multiplier;
-                $factor = \App\Models\ProductionFactor::find($component->component_product_id);
                 
-                if ($factor && $factor->type == 'material') {
-                    if ($factor->stock_quantity < $requiredQty) {
-                        throw new \Exception("Insufficient stock for material: {$factor->name}. Required: {$requiredQty}, Available: {$factor->stock_quantity}");
+                if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
+                    $factor = \App\Models\ProductionFactor::find($component->component_product_id);
+                    if ($factor && $factor->type == 'material') {
+                        if ($factor->stock_quantity < $requiredQty) {
+                            throw new \Exception("Insufficient stock for material: {$factor->name}. Required: {$requiredQty}, Available: {$factor->stock_quantity}");
+                        }
+                    }
+                } else {
+                    $product = Product::find($component->component_product_id);
+                    if ($product) {
+                        if ($product->stock < $requiredQty) {
+                            throw new \Exception("Insufficient stock for product: {$product->title}. Required: {$requiredQty}, Available: {$product->stock}");
+                        }
                     }
                 }
             }
@@ -251,13 +294,20 @@ class ManufacturingController extends Controller
             // Deduct Stock
             foreach ($bom->components as $component) {
                 $requiredQty = $component->quantity_required * $multiplier;
-                $factor = \App\Models\ProductionFactor::find($component->component_product_id);
                 
-                if ($factor) {
-                    if ($factor->type == 'material') {
-                        $factor->decrement('stock_quantity', $requiredQty);
-                    } elseif ($factor->type == 'labor') {
-                        $totalLaborCost += $component->cost_per_unit * $requiredQty;
+                if ($component->ingredient_type === 'App\\Models\\ProductionFactor') {
+                    $factor = \App\Models\ProductionFactor::find($component->component_product_id);
+                    if ($factor) {
+                        if ($factor->type == 'material') {
+                            $factor->decrement('stock_quantity', $requiredQty);
+                        } elseif ($factor->type == 'labor') {
+                            $totalLaborCost += $component->cost_per_unit * $requiredQty;
+                        }
+                    }
+                } else {
+                    $product = Product::find($component->component_product_id);
+                    if ($product) {
+                        $product->decrement('stock', $requiredQty);
                     }
                 }
             }

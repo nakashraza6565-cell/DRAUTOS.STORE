@@ -63,7 +63,13 @@
                 <tbody>
                     @foreach($bom->components as $component)
                     <tr>
-                        <td>{{$component->componentProduct->title ?? 'Deleted Product'}}</td>
+                        <td>
+                            @if($component->ingredient_type === 'App\\Models\\Product')
+                                {{$component->componentProduct->title ?? 'Deleted Product'}}
+                            @else
+                                {{$component->componentProduct->name ?? 'Deleted Factor'}}
+                            @endif
+                        </td>
                         <td>{{$component->quantity_required}}</td>
                         <td>Rs. {{number_format($component->cost_per_unit, 2)}}</td>
                         <td>Rs. {{number_format($component->total_cost, 2)}}</td>
