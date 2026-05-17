@@ -46,7 +46,7 @@ class ManufacturingController extends Controller
             'product_id' => 'required|exists:products,id',
             'batch_quantity' => 'required|integer|min:1',
             'components' => 'required|array|min:1',
-            'components.*.product_id' => 'required|exists:products,id',
+            'components.*.product_id' => 'required|exists:production_factors,id',
             'components.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -70,15 +70,15 @@ class ManufacturingController extends Controller
 
             // Add Components
             foreach ($request->components as $componentData) {
-                $product = Product::find($componentData['product_id']);
-                $costPerUnit = $product->purchase_price ?? ($product->price ?? 0); // Fallback to selling price if purchase price not set
+                $factor = \App\Models\ProductionFactor::find($componentData['product_id']);
+                $costPerUnit = $factor->cost_price ?? 0;
                 $totalCost = $costPerUnit * $componentData['quantity'];
 
                 $component = new ManufacturingBillComponent();
                 $component->manufacturing_bill_id = $bom->id;
                 $component->component_product_id = $componentData['product_id'];
                 $component->quantity_required = $componentData['quantity'];
-                $component->unit = 'item'; // Defaulting for now
+                $component->unit = $factor->unit ?? 'pcs';
                 $component->cost_per_unit = $costPerUnit;
                 $component->total_cost = $totalCost;
                 $component->save();
@@ -131,7 +131,7 @@ class ManufacturingController extends Controller
             'product_id' => 'required|exists:products,id',
             'batch_quantity' => 'required|integer|min:1',
             'components' => 'required|array|min:1',
-            'components.*.product_id' => 'required|exists:products,id',
+            'components.*.product_id' => 'required|exists:production_factors,id',
             'components.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -148,22 +148,21 @@ class ManufacturingController extends Controller
             $bom->notes = $request->notes;
             $bom->save();
 
-            // Clear existing components (simple strategy: delete and recreate)
-            // Ideally we should sync, but this is cleaner for BOM logic
+            // Clear existing components
             $bom->components()->delete();
 
             $totalMaterialCost = 0;
 
             foreach ($request->components as $componentData) {
-                $product = Product::find($componentData['product_id']);
-                $costPerUnit = $product->purchase_price ?? ($product->price ?? 0);
+                $factor = \App\Models\ProductionFactor::find($componentData['product_id']);
+                $costPerUnit = $factor->cost_price ?? 0;
                 $totalCost = $costPerUnit * $componentData['quantity'];
 
                 $component = new ManufacturingBillComponent();
                 $component->manufacturing_bill_id = $bom->id;
                 $component->component_product_id = $componentData['product_id'];
                 $component->quantity_required = $componentData['quantity'];
-                $component->unit = 'item';
+                $component->unit = $factor->unit ?? 'pcs';
                 $component->cost_per_unit = $costPerUnit;
                 $component->total_cost = $totalCost;
                 $component->save();
@@ -214,7 +213,8 @@ class ManufacturingController extends Controller
         if($request->has('bom_id')) {
             $selectedBom = ManufacturingBill::with('components.componentProduct')->find($request->bom_id);
         }
-        return view('backend.manufacturing.production.create', compact('boms', 'selectedBom'));
+        $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.production.create', compact('boms', 'selectedBom', 'suppliers'));
     }
 
     /**
@@ -226,6 +226,7 @@ class ManufacturingController extends Controller
             'manufacturing_bill_id' => 'required|exists:manufacturing_bills,id',
             'quantity_produced' => 'required|integer|min:1',
             'production_date' => 'required|date',
+            'subcontractor_id' => 'nullable|exists:suppliers,id',
         ]);
 
         $bom = ManufacturingBill::with('components')->findOrFail($request->manufacturing_bill_id);
@@ -233,20 +234,32 @@ class ManufacturingController extends Controller
 
         DB::beginTransaction();
         try {
-            // Check Stock Availability first
+            // Check Stock Availability first for materials only
             foreach ($bom->components as $component) {
                 $requiredQty = $component->quantity_required * $multiplier;
-                $material = Product::find($component->component_product_id);
+                $factor = \App\Models\ProductionFactor::find($component->component_product_id);
                 
-                if ($material->stock < $requiredQty) {
-                    throw new \Exception("Insufficient stock for material: {$material->title}. Required: {$requiredQty}, Available: {$material->stock}");
+                if ($factor && $factor->type == 'material') {
+                    if ($factor->stock_quantity < $requiredQty) {
+                        throw new \Exception("Insufficient stock for material: {$factor->name}. Required: {$requiredQty}, Available: {$factor->stock_quantity}");
+                    }
                 }
             }
+
+            $totalLaborCost = 0;
 
             // Deduct Stock
             foreach ($bom->components as $component) {
                 $requiredQty = $component->quantity_required * $multiplier;
-                Product::where('id', $component->component_product_id)->decrement('stock', $requiredQty);
+                $factor = \App\Models\ProductionFactor::find($component->component_product_id);
+                
+                if ($factor) {
+                    if ($factor->type == 'material') {
+                        $factor->decrement('stock_quantity', $requiredQty);
+                    } elseif ($factor->type == 'labor') {
+                        $totalLaborCost += $component->cost_per_unit * $requiredQty;
+                    }
+                }
             }
 
             // Add Finished Goods Stock
@@ -258,13 +271,26 @@ class ManufacturingController extends Controller
             $production->manufacturing_bill_id = $bom->id;
             $production->quantity_produced = $request->quantity_produced;
             $production->production_date = $request->production_date;
-            $production->actual_cost = $bom->total_cost_per_unit * $request->quantity_produced; // Simplified: using BOM standard cost
+            $production->actual_cost = $bom->total_cost_per_unit * $request->quantity_produced;
             $production->notes = $request->notes;
-            $production->produced_by = Auth::id(); // Changed from user_id to produced_by based on migration
+            $production->produced_by = Auth::id();
             $production->save();
 
+            // Subcontractor Ledger Automation Hook
+            if ($request->subcontractor_id && $totalLaborCost > 0) {
+                \App\Models\SupplierLedger::record(
+                    $request->subcontractor_id,
+                    $request->production_date,
+                    'debit', // Debit because we owe them for their service
+                    'purchase',
+                    "Labor / Subcontract Service for Production Run {$production->production_number} (produced {$request->quantity_produced} units)",
+                    $totalLaborCost,
+                    'production_' . $production->id
+                );
+            }
+
             DB::commit();
-            return redirect()->route('manufacturing.production.index')->with('success', 'Production run recorded successfully. Stock updated.');
+            return redirect()->route('manufacturing.production.index')->with('success', 'Production run recorded successfully. Stock and Ledger updated.');
 
         } catch (\Exception $e) {
             DB::rollBack();

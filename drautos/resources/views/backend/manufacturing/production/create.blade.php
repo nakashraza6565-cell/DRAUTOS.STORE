@@ -42,6 +42,17 @@
             </div>
 
             <div class="form-group">
+                <label for="subcontractor_id">Subcontractor / Supplier (Optional)</label>
+                <select name="subcontractor_id" id="subcontractor_id" class="form-control select2">
+                    <option value="">-- Select Subcontractor to Attribute Labor Costs --</option>
+                    @foreach($suppliers as $supplier)
+                        <option value="{{$supplier->id}}">{{$supplier->name}} (Balance: {{$supplier->current_balance}})</option>
+                    @endforeach
+                </select>
+                <small class="text-muted">If this BOM recipe uses labor/subcontract services, selecting a subcontractor here will automatically log the total labor cost as a debit to their ledger.</small>
+            </div>
+
+            <div class="form-group">
                 <label for="notes">Notes</label>
                 <textarea name="notes" class="form-control" rows="3"></textarea>
             </div>

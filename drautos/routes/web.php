@@ -33,7 +33,8 @@ Route::get('/fix-db', function () {
             '2026_05_12_000004_add_opening_balance_to_financial_accounts.php',
             '2026_05_12_000005_add_financial_account_id_to_cash_registers.php',
             '2026_05_12_000006_add_financial_account_id_to_expenses.php',
-            '2026_05_16_150700_create_production_factors_table.php'
+            '2026_05_16_150700_create_production_factors_table.php',
+            '2026_05_17_150700_alter_manufacturing_bill_components_foreign_key.php'
         ];
 
         foreach ($migrations as $file) {
