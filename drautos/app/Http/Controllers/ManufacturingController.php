@@ -48,21 +48,50 @@ class ManufacturingController extends Controller
             'components' => 'required|array|min:1',
             'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
+            'overheads' => 'nullable|array',
+            'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
+            'overheads.*.cost' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
             $totalMaterialCost = 0;
 
+            // Map Overheads Array
+            $machiningCost = 0;
+            $labourCost = 0;
+            $packagingCost = 0;
+            $overheadCost = 0;
+
+            if ($request->has('overheads') && is_array($request->overheads)) {
+                foreach ($request->overheads as $ov) {
+                    $costVal = (float) ($ov['cost'] ?? 0);
+                    switch ($ov['type'] ?? '') {
+                        case 'machining':
+                            $machiningCost += $costVal;
+                            break;
+                        case 'labour':
+                            $labourCost += $costVal;
+                            break;
+                        case 'packaging':
+                            $packagingCost += $costVal;
+                            break;
+                        case 'overhead':
+                            $overheadCost += $costVal;
+                            break;
+                    }
+                }
+            }
+
             // Create BOM
             $bom = new ManufacturingBill();
             $bom->bom_number = $request->bom_number;
             $bom->product_id = $request->product_id;
             $bom->batch_quantity = $request->batch_quantity;
-            $bom->machining_cost = $request->machining_cost ?? 0;
-            $bom->labour_cost = $request->labour_cost ?? 0;
-            $bom->packaging_cost = $request->packaging_cost ?? 0;
-            $bom->overhead_cost = $request->overhead_cost ?? 0;
+            $bom->machining_cost = $machiningCost;
+            $bom->labour_cost = $labourCost;
+            $bom->packaging_cost = $packagingCost;
+            $bom->overhead_cost = $overheadCost;
             $bom->notes = $request->notes;
             $bom->status = 'active';
             $bom->created_by = Auth::id();
@@ -150,18 +179,47 @@ class ManufacturingController extends Controller
             'components' => 'required|array|min:1',
             'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
+            'overheads' => 'nullable|array',
+            'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
+            'overheads.*.cost' => 'required|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
+            // Map Overheads Array
+            $machiningCost = 0;
+            $labourCost = 0;
+            $packagingCost = 0;
+            $overheadCost = 0;
+
+            if ($request->has('overheads') && is_array($request->overheads)) {
+                foreach ($request->overheads as $ov) {
+                    $costVal = (float) ($ov['cost'] ?? 0);
+                    switch ($ov['type'] ?? '') {
+                        case 'machining':
+                            $machiningCost += $costVal;
+                            break;
+                        case 'labour':
+                            $labourCost += $costVal;
+                            break;
+                        case 'packaging':
+                            $packagingCost += $costVal;
+                            break;
+                        case 'overhead':
+                            $overheadCost += $costVal;
+                            break;
+                    }
+                }
+            }
+
             // Update BOM details
             $bom->bom_number = $request->bom_number;
             $bom->product_id = $request->product_id;
             $bom->batch_quantity = $request->batch_quantity;
-            $bom->machining_cost = $request->machining_cost ?? 0;
-            $bom->labour_cost = $request->labour_cost ?? 0;
-            $bom->packaging_cost = $request->packaging_cost ?? 0;
-            $bom->overhead_cost = $request->overhead_cost ?? 0;
+            $bom->machining_cost = $machiningCost;
+            $bom->labour_cost = $labourCost;
+            $bom->packaging_cost = $packagingCost;
+            $bom->overhead_cost = $overheadCost;
             $bom->notes = $request->notes;
             $bom->save();
 

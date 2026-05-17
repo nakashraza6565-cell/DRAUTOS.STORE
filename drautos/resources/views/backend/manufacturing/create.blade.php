@@ -80,24 +80,41 @@
 
             <hr>
             <h5 class="mb-3">Overhead Costs (Per Batch)</h5>
-            <div class="form-row">
-                <div class="col-md-3 mb-3">
-                    <label>Machining Cost</label>
-                    <input type="number" step="0.01" name="machining_cost" class="form-control" value="0">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label>Labour Cost</label>
-                    <input type="number" step="0.01" name="labour_cost" class="form-control" value="0">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label>Packaging Cost</label>
-                    <input type="number" step="0.01" name="packaging_cost" class="form-control" value="0">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label>Other Overheads</label>
-                    <input type="number" step="0.01" name="overhead_cost" class="form-control" value="0">
-                </div>
-            </div>
+            <table class="table table-bordered" id="overheads_table">
+                <thead>
+                    <tr>
+                        <th width="60%">Overhead Type</th>
+                        <th width="30%">Cost (Rs.)</th>
+                        <th width="10%">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="overheads_body">
+                    <tr>
+                        <td>
+                            <select name="overheads[0][type]" class="form-control select2" required>
+                                <option value="">-- Select Overhead Type --</option>
+                                <option value="machining">Machining Cost</option>
+                                <option value="labour">Labour Cost</option>
+                                <option value="packaging">Packaging Cost</option>
+                                <option value="overhead">Other Overheads</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" name="overheads[0][cost]" class="form-control" placeholder="Cost" value="0" required>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-overhead-row" disabled><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">
+                            <button type="button" class="btn btn-success btn-sm" id="add_overhead"><i class="fas fa-plus"></i> Add Overhead</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
 
             <div class="form-group">
                 <label>Notes</label>
@@ -136,6 +153,26 @@
     </tr>
 </template>
 
+</template>
+
+<template id="overhead_row_template">
+    <tr>
+        <td>
+            <select name="overheads[INDEX][type]" class="form-control select2-new" required>
+                <option value="">-- Select Overhead Type --</option>
+                <option value="machining">Machining Cost</option>
+                <option value="labour">Labour Cost</option>
+                <option value="packaging">Packaging Cost</option>
+                <option value="overhead">Other Overheads</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control" placeholder="Cost" value="0" required>
+        </td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+        </td>
+    </tr>
 </template>
 
 <!-- Quick Add Material Modal -->
@@ -211,6 +248,23 @@
         });
 
         $(document).on('click', '.remove-row', function() {
+            $(this).closest('tr').remove();
+        });
+
+        // Overhead costs dynamic rows
+        let overheadIndex = 1;
+        $('#add_overhead').click(function() {
+            let template = $('#overhead_row_template').html();
+            let newRow = template.replace(/INDEX/g, overheadIndex++);
+            $('#overheads_body').append(newRow);
+            
+            $('.select2-new').select2({
+                theme: 'bootstrap4',
+                width: '100%'
+            }).removeClass('select2-new').addClass('select2');
+        });
+
+        $(document).on('click', '.remove-overhead-row', function() {
             $(this).closest('tr').remove();
         });
 
