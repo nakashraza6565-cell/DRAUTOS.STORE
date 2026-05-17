@@ -31,7 +31,10 @@
             </div>
 
             <hr>
-            <h5 class="mb-3">Raw Materials / Components</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Raw Materials / Components</h5>
+                <button type="button" class="btn btn-sm btn-info shadow-sm" data-toggle="modal" data-target="#quickAddMaterialModal"><i class="fas fa-plus fa-sm text-white-50"></i> Add New Material</button>
+            </div>
             
             <table class="table table-bordered">
                 <thead>
@@ -120,6 +123,63 @@
     </tr>
 </template>
 
+</template>
+
+<!-- Quick Add Material Modal -->
+<div class="modal fade" id="quickAddMaterialModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Quick Add Raw Material</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="quickAddMaterialForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Material Name *</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category *</label>
+                        <select name="cat_id" class="form-control" required>
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{$cat->id}}">{{$cat->title}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Default Stock *</label>
+                            <input type="number" name="stock" class="form-control" value="0" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Purchase Price</label>
+                            <input type="number" step="0.01" name="purchase_price" class="form-control" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Unit (e.g. kg, pcs)</label>
+                            <input type="text" name="unit" class="form-control" value="piece">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Selling Price (Optional)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" value="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-info">Save Material</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -151,6 +211,47 @@
 
         $(document).on('click', '.remove-row', function() {
             $(this).closest('tr').remove();
+        });
+
+        // Quick Add Material Form Submission
+        $('#quickAddMaterialForm').submit(function(e) {
+            e.preventDefault();
+            let form = $(this);
+            let btn = form.find('button[type="submit"]');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+            
+            $.ajax({
+                url: "{{route('product.quick-store')}}",
+                type: "POST",
+                data: form.serialize() + "&_token={{csrf_token()}}",
+                success: function(response) {
+                    if(response.status == 'success') {
+                        let newOption = new Option(response.product.title + ' (Stock: ' + response.product.stock + ')', response.product.id, true, true);
+                        
+                        // Append to all component selects
+                        $('.component-select').append(newOption).trigger('change');
+                        
+                        // Also append to the hidden template so future rows get it
+                        let templateHtml = $('#component_row_template').html();
+                        let updatedTemplate = templateHtml.replace('</select>', '<option value="'+response.product.id+'">'+response.product.title+' (Stock: '+response.product.stock+')</option></select>');
+                        $('#component_row_template').html(updatedTemplate);
+                        
+                        $('#quickAddMaterialModal').modal('hide');
+                        form[0].reset();
+                        
+                        // Optional: Show simple alert or toast
+                        alert('Material added successfully!');
+                    } else {
+                        alert(response.message || 'Error adding material');
+                    }
+                },
+                error: function(xhr) {
+                    alert('An error occurred. Check your input.');
+                },
+                complete: function() {
+                    btn.prop('disabled', false).text('Save Material');
+                }
+            });
         });
     });
 </script>

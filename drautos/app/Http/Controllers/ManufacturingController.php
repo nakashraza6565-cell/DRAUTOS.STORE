@@ -27,10 +27,9 @@ class ManufacturingController extends Controller
      */
     public function create()
     {
-        // Products that can be manufactured (Finished Goods)
-        // Ideally filter by type if you have 'manufactured' vs 'raw', but for now all active products.
         $products = Product::where('status', 'active')->orderBy('title')->get();
-        return view('backend.manufacturing.create', compact('products'));
+        $categories = \App\Models\Category::where('is_parent', 1)->get();
+        return view('backend.manufacturing.create', compact('products', 'categories'));
     }
 
     /**
@@ -112,7 +111,8 @@ class ManufacturingController extends Controller
     {
         $bom = ManufacturingBill::with('components')->findOrFail($id);
         $products = Product::where('status', 'active')->orderBy('title')->get();
-        return view('backend.manufacturing.edit', compact('bom', 'products'));
+        $categories = \App\Models\Category::where('is_parent', 1)->get();
+        return view('backend.manufacturing.edit', compact('bom', 'products', 'categories'));
     }
 
     /**

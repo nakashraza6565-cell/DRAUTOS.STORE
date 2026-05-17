@@ -208,7 +208,6 @@
         </a>
         <div id="manufacturingCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('production-factors.index')}}">Raw Materials & Labor</a>
             <a class="collapse-item" href="{{route('manufacturing.index')}}">Bill of Materials</a>
             <a class="collapse-item" href="{{route('manufacturing.create')}}">Create New BOM</a>
             <a class="collapse-item" href="{{route('manufacturing.production.index')}}">Production Log</a>
