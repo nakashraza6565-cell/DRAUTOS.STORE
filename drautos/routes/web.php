@@ -32,7 +32,8 @@ Route::get('/fix-db', function () {
             '2026_05_12_000003_add_financial_account_id_to_ledgers.php',
             '2026_05_12_000004_add_opening_balance_to_financial_accounts.php',
             '2026_05_12_000005_add_financial_account_id_to_cash_registers.php',
-            '2026_05_12_000006_add_financial_account_id_to_expenses.php'
+            '2026_05_12_000006_add_financial_account_id_to_expenses.php',
+            '2026_05_16_150700_create_production_factors_table.php'
         ];
 
         foreach ($migrations as $file) {
@@ -439,6 +440,9 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::get('/{id}/edit', 'ManufacturingController@edit')->name('edit');
         Route::put('/{id}', 'ManufacturingController@update')->name('update');
         Route::delete('/{id}', 'ManufacturingController@destroy')->name('destroy');
+
+        // Factors of Production
+        Route::resource('production-factors', 'ProductionFactorController');
 
         // Production
         Route::get('/production', 'ManufacturingController@productionIndex')->name('production.index');
