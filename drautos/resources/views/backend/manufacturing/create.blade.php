@@ -208,7 +208,7 @@
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
             
             $.ajax({
-                url: "{{route('production-factors.quick-store')}}",
+                url: "{{route('manufacturing.production-factors.quick-store')}}",
                 type: "POST",
                 data: form.serialize() + "&_token={{csrf_token()}}",
                 success: function(response) {
