@@ -217,14 +217,14 @@ class ManufacturingController extends Controller
 
                 // Subcontractor Ledger Automation Hook
                 if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost + $totalMaterialIngredientsCost;
+                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
                     if ($totalSubcontractCost > 0) {
                         \App\Models\SupplierLedger::record(
                             $bom->subcontractor_id,
                             now()->toDateString(),
                             'debit',
                             'purchase',
-                            "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                            "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
                             $totalSubcontractCost,
                             $bom->id
                         );
@@ -445,14 +445,14 @@ class ManufacturingController extends Controller
 
                 // Subcontractor Ledger Automation Hook
                 if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost + $totalMaterialIngredientsCost;
+                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
                     if ($totalSubcontractCost > 0) {
                         \App\Models\SupplierLedger::record(
                             $bom->subcontractor_id,
                             now()->toDateString(),
                             'debit',
                             'purchase',
-                            "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                            "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
                             $totalSubcontractCost,
                             $bom->id
                         );
