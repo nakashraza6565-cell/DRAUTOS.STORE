@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use PDF;
 use Illuminate\Support\Str;
 use App\Services\WhatsAppService;
+use DB;
 
 class PackagingPurchaseController extends Controller
 {
@@ -41,39 +42,66 @@ class PackagingPurchaseController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'packaging_item_id' => 'required|exists:packaging_items,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
-            'quantity' => 'required|numeric|min:0.01',
-            'price' => 'required|numeric|min:0',
             'purchase_date' => 'required|date',
-            'invoice_no' => 'nullable|string|unique:packaging_purchases,invoice_no'
+            'invoice_no' => 'nullable|string|unique:packaging_purchases,invoice_no',
+            'items' => 'required|array|min:1',
+            'items.*.packaging_item_id' => 'required|exists:packaging_items,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.price' => 'required|numeric|min:0',
         ]);
 
-        $data = $request->all();
-        if (empty($data['invoice_no'])) {
-            $data['invoice_no'] = 'PKG-' . strtoupper(Str::random(8));
+        $invoice_no = $request->invoice_no;
+        if (empty($invoice_no)) {
+            $invoice_no = 'PKG-' . strtoupper(Str::random(8));
         }
-        $data['total_price'] = $data['quantity'] * $data['price'];
 
-        $purchase = PackagingPurchase::create($data);
+        DB::beginTransaction();
+        try {
+            $savedPurchases = [];
+            foreach ($request->items as $itemData) {
+                $qty = (float) $itemData['quantity'];
+                $price = (float) $itemData['price'];
+                
+                $purchase = PackagingPurchase::create([
+                    'packaging_item_id' => $itemData['packaging_item_id'],
+                    'supplier_id' => $request->supplier_id,
+                    'quantity' => $qty,
+                    'price' => $price,
+                    'total_price' => $qty * $price,
+                    'invoice_no' => $invoice_no,
+                    'purchase_date' => $request->purchase_date,
+                ]);
 
-        if ($purchase) {
-            // Update stock of the item
-            $item = PackagingItem::find($data['packaging_item_id']);
-            $item->stock += $data['quantity'];
-            $item->save();
+                // Update stock of the item
+                $item = PackagingItem::find($itemData['packaging_item_id']);
+                if ($item) {
+                    $item->stock += $qty;
+                    $item->save();
+                }
 
-            // Send WhatsApp with PDF
+                $savedPurchases[] = $purchase;
+            }
+
+            DB::commit();
+
+            // Send WhatsApp with PDF (Send notification for the first item or consolidate if needed)
             try {
-                $purchase->load('packagingItem', 'supplier');
-                $this->whatsapp->sendPackagingPurchaseNotification($purchase);
+                if (count($savedPurchases) > 0) {
+                    $firstPurchase = $savedPurchases[0];
+                    $firstPurchase->load('packagingItem', 'supplier');
+                    $this->whatsapp->sendPackagingPurchaseNotification($firstPurchase);
+                }
             } catch (\Exception $e) {
                 \Log::error("Packaging WHATSAPP ERROR: " . $e->getMessage());
             }
 
-            request()->session()->flash('success', 'Purchase recorded, stock updated, and WhatsApp sent.');
-        } else {
-            request()->session()->flash('error', 'Error occurred while recording purchase.');
+            request()->session()->flash('success', 'Packaging purchase recorded successfully, and stock updated.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            request()->session()->flash('error', 'Error occurred while recording purchase: ' . $e->getMessage());
+            return redirect()->back()->withInput();
         }
 
         return redirect()->route('packaging.purchases.index');
