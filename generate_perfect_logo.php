@@ -1,5 +1,5 @@
 <?php
-// PHP Script to mathematically render a premium "DR" logo using the authentic Revue font
+// PHP Script to mathematically render a premium "DR" logo using the authentic Revue font (Black Background & Dark Blue Text)
 
 $fontFile = __DIR__ . DIRECTORY_SEPARATOR . 'revue' . DIRECTORY_SEPARATOR . 'reve.ttf';
 
@@ -20,7 +20,7 @@ imagealphablending($img, true);
 imagesavealpha($img, true);
 
 // Colors
-$bgCol = imagecolorallocate($img, 14, 15, 18); // Deep Premium Graphite Slate (#0e0f12)
+$bgCol = imagecolorallocate($img, 0, 0, 0); // Solid Pure Black (#000000)
 imagefill($img, 0, 0, $bgCol);
 
 // Draw a beautiful premium glowing gradient circle
@@ -29,21 +29,21 @@ $centerY = $height / 2;
 $outerRadius = 450;
 $innerRadius = 442;
 
-// Draw a glowing electric cyan/blue circular ring (#38bdf8) with smooth antialiasing
+// Draw a glowing sapphire blue circular ring (#2563eb) with smooth antialiasing
 for ($r = $outerRadius; $r >= $innerRadius; $r--) {
     $opacity = 1.0 - (($outerRadius - $r) / ($outerRadius - $innerRadius));
     $alpha = (int)((1 - $opacity) * 127);
-    $glowCol = imagecolorallocatealpha($img, 56, 189, 248, $alpha); // Electric Cyan (#38bdf8)
+    $glowCol = imagecolorallocatealpha($img, 37, 99, 235, $alpha); // Sapphire Blue (#2563eb)
     imagefilledellipse($img, $centerX, $centerY, $r * 2, $r * 2, $glowCol);
 }
 
-// Re-fill inner circle to make it a ring
-$innerBgCol = imagecolorallocate($img, 14, 15, 18);
+// Re-fill inner circle with solid black
+$innerBgCol = imagecolorallocate($img, 0, 0, 0);
 imagefilledellipse($img, $centerX, $centerY, $innerRadius * 2, $innerRadius * 2, $innerBgCol);
 
-// Draw an inner subtle silver trim (#e2e8f0)
-$silverCol = imagecolorallocatealpha($img, 226, 232, 240, 80);
-imageellipse($img, $centerX, $centerY, ($innerRadius - 8) * 2, ($innerRadius - 8) * 2, $silverCol);
+// Draw an inner subtle sapphire/blue trim (#3b82f6)
+$trimCol = imagecolorallocatealpha($img, 59, 130, 246, 70);
+imageellipse($img, $centerX, $centerY, ($innerRadius - 8) * 2, ($innerRadius - 8) * 2, $trimCol);
 
 // Font settings for "DR"
 $fontSize = 320;
@@ -54,31 +54,31 @@ $bbox = imagettfbbox($fontSize, 0, $fontFile, $text);
 $textWidth = $bbox[2] - $bbox[0];
 $textHeight = $bbox[1] - $bbox[7];
 
-// Fine-tuned visual offsets for Revue font centering
+// Centering coordinates
 $x = ($width - $textWidth) / 2 - 20; // Slight shift left to balance visual weight
 $y = ($height + $textHeight) / 2 - 40; // Center baseline vertically
 
 echo "📐 Calculated Font Box Width: {$textWidth}px, Height: {$textHeight}px\n";
 echo "🎯 Coordinates: X={$x}, Y={$y}\n";
 
-// 1. Draw a beautiful soft drop shadow for that premium "lifted" look
+// 1. Draw a beautiful dark drop shadow
 $shadowOffset = 18;
-$shadowCol = imagecolorallocatealpha($img, 0, 0, 0, 95); // Heavy semi-transparent black
+$shadowCol = imagecolorallocatealpha($img, 0, 0, 0, 110);
 imagettftext($img, $fontSize, 0, $x + $shadowOffset, $y + $shadowOffset, $shadowCol, $fontFile, $text);
 
-// 2. Draw a secondary blue glow behind the text
-$glowOffset = 6;
-$glowCol = imagecolorallocatealpha($img, 56, 189, 248, 110); // Glowing Electric Cyan
-for ($dx = -$glowOffset; $dx <= $glowOffset; $dx += 3) {
-    for ($dy = -$glowOffset; $dy <= $glowOffset; $dy += 3) {
+// 2. Draw a gorgeous soft light-blue ambient glow (#60a5fa) behind the dark blue text to make it pop!
+$glowOffset = 8;
+$glowCol = imagecolorallocatealpha($img, 96, 165, 250, 100); // Light blue glow
+for ($dx = -$glowOffset; $dx <= $glowOffset; $dx += 2) {
+    for ($dy = -$glowOffset; $dy <= $glowOffset; $dy += 2) {
         if (abs($dx) + abs($dy) > 0) {
             imagettftext($img, $fontSize, 0, $x + $dx, $y + $dy, $glowCol, $fontFile, $text);
         }
     }
 }
 
-// 3. Draw the main crisp white text in the foreground
-$fgCol = imagecolorallocate($img, 255, 255, 255); // Pure White
+// 3. Draw the main text in deep, premium Dark Cobalt Blue (#1e40af)
+$fgCol = imagecolorallocate($img, 30, 64, 175); // Dark Cobalt Blue (#1e40af)
 imagettftext($img, $fontSize, 0, $x, $y, $fgCol, $fontFile, $text);
 
 // Save generated logo
