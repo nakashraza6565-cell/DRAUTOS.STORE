@@ -113,7 +113,7 @@ class ProductionFactorController extends Controller
                 'purchase',
                 $description,
                 $grandTotal,
-                'multi_factor_purchase'
+                null
             );
 
             \Illuminate\Support\Facades\DB::commit();
