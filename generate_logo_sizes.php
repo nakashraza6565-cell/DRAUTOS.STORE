@@ -1,7 +1,7 @@
 <?php
 // PHP Script to process the generated logo and output standard icon sizes with high quality and transparency support
 
-$sourcePath = 'C:\\Users\\T L S\\.gemini\\antigravity\\brain\\04bc3265-f91a-4be0-b599-99e16e644781\\drautos_logo_1779141363851.png';
+$sourcePath = __DIR__ . DIRECTORY_SEPARATOR . 'dr_logo.png';
 
 if (!file_exists($sourcePath)) {
     die("❌ Error: Source logo file not found at: {$sourcePath}\n");
@@ -93,10 +93,14 @@ if (copy($imagesDir . DIRECTORY_SEPARATOR . 'hello-icon-128.png', $faviconPath))
 
 // Save a copy in the root as dr_logo.png to update any general assets
 $rootLogoPath = __DIR__ . DIRECTORY_SEPARATOR . 'dr_logo.png';
-if (copy($sourcePath, $rootLogoPath)) {
-    echo "🎉 Saved root logo to: {$rootLogoPath}\n";
+if (realpath($sourcePath) !== realpath($rootLogoPath)) {
+    if (copy($sourcePath, $rootLogoPath)) {
+        echo "🎉 Saved root logo to: {$rootLogoPath}\n";
+    } else {
+        echo "❌ Failed to copy root logo.\n";
+    }
 } else {
-    echo "❌ Failed to copy root logo.\n";
+    echo "ℹ️ Root logo is already the source file.\n";
 }
 
 imagedestroy($srcImg);
