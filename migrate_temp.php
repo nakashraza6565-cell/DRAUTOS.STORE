@@ -5,12 +5,8 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    $columns = \Illuminate\Support\Facades\DB::select("SHOW COLUMNS FROM manufacturing_bills");
-    echo "<h3>manufacturing_bills columns:</h3><pre>";
-    foreach ($columns as $c) {
-        echo "{$c->Field} - {$c->Type} - Null: {$c->Null}\n";
-    }
-    echo "</pre>";
+    \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills MODIFY COLUMN status VARCHAR(255) DEFAULT 'wip'");
+    echo "✅ status column modified successfully!";
 } catch (\Exception $e) {
     echo "❌ Error: " . $e->getMessage();
 }
