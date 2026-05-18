@@ -23,6 +23,21 @@ use App\Http\Controllers\ChequeController;
 
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
 
+Route::get('.well-known/assetlinks.json', function () {
+    return response()->json([
+        [
+            "relation" => ["delegate_permission/common.handle_all_urls"],
+            "target" => [
+                "namespace" => "android_app",
+                "package_name" => "store.drautos.twa",
+                "sha256_cert_fingerprints" => [
+                    "C1:F7:69:B0:8A:42:CD:FA:6F:78:28:EA:E2:BA:CC:67:1E:EE:68:6F:D8:F7:2D:1F:CD:35:B6:7A:12:01:14:E1"
+                ]
+            ]
+        ]
+    ], 200, ['Content-Type' => 'application/json'], JSON_UNESCAPED_SLASHES);
+});
+
 // (Removed old fix-db route - moved to admin section)
 Route::get('/fix-db', function () {
     try {
