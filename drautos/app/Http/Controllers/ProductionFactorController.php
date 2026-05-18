@@ -26,13 +26,14 @@ class ProductionFactorController extends Controller
             'type' => 'required|in:material,labor,overhead,service',
             'unit' => 'nullable|string|max:50',
             'cost_price' => 'nullable|numeric|min:0',
+            'stock_quantity' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = $request->all();
         // default missing values
         $data['cost_price'] = $data['cost_price'] ?? 0;
-        $data['stock_quantity'] = 0; // Stock is added via inventory incoming later if it's a material
+        $data['stock_quantity'] = $request->stock_quantity ?? 0;
 
         ProductionFactor::create($data);
 
@@ -139,11 +140,13 @@ class ProductionFactorController extends Controller
             'type' => 'required|in:material,labor,overhead,service',
             'unit' => 'nullable|string|max:50',
             'cost_price' => 'nullable|numeric|min:0',
+            'stock_quantity' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
         ]);
 
         $data = $request->all();
         $data['cost_price'] = $data['cost_price'] ?? 0;
+        $data['stock_quantity'] = $data['stock_quantity'] ?? 0;
 
         $factor->update($data);
 

@@ -37,6 +37,11 @@
             </div>
 
             <div class="form-group">
+                <label for="stock_quantity">Stock Quantity (Current Stock)</label>
+                <input id="stock_quantity" type="number" step="0.01" name="stock_quantity" value="{{$factor->stock_quantity}}" class="form-control">
+            </div>
+
+            <div class="form-group">
                 <label for="status">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-control">
                     <option value="active" {{(($factor->status=='active') ? 'selected' : '')}}>Active</option>

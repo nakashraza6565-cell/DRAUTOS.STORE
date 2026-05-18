@@ -37,6 +37,12 @@
             </div>
 
             <div class="form-group">
+                <label for="stock_quantity">Starting Stock Quantity (Optional)</label>
+                <input id="stock_quantity" type="number" step="0.01" name="stock_quantity" placeholder="0.00" value="{{old('stock_quantity', '0.00')}}" class="form-control">
+                <small class="text-muted">For raw materials, you can initialize the stock here.</small>
+            </div>
+
+            <div class="form-group">
                 <label for="status">Status <span class="text-danger">*</span></label>
                 <select name="status" class="form-control">
                     <option value="active" {{old('status')=='active' ? 'selected' : ''}}>Active</option>
