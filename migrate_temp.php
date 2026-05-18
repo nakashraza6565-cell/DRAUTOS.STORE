@@ -5,8 +5,12 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills ADD COLUMN subcontractor_id BIGINT UNSIGNED NULL");
-    echo "✅ subcontractor_id added successfully!";
+    $columns = \Illuminate\Support\Facades\DB::select("SHOW COLUMNS FROM manufacturing_bills");
+    echo "<h3>manufacturing_bills columns:</h3><pre>";
+    foreach ($columns as $c) {
+        echo "{$c->Field} - {$c->Type} - Null: {$c->Null}\n";
+    }
+    echo "</pre>";
 } catch (\Exception $e) {
     echo "❌ Error: " . $e->getMessage();
 }
