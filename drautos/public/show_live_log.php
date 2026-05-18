@@ -1,10 +1,11 @@
 <?php
-// Temporary script to inspect live server logs
-$logPath = __DIR__ . '/../storage/logs/laravel.log';
-if (file_exists($logPath)) {
-    $lines = file($logPath);
-    $lastLines = array_slice($lines, -150);
-    echo "<pre>" . htmlspecialchars(implode("", $lastLines)) . "</pre>";
-} else {
-    echo "Log file not found at: " . $logPath;
-}
+header('Content-Type: text/plain');
+echo "=== SERVER PUBLIC DIRECTORY SCAN ===\n\n";
+echo "Current Dir: " . __DIR__ . "\n";
+echo "Parent Dir: " . realpath(__DIR__ . '/..') . "\n\n";
+
+echo "--- Files in public/ ---\n";
+print_r(scandir(__DIR__));
+
+echo "\n--- Files in parent/ ---\n";
+print_r(scandir(__DIR__ . '/..'));
