@@ -1,6 +1,6 @@
 <?php
 /**
- * 🧹 Extreme Cache Cleaner for Laravel on Hostinger
+ * 🧹 Extreme Cache Cleaner & Ledger Retro-Synchronizer for Laravel on Hostinger
  */
 
 define('LARAVEL_START', microtime(true));
@@ -9,7 +9,7 @@ $app = require_once __DIR__.'/drautos/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-echo "<h1>🧹 Danyal Autos - Cache Cleaner</h1>";
+echo "<h1>🧹 Danyal Autos - Cache Cleaner & Ledger Sync</h1>";
 
 try {
     echo "Clearing View Cache... ";
@@ -36,6 +36,71 @@ try {
         echo "Resetting PHP OPcache... ";
         opcache_reset();
         echo "✅<br>";
+    }
+
+    echo "<h2>🔄 Retroactive Packaging Purchase Ledger Sync</h2>";
+    try {
+        $purchases = \App\Models\PackagingPurchase::whereNotNull('supplier_id')->get();
+        
+        // Group by base invoice_no (stripping trailing -1, -2, etc. suffixes)
+        $groupedPurchases = [];
+        foreach ($purchases as $p) {
+            $baseInvoice = $p->invoice_no;
+            if (preg_match('/^(PKG-[A-Z0-9]+)-\d+$/', $baseInvoice, $matches)) {
+                $baseInvoice = $matches[1];
+            } elseif (preg_match('/^(.+)-\d+$/', $baseInvoice, $matches)) {
+                $baseInvoice = $matches[1];
+            }
+            $groupedPurchases[$baseInvoice][] = $p;
+        }
+
+        echo "Found " . count($groupedPurchases) . " unique invoices associated with suppliers.<br>";
+        echo "<ul>";
+        $postedCount = 0;
+        foreach ($groupedPurchases as $invoiceNo => $items) {
+            $firstItem = $items[0];
+            $supplierId = $firstItem->supplier_id;
+            $supplier = \App\Models\Supplier::find($supplierId);
+            if (!$supplier) {
+                echo "<li>⚠️ Skipping invoice <b>{$invoiceNo}</b>: Supplier ID {$supplierId} not found.</li>";
+                continue;
+            }
+            
+            $purchaseDate = $firstItem->purchase_date;
+            $totalCost = 0;
+            foreach ($items as $item) {
+                $totalCost += $item->total_price;
+            }
+            
+            // Check if ledger entry already exists
+            $exists = \App\Models\SupplierLedger::where('supplier_id', $supplierId)
+                ->where('description', 'like', "%Invoice #{$invoiceNo}%")
+                ->exists();
+                
+            if ($exists) {
+                echo "<li>✅ Invoice <b>{$invoiceNo}</b> for supplier <b>{$supplier->name}</b> is already recorded in the ledger.</li>";
+            } else {
+                // Record entry
+                \App\Models\SupplierLedger::record(
+                    $supplierId,
+                    $purchaseDate,
+                    'debit',
+                    'purchase',
+                    "Packaging Material Purchase: Invoice #{$invoiceNo}",
+                    $totalCost
+                );
+                echo "<li style='color: green;'>🚀 <b>Posted Ledger Entry:</b> Invoice <b>{$invoiceNo}</b> for supplier <b>{$supplier->name}</b> of Rs. " . number_format($totalCost, 2) . " on {$purchaseDate}</li>";
+                $postedCount++;
+            }
+        }
+        echo "</ul>";
+        if ($postedCount > 0) {
+            echo "<h4 style='color: green;'>Successfully posted {$postedCount} missing ledger entries retroactively!</h4>";
+        } else {
+            echo "<h4>No missing ledger entries found to post. All are fully synchronized!</h4>";
+        }
+    } catch (\Exception $dbEx) {
+        echo "<span style='color: red;'>❌ DB Sync Error: " . $dbEx->getMessage() . "</span><br>";
     }
 
     echo "<h2>📂 Git Deployment Diagnostics</h2>";
