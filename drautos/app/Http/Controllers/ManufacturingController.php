@@ -212,23 +212,21 @@ class ManufacturingController extends Controller
                     }
                 }
 
-                // Increment finished goods stock
-                Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
+            }
 
-                // Subcontractor Ledger Automation Hook
-                if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
-                    if ($totalSubcontractCost > 0) {
-                        \App\Models\SupplierLedger::record(
-                            $bom->subcontractor_id,
-                            now()->toDateString(),
-                            'debit',
-                            'purchase',
-                            "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                            $totalSubcontractCost,
-                            $bom->id
-                        );
-                    }
+            // Subcontractor Ledger Automation Hook (Always post to ledger immediately regardless of status)
+            if ($bom->subcontractor_id) {
+                $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
+                if ($totalSubcontractCost > 0) {
+                    \App\Models\SupplierLedger::record(
+                        $bom->subcontractor_id,
+                        now()->toDateString(),
+                        'debit',
+                        'purchase',
+                        "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $totalSubcontractCost,
+                        $bom->id
+                    );
                 }
             }
 
@@ -440,23 +438,63 @@ class ManufacturingController extends Controller
                     }
                 }
 
-                // Increment finished goods stock
-                Product::where('id', $bom->product_id)->increment('stock', $bom->batch_quantity);
+            }
 
-                // Subcontractor Ledger Automation Hook
-                if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
-                    if ($totalSubcontractCost > 0) {
+            // Subcontractor Ledger Automation Hook (Always post/update ledger immediately regardless of status)
+            $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
+            
+            // Delete old ledger entries for this BOM if subcontractor changed or cost became 0
+            if (!$bom->subcontractor_id || $totalSubcontractCost <= 0) {
+                $oldLedgers = \App\Models\SupplierLedger::where('reference_id', $bom->id)
+                    ->where('category', 'purchase')
+                    ->get();
+                foreach ($oldLedgers as $ol) {
+                    $supplierId = $ol->supplier_id;
+                    $ol->delete();
+                    \App\Models\SupplierLedger::updateBalance($supplierId);
+                }
+            }
+            
+            if ($bom->subcontractor_id && $totalSubcontractCost > 0) {
+                // Find existing ledger entry for this BOM
+                $ledger = \App\Models\SupplierLedger::where('reference_id', $bom->id)
+                    ->where('category', 'purchase')
+                    ->first();
+                
+                if ($ledger) {
+                    // If subcontractor changed, delete old and record new
+                    if ($ledger->supplier_id != $bom->subcontractor_id) {
+                        $oldSupplierId = $ledger->supplier_id;
+                        $ledger->delete();
+                        \App\Models\SupplierLedger::updateBalance($oldSupplierId);
+                        
                         \App\Models\SupplierLedger::record(
                             $bom->subcontractor_id,
                             now()->toDateString(),
                             'debit',
                             'purchase',
-                            "Labor / Subcontract Service for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                            "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
                             $totalSubcontractCost,
                             $bom->id
                         );
+                    } else {
+                        // Just update amount and description
+                        $ledger->amount = $totalSubcontractCost;
+                        $ledger->description = "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)";
+                        $ledger->save();
+                        \App\Models\SupplierLedger::updateBalance($bom->subcontractor_id);
                     }
+                } else {
+                    // Create new
+                    \App\Models\SupplierLedger::record(
+                        $bom->subcontractor_id,
+                        now()->toDateString(),
+                        'debit',
+                        'purchase',
+                        "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $totalSubcontractCost,
+                        $bom->id
+                    );
                 }
             }
 
