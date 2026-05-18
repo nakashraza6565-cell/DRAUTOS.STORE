@@ -51,9 +51,10 @@ class ManufacturingController extends Controller
             'components.*.quantity' => 'required|numeric|min:0.01',
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|string',
+            'overheads.*.subcontractor_id' => 'nullable|exists:suppliers,id',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
-            'subcontractor_id' => 'nullable|exists:suppliers,id',
+            'subcontractor_id' => 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -126,7 +127,8 @@ class ManufacturingController extends Controller
                         $overheadDetails[] = [
                             'type' => $type,
                             'name' => $name,
-                            'cost' => $costVal
+                            'cost' => $costVal,
+                            'subcontractor_id' => !empty($ov['subcontractor_id']) ? (int) $ov['subcontractor_id'] : null
                         ];
                     }
                 }
@@ -214,19 +216,29 @@ class ManufacturingController extends Controller
 
             }
 
-            // Subcontractor Ledger Automation Hook (Always post to ledger immediately regardless of status)
-            if ($bom->subcontractor_id) {
-                $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
-                if ($totalSubcontractCost > 0) {
+            // Decoupled Multi-Subcontractor Ledger Hook (Always post immediately regardless of status)
+            $details = $bom->overhead_details ?? [];
+            $recalcSupplierIds = [];
+            foreach ($details as $ov) {
+                $subId = $ov['subcontractor_id'] ?? null;
+                $costVal = (float) ($ov['cost'] ?? 0);
+                if ($subId && $costVal > 0) {
+                    $recalcSupplierIds[] = (int) $subId;
+                    $overheadName = $ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type'] ?? 'overhead'));
                     \App\Models\SupplierLedger::record(
-                        $bom->subcontractor_id,
+                        $subId,
                         now()->toDateString(),
                         'debit',
                         'purchase',
-                        "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                        $totalSubcontractCost,
+                        "Subcontract Service ({$overheadName}) for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $costVal,
                         $bom->id
                     );
+                }
+            }
+            foreach (array_unique($recalcSupplierIds) as $supplierId) {
+                if ($supplierId) {
+                    \App\Models\SupplierLedger::updateBalance($supplierId);
                 }
             }
 
@@ -276,9 +288,10 @@ class ManufacturingController extends Controller
             'components.*.quantity' => 'required|numeric|min:0.01',
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|string',
+            'overheads.*.subcontractor_id' => 'nullable|exists:suppliers,id',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
-            'subcontractor_id' => 'nullable|exists:suppliers,id',
+            'subcontractor_id' => 'nullable',
         ]);
 
         $wasCompleted = $bom->status === 'completed';
@@ -352,7 +365,8 @@ class ManufacturingController extends Controller
                         $overheadDetails[] = [
                             'type' => $type,
                             'name' => $name,
-                            'cost' => $costVal
+                            'cost' => $costVal,
+                            'subcontractor_id' => !empty($ov['subcontractor_id']) ? (int) $ov['subcontractor_id'] : null
                         ];
                     }
                 }
@@ -440,61 +454,43 @@ class ManufacturingController extends Controller
 
             }
 
-            // Subcontractor Ledger Automation Hook (Always post/update ledger immediately regardless of status)
-            $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost;
-            
-            // Delete old ledger entries for this BOM if subcontractor changed or cost became 0
-            if (!$bom->subcontractor_id || $totalSubcontractCost <= 0) {
-                $oldLedgers = \App\Models\SupplierLedger::where('reference_id', $bom->id)
-                    ->where('category', 'purchase')
-                    ->get();
-                foreach ($oldLedgers as $ol) {
-                    $supplierId = $ol->supplier_id;
-                    $ol->delete();
-                    \App\Models\SupplierLedger::updateBalance($supplierId);
-                }
+            // Decoupled Multi-Subcontractor Ledger Hook (Always post/update ledger immediately regardless of status)
+            $recalcSupplierIds = [];
+
+            // 1. Find and delete all old ledger entries for this BOM
+            $oldLedgers = \App\Models\SupplierLedger::where('reference_id', $bom->id)
+                ->where('category', 'purchase')
+                ->get();
+            foreach ($oldLedgers as $ol) {
+                $recalcSupplierIds[] = $ol->supplier_id;
+                $ol->delete();
             }
-            
-            if ($bom->subcontractor_id && $totalSubcontractCost > 0) {
-                // Find existing ledger entry for this BOM
-                $ledger = \App\Models\SupplierLedger::where('reference_id', $bom->id)
-                    ->where('category', 'purchase')
-                    ->first();
-                
-                if ($ledger) {
-                    // If subcontractor changed, delete old and record new
-                    if ($ledger->supplier_id != $bom->subcontractor_id) {
-                        $oldSupplierId = $ledger->supplier_id;
-                        $ledger->delete();
-                        \App\Models\SupplierLedger::updateBalance($oldSupplierId);
-                        
-                        \App\Models\SupplierLedger::record(
-                            $bom->subcontractor_id,
-                            now()->toDateString(),
-                            'debit',
-                            'purchase',
-                            "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                            $totalSubcontractCost,
-                            $bom->id
-                        );
-                    } else {
-                        // Just update amount and description
-                        $ledger->amount = $totalSubcontractCost;
-                        $ledger->description = "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)";
-                        $ledger->save();
-                        \App\Models\SupplierLedger::updateBalance($bom->subcontractor_id);
-                    }
-                } else {
-                    // Create new
+
+            // 2. Record new ledger entries for each overhead line with a subcontractor selected
+            $details = $bom->overhead_details ?? [];
+            foreach ($details as $ov) {
+                $subId = $ov['subcontractor_id'] ?? null;
+                $costVal = (float) ($ov['cost'] ?? 0);
+                if ($subId && $costVal > 0) {
+                    $recalcSupplierIds[] = (int) $subId;
+                    $overheadName = $ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type'] ?? 'overhead'));
+                    
                     \App\Models\SupplierLedger::record(
-                        $bom->subcontractor_id,
+                        $subId,
                         now()->toDateString(),
                         'debit',
                         'purchase',
-                        "Labor / Subcontract Service for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                        $totalSubcontractCost,
+                        "Subcontract Service ({$overheadName}) for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
+                        $costVal,
                         $bom->id
                     );
+                }
+            }
+
+            // 3. Recalculate running balance for all unique affected subcontractors
+            foreach (array_unique($recalcSupplierIds) as $supplierId) {
+                if ($supplierId) {
+                    \App\Models\SupplierLedger::updateBalance($supplierId);
                 }
             }
 

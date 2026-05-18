@@ -95,22 +95,12 @@
                 <button type="button" class="btn btn-sm btn-info shadow-sm" id="add_custom_overhead_type_btn"><i class="fas fa-plus fa-sm text-white-50"></i> Add Custom Overhead Type</button>
             </div>
             
-            <div class="form-row mb-3">
-                <div class="col-md-6">
-                    <label for="subcontractor_id">Subcontractor / Supplier <small class="text-muted">(Optional - For labor subcontractor ledgers)</small></label>
-                    <select name="subcontractor_id" id="subcontractor_id" class="form-control select2">
-                        <option value="">-- Select Subcontractor --</option>
-                        @foreach($suppliers as $supplier)
-                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
             <table class="table table-bordered" id="overheads_table">
                 <thead>
                     <tr>
-                        <th width="60%">Overhead Type</th>
-                        <th width="30%">Cost (Rs.)</th>
+                        <th width="35%">Overhead Type</th>
+                        <th width="35%">Subcontractor / Supplier</th>
+                        <th width="20%">Cost (Rs.)</th>
                         <th width="10%">Action</th>
                     </tr>
                 </thead>
@@ -138,6 +128,14 @@
                                     </select>
                                 </td>
                                 <td>
+                                    <select name="overheads[{{$overhead_index}}][subcontractor_id]" class="form-control select2">
+                                        <option value="">-- No Subcontractor (In-house) --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}" {{($ov['subcontractor_id'] ?? '') == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
                                     <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$ov['cost']}}" required>
                                 </td>
                                 <td>
@@ -157,6 +155,14 @@
                                         <option value="packaging">Packaging Cost</option>
                                         <option value="material">Raw Material Cost</option>
                                         <option value="overhead">Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][subcontractor_id]" class="form-control select2">
+                                        <option value="">-- No Subcontractor (In-house) --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                                        @endforeach
                                     </select>
                                 </td>
                                 <td>
@@ -182,6 +188,14 @@
                                     </select>
                                 </td>
                                 <td>
+                                    <select name="overheads[{{$overhead_index}}][subcontractor_id]" class="form-control select2">
+                                        <option value="">-- No Subcontractor (In-house) --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
                                     <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->labour_cost}}" required>
                                 </td>
                                 <td>
@@ -201,6 +215,14 @@
                                         <option value="packaging" selected>Packaging Cost</option>
                                         <option value="material">Raw Material Cost</option>
                                         <option value="overhead">Other Overheads</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="overheads[{{$overhead_index}}][subcontractor_id]" class="form-control select2">
+                                        <option value="">-- No Subcontractor (In-house) --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                                        @endforeach
                                     </select>
                                 </td>
                                 <td>
@@ -225,6 +247,14 @@
                                     </select>
                                 </td>
                                 <td>
+                                    <select name="overheads[{{$overhead_index}}][subcontractor_id]" class="form-control select2">
+                                        <option value="">-- No Subcontractor (In-house) --</option>
+                                        @foreach($suppliers as $supplier)
+                                            <option value="{{$supplier->id}}" {{$bom->subcontractor_id == $supplier->id ? 'selected' : ''}}>{{$supplier->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
                                     <input type="number" step="0.01" name="overheads[{{$overhead_index}}][cost]" class="form-control" value="{{$bom->overhead_cost ?? 0}}" required>
                                 </td>
                                 <td>
@@ -237,7 +267,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3">
+                        <td colspan="4">
                             <button type="button" class="btn btn-success btn-sm" id="add_overhead"><i class="fas fa-plus"></i> Add Overhead</button>
                         </td>
                     </tr>
@@ -292,6 +322,14 @@
                 <option value="packaging">Packaging Cost</option>
                 <option value="material">Raw Material Cost</option>
                 <option value="overhead">Other Overheads</option>
+            </select>
+        </td>
+        <td>
+            <select name="overheads[INDEX][subcontractor_id]" class="form-control select2-new">
+                <option value="">-- No Subcontractor (In-house) --</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                @endforeach
             </select>
         </td>
         <td>
