@@ -6,13 +6,12 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
+    echo "Running Git Status...<br>";
+    echo "<pre>" . shell_exec('git status 2>&1') . "</pre><hr>";
+    echo "Running Git Pull...<br>";
+    echo "<pre>" . shell_exec('git pull origin main 2>&1') . "</pre><hr>";
+
     echo "Running Migrations...<br>";
-    $migFile = __DIR__.'/drautos/database/migrations/2026_05_10_213500_create_ai_chat_messages_table.php';
-    if (file_exists($migFile)) {
-        echo "<h3>Migration File Content:</h3><pre>" . htmlspecialchars(file_get_contents($migFile)) . "</pre><hr>";
-    } else {
-        echo "Migration file NOT found at $migFile<br>";
-    }
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     echo nl2br(\Illuminate\Support\Facades\Artisan::output());
     echo "<br>✅ Success!";
