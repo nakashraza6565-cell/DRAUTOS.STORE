@@ -495,3 +495,18 @@
         },4000);
     });
   </script>
+
+  <!-- OneSignal Push Notifications Integration -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function() {
+      OneSignal.init({
+        appId: "0b153ba2-663c-41c6-9430-8cc373a62d08",
+        safari_web_id: "web.onesignal.auto.drautos",
+        notifyButton: {
+          enable: true,
+        },
+      });
+    });
+  </script>
