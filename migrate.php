@@ -6,11 +6,6 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    echo "Running Git Status...<br>";
-    echo "<pre>" . shell_exec('git status 2>&1') . "</pre><hr>";
-    echo "Running Git Pull...<br>";
-    echo "<pre>" . shell_exec('git pull origin main 2>&1') . "</pre><hr>";
-
     echo "Running Migrations...<br>";
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     echo nl2br(\Illuminate\Support\Facades\Artisan::output());
