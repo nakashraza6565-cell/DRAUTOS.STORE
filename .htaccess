@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Allow .well-known access (critical for Google/Android TWA verification)
+    RewriteRule ^\.well-known/ - [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
