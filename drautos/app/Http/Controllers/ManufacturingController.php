@@ -226,7 +226,7 @@ class ManufacturingController extends Controller
                             'purchase',
                             "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
                             $totalSubcontractCost,
-                            'bom_' . $bom->id
+                            $bom->id
                         );
                     }
                 }
@@ -454,7 +454,7 @@ class ManufacturingController extends Controller
                             'purchase',
                             "Labor & Materials for Completed BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
                             $totalSubcontractCost,
-                            'bom_' . $bom->id
+                            $bom->id
                         );
                     }
                 }
@@ -629,7 +629,7 @@ class ManufacturingController extends Controller
                     'purchase',
                     "Labor / Subcontract Service for Production Run {$production->production_number} (produced {$request->quantity_produced} units)",
                     $totalLaborCost,
-                    'production_' . $production->id
+                    $production->id
                 );
             }
 
