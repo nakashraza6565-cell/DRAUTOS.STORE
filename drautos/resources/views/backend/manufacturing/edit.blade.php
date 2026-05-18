@@ -130,8 +130,9 @@
                                         <option value="machining" {{$ov['type'] == 'machining' ? 'selected' : ''}}>Machining Cost</option>
                                         <option value="labour" {{$ov['type'] == 'labour' ? 'selected' : ''}}>Labour Cost</option>
                                         <option value="packaging" {{$ov['type'] == 'packaging' ? 'selected' : ''}}>Packaging Cost</option>
+                                        <option value="material" {{$ov['type'] == 'material' ? 'selected' : ''}}>Raw Material Cost</option>
                                         <option value="overhead" {{$ov['type'] == 'overhead' ? 'selected' : ''}}>Other Overheads</option>
-                                        @if(!in_array($ov['type'], ['machining', 'labour', 'packaging', 'overhead']))
+                                        @if(!in_array($ov['type'], ['machining', 'labour', 'packaging', 'material', 'overhead']))
                                             <option value="{{$ov['type']}}" selected>{{$ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type']))}}</option>
                                         @endif
                                     </select>
@@ -154,6 +155,7 @@
                                         <option value="machining" selected>Machining Cost</option>
                                         <option value="labour">Labour Cost</option>
                                         <option value="packaging">Packaging Cost</option>
+                                        <option value="material">Raw Material Cost</option>
                                         <option value="overhead">Other Overheads</option>
                                     </select>
                                 </td>
@@ -175,6 +177,7 @@
                                         <option value="machining">Machining Cost</option>
                                         <option value="labour" selected>Labour Cost</option>
                                         <option value="packaging">Packaging Cost</option>
+                                        <option value="material">Raw Material Cost</option>
                                         <option value="overhead">Other Overheads</option>
                                     </select>
                                 </td>
@@ -196,6 +199,7 @@
                                         <option value="machining">Machining Cost</option>
                                         <option value="labour">Labour Cost</option>
                                         <option value="packaging" selected>Packaging Cost</option>
+                                        <option value="material">Raw Material Cost</option>
                                         <option value="overhead">Other Overheads</option>
                                     </select>
                                 </td>
@@ -216,6 +220,7 @@
                                         <option value="machining">Machining Cost</option>
                                         <option value="labour">Labour Cost</option>
                                         <option value="packaging">Packaging Cost</option>
+                                        <option value="material">Raw Material Cost</option>
                                         <option value="overhead" selected>Other Overheads</option>
                                     </select>
                                 </td>
@@ -285,6 +290,7 @@
                 <option value="machining">Machining Cost</option>
                 <option value="labour">Labour Cost</option>
                 <option value="packaging">Packaging Cost</option>
+                <option value="material">Raw Material Cost</option>
                 <option value="overhead">Other Overheads</option>
             </select>
         </td>

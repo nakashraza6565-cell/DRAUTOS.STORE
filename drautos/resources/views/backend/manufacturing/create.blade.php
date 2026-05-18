@@ -120,6 +120,7 @@
                                 <option value="machining">Machining Cost</option>
                                 <option value="labour">Labour Cost</option>
                                 <option value="packaging">Packaging Cost</option>
+                                <option value="material">Raw Material Cost</option>
                                 <option value="overhead">Other Overheads</option>
                             </select>
                         </td>
@@ -187,6 +188,7 @@
                 <option value="machining">Machining Cost</option>
                 <option value="labour">Labour Cost</option>
                 <option value="packaging">Packaging Cost</option>
+                <option value="material">Raw Material Cost</option>
                 <option value="overhead">Other Overheads</option>
             </select>
         </td>

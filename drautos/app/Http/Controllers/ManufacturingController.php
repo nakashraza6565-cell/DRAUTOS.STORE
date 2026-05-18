@@ -50,7 +50,7 @@ class ManufacturingController extends Controller
             'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
             'overheads' => 'nullable|array',
-            'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
+            'overheads.*.type' => 'required|string',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
             'subcontractor_id' => 'nullable|exists:suppliers,id',
@@ -189,7 +189,6 @@ class ManufacturingController extends Controller
 
             // If completed, deduct stock and add finished product
             if ($bom->status === 'completed') {
-                $totalLaborCost = $labourCost; // starts with labor overhead cost
                 $totalMaterialIngredientsCost = 0;
 
                 foreach ($bom->components as $component) {
@@ -200,7 +199,8 @@ class ManufacturingController extends Controller
                                 $factor->decrement('stock_quantity', $component->quantity_required);
                                 $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             } elseif ($factor->type === 'labor') {
-                                $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
+                                // Labor factors cost
+                                $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             }
                         }
                     } else {
@@ -217,7 +217,7 @@ class ManufacturingController extends Controller
 
                 // Subcontractor Ledger Automation Hook
                 if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $totalLaborCost + $totalMaterialIngredientsCost;
+                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost + $totalMaterialIngredientsCost;
                     if ($totalSubcontractCost > 0) {
                         \App\Models\SupplierLedger::record(
                             $bom->subcontractor_id,
@@ -277,7 +277,7 @@ class ManufacturingController extends Controller
             'components.*.product_id' => 'required|string',
             'components.*.quantity' => 'required|numeric|min:0.01',
             'overheads' => 'nullable|array',
-            'overheads.*.type' => 'required|in:machining,labour,packaging,overhead',
+            'overheads.*.type' => 'required|string',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
             'subcontractor_id' => 'nullable|exists:suppliers,id',
@@ -418,7 +418,6 @@ class ManufacturingController extends Controller
 
             // Perform stock actions if transitioning to completed
             if (!$wasCompleted && $isCompleted) {
-                $totalLaborCost = $labourCost; // starts with labor overhead cost
                 $totalMaterialIngredientsCost = 0;
 
                 foreach ($bom->components as $component) {
@@ -429,7 +428,7 @@ class ManufacturingController extends Controller
                                 $factor->decrement('stock_quantity', $component->quantity_required);
                                 $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             } elseif ($factor->type === 'labor') {
-                                $totalLaborCost += $component->cost_per_unit * $component->quantity_required;
+                                $totalMaterialIngredientsCost += $component->cost_per_unit * $component->quantity_required;
                             }
                         }
                     } else {
@@ -446,7 +445,7 @@ class ManufacturingController extends Controller
 
                 // Subcontractor Ledger Automation Hook
                 if ($bom->subcontractor_id) {
-                    $totalSubcontractCost = $totalLaborCost + $totalMaterialIngredientsCost;
+                    $totalSubcontractCost = $bom->machining_cost + $bom->labour_cost + $bom->packaging_cost + $bom->overhead_cost + $totalMaterialIngredientsCost;
                     if ($totalSubcontractCost > 0) {
                         \App\Models\SupplierLedger::record(
                             $bom->subcontractor_id,
