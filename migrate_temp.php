@@ -5,8 +5,10 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills MODIFY COLUMN status VARCHAR(255) DEFAULT 'wip'");
-    echo "✅ status column modified successfully!";
+    $triggers = \Illuminate\Support\Facades\DB::select("SHOW TRIGGERS LIKE 'manufacturing_bills'");
+    echo "<h3>manufacturing_bills triggers:</h3><pre>";
+    print_r($triggers);
+    echo "</pre>";
 } catch (\Exception $e) {
     echo "❌ Error: " . $e->getMessage();
 }
