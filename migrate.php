@@ -7,6 +7,12 @@ $kernel->bootstrap();
 
 try {
     echo "Running Migrations...<br>";
+    $migFile = __DIR__.'/drautos/database/migrations/2026_05_10_213500_create_ai_chat_messages_table.php';
+    if (file_exists($migFile)) {
+        echo "<h3>Migration File Content:</h3><pre>" . htmlspecialchars(file_get_contents($migFile)) . "</pre><hr>";
+    } else {
+        echo "Migration file NOT found at $migFile<br>";
+    }
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     echo nl2br(\Illuminate\Support\Facades\Artisan::output());
     echo "<br>✅ Success!";
