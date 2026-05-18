@@ -5,6 +5,17 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
+    // 1. Update the BOM status to completed
+    $bom = \App\Models\ManufacturingBill::where('bom_number', 'BOM-6A0AE3153780B')->first();
+    if ($bom) {
+        $bom->status = 'completed';
+        $bom->save();
+        echo "✅ BOM-6A0AE3153780B status updated to 'completed'!<br>";
+    } else {
+        echo "❌ BOM-6A0AE3153780B not found.<br>";
+    }
+
+    // 2. Rectify the ledger entry
     $ledger = \App\Models\SupplierLedger::where('description', 'like', '%BOM-6A0AE3153780B%')->first();
     if ($ledger) {
         $oldAmount = $ledger->amount;
