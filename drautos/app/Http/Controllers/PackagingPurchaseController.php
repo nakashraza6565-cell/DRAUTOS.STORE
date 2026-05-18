@@ -44,7 +44,7 @@ class PackagingPurchaseController extends Controller
         $this->validate($request, [
             'supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_date' => 'required|date',
-            'invoice_no' => 'nullable|string|unique:packaging_purchases,invoice_no',
+            'invoice_no' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.packaging_item_id' => 'required|exists:packaging_items,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
@@ -59,9 +59,13 @@ class PackagingPurchaseController extends Controller
         DB::beginTransaction();
         try {
             $savedPurchases = [];
+            $index = 1;
             foreach ($request->items as $itemData) {
                 $qty = (float) $itemData['quantity'];
                 $price = (float) $itemData['price'];
+                
+                // Satisfy database unique constraint by appending index suffix for multi-item invoices
+                $itemInvoiceNo = count($request->items) > 1 ? $invoice_no . '-' . $index : $invoice_no;
                 
                 $purchase = PackagingPurchase::create([
                     'packaging_item_id' => $itemData['packaging_item_id'],
@@ -69,7 +73,7 @@ class PackagingPurchaseController extends Controller
                     'quantity' => $qty,
                     'price' => $price,
                     'total_price' => $qty * $price,
-                    'invoice_no' => $invoice_no,
+                    'invoice_no' => $itemInvoiceNo,
                     'purchase_date' => $request->purchase_date,
                 ]);
 
@@ -81,6 +85,7 @@ class PackagingPurchaseController extends Controller
                 }
 
                 $savedPurchases[] = $purchase;
+                $index++;
             }
 
             DB::commit();
