@@ -5,19 +5,20 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    // 1. Try to drop check constraint if exists
-    try {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills DROP CONSTRAINT IF EXISTS manufacturing_bills_status_check");
-    } catch (\Exception $ex) {}
+    $ledger = \App\Models\SupplierLedger::where('description', 'like', '%BOM-6A0AE3153780B%')->first();
+    if ($ledger) {
+        $oldAmount = $ledger->amount;
+        $ledger->amount = 5200.00;
+        $ledger->description = "Labor / Subcontract Service for Completed BOM BOM-6A0AE3153780B (produced 520 units)";
+        $ledger->save();
 
-    // 2. Reconstruct column to clear hidden constraints
-    try {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills DROP COLUMN status");
-    } catch (\Exception $ex) {}
+        // Recalculate balance for the supplier
+        \App\Models\SupplierLedger::updateBalance($ledger->supplier_id);
 
-    \Illuminate\Support\Facades\DB::statement("ALTER TABLE manufacturing_bills ADD COLUMN status VARCHAR(191) DEFAULT 'wip' AFTER notes");
-    
-    echo "✅ status column successfully reconstructed without constraints!";
+        echo "✅ Success! Ledger entry for BOM-6A0AE3153780B successfully rectified from Rs. " . number_format($oldAmount) . " to Rs. 5,200. Subcontractor ledger balance successfully recalculated!";
+    } else {
+        echo "❌ Ledger entry for BOM-6A0AE3153780B not found in database.";
+    }
 } catch (\Exception $e) {
     echo "❌ Error: " . $e->getMessage();
 }
