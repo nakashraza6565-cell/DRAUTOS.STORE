@@ -82,7 +82,11 @@ class OrderController extends Controller
                 $user->total_sales = $user->orders()->sum('total_amount');
                 $user->last_order = $user->orders()->latest()->first();
                 return $user;
-            });
+            })
+            ->sortByDesc(function($user) {
+                return $user->last_order ? $user->last_order->created_at->timestamp : 0;
+            })
+            ->values();
 
         return view('backend.order.customer_overview', compact('customersWithOrders'));
     }

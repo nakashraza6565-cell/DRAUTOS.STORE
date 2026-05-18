@@ -115,7 +115,7 @@
 <script>
 $(document).ready(function() {
     $('#customer-orders-table').DataTable({
-        "order": [[ 4, "desc" ]],
+        "order": [],
         "pageLength": 25
     });
 });
