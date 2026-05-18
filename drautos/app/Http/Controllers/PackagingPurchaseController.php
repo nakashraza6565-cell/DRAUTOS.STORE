@@ -42,7 +42,7 @@ class PackagingPurchaseController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'supplier_id' => 'nullable|exists:suppliers,id',
+            'supplier_id' => 'nullable',
             'purchase_date' => 'required|date',
             'invoice_no' => 'nullable|string',
             'items' => 'required|array|min:1',
@@ -56,23 +56,29 @@ class PackagingPurchaseController extends Controller
             $invoice_no = 'PKG-' . strtoupper(Str::random(8));
         }
 
+        $supplierId = !empty($request->supplier_id) ? $request->supplier_id : null;
+
         DB::beginTransaction();
         try {
             $savedPurchases = [];
+            $totalInvoiceCost = 0;
             $index = 1;
+            
             foreach ($request->items as $itemData) {
                 $qty = (float) $itemData['quantity'];
                 $price = (float) $itemData['price'];
+                $lineTotal = $qty * $price;
+                $totalInvoiceCost += $lineTotal;
                 
                 // Satisfy database unique constraint by appending index suffix for multi-item invoices
                 $itemInvoiceNo = count($request->items) > 1 ? $invoice_no . '-' . $index : $invoice_no;
                 
                 $purchase = PackagingPurchase::create([
                     'packaging_item_id' => $itemData['packaging_item_id'],
-                    'supplier_id' => $request->supplier_id,
+                    'supplier_id' => $supplierId,
                     'quantity' => $qty,
                     'price' => $price,
-                    'total_price' => $qty * $price,
+                    'total_price' => $lineTotal,
                     'invoice_no' => $itemInvoiceNo,
                     'purchase_date' => $request->purchase_date,
                 ]);
@@ -88,6 +94,18 @@ class PackagingPurchaseController extends Controller
                 $index++;
             }
 
+            // Post to Supplier Ledger if supplier is selected
+            if ($supplierId && $totalInvoiceCost > 0) {
+                \App\Models\SupplierLedger::record(
+                    $supplierId,
+                    $request->purchase_date,
+                    'debit', // debit since we owe money for purchase
+                    'purchase',
+                    "Packaging Material Purchase: Invoice #{$invoice_no}",
+                    $totalInvoiceCost
+                );
+            }
+
             DB::commit();
 
             // Send WhatsApp with PDF (Send notification for the first item or consolidate if needed)
@@ -95,13 +113,22 @@ class PackagingPurchaseController extends Controller
                 if (count($savedPurchases) > 0) {
                     $firstPurchase = $savedPurchases[0];
                     $firstPurchase->load('packagingItem', 'supplier');
-                    $this->whatsapp->sendPackagingPurchaseNotification($firstPurchase);
+                    // Check if WhatsApp service method exists to prevent bad method call errors
+                    if (method_exists($this->whatsapp, 'sendPackagingPurchaseNotification')) {
+                        $this->whatsapp->sendPackagingPurchaseNotification($firstPurchase);
+                    } else {
+                        // Fallback to simple text notification if PDF method doesn't exist
+                        if ($firstPurchase->supplier && $firstPurchase->supplier->phone) {
+                            $msg = "Assalam-o-Alaikum,\nPackaging purchase recorded. Invoice: {$invoice_no}, Total: Rs. " . number_format($totalInvoiceCost, 2);
+                            $this->whatsapp->sendMessage($firstPurchase->supplier->phone, $msg);
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 \Log::error("Packaging WHATSAPP ERROR: " . $e->getMessage());
             }
 
-            request()->session()->flash('success', 'Packaging purchase recorded successfully, and stock updated.');
+            request()->session()->flash('success', 'Packaging purchase recorded, ledger updated, and stock synchronized successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
