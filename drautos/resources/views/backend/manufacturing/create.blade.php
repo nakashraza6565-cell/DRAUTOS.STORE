@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="batch_quantity">Batch Quantity <span class="text-danger">*</span></label>
-                    <input type="number" name="batch_quantity" class="form-control" value="1" min="1" required>
+                    <input type="number" name="batch_quantity" id="batch_quantity" class="form-control" value="1" min="1" required>
                     <small class="text-muted">How many units does this recipe produce?</small>
                 </div>
                 <div class="col-md-3 mb-3">
@@ -96,9 +96,10 @@
             <table class="table table-bordered" id="overheads_table">
                 <thead>
                     <tr>
-                        <th width="35%">Overhead Type</th>
-                        <th width="35%">Subcontractor / Supplier</th>
-                        <th width="20%">Cost (Rs.)</th>
+                        <th width="25%">Overhead Type</th>
+                        <th width="25%">Subcontractor / Supplier</th>
+                        <th width="20%">Per Piece Cost (Rs.)</th>
+                        <th width="20%">Total Cost (Rs.)</th>
                         <th width="10%">Action</th>
                     </tr>
                 </thead>
@@ -123,7 +124,10 @@
                             </select>
                         </td>
                         <td>
-                            <input type="number" step="0.01" name="overheads[0][cost]" class="form-control" placeholder="Cost" value="0" required>
+                            <input type="number" step="0.0001" name="overheads[0][per_piece_cost]" class="form-control per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" name="overheads[0][cost]" class="form-control total-cost-input" placeholder="Total Cost" value="0" required>
                         </td>
                         <td>
                             <button type="button" class="btn btn-danger btn-sm remove-overhead-row" disabled><i class="fas fa-trash"></i></button>
@@ -132,7 +136,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="4">
+                        <td colspan="5">
                             <button type="button" class="btn btn-success btn-sm" id="add_overhead"><i class="fas fa-plus"></i> Add Overhead</button>
                         </td>
                     </tr>
@@ -199,7 +203,10 @@
             </select>
         </td>
         <td>
-            <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control" placeholder="Cost" value="0" required>
+            <input type="number" step="0.0001" name="overheads[INDEX][per_piece_cost]" class="form-control per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
+        </td>
+        <td>
+            <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control total-cost-input" placeholder="Total Cost" value="0" required>
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
@@ -332,6 +339,40 @@
                 
                 alert('Overhead type "' + typeName + '" added successfully! You can now select it in the dropdown.');
             }
+        });
+
+        // Auto-recalculate per piece cost vs total cost using batch quantity
+        function getBatchQty() {
+            let qty = parseFloat($('#batch_quantity').val());
+            return isNaN(qty) || qty <= 0 ? 1 : qty;
+        }
+
+        // On Per Piece Cost change
+        $(document).on('input change', '.per-piece-cost-input', function() {
+            let row = $(this).closest('tr');
+            let perPieceVal = parseFloat($(this).val()) || 0;
+            let qty = getBatchQty();
+            let totalVal = perPieceVal * qty;
+            row.find('.total-cost-input').val(totalVal.toFixed(2));
+        });
+
+        // On Total Cost change
+        $(document).on('input change', '.total-cost-input', function() {
+            let row = $(this).closest('tr');
+            let totalVal = parseFloat($(this).val()) || 0;
+            let qty = getBatchQty();
+            let perPieceVal = totalVal / qty;
+            row.find('.per-piece-cost-input').val(perPieceVal.toFixed(4));
+        });
+
+        // On Batch Quantity change, recalculate all total costs keeping per-piece cost constant
+        $('#batch_quantity').on('input change', function() {
+            let qty = getBatchQty();
+            $('#overheads_body tr').each(function() {
+                let perPieceVal = parseFloat($(this).find('.per-piece-cost-input').val()) || 0;
+                let totalVal = perPieceVal * qty;
+                $(this).find('.total-cost-input').val(totalVal.toFixed(2));
+            });
         });
 
         // Quick Add Material Form Submission

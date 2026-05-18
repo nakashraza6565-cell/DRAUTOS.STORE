@@ -52,6 +52,7 @@ class ManufacturingController extends Controller
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|string',
             'overheads.*.subcontractor_id' => 'nullable|exists:suppliers,id',
+            'overheads.*.per_piece_cost' => 'nullable|numeric|min:0',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
             'subcontractor_id' => 'nullable',
@@ -128,6 +129,7 @@ class ManufacturingController extends Controller
                             'type' => $type,
                             'name' => $name,
                             'cost' => $costVal,
+                            'per_piece_cost' => !empty($ov['per_piece_cost']) ? (float) $ov['per_piece_cost'] : 0,
                             'subcontractor_id' => !empty($ov['subcontractor_id']) ? (int) $ov['subcontractor_id'] : null
                         ];
                     }
@@ -289,6 +291,7 @@ class ManufacturingController extends Controller
             'overheads' => 'nullable|array',
             'overheads.*.type' => 'required|string',
             'overheads.*.subcontractor_id' => 'nullable|exists:suppliers,id',
+            'overheads.*.per_piece_cost' => 'nullable|numeric|min:0',
             'overheads.*.cost' => 'required|numeric|min:0',
             'status' => 'required|in:wip,completed,inactive',
             'subcontractor_id' => 'nullable',
@@ -366,6 +369,7 @@ class ManufacturingController extends Controller
                             'type' => $type,
                             'name' => $name,
                             'cost' => $costVal,
+                            'per_piece_cost' => !empty($ov['per_piece_cost']) ? (float) $ov['per_piece_cost'] : 0,
                             'subcontractor_id' => !empty($ov['subcontractor_id']) ? (int) $ov['subcontractor_id'] : null
                         ];
                     }
