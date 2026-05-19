@@ -28,7 +28,7 @@
             </form>
 
             <div class="table-responsive" id="ledger-list-container">
-                <table class="table table-bordered" width="100%" cellspacing="0">
+                <table class="table table-bordered responsive-table-to-cards" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Supplier Name</th>
@@ -43,16 +43,16 @@
                     <tbody>
                         @forelse($suppliers as $supplier)
                             <tr>
-                                <td>{{$supplier->name}}</td>
-                                <td>{{$supplier->company_name ?? 'N/A'}}</td>
-                                <td>{{$supplier->phone}}</td>
-                                <td>
+                                <td data-title="Supplier Name">{{$supplier->name}}</td>
+                                <td data-title="Company">{{$supplier->company_name ?? 'N/A'}}</td>
+                                <td data-title="Phone">{{$supplier->phone}}</td>
+                                <td data-title="Status">
                                     <span class="badge badge-{{$supplier->status == 'active' ? 'success' : 'warning'}}">{{strtoupper($supplier->status)}}</span>
                                 </td>
-                                <td class="{{$supplier->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
+                                <td data-title="Balance" class="{{$supplier->current_balance > 0 ? 'text-danger' : 'text-success'}} font-weight-bold">
                                     Rs. {{number_format($supplier->current_balance, 2)}}
                                 </td>
-                                <td>
+                                <td data-title="Last Payment">
                                     @if($supplier->latestPayment)
                                         <div class="small">
                                             <span class="text-info font-weight-bold">Rs. {{number_format($supplier->latestPayment->amount, 2)}}</span><br>
@@ -63,8 +63,8 @@
                                         <span class="text-muted small">No payments</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <a href="{{route('admin.supplier-ledger.show', $supplier->id)}}" class="btn btn-primary btn-sm">
+                                <td data-title="Actions">
+                                    <a href="{{route('admin.supplier-ledger.show', $supplier->id)}}" class="btn btn-primary btn-sm btn-block btn-md-inline">
                                         <i class="fas fa-eye"></i> View Ledger
                                     </a>
                                 </td>
