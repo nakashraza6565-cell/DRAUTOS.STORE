@@ -509,5 +509,22 @@
         },
         allowLocalhostAsSecureOrigin: true
       });
+
+      // Handle manual subscribe button click
+      $('#onesignal-manual-subscribe').on('click', function(e) {
+          e.preventDefault();
+          OneSignal.Slidedown.promptPush();
+      });
+
+      // Hide the manual button if already subscribed
+      OneSignal.User.PushSubscription.addEventListener("change", function(e) {
+          if (OneSignal.User.PushSubscription.optedIn) {
+              $('#onesignal-manual-subscribe').hide();
+          }
+      });
+      
+      if(OneSignal.User.PushSubscription.optedIn) {
+          $('#onesignal-manual-subscribe').hide();
+      }
     });
   </script>

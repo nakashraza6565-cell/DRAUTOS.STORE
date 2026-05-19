@@ -47,6 +47,13 @@
         </a>
       </li>
 
+      {{-- Push Notifications Subscribe --}}
+      <li class="nav-item mx-1">
+        <a class="nav-link" href="#" id="onesignal-manual-subscribe" data-toggle="tooltip" data-placement="bottom" title="Enable Phone Notifications" style="padding: 10px;">
+          <i class="fas fa-bell text-danger fa-fw" style="font-size: 1.2rem; animation: pulse 2s infinite;"></i>
+        </a>
+      </li>
+
       <!-- Nav Item - Alerts -->
       <li class="nav-item dropdown no-arrow mx-1">
        @include('backend.notification.show')
