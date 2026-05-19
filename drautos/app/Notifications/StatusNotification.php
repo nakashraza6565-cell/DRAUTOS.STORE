@@ -29,7 +29,7 @@ class StatusNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database','broadcast'];
+        return ['database', 'broadcast', \App\Channels\OneSignalChannel::class];
     }
 
     /**
