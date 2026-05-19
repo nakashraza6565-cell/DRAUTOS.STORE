@@ -9,9 +9,7 @@
     <button class="mobile-menu-trigger d-md-none border-0 mr-2" id="launcherTrigger" style="width: 45px; height: 45px; border-radius: 12px; background: #f1f5f9; color: #1e293b;">
         <i class="fas fa-th-large" style="font-size: 1.25rem;"></i>
     </button>
-    <button class="mobile-search-trigger d-md-none border-0" style="width: 45px; height: 45px; border-radius: 12px; background: #f1f5f9; color: #1e293b;">
-        <i class="fas fa-search" style="font-size: 1.25rem;"></i>
-    </button>
+
 
     <a href="{{route('cache.clear')}}"  class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">
       Cache Clear
@@ -20,25 +18,7 @@
     <!-- Topbar Navbar -->
     <ul class="navbar-nav ml-auto align-items-center">
 
-      <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-      <li class="nav-item dropdown no-arrow d-sm-none">
-        <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 10px;">
-          <i class="fas fa-search fa-fw" style="font-size: 1.2rem;"></i>
-        </a>
-        <!-- Dropdown - Messages -->
-        <div class="dropdown-menu dropdown-menu-right p-3 shadow border-0 animated--grow-in" aria-labelledby="searchDropdown" style="border-radius: 12px; width: calc(100vw - 40px); margin: 10px auto;">
-          <form class="form-inline mr-auto w-100 navbar-search">
-            <div class="input-group">
-              <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" style="border-radius: 10px 0 0 10px;">
-              <div class="input-group-append">
-                <button class="btn btn-primary" type="button" style="border-radius: 0 10px 10px 0;">
-                  <i class="fas fa-search fa-sm"></i>
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </li>
+
 
       {{-- Home page --}}
       <li class="nav-item dropdown no-arrow mx-1">
