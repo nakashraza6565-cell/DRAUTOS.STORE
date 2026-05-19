@@ -13,21 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('supplier_ledgers', function (Blueprint $table) {
-            $table->decimal('amount', 15, 2)->default(0)->change();
-            $table->decimal('balance', 15, 2)->default(0)->change();
-        });
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE supplier_ledgers MODIFY amount DECIMAL(15, 2) DEFAULT 0');
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE supplier_ledgers MODIFY balance DECIMAL(15, 2) DEFAULT 0');
 
         if (Schema::hasColumn('suppliers', 'current_balance')) {
-            Schema::table('suppliers', function (Blueprint $table) {
-                $table->decimal('current_balance', 15, 2)->default(0)->change();
-            });
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE suppliers MODIFY current_balance DECIMAL(15, 2) DEFAULT 0');
         }
 
-        Schema::table('customer_ledgers', function (Blueprint $table) {
-            $table->decimal('amount', 15, 2)->default(0)->change();
-            $table->decimal('balance', 15, 2)->default(0)->change();
-        });
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE customer_ledgers MODIFY amount DECIMAL(15, 2) DEFAULT 0');
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE customer_ledgers MODIFY balance DECIMAL(15, 2) DEFAULT 0');
     }
 
     /**
@@ -37,20 +31,14 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('supplier_ledgers', function (Blueprint $table) {
-            $table->float('amount')->default(0)->change();
-            $table->float('balance')->default(0)->change();
-        });
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE supplier_ledgers MODIFY amount FLOAT DEFAULT 0');
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE supplier_ledgers MODIFY balance FLOAT DEFAULT 0');
 
         if (Schema::hasColumn('suppliers', 'current_balance')) {
-            Schema::table('suppliers', function (Blueprint $table) {
-                $table->float('current_balance')->default(0)->change();
-            });
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE suppliers MODIFY current_balance FLOAT DEFAULT 0');
         }
 
-        Schema::table('customer_ledgers', function (Blueprint $table) {
-            $table->float('amount')->default(0)->change();
-            $table->float('balance')->default(0)->change();
-        });
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE customer_ledgers MODIFY amount FLOAT DEFAULT 0');
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE customer_ledgers MODIFY balance FLOAT DEFAULT 0');
     }
 };
