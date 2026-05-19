@@ -502,7 +502,7 @@
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
       OneSignal.init({
-        appId: "{{ env('ONESIGNAL_APP_ID') }}",
+        appId: "46461a8a-1e8f-4f50-9561-967e52304cba",
         safari_web_id: "web.onesignal.auto.drautos",
         notifyButton: {
           enable: true,
