@@ -513,7 +513,11 @@
       // Handle manual subscribe button click
       $('#onesignal-manual-subscribe').on('click', function(e) {
           e.preventDefault();
-          OneSignal.Slidedown.promptPush();
+          try {
+              OneSignal.Slidedown.promptPush({ force: true });
+          } catch (err) {
+              alert('Please open your browser settings and allow notifications for drautos.store manually.');
+          }
       });
 
       // Hide the manual button if already subscribed
