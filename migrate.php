@@ -6,7 +6,10 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    echo "Running Migrations...<br>";
+    echo "Clearing Cache...<br>";
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    echo nl2br(\Illuminate\Support\Facades\Artisan::output());
+    echo "<br>Running Migrations...<br>";
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     echo nl2br(\Illuminate\Support\Facades\Artisan::output());
     echo "<br>✅ Success!";
