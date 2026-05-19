@@ -499,14 +499,15 @@
   <!-- OneSignal Push Notifications Integration -->
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    window.OneSignal = window.OneSignal || [];
-    OneSignal.push(function() {
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
       OneSignal.init({
         appId: "{{ env('ONESIGNAL_APP_ID') }}",
         safari_web_id: "web.onesignal.auto.drautos",
         notifyButton: {
           enable: true,
         },
+        allowLocalhostAsSecureOrigin: true
       });
     });
   </script>
