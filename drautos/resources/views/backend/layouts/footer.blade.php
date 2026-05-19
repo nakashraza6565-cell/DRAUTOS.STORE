@@ -514,7 +514,7 @@
       $('#onesignal-manual-subscribe').on('click', function(e) {
           e.preventDefault();
           try {
-              OneSignal.Slidedown.promptPush({ force: true });
+              OneSignal.User.PushSubscription.optIn();
           } catch (err) {
               alert('Please open your browser settings and allow notifications for drautos.store manually.');
           }
