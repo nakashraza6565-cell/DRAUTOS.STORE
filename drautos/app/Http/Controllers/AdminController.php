@@ -625,8 +625,9 @@ class AdminController extends Controller
         // Send notification to admins
         try {
             $admins = User::where('role', 'admin')->get();
+            $customerName = $user ? $user->name : 'Walk-in Customer';
             $details = [
-                'title' => 'New POS order created by ' . auth()->user()->name,
+                'title' => '🛒 New POS Order by ' . auth()->user()->name . ' for ' . $customerName . ' — PKR ' . number_format($order->total_amount),
                 'actionURL' => route('order.show', $order->id),
                 'fas' => 'fa-file-invoice-dollar'
             ];
