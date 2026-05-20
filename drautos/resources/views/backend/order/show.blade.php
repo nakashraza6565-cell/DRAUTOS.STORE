@@ -309,7 +309,6 @@ async function shareInvoice(e) {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    text: text,
                     files: [window.invoiceFileBlob]
                 });
             } catch (err) {
