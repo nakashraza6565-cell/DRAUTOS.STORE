@@ -263,12 +263,10 @@ async function shareInvoice(e) {
                     text: text,
                     files: [window.invoiceFileBlob]
                 });
-                // Reset after successful share
                 window.invoiceFileBlob = null;
                 btn.innerHTML = originalText;
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    // If it still fails, the wrapper physically cannot attach files
                     window.location.href = waLink;
                 }
             }
@@ -278,7 +276,6 @@ async function shareInvoice(e) {
         return;
     }
 
-    // STEP 1: Download the file first
     btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Preparing PDF...';
     btn.classList.add('disabled');
     
@@ -287,7 +284,6 @@ async function shareInvoice(e) {
         const blob = await response.blob();
         window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
         
-        // Change button to prompt immediate click
         btn.classList.remove('disabled');
         btn.classList.remove('btn-success');
         btn.classList.add('btn-warning');
@@ -297,7 +293,7 @@ async function shareInvoice(e) {
         console.error('Error fetching PDF:', error);
         btn.innerHTML = originalText;
         btn.classList.remove('disabled');
-        alert("Failed to prepare PDF for sharing.");
+        window.location.href = waLink;
     }
 }
 </script>
