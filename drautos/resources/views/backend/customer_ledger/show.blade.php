@@ -157,16 +157,17 @@
                                                 $isOrder = true;
                                             } else {
                                                 $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
+                                                $shareFileName = "Receipt_{$item->id}.png";
                                                 $isOrder = false;
                                             }
                                         @endphp
                                         
                                         @if($isOrder)
-                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Invoice PDF">
+                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', 'pdf', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Invoice PDF">
                                                 <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
                                             </a>
                                         @else
-                                            <a href="{{$shareUrl}}" target="_blank" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Open Receipt Image Share">
+                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', 'image', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Receipt Image">
                                                 <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
@@ -482,16 +483,17 @@
 
     window.ledgerPdfPreloads = {};
 
-    async function shareLedgerPdf(e, url, filename, btnElement) {
+    async function shareLedgerPdf(e, url, filename, type, btnElement) {
         e.preventDefault();
         const originalHtml = btnElement.innerHTML;
         
-        // STEP 2: Share immediately if already downloaded
+        // STEP 2: Share immediately if already generated/downloaded
         if (window.ledgerPdfPreloads[url]) {
             if (navigator.share) {
                 try {
+                    const mimeType = type === 'image' ? 'image/png' : 'application/pdf';
                     await navigator.share({
-                        files: [new File([window.ledgerPdfPreloads[url]], filename, { type: 'application/pdf' })]
+                        files: [new File([window.ledgerPdfPreloads[url]], filename, { type: mimeType })]
                     });
                     btnElement.innerHTML = originalHtml;
                 } catch (err) {
@@ -506,14 +508,63 @@
             return;
         }
         
-        // STEP 1: Download the file
+        // STEP 1: Download or Generate
         btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btnElement.classList.add('disabled');
         
         try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            window.ledgerPdfPreloads[url] = blob;
+            if (type === 'pdf') {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                window.ledgerPdfPreloads[url] = blob;
+            } else if (type === 'image') {
+                // Fetch the HTML receipt
+                const response = await fetch(url);
+                const htmlText = await response.text();
+                
+                // Create a temporary hidden iframe to render the receipt
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.right = '-9999px';
+                iframe.style.width = '80mm';
+                iframe.style.height = '1200px';
+                document.body.appendChild(iframe);
+                
+                // Inject HTML into iframe
+                const iframeDoc = iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlText);
+                iframeDoc.close();
+                
+                // Wait a moment for iframe to render fonts
+                await new Promise(r => setTimeout(r, 800));
+                
+                // Ensure html2canvas is loaded in parent
+                if (typeof html2canvas === 'undefined') {
+                    await new Promise((resolve) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        script.onload = resolve;
+                        document.head.appendChild(script);
+                    });
+                }
+                
+                // Run html2canvas on the iframe's inner content
+                const receiptElement = iframeDoc.getElementById('receipt-content');
+                if(!receiptElement) throw new Error("Receipt content not found");
+                
+                const canvas = await html2canvas(receiptElement, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                window.ledgerPdfPreloads[url] = blob;
+                
+                // Clean up
+                document.body.removeChild(iframe);
+            }
             
             // Change button to prompt immediate click
             btnElement.classList.remove('disabled');
@@ -522,10 +573,10 @@
             btnElement.innerHTML = '<i class="fas fa-share-alt text-dark"></i> Tap!';
             
         } catch (error) {
-            console.error('Error fetching PDF:', error);
+            console.error('Error fetching/generating file:', error);
             btnElement.innerHTML = originalHtml;
             btnElement.classList.remove('disabled');
-            alert("Failed to download PDF.");
+            alert("Failed to prepare file.");
         }
     }
 </script>
