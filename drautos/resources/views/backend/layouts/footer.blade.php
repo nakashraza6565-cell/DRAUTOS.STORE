@@ -514,24 +514,30 @@
       $('#onesignal-manual-subscribe').on('click', async function(e) {
           e.preventDefault();
           
-          if (Notification.permission === 'granted') {
-              alert("You ALREADY allowed notifications! Wait a second and try the /test-push url again.");
-          } else if (Notification.permission === 'denied') {
-              alert("Your browser is BLOCKING the prompt because notifications were previously Denied. You must click the lock icon next to the URL in Chrome, go to Site Settings, and change Notifications to Allow.");
-          } else {
-              alert("Requesting permission from the browser now...");
-              await OneSignal.Notifications.requestPermission();
+          if (typeof Notification === 'undefined') {
+              alert("Oops! Your current browser or App wrapper DOES NOT support Web Push Notifications. Please open the website in Google Chrome.");
+              return;
           }
           
-          if (OneSignal.User.PushSubscription.optedIn) {
+          try {
+              if (Notification.permission === 'granted') {
+                  alert("Permissions already allowed! Forcing OneSignal to sync your device now...");
+                  await OneSignal.User.PushSubscription.optIn();
+              } else if (Notification.permission === 'denied') {
+                  alert("Your browser is BLOCKING the prompt. Please click the lock icon in the URL bar, go to Site Settings, and change Notifications to Allow.");
+              } else {
+                  alert("Requesting permission from the browser now...");
+                  await OneSignal.Notifications.requestPermission();
+              }
+              
+              if (OneSignal.User.PushSubscription.optedIn) {
                   $('#onesignal-manual-subscribe').hide();
               } else {
-                  // If they dismissed the slidedown without subscribing
                   $(this).find('i').addClass('text-danger');
               }
           } catch (err) {
               console.error(err);
-              alert('Could not enable notifications. Please make sure notifications are allowed in your browser settings.');
+              alert('An error occurred while enabling notifications.');
           }
       });
 
