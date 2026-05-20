@@ -152,13 +152,14 @@
                                         @endif
                                         @php
                                             if ($item->category == 'order' && $item->reference_id) {
-                                                $shareText = "Order: {$item->description}\nDate: {$item->transaction_date->format('d M Y')}\nAmount: Rs. " . number_format($item->amount, 2) . "\nCurrent Balance: Rs. " . number_format($item->balance, 2) . "\n\nInvoice Link: " . route('order.pdf', $item->reference_id);
+                                                $shareUrl = route('order.pdf', $item->reference_id);
+                                                $shareFileName = "Invoice_Order_{$item->reference_id}.pdf";
                                             } else {
-                                                $shareText = "Transaction: {$item->description}\nDate: {$item->transaction_date->format('d M Y')}\nAmount: Rs. " . number_format($item->amount, 2) . "\nCurrent Balance: Rs. " . number_format($item->balance, 2) . "\n\nReceipt Link: " . route('admin.customer-ledger.transaction-voucher', $item->id);
+                                                $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
+                                                $shareFileName = "Receipt_{$item->id}.pdf";
                                             }
-                                            $encodedText = urlencode($shareText);
                                         @endphp
-                                        <a href="https://wa.me/?text={{$encodedText}}" target="_blank" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share to WhatsApp">
+                                        <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share PDF natively">
                                             <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
                                         </a>
                                         <button class="btn btn-primary btn-sm rounded-circle editBtn" 
@@ -470,6 +471,55 @@
             }
         });
     });
+
+    window.ledgerPdfPreloads = {};
+
+    async function shareLedgerPdf(e, url, filename, btnElement) {
+        e.preventDefault();
+        const originalHtml = btnElement.innerHTML;
+        
+        // STEP 2: Share immediately if already downloaded
+        if (window.ledgerPdfPreloads[url]) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        files: [new File([window.ledgerPdfPreloads[url]], filename, { type: 'application/pdf' })]
+                    });
+                    btnElement.innerHTML = originalHtml;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        alert("Native Share Failed: " + err.name + " - " + err.message);
+                        btnElement.innerHTML = originalHtml;
+                    }
+                }
+            } else {
+                alert("navigator.share is not supported.");
+            }
+            return;
+        }
+        
+        // STEP 1: Download the file
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btnElement.classList.add('disabled');
+        
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            window.ledgerPdfPreloads[url] = blob;
+            
+            // Change button to prompt immediate click
+            btnElement.classList.remove('disabled');
+            btnElement.classList.remove('btn-success');
+            btnElement.classList.add('btn-warning');
+            btnElement.innerHTML = '<i class="fas fa-share-alt text-dark"></i> Tap!';
+            
+        } catch (error) {
+            console.error('Error fetching PDF:', error);
+            btnElement.innerHTML = originalHtml;
+            btnElement.classList.remove('disabled');
+            alert("Failed to download PDF.");
+        }
+    }
 </script>
 @endpush
 @endsection
