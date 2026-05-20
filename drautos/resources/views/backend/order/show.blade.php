@@ -228,16 +228,53 @@
 window.invoiceFileBlob = null;
 window.pdfPreloadFailed = false;
 
-// Preload the PDF in the background so it's instantly ready for sharing
+// Preload the Image in the background so it's instantly ready for sharing
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        const url = '{{ route("order.pdf", $order->id) }}';
+        const url = '{{ route("order.thermal", $order->id) }}';
         const response = await fetch(url);
-        const blob = await response.blob();
-        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
-        console.log("PDF preloaded and ready for sharing.");
+        let htmlText = await response.text();
+        
+        // Strip out the auto-print command so it doesn't open the print dialog!
+        htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+        htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '-9999px';
+        iframe.style.width = '80mm';
+        iframe.style.height = '1200px';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(htmlText);
+        iframeDoc.close();
+
+        await new Promise(r => setTimeout(r, 800));
+
+        if (typeof html2canvas === 'undefined') {
+            await new Promise((resolve) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                script.onload = resolve;
+                document.head.appendChild(script);
+            });
+        }
+
+        const canvas = await html2canvas(iframeDoc.body, {
+            scale: 3,
+            useCORS: true,
+            backgroundColor: '#ffffff'
+        });
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.png', { type: 'image/png' });
+        console.log("Image preloaded and ready for sharing.");
+        
+        document.body.removeChild(iframe);
     } catch (err) {
-        console.warn("PDF preloading failed:", err);
+        console.warn("Image preloading failed:", err);
         window.pdfPreloadFailed = true;
     }
 });
