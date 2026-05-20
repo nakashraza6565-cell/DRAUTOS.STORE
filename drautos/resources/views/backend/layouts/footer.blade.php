@@ -505,12 +505,15 @@
         appId: "46461a8a-1e8f-4f50-9561-967e52304cba",
         safari_web_id: "web.onesignal.auto.drautos",
         notifyButton: {
-          enable: true,
+          enable: false, // Hidden the floating bell icon
         },
         allowLocalhostAsSecureOrigin: true
       });
 
-      // Handle manual subscribe button click
+      // Automatically prompt the user to subscribe if they haven't already
+      OneSignal.Slidedown.promptPush();
+
+      // Handle manual subscribe button click (if it still exists anywhere)
       $('#onesignal-manual-subscribe').on('click', async function(e) {
           e.preventDefault();
           try {

@@ -690,3 +690,26 @@ Route::group(['prefix' => '/user', 'middleware' => ['user']], function () {
 Route::group(['prefix' => 'laravel-filemanager', 'middleware' => ['web', 'auth']], function () {
     Lfm::routes();
 });
+
+
+Route::get('/test-push', function() {
+    $appId = env('ONESIGNAL_APP_ID');
+    $restKey = env('ONESIGNAL_REST_API_KEY');
+
+    if (!$appId || !$restKey) {
+        return "Error: OneSignal keys are missing in .env!";
+    }
+
+    $response = \Illuminate\Support\Facades\Http::withHeaders([
+        'Authorization' => 'Basic ' . $restKey,
+        'Content-Type' => 'application/json'
+    ])->post('https://onesignal.com/api/v1/notifications', [
+        'app_id' => $appId,
+        'included_segments' => ['All'],
+        'headings' => ['en' => 'Test Notification!'],
+        'contents' => ['en' => 'If you see this on your phone, your PWA web push is working perfectly!'],
+    ]);
+
+    return "Push Sent! Response from OneSignal: " . $response->body();
+});
+
