@@ -9,6 +9,8 @@ use App\Models\Product;
 use App\User;
 use Illuminate\Support\Str;
 use DB;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\StatusNotification;
 
 class SalesOrderController extends Controller
 {
@@ -157,6 +159,22 @@ class SalesOrderController extends Controller
             }
 
             DB::commit();
+
+            // Push notification to all admins
+            try {
+                $customer    = User::find($request->user_id);
+                $createdBy   = auth()->user();
+                $adminUsers  = User::whereIn('role', ['admin'])->get();
+                $details = [
+                    'title'     => '🛒 New Sales Order by ' . $createdBy->name . ' for ' . ($customer ? $customer->name : 'Unknown') . ' — PKR ' . number_format($salesOrder->total_amount),
+                    'actionURL' => route('sales-orders.show', $salesOrder->id),
+                    'fas'       => 'fa-file-alt'
+                ];
+                Notification::send($adminUsers, new StatusNotification($details));
+            } catch (\Exception $ne) {
+                \Log::error('Sales Order notification failed: ' . $ne->getMessage());
+            }
+
             return redirect()->route('sales-orders.index')->with('success', 'Sales Order created successfully. Previous orders updated and completed if fulfilled.');
         } catch (\Exception $e) {
             DB::rollback();
