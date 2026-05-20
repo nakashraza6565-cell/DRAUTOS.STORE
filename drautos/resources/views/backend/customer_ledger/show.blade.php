@@ -152,25 +152,17 @@
                                         @endif
                                         @php
                                             if ($item->category == 'order' && $item->reference_id) {
-                                                $shareUrl = route('order.pdf', $item->reference_id);
-                                                $shareFileName = "Invoice_Order_{$item->reference_id}.pdf";
-                                                $isOrder = true;
+                                                $shareUrl = route('order.print', $item->reference_id);
+                                                $shareFileName = "Invoice_Order_{$item->reference_id}.png";
                                             } else {
                                                 $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
                                                 $shareFileName = "Receipt_{$item->id}.png";
-                                                $isOrder = false;
                                             }
                                         @endphp
                                         
-                                        @if($isOrder)
-                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', 'pdf', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Invoice PDF">
-                                                <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
-                                            </a>
-                                        @else
-                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', 'image', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Receipt Image">
-                                                <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
-                                            </a>
-                                        @endif
+                                        <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', 'image', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Image">
+                                            <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
+                                        </a>
                                         <button class="btn btn-primary btn-sm rounded-circle editBtn" 
                                                 style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" 
                                                 title="Edit Transaction"
@@ -518,19 +510,22 @@
                 const blob = await response.blob();
                 window.ledgerPdfPreloads[url] = blob;
             } else if (type === 'image') {
-                // Fetch the HTML receipt
+                // Fetch the HTML
                 const response = await fetch(url);
                 let htmlText = await response.text();
                 
                 // CRITICAL: Strip out the auto-print command so it doesn't open the print dialog!
                 htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
                 
-                // Create a temporary hidden iframe to render the receipt
+                const isA4 = url.includes('order/print');
+
+                // Create a temporary hidden iframe
                 const iframe = document.createElement('iframe');
                 iframe.style.position = 'fixed';
                 iframe.style.right = '-9999px';
-                iframe.style.width = '80mm';
-                iframe.style.height = '1200px';
+                iframe.style.width = isA4 ? '800px' : '80mm';
+                iframe.style.height = isA4 ? '2500px' : '1200px';
                 document.body.appendChild(iframe);
                 
                 // Inject HTML into iframe
@@ -552,11 +547,11 @@
                     });
                 }
                 
-                // Run html2canvas on the iframe's inner content
-                const receiptElement = iframeDoc.getElementById('receipt-content');
-                if(!receiptElement) throw new Error("Receipt content not found");
+                // Run html2canvas on the exact wrapper to crop correctly
+                const targetId = isA4 ? 'invoice-wrapper' : 'receipt-content';
+                const wrapper = iframeDoc.getElementById(targetId) || iframeDoc.body;
                 
-                const canvas = await html2canvas(receiptElement, {
+                const canvas = await html2canvas(wrapper, {
                     scale: 3,
                     useCORS: true,
                     backgroundColor: '#ffffff'
