@@ -277,26 +277,25 @@ async function shareInvoice(e) {
                 });
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    alert("Native Share Failed: " + err.name + "\n" + err.message);
+                    window.location.href = waLink;
                 }
             }
         } else {
-            alert("navigator.share is not supported.");
+            window.location.href = waLink;
         }
         return;
     }
 
     if (window.pdfPreloadFailed) {
-        alert("PDF Preload Failed! Check your internet connection or server logs.");
+        window.location.href = waLink;
         return;
     }
 
-    // Still loading
     btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading PDF...';
     btn.classList.add('disabled');
     
     setTimeout(() => {
-        alert("Preload timed out.");
+        window.location.href = waLink;
     }, 1500);
 }
 </script>
