@@ -154,14 +154,22 @@
                                             if ($item->category == 'order' && $item->reference_id) {
                                                 $shareUrl = route('order.pdf', $item->reference_id);
                                                 $shareFileName = "Invoice_Order_{$item->reference_id}.pdf";
+                                                $isOrder = true;
                                             } else {
-                                                $shareUrl = route('admin.customer-ledger.transaction-voucher.pdf', $item->id);
-                                                $shareFileName = "Receipt_{$item->id}.pdf";
+                                                $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
+                                                $isOrder = false;
                                             }
                                         @endphp
-                                        <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share PDF natively">
-                                            <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
-                                        </a>
+                                        
+                                        @if($isOrder)
+                                            <a href="#" onclick="shareLedgerPdf(event, '{{$shareUrl}}', '{{$shareFileName}}', this)" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share Invoice PDF">
+                                                <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{$shareUrl}}" target="_blank" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Open Receipt Image Share">
+                                                <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
+                                            </a>
+                                        @endif
                                         <button class="btn btn-primary btn-sm rounded-circle editBtn" 
                                                 style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" 
                                                 title="Edit Transaction"
