@@ -513,13 +513,17 @@
       // Handle manual subscribe button click (if it still exists anywhere)
       $('#onesignal-manual-subscribe').on('click', async function(e) {
           e.preventDefault();
-          try {
-              // Hide pulsing temporarily to show action
-              $(this).find('i').removeClass('text-danger').css('animation', 'none');
-              
+          
+          if (Notification.permission === 'granted') {
+              alert("You ALREADY allowed notifications! Wait a second and try the /test-push url again.");
+          } else if (Notification.permission === 'denied') {
+              alert("Your browser is BLOCKING the prompt because notifications were previously Denied. You must click the lock icon next to the URL in Chrome, go to Site Settings, and change Notifications to Allow.");
+          } else {
+              alert("Requesting permission from the browser now...");
               await OneSignal.Notifications.requestPermission();
-              
-              if (OneSignal.User.PushSubscription.optedIn) {
+          }
+          
+          if (OneSignal.User.PushSubscription.optedIn) {
                   $('#onesignal-manual-subscribe').hide();
               } else {
                   // If they dismissed the slidedown without subscribing
