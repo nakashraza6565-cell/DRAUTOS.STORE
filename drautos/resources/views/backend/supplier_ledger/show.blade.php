@@ -225,6 +225,59 @@
                         </select>
                     </div>
 
+                    <div id="payment_method_section" style="display:none; background: #f8f9fc; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #e3e6f0;">
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold">Payment Method</label>
+                            <div class="d-flex flex-wrap" style="gap: 15px;">
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="pm_cash" name="payment_method" value="cash" class="custom-control-input" checked>
+                                    <label class="custom-control-label" for="pm_cash">Cash</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="pm_cheque" name="payment_method" value="cheque" class="custom-control-input">
+                                    <label class="custom-control-label" for="pm_cheque">Our Cheque</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="pm_customer_cheque" name="payment_method" value="customer_cheque" class="custom-control-input">
+                                    <label class="custom-control-label" for="pm_customer_cheque">Customer Cheque (Transfer)</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="pm_bank" name="payment_method" value="bank" class="custom-control-input">
+                                    <label class="custom-control-label" for="pm_bank">Bank / Wallet</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Cheque Fields -->
+                        <div id="customer_cheque_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-0">
+                                <label class="small">Select Customer Cheque(s) to Transfer</label>
+                                <select name="payment_details[cheque_ids][]" class="form-control form-control-sm selectpicker" multiple data-live-search="true" title="Choose Cheques...">
+                                    @foreach($cheques as $chk)
+                                        <option value="{{$chk->id}}">{{$chk->bank_name}} - #{{$chk->cheque_number}} (Rs. {{number_format($chk->amount, 2)}}) - From: {{$chk->user->name ?? 'Unknown'}}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-info">Transferring a cheque will automatically mark it as Transferred in the system.</small>
+                            </div>
+                        </div>
+
+                        <!-- Our Cheque Fields -->
+                        <div id="cheque_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-0">
+                                <label class="small">Cheque Number / Details</label>
+                                <input type="text" name="payment_details[cheque_number]" class="form-control form-control-sm" placeholder="Enter cheque number">
+                            </div>
+                        </div>
+
+                        <!-- Bank/Wallet Fields -->
+                        <div id="bank_fields" class="payment_detail_fields" style="display:none;">
+                            <div class="form-group mb-0">
+                                <label class="small">Transaction ID / Reference</label>
+                                <input type="text" name="payment_details[ref_no]" class="form-control form-control-sm" placeholder="Enter reference number">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>Financial Account (Optional)</label>
                         <div class="input-group">
@@ -339,6 +392,16 @@
         }
     });
 
+    // Handle Payment Method Selection
+    $('input[name="payment_method"]').on('change', function() {
+        $('.payment_detail_fields').hide();
+        var selected = $(this).val();
+        if (selected === 'cheque') $('#cheque_fields').show();
+        else if (selected === 'customer_cheque') $('#customer_cheque_fields').show();
+        else if (selected === 'bank') $('#bank_fields').show();
+        else if (selected === 'wallet') $('#bank_fields').show(); // Using bank_fields for wallet ref_no
+    });
+
     $('.editBtn').click(function() {
         var id = $(this).data('id');
         var date = $(this).data('date');
@@ -371,6 +434,15 @@
             $('#t_amount').val('');
             $('#t_description').val('');
             $('#saveBtn').text('Save Transaction');
+        }
+    });
+
+    // Handle Category Change (show/hide payment section)
+    $('#t_category').on('change', function() {
+        if ($(this).val() === 'payment') {
+            $('#payment_method_section').slideDown();
+        } else {
+            $('#payment_method_section').slideUp();
         }
     });
 
