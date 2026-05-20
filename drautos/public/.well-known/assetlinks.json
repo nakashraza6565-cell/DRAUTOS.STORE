@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "store.drautos.twa",
+        "sha256_cert_fingerprints": ["A3:A7:E9:84:16:4F:89:2D:A8:EF:47:3E:F5:F3:2E:38:F0:18:56:DB:E1:73:C4:8E:38:47:14:F3:2D:F0:6B:4F"]
+      }
+    }]
