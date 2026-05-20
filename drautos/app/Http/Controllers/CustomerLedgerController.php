@@ -200,4 +200,11 @@ class CustomerLedgerController extends Controller
         $transaction = CustomerLedger::with('user')->findOrFail($id);
         return view('backend.customer_ledger.thermal-voucher', compact('transaction'));
     }
+
+    public function pdfTransactionVoucher($id)
+    {
+        $transaction = CustomerLedger::with('user')->findOrFail($id);
+        $pdf = \PDF::loadView('backend.customer_ledger.thermal-voucher', compact('transaction'));
+        return $pdf->download('Receipt_' . $transaction->id . '.pdf');
+    }
 }

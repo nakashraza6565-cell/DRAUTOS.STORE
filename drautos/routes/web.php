@@ -414,6 +414,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/customer-ledger/{user}/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'generatePDF'])->name('admin.customer-ledger.pdf');
     Route::get('/customer-ledger/{user}/thermal', [App\Http\Controllers\CustomerLedgerController::class, 'thermalPrint'])->name('admin.customer-ledger.thermal');
     Route::get('/customer-ledger/transaction/{id}/voucher', [App\Http\Controllers\CustomerLedgerController::class, 'printTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher');
+    Route::get('/customer-ledger/transaction/{id}/voucher/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'pdfTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher.pdf');
     Route::post('/customer-ledger/{user}/whatsapp', [App\Http\Controllers\CustomerLedgerController::class, 'sendWhatsApp'])->name('admin.customer-ledger.whatsapp');
 
     // Financial Accounts (Bank/Wallets)

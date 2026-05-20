@@ -155,7 +155,7 @@
                                                 $shareUrl = route('order.pdf', $item->reference_id);
                                                 $shareFileName = "Invoice_Order_{$item->reference_id}.pdf";
                                             } else {
-                                                $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
+                                                $shareUrl = route('admin.customer-ledger.transaction-voucher.pdf', $item->id);
                                                 $shareFileName = "Receipt_{$item->id}.pdf";
                                             }
                                         @endphp
