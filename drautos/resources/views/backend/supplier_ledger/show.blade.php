@@ -1,6 +1,9 @@
 @extends('backend.layouts.master')
 @section('title','Supplier Ledger - ' . $supplier->name)
 @section('main-content')
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
+@endpush
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Supplier Ledger: {{$supplier->name}}</h1>
@@ -315,6 +318,7 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById("supplierPerformanceChart");
