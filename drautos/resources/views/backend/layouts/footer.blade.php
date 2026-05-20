@@ -517,13 +517,17 @@
               // Hide pulsing temporarily to show action
               $(this).find('i').removeClass('text-danger').css('animation', 'none');
               
-              await OneSignal.User.PushSubscription.optIn();
+              await OneSignal.Slidedown.promptPush();
               
               if (OneSignal.User.PushSubscription.optedIn) {
                   $('#onesignal-manual-subscribe').hide();
+              } else {
+                  // If they dismissed the slidedown without subscribing
+                  $(this).find('i').addClass('text-danger');
               }
           } catch (err) {
-              alert('Could not enable notifications. Please open browser settings and allow notifications manually.');
+              console.error(err);
+              alert('Could not enable notifications. Please make sure notifications are allowed in your browser settings.');
           }
       });
 
