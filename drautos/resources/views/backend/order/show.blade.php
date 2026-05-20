@@ -10,7 +10,7 @@
             <a href="{{route('order.print',$order->id)}}?type=standard" class="btn btn-sm btn-info shadow-sm"><i class="fas fa-print fa-sm text-white-50 mr-1"></i> Standard Print</a>
             <a href="{{route('order.print',$order->id)}}?type=thermal" class="btn btn-sm btn-warning shadow-sm"><i class="fas fa-receipt fa-sm text-white-50 mr-1"></i> Thermal Print</a>
             <a href="{{route('order.pdf',$order->id)}}" class="btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50 mr-1"></i> Generate PDF</a>
-            <a href="{{route('order.whatsapp',$order->id)}}" class="btn btn-sm btn-success shadow-sm"><i class="fab fa-whatsapp fa-sm text-white-50 mr-1"></i> Send WhatsApp</a>
+            <a href="#" onclick="shareInvoice(event)" class="btn btn-sm btn-success shadow-sm" id="shareBtn"><i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share</a>
         </div>
     </h5>
   <div class="card-body p-2 p-md-4">
@@ -224,4 +224,45 @@
     }
 
 </style>
+<script>
+async function shareInvoice(e) {
+    e.preventDefault();
+    const btn = document.getElementById('shareBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading...';
+    btn.classList.add('disabled');
+    
+    try {
+        const url = '{{ route("order.pdf", $order->id) }}';
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
+        
+        const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\nTotal Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($order->user->current_balance ?? 0, 2)}}`;
+        
+        if (navigator.share) {
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    text: text,
+                    files: [file]
+                });
+            } else {
+                await navigator.share({
+                    text: text + '\n\nNote: PDF sharing is not supported by your browser, please download it manually.'
+                });
+            }
+        } else {
+            alert('Sharing is not supported on this browser. You can download the PDF instead.');
+        }
+    } catch (error) {
+        console.error('Error sharing:', error);
+        if (error.name !== 'AbortError') {
+            alert('Failed to share the invoice.');
+        }
+    } finally {
+        btn.innerHTML = originalText;
+        btn.classList.remove('disabled');
+    }
+}
+</script>
 @endpush
