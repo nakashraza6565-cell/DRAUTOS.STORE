@@ -537,6 +537,9 @@
                 // Wait a moment for iframe to render fonts
                 await new Promise(r => setTimeout(r, 800));
                 
+                // Dynamically resize iframe to fit the entire content to prevent squishing
+                iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+                
                 // Ensure html2canvas is loaded in parent
                 if (typeof html2canvas === 'undefined') {
                     await new Promise((resolve) => {
@@ -552,7 +555,7 @@
                 const wrapper = iframeDoc.getElementById(targetId) || iframeDoc.body;
                 
                 const canvas = await html2canvas(wrapper, {
-                    scale: 3,
+                    scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff'
                 });
