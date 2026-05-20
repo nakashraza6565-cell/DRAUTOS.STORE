@@ -176,6 +176,13 @@ class SupplierLedgerController extends Controller
         return $pdf->download('ledger-' . $supplier->name . '-' . date('Y-m-d') . '.pdf');
     }
 
+    public function print($supplierId)
+    {
+        $supplier = Supplier::findOrFail($supplierId);
+        $ledger = SupplierLedger::where('supplier_id', $supplierId)->orderBy('transaction_date', 'asc')->get();
+        return view('backend.supplier_ledger.pdf', compact('supplier', 'ledger'));
+    }
+
     public function sendWhatsApp(Request $request, $supplierId)
     {
         $supplier = Supplier::findOrFail($supplierId);

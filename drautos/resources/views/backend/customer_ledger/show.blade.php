@@ -11,12 +11,9 @@
             <a href="{{route('admin.customer-ledger.thermal', $user->id)}}" target="_blank" class="btn btn-warning btn-sm shadow-sm">
                 <i class="fas fa-print fa-sm text-white-50"></i> Thermal
             </a>
-            <form action="{{route('admin.customer-ledger.whatsapp', $user->id)}}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-success btn-sm shadow-sm">
-                    <i class="fab fa-whatsapp fa-sm text-white-50"></i> WhatsApp
-                </button>
-            </form>
+            <a href="#" onclick="shareLedgerPdf(event, '{{route('admin.customer-ledger.print', $user->id)}}', 'Ledger_{{str_replace(' ', '_', $user->name)}}.png', 'image', this)" class="btn btn-success btn-sm shadow-sm">
+                <i class="fas fa-share-alt fa-sm text-white-50"></i> Share Ledger
+            </a>
             <a href="{{route('sales-orders.create')}}?user_id={{$user->id}}" class="btn btn-success btn-sm shadow-sm">
                 <i class="fas fa-cart-plus fa-sm text-white-50"></i> Create Order
             </a>
@@ -518,7 +515,7 @@
                 htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
                 htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
                 
-                const isA4 = url.includes('order/print');
+                const isA4 = url.includes('print');
 
                 // Create a temporary hidden iframe
                 const iframe = document.createElement('iframe');
@@ -551,7 +548,12 @@
                 }
                 
                 // Run html2canvas on the exact wrapper to crop correctly
-                const targetId = isA4 ? 'invoice-wrapper' : 'receipt-content';
+                let targetId = 'receipt-content';
+                if (url.includes('customer-ledger') && url.includes('print')) {
+                    targetId = 'ledger-wrapper';
+                } else if (url.includes('order/print')) {
+                    targetId = 'invoice-wrapper';
+                }
                 const wrapper = iframeDoc.getElementById(targetId) || iframeDoc.body;
                 
                 const canvas = await html2canvas(wrapper, {

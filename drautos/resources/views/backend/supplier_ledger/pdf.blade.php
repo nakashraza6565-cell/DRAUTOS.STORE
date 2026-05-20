@@ -40,8 +40,9 @@
     </style>
 </head>
 <body>
-    <div class="watermark">DR</div>
-    <div class="header">
+    <div id="ledger-wrapper" style="position: relative; background: #fff; padding: 20px;">
+        <div class="watermark">DR</div>
+        <div class="header">
         <div class="company-name">Danyal Autos</div>
         <div>12-BUTT MARKET BADAMI BAGH LAHORE</div>
         <div>Contact: +923042000274 | 04237727045</div>
@@ -96,6 +97,7 @@
     <div class="footer">
         <strong>THANK YOU FOR YOUR PARTNERSHIP!</strong><br>
         This is a computer generated document. Danyal Autos &copy; {{ date('Y') }}
+    </div>
     </div>
 </body>
 </html>

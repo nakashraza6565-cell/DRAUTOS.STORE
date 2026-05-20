@@ -412,6 +412,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::put('/customer-ledger/{id}', [App\Http\Controllers\CustomerLedgerController::class, 'update'])->name('admin.customer-ledger.update');
     Route::delete('/customer-ledger/{id}', [App\Http\Controllers\CustomerLedgerController::class, 'destroy'])->name('admin.customer-ledger.destroy');
     Route::get('/customer-ledger/{user}/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'generatePDF'])->name('admin.customer-ledger.pdf');
+    Route::get('/customer-ledger/{user}/print', [App\Http\Controllers\CustomerLedgerController::class, 'print'])->name('admin.customer-ledger.print');
     Route::get('/customer-ledger/{user}/thermal', [App\Http\Controllers\CustomerLedgerController::class, 'thermalPrint'])->name('admin.customer-ledger.thermal');
     Route::get('/customer-ledger/transaction/{id}/voucher', [App\Http\Controllers\CustomerLedgerController::class, 'printTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher');
     Route::get('/customer-ledger/transaction/{id}/voucher/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'pdfTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher.pdf');
@@ -427,6 +428,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::put('/supplier-ledger/{id}', [App\Http\Controllers\SupplierLedgerController::class, 'update'])->name('admin.supplier-ledger.update');
     Route::delete('/supplier-ledger/{id}', [App\Http\Controllers\SupplierLedgerController::class, 'destroy'])->name('admin.supplier-ledger.destroy');
     Route::get('/supplier-ledger/{supplier}/pdf', [App\Http\Controllers\SupplierLedgerController::class, 'generatePDF'])->name('admin.supplier-ledger.pdf');
+    Route::get('/supplier-ledger/{supplier}/print', [App\Http\Controllers\SupplierLedgerController::class, 'print'])->name('admin.supplier-ledger.print');
     Route::get('/supplier-ledger/{supplier}/thermal', [App\Http\Controllers\SupplierLedgerController::class, 'thermalPrint'])->name('admin.supplier-ledger.thermal');
     Route::get('/supplier-ledger/transaction/{id}/voucher', [App\Http\Controllers\SupplierLedgerController::class, 'printTransactionVoucher'])->name('admin.supplier-ledger.transaction-voucher');
     Route::post('/supplier-ledger/{supplier}/whatsapp', [App\Http\Controllers\SupplierLedgerController::class, 'sendWhatsApp'])->name('admin.supplier-ledger.whatsapp');

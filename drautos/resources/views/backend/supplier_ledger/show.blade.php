@@ -11,12 +11,9 @@
             <a href="{{route('admin.supplier-ledger.thermal', $supplier->id)}}" target="_blank" class="btn btn-warning btn-sm shadow-sm">
                 <i class="fas fa-print fa-sm text-white-50"></i> Thermal
             </a>
-            <form action="{{route('admin.supplier-ledger.whatsapp', $supplier->id)}}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-success btn-sm shadow-sm">
-                    <i class="fab fa-whatsapp fa-sm text-white-50"></i> WhatsApp
-                </button>
-            </form>
+            <a href="#" onclick="shareLedgerPdf(event, '{{route('admin.supplier-ledger.print', $supplier->id)}}', 'Supplier_Ledger_{{str_replace(' ', '_', $supplier->name)}}.png', 'image', this)" class="btn btn-success btn-sm shadow-sm">
+                <i class="fas fa-share-alt fa-sm text-white-50"></i> Share Ledger
+            </a>
             <button class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#addTransactionModal">
                 <i class="fas fa-plus fa-sm text-white-50"></i> Add Transaction
             </button>
@@ -465,6 +462,118 @@
             }
         });
     });
+    window.ledgerPdfPreloads = {};
+
+    async function shareLedgerPdf(e, url, filename, type, btnElement) {
+        e.preventDefault();
+        const originalHtml = btnElement.innerHTML;
+        
+        // STEP 2: Share immediately if already generated/downloaded
+        if (window.ledgerPdfPreloads[url]) {
+            if (navigator.share) {
+                try {
+                    const mimeType = type === 'image' ? 'image/png' : 'application/pdf';
+                    await navigator.share({
+                        files: [new File([window.ledgerPdfPreloads[url]], filename, { type: mimeType })]
+                    });
+                    btnElement.innerHTML = originalHtml;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        alert("Native Share Failed: " + err.name + " - " + err.message);
+                        btnElement.innerHTML = originalHtml;
+                    }
+                }
+            } else {
+                alert("navigator.share is not supported.");
+            }
+            return;
+        }
+        
+        // STEP 1: Download or Generate
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btnElement.classList.add('disabled');
+        
+        try {
+            if (type === 'pdf') {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                window.ledgerPdfPreloads[url] = blob;
+            } else if (type === 'image') {
+                // Fetch the HTML
+                const response = await fetch(url);
+                let htmlText = await response.text();
+                
+                // CRITICAL: Strip out the auto-print command so it doesn't open the print dialog!
+                htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+                
+                const isA4 = url.includes('print');
+
+                // Create a temporary hidden iframe
+                const iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.right = '-9999px';
+                iframe.style.width = isA4 ? '800px' : '80mm';
+                iframe.style.height = isA4 ? '2500px' : '1200px';
+                document.body.appendChild(iframe);
+                
+                // Inject HTML into iframe
+                const iframeDoc = iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlText);
+                iframeDoc.close();
+                
+                // Wait a moment for iframe to render fonts
+                await new Promise(r => setTimeout(r, 800));
+                
+                // Dynamically resize iframe to fit the entire content to prevent squishing
+                iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+                
+                // Ensure html2canvas is loaded in parent
+                if (typeof html2canvas === 'undefined') {
+                    await new Promise((resolve) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                        script.onload = resolve;
+                        document.head.appendChild(script);
+                    });
+                }
+                
+                // Run html2canvas on the exact wrapper to crop correctly
+                let targetId = 'receipt-content';
+                if (url.includes('ledger') && url.includes('print')) {
+                    targetId = 'ledger-wrapper';
+                } else if (url.includes('order/print')) {
+                    targetId = 'invoice-wrapper';
+                }
+                const wrapper = iframeDoc.getElementById(targetId) || iframeDoc.body;
+                
+                const canvas = await html2canvas(wrapper, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                window.ledgerPdfPreloads[url] = blob;
+                
+                // Clean up
+                document.body.removeChild(iframe);
+            }
+            
+            // Change button to prompt immediate click
+            btnElement.classList.remove('disabled');
+            btnElement.classList.remove('btn-success');
+            btnElement.classList.add('btn-warning');
+            btnElement.innerHTML = '<i class="fas fa-share-alt text-dark"></i> Tap!';
+            
+        } catch (error) {
+            console.error('Error fetching/generating file:', error);
+            btnElement.innerHTML = originalHtml;
+            btnElement.classList.remove('disabled');
+            alert("Failed to prepare file.");
+        }
+    }
 </script>
 @endpush
 @endsection

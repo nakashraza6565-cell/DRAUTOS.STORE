@@ -143,6 +143,13 @@ class CustomerLedgerController extends Controller
         return $pdf->download('ledger-' . $user->name . '-' . date('Y-m-d') . '.pdf');
     }
 
+    public function print($userId)
+    {
+        $user = \App\User::findOrFail($userId);
+        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        return view('backend.customer_ledger.pdf', compact('user', 'ledger'));
+    }
+
     public function sendWhatsApp(Request $request, $userId)
     {
         $user = \App\User::findOrFail($userId);
