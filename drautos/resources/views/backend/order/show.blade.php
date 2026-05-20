@@ -277,18 +277,17 @@ async function shareInvoice(e) {
                 });
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    window.location.href = waLink;
+                    alert("Native Share Failed: " + err.name + "\n" + err.message);
                 }
             }
         } else {
-            window.location.href = waLink;
+            alert("navigator.share is not supported.");
         }
         return;
     }
 
-    // If preload isn't finished yet or failed, use fallback link instantly to avoid NotAllowedError
     if (window.pdfPreloadFailed) {
-        window.location.href = waLink;
+        alert("PDF Preload Failed! Check your internet connection or server logs.");
         return;
     }
 
@@ -296,9 +295,8 @@ async function shareInvoice(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading PDF...';
     btn.classList.add('disabled');
     
-    // Very rare edge case: user clicked before preload finished. Just wait a second and fallback.
     setTimeout(() => {
-        window.location.href = waLink;
+        alert("Preload timed out.");
     }, 1500);
 }
 </script>
