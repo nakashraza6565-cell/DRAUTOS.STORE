@@ -233,8 +233,27 @@ async function shareInvoice(e) {
     btn.classList.add('disabled');
     
     const url = '{{ route("order.pdf", $order->id) }}';
-    const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\nTotal Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($order->user->current_balance ?? 0, 2)}}`;
+    
+    @php
+        $current_balance = $order->user->current_balance ?? 0;
+        if ($order->status == 'delivered') {
+            $previous_balance = $current_balance - $order->total_amount;
+            $total_balance_now = $current_balance;
+        } else {
+            $previous_balance = $current_balance;
+            $total_balance_now = $current_balance + $order->total_amount;
+        }
+    @endphp
+    
+    const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\n\nPrevious Balance: Rs. {{number_format($previous_balance, 2)}}\nThis Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($total_balance_now, 2)}}`;
     const fallbackText = text + '\n\nInvoice Link: ' + url;
+
+    // Force Personal WhatsApp on Android
+    const encodedText = encodeURIComponent(fallbackText);
+    let waLink = 'https://wa.me/?text=' + encodedText;
+    if (/Android/i.test(navigator.userAgent)) {
+        waLink = 'intent://send?text=' + encodedText + '#Intent;package=com.whatsapp;scheme=whatsapp;end';
+    }
 
     try {
         const response = await fetch(url);
@@ -263,14 +282,12 @@ async function shareInvoice(e) {
                 });
             }
         } else {
-            // No native share, use WhatsApp directly
-            window.location.href = 'https://wa.me/?text=' + encodeURIComponent(fallbackText);
+            window.location.href = waLink;
         }
     } catch (error) {
         console.error('Error sharing:', error);
         if (error.name !== 'AbortError') {
-            // Absolute fallback to WhatsApp
-            window.location.href = 'https://wa.me/?text=' + encodeURIComponent(fallbackText);
+            window.location.href = waLink;
         }
     } finally {
         btn.innerHTML = originalText;
