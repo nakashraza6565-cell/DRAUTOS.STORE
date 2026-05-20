@@ -232,19 +232,18 @@ async function shareInvoice(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading...';
     btn.classList.add('disabled');
     
+    const url = '{{ route("order.pdf", $order->id) }}';
+    const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\nTotal Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($order->user->current_balance ?? 0, 2)}}`;
+    const fallbackText = text + '\n\nInvoice Link: ' + url;
+
     try {
-        const url = '{{ route("order.pdf", $order->id) }}';
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
         
-        const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\nTotal Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($order->user->current_balance ?? 0, 2)}}`;
-        const fallbackText = text + '\n\nInvoice Link: ' + url;
-        
         if (navigator.share) {
             let fileShared = false;
             
-            // First try to share the file
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
@@ -254,23 +253,24 @@ async function shareInvoice(e) {
                     fileShared = true;
                 } catch (err) {
                     console.warn('Native file share failed:', err);
-                    if (err.name === 'AbortError') return; // User cancelled
+                    if (err.name === 'AbortError') return; 
                 }
             }
             
-            // If file sharing failed or was not supported, fallback to text only
             if (!fileShared) {
                 await navigator.share({
                     text: fallbackText
                 });
             }
         } else {
-            alert('Sharing is not supported on this browser. You can download the PDF instead.');
+            // No native share, use WhatsApp directly
+            window.location.href = 'https://wa.me/?text=' + encodeURIComponent(fallbackText);
         }
     } catch (error) {
         console.error('Error sharing:', error);
         if (error.name !== 'AbortError') {
-            alert('Failed to share the invoice.');
+            // Absolute fallback to WhatsApp
+            window.location.href = 'https://wa.me/?text=' + encodeURIComponent(fallbackText);
         }
     } finally {
         btn.innerHTML = originalText;
