@@ -239,16 +239,29 @@ async function shareInvoice(e) {
         const file = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
         
         const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\nTotal Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($order->user->current_balance ?? 0, 2)}}`;
+        const fallbackText = text + '\n\nInvoice Link: ' + url;
         
         if (navigator.share) {
+            let fileShared = false;
+            
+            // First try to share the file
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        text: text,
+                        files: [file]
+                    });
+                    fileShared = true;
+                } catch (err) {
+                    console.warn('Native file share failed:', err);
+                    if (err.name === 'AbortError') return; // User cancelled
+                }
+            }
+            
+            // If file sharing failed or was not supported, fallback to text only
+            if (!fileShared) {
                 await navigator.share({
-                    text: text,
-                    files: [file]
-                });
-            } else {
-                await navigator.share({
-                    text: text + '\n\nNote: PDF sharing is not supported by your browser, please download it manually.'
+                    text: fallbackText
                 });
             }
         } else {
