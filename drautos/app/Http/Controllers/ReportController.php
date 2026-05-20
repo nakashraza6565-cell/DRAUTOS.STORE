@@ -218,7 +218,28 @@ class ReportController extends Controller
             $customerChartData[] = $othersBalance;
         }
 
-        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData'));
+        // Trendline Logic (Last 6 Months AR)
+        $trendLabels = [];
+        $trendData = [];
+        $currentMonth = \Carbon\Carbon::now()->startOfMonth();
+        
+        for ($i = 5; $i >= 0; $i--) {
+            $monthStart = $currentMonth->copy()->subMonths($i);
+            $monthEnd = $monthStart->copy()->endOfMonth();
+            
+            // Calculate total AR at the end of this month
+            $netAR = \App\Models\CustomerLedger::whereHas('user', function($q) {
+                $q->whereIn('role', ['user', 'customer']);
+            })
+            ->where('transaction_date', '<=', $monthEnd)
+            ->selectRaw('SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as net')
+            ->value('net') ?? 0;
+            
+            $trendLabels[] = $monthStart->format('M Y');
+            $trendData[] = round((float)$netAR, 2);
+        }
+
+        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData'));
     }
     public function productAnalysis(Request $request)
     {
