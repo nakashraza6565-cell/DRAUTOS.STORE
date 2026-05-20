@@ -510,9 +510,6 @@
         allowLocalhostAsSecureOrigin: true
       });
 
-      // Automatically prompt the user to subscribe if they haven't already
-      OneSignal.Slidedown.promptPush();
-
       // Handle manual subscribe button click (if it still exists anywhere)
       $('#onesignal-manual-subscribe').on('click', async function(e) {
           e.preventDefault();
@@ -520,7 +517,7 @@
               // Hide pulsing temporarily to show action
               $(this).find('i').removeClass('text-danger').css('animation', 'none');
               
-              await OneSignal.Slidedown.promptPush();
+              await OneSignal.Notifications.requestPermission();
               
               if (OneSignal.User.PushSubscription.optedIn) {
                   $('#onesignal-manual-subscribe').hide();
