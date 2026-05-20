@@ -257,7 +257,8 @@ async function shareInvoice(e) {
     btn.classList.add('disabled');
     
     try {
-        const url = '{{ route("order.thermal", $order->id) }}';
+        // Fetch the A4 Invoice HTML instead of the thermal receipt
+        const url = '{{ route("order.print", $order->id) }}';
         const response = await fetch(url);
         let htmlText = await response.text();
         
@@ -268,8 +269,8 @@ async function shareInvoice(e) {
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '-9999px';
-        iframe.style.width = '80mm';
-        iframe.style.height = '1200px';
+        iframe.style.width = '800px'; // A4 width for the invoice
+        iframe.style.height = '2500px'; // Increased height to ensure full A4 document is rendered
         document.body.appendChild(iframe);
 
         const iframeDoc = iframe.contentWindow.document;
