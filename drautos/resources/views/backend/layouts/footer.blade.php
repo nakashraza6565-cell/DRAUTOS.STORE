@@ -526,7 +526,7 @@
               } else if (Notification.permission === 'denied') {
                   alert("Your browser is BLOCKING the prompt. Please click the lock icon in the URL bar, go to Site Settings, and change Notifications to Allow.");
               } else {
-                  alert("Requesting permission from the browser now...");
+                  // Removed alert() because Chrome blocks permission requests if an alert breaks the click-gesture chain
                   await OneSignal.Notifications.requestPermission();
               }
               
