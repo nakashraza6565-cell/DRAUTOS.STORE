@@ -500,8 +500,8 @@
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-      OneSignal.init({
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
         appId: "46461a8a-1e8f-4f50-9561-967e52304cba",
         safari_web_id: "web.onesignal.auto.drautos",
         notifyButton: {
