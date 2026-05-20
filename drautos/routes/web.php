@@ -716,8 +716,54 @@ Route::get('/test-push', function() {
 
 
 Route::get('/test-onesignal-page', function() {
-    return '
-<!DOCTYPE html><html><head><title>OneSignal Test</title><script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script><script>window.OneSignalDeferred = window.OneSignalDeferred || [];OneSignalDeferred.push(async function(OneSignal) {await OneSignal.init({appId: "46461a8a-1e8f-4f50-9561-967e52304cba",notifyButton: {enable: true}});alert("OneSignal is successfully initialized on the page!");});</script></head><body><h1 style="font-family:sans-serif; text-align:center; margin-top:50px;">OneSignal Isolated Test</h1><div style="text-align:center;"><button onclick="OneSignal.Notifications.requestPermission()" style="padding:15px; font-size:18px; cursor:pointer;">Force Subscribe Prompt</button></div></body></html>
-    ';
+    $html = '<!DOCTYPE html>
+<html>
+<head>
+<title>OneSignal Test</title>
+</head>
+<body>
+<h1 style="font-family:sans-serif; text-align:center; margin-top:50px;">OneSignal Debug Test</h1>
+<div id="status" style="text-align:center; font-family:sans-serif; font-size:16px; margin:20px; padding:20px; background:#f0f0f0;">Loading OneSignal...</div>
+<div style="text-align:center; margin-top:20px;">
+  <button id="subBtn" style="padding:15px 30px; font-size:18px; cursor:pointer; background:#e54b4b; color:white; border:none; border-radius:8px;">Subscribe to Notifications</button>
+</div>
+<div id="log" style="font-family:monospace; font-size:12px; margin:20px; padding:10px; background:#222; color:#0f0; max-height:300px; overflow:auto;"></div>
+<script>
+function log(msg) {
+  document.getElementById("log").innerHTML += msg + "<br>";
+  document.getElementById("status").innerText = msg;
+}
+log("Page loaded. Loading OneSignal SDK...");
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+</script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"></script>
+<script>
+OneSignalDeferred.push(async function(OneSignal) {
+  try {
+    log("OneSignal SDK loaded. Initializing...");
+    await OneSignal.init({
+      appId: "46461a8a-1e8f-4f50-9561-967e52304cba",
+      notifyButton: { enable: true }
+    });
+    log("OneSignal initialized successfully!");
+    log("Permission state: " + Notification.permission);
+    log("Opted in: " + OneSignal.User.PushSubscription.optedIn);
+    document.getElementById("subBtn").addEventListener("click", async function() {
+      log("Subscribe button clicked...");
+      try {
+        await OneSignal.Notifications.requestPermission();
+        log("After request - Permission: " + Notification.permission);
+        log("After request - Opted in: " + OneSignal.User.PushSubscription.optedIn);
+      } catch(e) {
+        log("ERROR during requestPermission: " + e.message);
+      }
+    });
+  } catch(e) {
+    log("ERROR during init: " + e.message);
+  }
 });
-
+</script>
+</body>
+</html>';
+    return response($html)->header("Content-Type", "text/html");
+});
