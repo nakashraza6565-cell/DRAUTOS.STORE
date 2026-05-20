@@ -56,9 +56,8 @@ class SupplierLedgerController extends Controller
 
         $ledger = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(5000);
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
-        $cheques = \App\Models\Cheque::where('status', 'received')->get();
         
-        return view('backend.supplier_ledger.show', compact('supplier', 'ledger', 'graphLabels', 'balanceHistory', 'accounts', 'cheques'));
+        return view('backend.supplier_ledger.show', compact('supplier', 'ledger', 'graphLabels', 'balanceHistory', 'accounts'));
     }
 
     public function store(Request $request)
