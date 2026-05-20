@@ -520,7 +520,10 @@
             } else if (type === 'image') {
                 // Fetch the HTML receipt
                 const response = await fetch(url);
-                const htmlText = await response.text();
+                let htmlText = await response.text();
+                
+                // CRITICAL: Strip out the auto-print command so it doesn't open the print dialog!
+                htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
                 
                 // Create a temporary hidden iframe to render the receipt
                 const iframe = document.createElement('iframe');
