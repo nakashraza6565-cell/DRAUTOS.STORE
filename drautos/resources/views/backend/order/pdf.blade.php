@@ -69,7 +69,8 @@
     </style>
 </head>
 <body>
-    <div class="watermark">DR</div>
+    <div id="invoice-wrapper" style="position: relative; background: #fff; padding: 20px;">
+        <div class="watermark">DR</div>
     
     <table class="header-table">
         <tr>
@@ -285,6 +286,7 @@
     <div class="footer">
         <strong>THANK YOU FOR YOUR BUSINESS!</strong><br>
         This is a computer generated document. | Danyal Autos &copy; {{ date('Y') }}
+    </div>
     </div>
 </body>
 </html>

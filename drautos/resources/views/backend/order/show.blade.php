@@ -289,7 +289,8 @@ async function shareInvoice(e) {
             });
         }
 
-        const canvas = await html2canvas(iframeDoc.body, {
+        const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
+        const canvas = await html2canvas(wrapper, {
             scale: 3,
             useCORS: true,
             backgroundColor: '#ffffff'
