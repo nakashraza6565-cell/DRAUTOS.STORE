@@ -179,6 +179,22 @@ class ReportController extends Controller
     public function receivables(Request $request)
     {
         $city = $request->input('city');
+        $interval = $request->input('interval', 'monthly');
+        
+        // Date filters for the trendline
+        if ($request->has('start_date') && $request->has('end_date') && $request->start_date && $request->end_date) {
+            $startDate = \Carbon\Carbon::parse($request->start_date)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($request->end_date)->endOfDay();
+        } else {
+            $endDate = \Carbon\Carbon::now()->endOfDay();
+            if ($interval == 'daily') {
+                $startDate = \Carbon\Carbon::now()->subDays(14)->startOfDay();
+            } elseif ($interval == 'weekly') {
+                $startDate = \Carbon\Carbon::now()->subWeeks(8)->startOfWeek();
+            } else {
+                $startDate = \Carbon\Carbon::now()->subMonths(5)->startOfMonth();
+            }
+        }
 
         $query = \App\User::whereIn('role', ['user', 'customer'])
             ->where('current_balance', '>', 0);
@@ -218,28 +234,46 @@ class ReportController extends Controller
             $customerChartData[] = $othersBalance;
         }
 
-        // Trendline Logic (Last 6 Months AR)
+        // Trendline Logic
         $trendLabels = [];
         $trendData = [];
-        $currentMonth = \Carbon\Carbon::now()->startOfMonth();
         
-        for ($i = 5; $i >= 0; $i--) {
-            $monthStart = $currentMonth->copy()->subMonths($i);
-            $monthEnd = $monthStart->copy()->endOfMonth();
+        $current = $startDate->copy();
+        
+        while ($current <= $endDate) {
+            $periodEnd = $current->copy();
             
-            // Calculate total AR at the end of this month
+            if ($interval == 'daily') {
+                $periodEnd = $periodEnd->endOfDay();
+                $label = $current->format('M d');
+                $next = $current->copy()->addDay();
+            } elseif ($interval == 'weekly') {
+                $periodEnd = $periodEnd->endOfWeek();
+                if ($periodEnd > $endDate) $periodEnd = $endDate->copy();
+                $label = $current->format('M d') . ' - ' . $periodEnd->format('M d');
+                $next = $current->copy()->addWeek();
+            } else {
+                $periodEnd = $periodEnd->endOfMonth();
+                if ($periodEnd > $endDate) $periodEnd = $endDate->copy();
+                $label = $current->format('M Y');
+                $next = $current->copy()->addMonth();
+            }
+            
+            // Calculate total AR at the end of this period
             $netAR = \App\Models\CustomerLedger::whereHas('user', function($q) {
                 $q->whereIn('role', ['user', 'customer']);
             })
-            ->where('transaction_date', '<=', $monthEnd)
+            ->where('transaction_date', '<=', $periodEnd)
             ->selectRaw('SUM(CASE WHEN type = "debit" THEN amount ELSE -amount END) as net')
             ->value('net') ?? 0;
             
-            $trendLabels[] = $monthStart->format('M Y');
+            $trendLabels[] = $label;
             $trendData[] = round((float)$netAR, 2);
+            
+            $current = $next;
         }
 
-        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData'));
+        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData', 'interval', 'startDate', 'endDate'));
     }
     public function productAnalysis(Request $request)
     {

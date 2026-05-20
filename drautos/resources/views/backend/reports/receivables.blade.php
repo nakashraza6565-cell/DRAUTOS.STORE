@@ -30,8 +30,22 @@
         <!-- Trendline Chart -->
         <div class="col-xl-12 col-lg-12">
             <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-white">
-                    <h6 class="m-0 font-weight-bold text-primary">Receivables Trend (Last 6 Months)</h6>
+                <div class="card-header py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary mb-2 mb-md-0">Receivables Trend</h6>
+                    <form action="{{route('reports.receivables')}}" method="GET" class="form-inline">
+                        @if(isset($city))
+                            <input type="hidden" name="city" value="{{$city}}">
+                        @endif
+                        <select name="interval" class="form-control form-control-sm mr-2 mb-2 mb-sm-0" onchange="this.form.submit()">
+                            <option value="daily" {{ $interval == 'daily' ? 'selected' : '' }}>Daily</option>
+                            <option value="weekly" {{ $interval == 'weekly' ? 'selected' : '' }}>Weekly</option>
+                            <option value="monthly" {{ $interval == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                        </select>
+                        <input type="date" name="start_date" class="form-control form-control-sm mr-2 mb-2 mb-sm-0" value="{{ $startDate->format('Y-m-d') }}">
+                        <input type="date" name="end_date" class="form-control form-control-sm mr-2 mb-2 mb-sm-0" value="{{ $endDate->format('Y-m-d') }}">
+                        <button type="submit" class="btn btn-sm btn-primary shadow-sm"><i class="fas fa-filter fa-sm text-white-50"></i> Filter</button>
+                        <a href="{{route('reports.receivables')}}" class="btn btn-sm btn-outline-secondary ml-1">Reset</a>
+                    </form>
                 </div>
                 <div class="card-body">
                     <div class="chart-area" style="height: 250px;">
@@ -48,6 +62,9 @@
                 <div class="card-header py-3 bg-white d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Pending Payments from Customers</h6>
                     <form action="{{route('reports.receivables')}}" method="GET" class="form-inline">
+                        <input type="hidden" name="interval" value="{{$interval}}">
+                        <input type="hidden" name="start_date" value="{{$startDate->format('Y-m-d')}}">
+                        <input type="hidden" name="end_date" value="{{$endDate->format('Y-m-d')}}">
                         <select name="city" class="form-control form-control-sm mr-2" onchange="this.form.submit()">
                             <option value="">All Cities</option>
                             @foreach($cities as $c)
