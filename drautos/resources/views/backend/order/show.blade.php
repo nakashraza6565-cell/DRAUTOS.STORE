@@ -226,13 +226,26 @@
 </style>
 <script>
 window.invoiceFileBlob = null;
+window.pdfPreloadFailed = false;
+
+// Preload the PDF in the background so it's instantly ready for sharing
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const url = '{{ route("order.pdf", $order->id) }}';
+        const response = await fetch(url);
+        const blob = await response.blob();
+        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
+        console.log("PDF preloaded and ready for sharing.");
+    } catch (err) {
+        console.warn("PDF preloading failed:", err);
+        window.pdfPreloadFailed = true;
+    }
+});
 
 async function shareInvoice(e) {
     e.preventDefault();
     const btn = document.getElementById('shareBtn');
     const originalText = '<i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share';
-    
-    const url = '{{ route("order.pdf", $order->id) }}';
     
     @php
         $current_balance = $order->user->current_balance ?? 0;
@@ -246,7 +259,7 @@ async function shareInvoice(e) {
     @endphp
     
     const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\n\nPrevious Balance: Rs. {{number_format($previous_balance, 2)}}\nThis Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($total_balance_now, 2)}}`;
-    const fallbackText = text + '\n\nInvoice Link: ' + url;
+    const fallbackText = text + '\n\nInvoice Link: ' + '{{ route("order.pdf", $order->id) }}';
 
     // Force Personal WhatsApp on Android (Fallback)
     const encodedText = encodeURIComponent(fallbackText);
@@ -255,7 +268,6 @@ async function shareInvoice(e) {
         waLink = 'intent://send?text=' + encodedText + '#Intent;package=com.whatsapp;scheme=whatsapp;end';
     }
 
-    // STEP 2: If the file is already downloaded, share immediately (bypasses timeout)
     if (window.invoiceFileBlob) {
         if (navigator.share) {
             try {
@@ -263,8 +275,6 @@ async function shareInvoice(e) {
                     text: text,
                     files: [window.invoiceFileBlob]
                 });
-                window.invoiceFileBlob = null;
-                btn.innerHTML = originalText;
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     window.location.href = waLink;
@@ -276,25 +286,20 @@ async function shareInvoice(e) {
         return;
     }
 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Preparing PDF...';
+    // If preload isn't finished yet or failed, use fallback link instantly to avoid NotAllowedError
+    if (window.pdfPreloadFailed) {
+        window.location.href = waLink;
+        return;
+    }
+
+    // Still loading
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading PDF...';
     btn.classList.add('disabled');
     
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
-        
-        btn.classList.remove('disabled');
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-warning');
-        btn.innerHTML = '<i class="fas fa-share fa-sm text-white-50 mr-1"></i> Tap again to share!';
-        
-    } catch (error) {
-        console.error('Error fetching PDF:', error);
-        btn.innerHTML = originalText;
-        btn.classList.remove('disabled');
+    // Very rare edge case: user clicked before preload finished. Just wait a second and fallback.
+    setTimeout(() => {
         window.location.href = waLink;
-    }
+    }, 1500);
 }
 </script>
 @endpush
