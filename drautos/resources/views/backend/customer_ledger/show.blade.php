@@ -150,6 +150,17 @@
                                                 <i class="fas fa-receipt" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
+                                        @php
+                                            if ($item->category == 'order' && $item->reference_id) {
+                                                $shareText = "Order: {$item->description}\nDate: {$item->transaction_date->format('d M Y')}\nAmount: Rs. " . number_format($item->amount, 2) . "\nCurrent Balance: Rs. " . number_format($item->balance, 2) . "\n\nInvoice Link: " . route('order.pdf', $item->reference_id);
+                                            } else {
+                                                $shareText = "Transaction: {$item->description}\nDate: {$item->transaction_date->format('d M Y')}\nAmount: Rs. " . number_format($item->amount, 2) . "\nCurrent Balance: Rs. " . number_format($item->balance, 2) . "\n\nReceipt Link: " . route('admin.customer-ledger.transaction-voucher', $item->id);
+                                            }
+                                            $encodedText = urlencode($shareText);
+                                        @endphp
+                                        <a href="https://wa.me/?text={{$encodedText}}" target="_blank" class="btn btn-success btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Share to WhatsApp">
+                                            <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
+                                        </a>
                                         <button class="btn btn-primary btn-sm rounded-circle editBtn" 
                                                 style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" 
                                                 title="Edit Transaction"
