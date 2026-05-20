@@ -246,14 +246,6 @@ async function shareInvoice(e) {
     @endphp
     
     const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\n\nPrevious Balance: Rs. {{number_format($previous_balance, 2)}}\nThis Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($total_balance_now, 2)}}`;
-    const fallbackText = text + '\n\nInvoice Link: ' + url;
-
-    // Force Personal WhatsApp on Android
-    const encodedText = encodeURIComponent(fallbackText);
-    let waLink = 'https://wa.me/?text=' + encodedText;
-    if (/Android/i.test(navigator.userAgent)) {
-        waLink = 'intent://send?text=' + encodedText + '#Intent;package=com.whatsapp;scheme=whatsapp;end';
-    }
 
     try {
         const response = await fetch(url);
@@ -261,34 +253,23 @@ async function shareInvoice(e) {
         const file = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
         
         if (navigator.share) {
-            let fileShared = false;
-            
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        text: text,
-                        files: [file]
-                    });
-                    fileShared = true;
-                } catch (err) {
-                    console.warn('Native file share failed:', err);
-                    if (err.name === 'AbortError') return; 
+            try {
+                await navigator.share({
+                    text: text,
+                    files: [file]
+                });
+                console.log("Shared successfully!");
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    alert("Native sharing failed: " + err.name + " - " + err.message + "\n\nThis means your app wrapper blocks file attachments.");
                 }
             }
-            
-            if (!fileShared) {
-                await navigator.share({
-                    text: fallbackText
-                });
-            }
         } else {
-            window.location.href = waLink;
+            alert("Your browser does not support the Web Share API at all.");
         }
     } catch (error) {
         console.error('Error sharing:', error);
-        if (error.name !== 'AbortError') {
-            window.location.href = waLink;
-        }
+        alert("Failed to download PDF before sharing.");
     } finally {
         btn.innerHTML = originalText;
         btn.classList.remove('disabled');
