@@ -225,12 +225,12 @@
 
 </style>
 <script>
+window.invoiceFileBlob = null;
+
 async function shareInvoice(e) {
     e.preventDefault();
     const btn = document.getElementById('shareBtn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading...';
-    btn.classList.add('disabled');
+    const originalText = '<i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share';
     
     const url = '{{ route("order.pdf", $order->id) }}';
     
@@ -246,33 +246,58 @@ async function shareInvoice(e) {
     @endphp
     
     const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\n\nPrevious Balance: Rs. {{number_format($previous_balance, 2)}}\nThis Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($total_balance_now, 2)}}`;
+    const fallbackText = text + '\n\nInvoice Link: ' + url;
 
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        const file = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
-        
+    // Force Personal WhatsApp on Android (Fallback)
+    const encodedText = encodeURIComponent(fallbackText);
+    let waLink = 'https://wa.me/?text=' + encodedText;
+    if (/Android/i.test(navigator.userAgent)) {
+        waLink = 'intent://send?text=' + encodedText + '#Intent;package=com.whatsapp;scheme=whatsapp;end';
+    }
+
+    // STEP 2: If the file is already downloaded, share immediately (bypasses timeout)
+    if (window.invoiceFileBlob) {
         if (navigator.share) {
             try {
                 await navigator.share({
                     text: text,
-                    files: [file]
+                    files: [window.invoiceFileBlob]
                 });
-                console.log("Shared successfully!");
+                // Reset after successful share
+                window.invoiceFileBlob = null;
+                btn.innerHTML = originalText;
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    alert("Native sharing failed: " + err.name + " - " + err.message + "\n\nThis means your app wrapper blocks file attachments.");
+                    // If it still fails, the wrapper physically cannot attach files
+                    window.location.href = waLink;
                 }
             }
         } else {
-            alert("Your browser does not support the Web Share API at all.");
+            window.location.href = waLink;
         }
+        return;
+    }
+
+    // STEP 1: Download the file first
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Preparing PDF...';
+    btn.classList.add('disabled');
+    
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.pdf', { type: 'application/pdf' });
+        
+        // Change button to prompt immediate click
+        btn.classList.remove('disabled');
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-warning');
+        btn.innerHTML = '<i class="fas fa-share fa-sm text-white-50 mr-1"></i> Tap again to share!';
+        
     } catch (error) {
-        console.error('Error sharing:', error);
-        alert("Failed to download PDF before sharing.");
-    } finally {
+        console.error('Error fetching PDF:', error);
         btn.innerHTML = originalText;
         btn.classList.remove('disabled');
+        alert("Failed to prepare PDF for sharing.");
     }
 }
 </script>
