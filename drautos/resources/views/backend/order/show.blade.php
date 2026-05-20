@@ -225,17 +225,43 @@
 
 </style>
 <script>
-window.invoiceFileBlob = null;
-window.pdfPreloadFailed = false;
+window.invoiceImageBlob = null;
 
-// Preload the Image in the background so it's instantly ready for sharing
-document.addEventListener('DOMContentLoaded', async function() {
+async function shareInvoice(e) {
+    e.preventDefault();
+    const btn = document.getElementById('shareBtn');
+    const originalText = btn.innerHTML;
+    
+    // STEP 2: Share immediately if already generated
+    if (window.invoiceImageBlob) {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    files: [new File([window.invoiceImageBlob], 'Invoice_{{$order->order_number}}.png', { type: 'image/png' })]
+                });
+                btn.innerHTML = originalText;
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    alert("Native Share Failed: " + err.name + " - " + err.message);
+                    btn.innerHTML = originalText;
+                }
+            }
+        } else {
+            alert("navigator.share is not supported.");
+        }
+        return;
+    }
+
+    // STEP 1: Generate the Image Blob
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm mr-1"></i> Generating...';
+    btn.classList.add('disabled');
+    
     try {
         const url = '{{ route("order.thermal", $order->id) }}';
         const response = await fetch(url);
         let htmlText = await response.text();
         
-        // Strip out the auto-print command so it doesn't open the print dialog!
+        // Strip out the auto-print command
         htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
         htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
 
@@ -269,70 +295,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        window.invoiceFileBlob = new File([blob], 'Invoice_{{$order->order_number}}.png', { type: 'image/png' });
-        console.log("Image preloaded and ready for sharing.");
+        window.invoiceImageBlob = blob;
         
         document.body.removeChild(iframe);
-    } catch (err) {
-        console.warn("Image preloading failed:", err);
-        window.pdfPreloadFailed = true;
+
+        // Turn button Yellow to prompt 2nd tap
+        btn.classList.remove('disabled');
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-warning');
+        btn.innerHTML = '<i class="fas fa-share-alt text-dark mr-1"></i> Tap to Share!';
+
+    } catch (error) {
+        console.error('Error generating image:', error);
+        btn.innerHTML = originalText;
+        btn.classList.remove('disabled');
+        alert("Failed to generate image snapshot.");
     }
-});
-
-async function shareInvoice(e) {
-    e.preventDefault();
-    const btn = document.getElementById('shareBtn');
-    const originalText = '<i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share';
-    
-    @php
-        $current_balance = $order->user->current_balance ?? 0;
-        if ($order->status == 'delivered') {
-            $previous_balance = $current_balance - $order->total_amount;
-            $total_balance_now = $current_balance;
-        } else {
-            $previous_balance = $current_balance;
-            $total_balance_now = $current_balance + $order->total_amount;
-        }
-    @endphp
-    
-    const text = `Order: {{$order->order_number}}\nDate: {{$order->created_at->format("d M Y")}}\n\nPrevious Balance: Rs. {{number_format($previous_balance, 2)}}\nThis Bill: Rs. {{number_format($order->total_amount, 2)}}\nTotal Ledger Balance: Rs. {{number_format($total_balance_now, 2)}}`;
-    const fallbackText = text + '\n\nInvoice Link: ' + '{{ route("order.pdf", $order->id) }}';
-
-    // Force Personal WhatsApp on Android (Fallback)
-    const encodedText = encodeURIComponent(fallbackText);
-    let waLink = 'https://wa.me/?text=' + encodedText;
-    if (/Android/i.test(navigator.userAgent)) {
-        waLink = 'intent://send?text=' + encodedText + '#Intent;package=com.whatsapp;scheme=whatsapp;end';
-    }
-
-    if (window.invoiceFileBlob) {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    files: [window.invoiceFileBlob]
-                });
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    window.location.href = waLink;
-                }
-            }
-        } else {
-            window.location.href = waLink;
-        }
-        return;
-    }
-
-    if (window.pdfPreloadFailed) {
-        window.location.href = waLink;
-        return;
-    }
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm text-white-50 mr-1"></i> Loading PDF...';
-    btn.classList.add('disabled');
-    
-    setTimeout(() => {
-        window.location.href = waLink;
-    }, 1500);
 }
 </script>
 @endpush
