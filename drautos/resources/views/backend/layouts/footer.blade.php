@@ -511,12 +511,19 @@
       });
 
       // Handle manual subscribe button click
-      $('#onesignal-manual-subscribe').on('click', function(e) {
+      $('#onesignal-manual-subscribe').on('click', async function(e) {
           e.preventDefault();
           try {
-              OneSignal.User.PushSubscription.optIn();
+              // Hide pulsing temporarily to show action
+              $(this).find('i').removeClass('text-danger').css('animation', 'none');
+              
+              await OneSignal.User.PushSubscription.optIn();
+              
+              if (OneSignal.User.PushSubscription.optedIn) {
+                  $('#onesignal-manual-subscribe').hide();
+              }
           } catch (err) {
-              alert('Please open your browser settings and allow notifications for drautos.store manually.');
+              alert('Could not enable notifications. Please open browser settings and allow notifications manually.');
           }
       });
 
