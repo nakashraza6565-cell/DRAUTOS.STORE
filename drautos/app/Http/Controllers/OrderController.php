@@ -589,9 +589,20 @@ class OrderController extends Controller
     // PDF generate
     public function pdf(Request $request, $id){
         $order=Order::getAllOrder($id);
-        // return $order;
+        if (!$order) {
+            abort(404, 'Order not found');
+        }
+
+        // Security check: Only authenticated admins/staff or visitors with a cryptographically valid HMAC token can view the invoice
+        $isStaff = auth()->check() && in_array(auth()->user()->role, ['admin', 'manager', 'staff']);
+        if (!$isStaff) {
+            $expectedToken = hash_hmac('sha256', $order->id . $order->order_number, config('app.key'));
+            if ($request->get('token') !== $expectedToken) {
+                abort(403, 'Unauthorized access to invoice. Please scan the QR code on the physical receipt.');
+            }
+        }
+
         $file_name=$order->order_number.'-'.$order->first_name.'.pdf';
-        // return $file_name;
         $pdf=PDF::loadview('backend.order.pdf',compact('order'));
         return $pdf->download($file_name);
     }
