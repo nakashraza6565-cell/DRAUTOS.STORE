@@ -446,7 +446,12 @@
                 <div class="modal-body p-4">
                     <div class="form-group mb-3">
                         <label class="small font-weight-bold">Expense Title <span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control border-0 bg-light" placeholder="e.g. Office tea, Rent, Internet" required autofocus>
+                        <input type="text" name="title" list="expense-titles" class="form-control border-0 bg-light" placeholder="Type or select expense title (e.g. Office tea, Rent)" required autofocus autocomplete="off">
+                        <datalist id="expense-titles">
+                            @foreach($recent_expense_titles as $title)
+                                <option value="{{ $title }}">
+                            @endforeach
+                        </datalist>
                     </div>
 
                     <div class="form-group mb-3">

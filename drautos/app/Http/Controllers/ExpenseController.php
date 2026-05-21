@@ -17,7 +17,13 @@ class ExpenseController extends Controller
     public function create()
     {
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
-        return view('backend.expense.create', compact('accounts'));
+        $recent_expense_titles = Expense::select('title')
+            ->groupBy('title')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(20)
+            ->pluck('title');
+            
+        return view('backend.expense.create', compact('accounts', 'recent_expense_titles'));
     }
 
     public function store(Request $request)

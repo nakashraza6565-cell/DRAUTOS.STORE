@@ -227,6 +227,11 @@ class AdminController extends Controller
         $order_counts = json_encode($order_counts);
         $users = json_encode($array);
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        $recent_expense_titles = \App\Models\Expense::select('title')
+            ->groupBy('title')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(20)
+            ->pluck('title');
 
             // Get Current User's Account for pre-selection
             $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
@@ -239,7 +244,7 @@ class AdminController extends Controller
                 'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
                 'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
-                'money_in', 'money_out', 'accounts', 'staffAccId'
+                'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());

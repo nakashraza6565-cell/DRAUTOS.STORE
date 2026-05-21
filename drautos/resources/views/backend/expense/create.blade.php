@@ -8,7 +8,12 @@
         {{csrf_field()}}
         <div class="form-group">
           <label>Title <span class="text-danger">*</span></label>
-          <input type="text" name="title" class="form-control" required>
+          <input type="text" name="title" list="expense-titles" class="form-control" placeholder="Type or select expense title (e.g. Office tea, Rent)" required autocomplete="off">
+          <datalist id="expense-titles">
+              @foreach($recent_expense_titles as $title)
+                  <option value="{{ $title }}">
+              @endforeach
+          </datalist>
         </div>
         <div class="form-group">
             <label>Amount <span class="text-danger">*</span></label>
