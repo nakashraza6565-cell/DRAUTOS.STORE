@@ -26,7 +26,7 @@ class ActivityLog extends Model
             'ledger' => 'fa-book text-danger'
         ];
 
-        return self::create([
+        $log = self::create([
             'user_id' => auth()->id(),
             'log_type' => $type,
             'action' => $action,
@@ -34,5 +34,28 @@ class ActivityLog extends Model
             'icon' => $icons[$type] ?? 'fa-info-circle text-muted',
             'link' => $link
         ]);
+
+        // Send OneSignal Push Notification for this activity
+        $appId = env('ONESIGNAL_APP_ID');
+        $restKey = env('ONESIGNAL_REST_API_KEY');
+
+        if ($appId && $restKey) {
+            try {
+                \Illuminate\Support\Facades\Http::withHeaders([
+                    'Authorization' => 'Basic ' . $restKey,
+                    'Content-Type' => 'application/json'
+                ])->post('https://onesignal.com/api/v1/notifications', [
+                    'app_id' => $appId,
+                    'included_segments' => ['All'],
+                    'headings' => ['en' => 'DRAUTOS: ' . $action],
+                    'contents' => ['en' => $description],
+                    'url' => $link ? (filter_var($link, FILTER_VALIDATE_URL) ? $link : url($link)) : null,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('OneSignal Activity Push Error: ' . $e->getMessage());
+            }
+        }
+
+        return $log;
     }
 }
