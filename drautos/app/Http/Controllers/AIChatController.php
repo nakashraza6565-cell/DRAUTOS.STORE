@@ -35,7 +35,7 @@ class AIChatController extends Controller
         }
     }
 
-    public function runAgenticLoop(Request $request)
+    public function chat(Request $request)
     {
         $user = auth()->user();
         $input = $request->input('message');
@@ -107,7 +107,10 @@ class AIChatController extends Controller
             'updated_at' => now()
         ]);
 
-        return response()->json(['message' => $finalResponse]);
+        return response()->json([
+            'reply' => $finalResponse,
+            'history' => []
+        ]);
     }
 
     private function executeRecursiveLoop($messages, $systemPrompt, $depth = 0)
