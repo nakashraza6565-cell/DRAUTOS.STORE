@@ -767,3 +767,30 @@ OneSignalDeferred.push(async function(OneSignal) {
 </html>';
     return response($html)->header("Content-Type", "text/html");
 });
+
+Route::get('/ping-recent-activity', function() {
+    $latest = \App\Models\ActivityLog::orderBy('created_at', 'desc')->first();
+    if (!$latest) {
+        return "No recent activity found!";
+    }
+
+    $appId = env('ONESIGNAL_APP_ID');
+    $restKey = env('ONESIGNAL_REST_API_KEY');
+
+    if (!$appId || !$restKey) {
+        return "OneSignal keys are missing in .env!";
+    }
+
+    $response = \Illuminate\Support\Facades\Http::withHeaders([
+        'Authorization' => 'Basic ' . $restKey,
+        'Content-Type' => 'application/json'
+    ])->post('https://onesignal.com/api/v1/notifications', [
+        'app_id' => $appId,
+        'included_segments' => ['All'],
+        'headings' => ['en' => 'DRAUTOS: ' . $latest->action],
+        'contents' => ['en' => $latest->description],
+        'url' => $latest->link ? (filter_var($latest->link, FILTER_VALIDATE_URL) ? $latest->link : url($latest->link)) : null,
+    ]);
+
+    return "Pinged! Activity: '{$latest->action}' -> '{$latest->description}'. Response: " . $response->body();
+});
