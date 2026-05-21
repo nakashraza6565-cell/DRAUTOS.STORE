@@ -445,12 +445,17 @@
                 @csrf
                 <div class="modal-body p-4">
                     <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Expense Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control border-0 bg-light" placeholder="e.g. Office tea, Rent, Internet" required autofocus>
+                    </div>
+
+                    <div class="form-group mb-3">
                         <label class="small font-weight-bold">Amount (Rs.) <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text bg-light border-0">Rs.</span>
                             </div>
-                            <input type="number" name="amount" class="form-control form-control-lg border-0 bg-light" placeholder="0.00" required autofocus>
+                            <input type="number" step="0.01" name="amount" class="form-control form-control-lg border-0 bg-light" placeholder="0.00" required>
                         </div>
                     </div>
                     
@@ -464,6 +469,11 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Date <span class="text-danger">*</span></label>
+                        <input type="date" name="date" class="form-control border-0 bg-light" value="{{ date('Y-m-d') }}" required>
                     </div>
 
                     <div class="form-group mb-0">

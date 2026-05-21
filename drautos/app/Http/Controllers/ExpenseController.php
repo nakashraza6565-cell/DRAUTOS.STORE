@@ -22,6 +22,18 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
+        // Fallback for missing fields (like from the dashboard quick expense modal)
+        if (!$request->filled('title') && $request->filled('description')) {
+            $request->merge([
+                'title' => mb_substr($request->description, 0, 50) ?: 'Quick Expense'
+            ]);
+        }
+        if (!$request->filled('date')) {
+            $request->merge([
+                'date' => date('Y-m-d')
+            ]);
+        }
+
         $request->validate([
             'title' => 'required|string',
             'amount' => 'required|numeric',
@@ -50,7 +62,19 @@ class ExpenseController extends Controller
             );
         }
 
-        return redirect()->route('expenses.index')->with('success', 'Expense created successfully');
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Expense created successfully',
+                'expense' => $expense
+            ]);
+        }
+
+        if ($request->header('referer') && str_contains($request->header('referer'), 'expenses/create')) {
+            return redirect()->route('expenses.index')->with('success', 'Expense created successfully');
+        }
+
+        return redirect()->back()->with('success', 'Expense created successfully');
     }
 
     public function destroy($id)
