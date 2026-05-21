@@ -482,8 +482,8 @@
                     </div>
 
                     <div class="form-group mb-0">
-                        <label class="small font-weight-bold">Description <span class="text-danger">*</span></label>
-                        <textarea name="description" class="form-control border-0 bg-light" rows="3" placeholder="What was this expense for?" required></textarea>
+                        <label class="small font-weight-bold">Description</label>
+                        <textarea name="description" class="form-control border-0 bg-light" rows="3" placeholder="What was this expense for? (Optional)"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
