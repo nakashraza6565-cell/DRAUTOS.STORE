@@ -277,6 +277,11 @@
                 @endif
             </div>
 
+            <div class="text-center" style="margin: 15px 0; padding: 10px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #000;">
+                <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Scan to View PDF Invoice</div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode(route('order.pdf', $order->id)) }}" alt="Invoice QR" style="width: 120px; height: 120px; display: block; margin: 0 auto;">
+            </div>
+
             <div class="footer-note">
                 THANK YOU FOR YOUR BUSINESS!
             </div>
