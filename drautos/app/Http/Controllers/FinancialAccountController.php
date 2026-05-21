@@ -33,12 +33,40 @@ class FinancialAccountController extends Controller
     public function show($id)
     {
         $account = FinancialAccount::findOrFail($id);
-        $transactions = AccountTransaction::where('financial_account_id', $id)
-            ->orderBy('transaction_date', 'desc')
+        
+        $query = AccountTransaction::where('financial_account_id', $id);
+        
+        if (request()->filled('date')) {
+            $query->whereDate('transaction_date', request('date'));
+        }
+        
+        $transactions = $query->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate(50);
+            ->paginate(50)
+            ->withQueryString();
             
-        return view('backend.financial_accounts.show', compact('account', 'transactions'));
+        // Calculate Money In / Money Out summaries for the selected date
+        $summary = null;
+        if (request()->filled('date')) {
+            $total_in = AccountTransaction::where('financial_account_id', $id)
+                ->whereDate('transaction_date', request('date'))
+                ->where('type', 'in')
+                ->sum('amount');
+                
+            $total_out = AccountTransaction::where('financial_account_id', $id)
+                ->whereDate('transaction_date', request('date'))
+                ->where('type', 'out')
+                ->sum('amount');
+                
+            $summary = [
+                'date' => request('date'),
+                'total_in' => $total_in,
+                'total_out' => $total_out,
+                'net_flow' => $total_in - $total_out
+            ];
+        }
+            
+        return view('backend.financial_accounts.show', compact('account', 'transactions', 'summary'));
     }
 
     public function update(Request $request, $id)
