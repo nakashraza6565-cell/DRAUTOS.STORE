@@ -353,7 +353,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/pos', [AdminController::class, 'pos'])->name('admin.pos');
     Route::post('/pos/order', [AdminController::class, 'storePosOrder'])->name('pos.store-order');
     Route::get('/pos/thermal/{id}', [AdminController::class, 'thermalPrint'])->name('order.thermal');
-    Route::get('/order/pdf/{id}', [OrderController::class, 'pdf'])->name('order.pdf');
+    // Route::get('/order/pdf/{id}', [OrderController::class, 'pdf'])->name('order.pdf');
     Route::get('/pos/search-products', [AdminController::class, 'searchProducts'])->name('pos.search-products');
     Route::get('/pos/last-purchase', [AdminController::class, 'getLastPurchase'])->name('pos.last-purchase');
     Route::get('/cheques/pending-customer', [ChequeController::class, 'getPendingCustomerCheques'])->name('cheques.pending-customer');
