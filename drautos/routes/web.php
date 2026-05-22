@@ -130,6 +130,55 @@ Route::get('/test-ai', function () {
     return '❌ Error (' . $response->status() . '): ' . $response->body();
 });
 
+// ===== Gemini API Diagnostic Route =====
+Route::get('/test-gemini-key', function () {
+    $apiKey = env('GEMINI_API_KEY');
+    if (!$apiKey) return '❌ GEMINI_API_KEY is MISSING from .env';
+
+    $maskedKey = substr($apiKey, 0, 8) . '...' . substr($apiKey, -6);
+    $output = "=== Danyal Autos Gemini API Diagnostic Route ===\n\n";
+    $output .= "🔑 Loaded API Key (Masked): $maskedKey\n";
+    $output .= "🔑 Key Length: " . strlen($apiKey) . " characters\n\n";
+
+    // 1. Try model discovery
+    $listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" . $apiKey;
+    $output .= "🌐 Testing Model Discovery Endpoint (v1beta):\nURL: $listUrl\n";
+    
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(15)->get($listUrl);
+        $output .= "📥 HTTP Response Code: " . $response->status() . "\n";
+        $output .= "📥 Raw Discovery Response:\n" . json_encode($response->json(), JSON_PRETTY_PRINT) . "\n\n";
+    } catch (\Throwable $e) {
+        $output .= "❌ Discovery Error: " . $e->getMessage() . "\n\n";
+    }
+
+    // 2. Try generateContent on gemini-1.5-flash
+    $generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey;
+    $output .= "🌐 Testing Content Generation (v1beta / gemini-1.5-flash):\nURL: $generateUrl\n";
+
+    $payload = [
+        'contents' => [
+            [
+                'parts' => [
+                    ['text' => 'Hello, please say "Danyal Autos AI is ready" in one short sentence.']
+                ]
+            ]
+        ]
+    ];
+
+    try {
+        $response = \Illuminate\Support\Facades\Http::timeout(15)
+            ->withHeaders(['Content-Type' => 'application/json'])
+            ->post($generateUrl, $payload);
+        $output .= "📥 HTTP Response Code: " . $response->status() . "\n";
+        $output .= "📥 Raw Generate Content Response:\n" . json_encode($response->json(), JSON_PRETTY_PRINT) . "\n\n";
+    } catch (\Throwable $e) {
+        $output .= "❌ Content Gen Error: " . $e->getMessage() . "\n\n";
+    }
+
+    return response($output)->header('Content-Type', 'text/plain');
+});
+
 Route::post('/admin/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])
     ->name('admin.ai-chat')
     ->middleware(['auth', 'admin']);
