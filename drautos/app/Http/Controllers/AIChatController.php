@@ -37,80 +37,126 @@ class AIChatController extends Controller
 
     public function chat(Request $request)
     {
-        $user = auth()->user();
-        $input = $request->input('message');
-
-        // Save User Message
-        DB::table('ai_chat_messages')->insert([
-            'user_id' => $user->id,
-            'role' => 'user',
-            'content' => $input,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        // Load Last 20 Messages for context
-        $historyData = DB::table('ai_chat_messages')
-            ->where('user_id', $user->id)
-            ->orderBy('id', 'asc') // Load in chronological order
-            ->limit(50)
-            ->get();
-
-        $messages = [];
-        foreach ($historyData as $msg) {
-            $messages[] = ['role' => ($msg->role === 'user' ? 'user' : 'model'), 'parts' => [['text' => $msg->content]]];
-        }
-
-        $userMemory = "";
         try {
-            $memoryPath = storage_path("app/ai_memory_{$user->id}.json");
-            if (file_exists($memoryPath)) {
-                $userMemory = file_get_contents($memoryPath);
+            $user = auth()->user();
+            if (!$user) {
+                return response()->json([
+                    'reply' => '❌ Error: You are not authenticated. Please log in.',
+                    'history' => []
+                ]);
             }
-        } catch (\Throwable $e) {}
 
-        // Dynamic Model Discovery
-        $models = ['User'];
-        $path = app_path('Models');
-        if (is_dir($path)) {
-            foreach (scandir($path) as $file) {
-                if (strpos($file, '.php') !== false) $models[] = str_replace('.php', '', $file);
+            $input = $request->input('message');
+            if (empty($input)) {
+                return response()->json([
+                    'reply' => '❌ Error: Message cannot be empty.',
+                    'history' => []
+                ]);
             }
+
+            if (empty($this->apiKey)) {
+                return response()->json([
+                    'reply' => '❌ Error: Gemini API Key (GEMINI_API_KEY) is not set in the server environment (.env file). Please update your .env config.',
+                    'history' => []
+                ]);
+            }
+
+            // Ensure table exists on the fly (Self-Healing Check)
+            if (!Schema::hasTable('ai_chat_messages')) {
+                try {
+                    Schema::create('ai_chat_messages', function (Blueprint $table) {
+                        $table->id();
+                        $table->unsignedBigInteger('user_id');
+                        $table->string('role');
+                        $table->text('content');
+                        $table->json('tool_calls')->nullable();
+                        $table->json('tool_results')->nullable();
+                        $table->timestamps();
+                    });
+                } catch (\Throwable $migrationError) {
+                    throw new \Exception("Database schema error (failed to auto-create 'ai_chat_messages' table): " . $migrationError->getMessage());
+                }
+            }
+
+            // Save User Message
+            DB::table('ai_chat_messages')->insert([
+                'user_id' => $user->id,
+                'role' => 'user',
+                'content' => $input,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Load Last 50 Messages for context
+            $historyData = DB::table('ai_chat_messages')
+                ->where('user_id', $user->id)
+                ->orderBy('id', 'asc') // Load in chronological order
+                ->limit(50)
+                ->get();
+
+            $messages = [];
+            foreach ($historyData as $msg) {
+                $messages[] = ['role' => ($msg->role === 'user' ? 'user' : 'model'), 'parts' => [['text' => $msg->content]]];
+            }
+
+            $userMemory = "";
+            try {
+                $memoryPath = storage_path("app/ai_memory_{$user->id}.json");
+                if (file_exists($memoryPath)) {
+                    $userMemory = file_get_contents($memoryPath);
+                }
+            } catch (\Throwable $e) {}
+
+            // Dynamic Model Discovery
+            $models = ['User'];
+            $path = app_path('Models');
+            if (is_dir($path)) {
+                foreach (scandir($path) as $file) {
+                    if (strpos($file, '.php') !== false) $models[] = str_replace('.php', '', $file);
+                }
+            }
+            $modelList = implode(', ', $models);
+
+            $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant currently talking to {$user->name}.
+            
+            LONG-TERM MEMORY: {$userMemory}
+
+            DATABASE MODELS: {$modelList}
+
+            CRITICAL OPERATING RULES:
+            1. PERSISTENCE: Use the provided context to remember what was just discussed.
+            2. EXHAUSTIVE SEARCH: If a customer/item is not found, use global_search or try fuzzy variations of the name. NEVER say 'Not found' without checking Customers, Suppliers, and Products.
+            3. NO EXCUSES: If you need an ID (like for activity logs), use read_database to find it yourself first. Do NOT ask the user for IDs.
+            4. TOOL CHAINING: You can call multiple tools in a row. If one tool output suggests you need another, call it immediately.
+            5. LANGUAGE: Match the user's language (English/Urdu/Roman Urdu).
+            6. WHATSAPP: Use open_whatsapp with generated URLs for PDFs/Receipts.
+            7. ANALYTICS: Use get_analytics for totals, top items, and sales reports.
+            
+            Today is: " . date('Y-m-d') . ".";
+
+            $finalResponse = $this->executeRecursiveLoop($messages, $systemPrompt);
+
+            // Save Assistant Response
+            DB::table('ai_chat_messages')->insert([
+                'user_id' => $user->id,
+                'role' => 'assistant',
+                'content' => $finalResponse,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'reply' => $finalResponse,
+                'history' => []
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error("AI Chat Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return response()->json([
+                'reply' => '❌ AI Chat Error: ' . $e->getMessage() . '. Please verify your database connection and environment keys.',
+                'history' => []
+            ]);
         }
-        $modelList = implode(', ', $models);
-
-        $systemPrompt = "You are the 'Danyal Autos AI Manager'. You are a highly intelligent executive assistant currently talking to {$user->name}.
-        
-        LONG-TERM MEMORY: {$userMemory}
-
-        DATABASE MODELS: {$modelList}
-
-        CRITICAL OPERATING RULES:
-        1. PERSISTENCE: Use the provided context to remember what was just discussed.
-        2. EXHAUSTIVE SEARCH: If a customer/item is not found, use global_search or try fuzzy variations of the name. NEVER say 'Not found' without checking Customers, Suppliers, and Products.
-        3. NO EXCUSES: If you need an ID (like for activity logs), use read_database to find it yourself first. Do NOT ask the user for IDs.
-        4. TOOL CHAINING: You can call multiple tools in a row. If one tool output suggests you need another, call it immediately.
-        5. LANGUAGE: Match the user's language (English/Urdu/Roman Urdu).
-        6. WHATSAPP: Use open_whatsapp with generated URLs for PDFs/Receipts.
-        7. ANALYTICS: Use get_analytics for totals, top items, and sales reports.
-        
-        Today is: " . date('Y-m-d') . ".";
-
-        $finalResponse = $this->executeRecursiveLoop($messages, $systemPrompt);
-
-        // Save Assistant Response
-        DB::table('ai_chat_messages')->insert([
-            'user_id' => $user->id,
-            'role' => 'assistant',
-            'content' => $finalResponse,
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        return response()->json([
-            'reply' => $finalResponse,
-            'history' => []
-        ]);
     }
 
     private function executeRecursiveLoop($messages, $systemPrompt, $depth = 0)

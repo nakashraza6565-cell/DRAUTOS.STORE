@@ -343,7 +343,26 @@
                       history: chatHistory
                   })
               })
-              .then(res => res.json())
+              .then(async res => {
+                  if (!res.ok) {
+                      const textVal = await res.text();
+                      let errMsg = `Server Error (Status ${res.status})`;
+                      try {
+                          const errJson = JSON.parse(textVal);
+                          if (errJson.reply) return errJson;
+                          if (errJson.message) errMsg += ': ' + errJson.message;
+                      } catch(e) {
+                          const match = textVal.match(/<title>(.*?)<\/title>/i);
+                          if (match && match[1]) {
+                              errMsg += ' - ' + match[1];
+                          } else {
+                              errMsg += ' - ' + textVal.substring(0, 150) + '...';
+                          }
+                      }
+                      throw new Error(errMsg);
+                  }
+                  return res.json();
+              })
               .then(data => {
                   thinking.remove();
                   addMessage(data.reply, 'bot');
@@ -353,9 +372,9 @@
                       setTimeout(() => { window.open(data.redirect, '_blank'); }, 1000);
                   }
               })
-              .catch(() => {
+              .catch(err => {
                   thinking.remove();
-                  addMessage('❌ Brain connection lost. Try again.', 'bot');
+                  addMessage('❌ Brain connection lost: ' + err.message + '. Please check if your server .env contains GEMINI_API_KEY.', 'bot');
               });
           }
 
