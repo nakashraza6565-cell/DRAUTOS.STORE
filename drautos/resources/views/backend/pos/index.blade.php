@@ -1567,6 +1567,39 @@
             cancelButtonColor: '#6c757d',
             focusConfirm: false,
             width: '400px',
+            didOpen: () => {
+                const qtyInput = document.getElementById('swal-qty');
+                const priceInput = document.getElementById('swal-price');
+                
+                if (qtyInput) {
+                    setTimeout(() => {
+                        qtyInput.focus();
+                        qtyInput.select();
+                    }, 50);
+                    
+                    qtyInput.addEventListener('focus', function() {
+                        this.select();
+                    });
+                    qtyInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            Swal.clickConfirm();
+                        }
+                    });
+                }
+                
+                if (priceInput) {
+                    priceInput.addEventListener('focus', function() {
+                        this.select();
+                    });
+                    priceInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            Swal.clickConfirm();
+                        }
+                    });
+                }
+            },
             preConfirm: () => {
                 const qty = document.getElementById('swal-qty').value;
                 const price = document.getElementById('swal-price').value;
