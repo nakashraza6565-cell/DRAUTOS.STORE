@@ -142,8 +142,13 @@
                                                 <i class="fas fa-file-pdf" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
-                                        @if(in_array($item->category, ['payment', 'return', 'manual']))
+                                        @if(in_array($item->category, ['payment', 'manual']))
                                             <a href="{{route('admin.customer-ledger.transaction-voucher', $item->id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Voucher">
+                                                <i class="fas fa-receipt" style="font-size: 12px;"></i>
+                                            </a>
+                                        @endif
+                                        @if($item->category == 'return' && $item->reference_id)
+                                            <a href="{{route('returns.sale.print-thermal', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Return Receipt">
                                                 <i class="fas fa-receipt" style="font-size: 12px;"></i>
                                             </a>
                                         @endif
@@ -151,6 +156,9 @@
                                             if ($item->category == 'order' && $item->reference_id) {
                                                 $shareUrl = route('order.print', $item->reference_id);
                                                 $shareFileName = "Invoice_Order_{$item->reference_id}.png";
+                                            } elseif ($item->category == 'return' && $item->reference_id) {
+                                                $shareUrl = route('returns.sale.print-thermal', $item->reference_id);
+                                                $shareFileName = "Return_Receipt_{$item->reference_id}.png";
                                             } else {
                                                 $shareUrl = route('admin.customer-ledger.transaction-voucher', $item->id);
                                                 $shareFileName = "Receipt_{$item->id}.png";

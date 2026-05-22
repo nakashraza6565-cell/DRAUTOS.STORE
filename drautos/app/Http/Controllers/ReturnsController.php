@@ -166,21 +166,18 @@ class ReturnsController extends Controller
         try {
             $return->update(['status' => 'approved']);
 
-            // Update customer balance if credit_note
-            if ($return->refund_method === 'credit_note' && $return->customer) {
+            // Record return in customer ledger to deduct from outstanding balance
+            if ($return->customer) {
+                $invoiceReference = $return->order ? ' for Invoice #' . $return->order->order_number : '';
                 CustomerLedger::record(
                     $return->customer_id,
                     now(),
                     'credit',
                     'return',
-                    'Approved ' . ucfirst($return->type ?? 'return') . ' #' . $return->return_number,
+                    'Approved Sale Return #' . $return->return_number . $invoiceReference,
                     $return->total_return_amount,
                     $return->id
                 );
-                
-                // Balance update is handled by record()
-                // $return->customer->current_balance += $return->total_return_amount;
-                // $return->customer->save();
             }
 
             DB::commit();
