@@ -66,6 +66,23 @@
                     </button>
                 </div>
             </div>
+
+            {{-- Search Bar --}}
+            <div class="mb-3">
+                <div class="input-group shadow-sm">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-white border-right-0">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                    </div>
+                    <input type="text" id="productSearch" class="form-control border-left-0" placeholder="Search by product name or SKU...">
+                    <div class="input-group-append" id="clearSearchBtnContainer" style="display: none;">
+                        <button class="btn btn-outline-secondary border-left-0 text-muted" type="button" id="clearSearchBtn" style="border-color: #ced4da;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
  
             <div class="table-responsive">
                 <table class="table table-bordered mb-0" id="itemsTable">
@@ -92,6 +109,9 @@
                             </td>
                             <td class="align-middle">
                                 <div class="font-weight-bold">{{$item->product->title}}</div>
+                                @if($item->product->sku)
+                                    <small class="text-muted">SKU: {{$item->product->sku}}</small>
+                                @endif
                                 <input type="hidden" class="field-product-id" value="{{$item->product_id}}" disabled>
                                 <input type="hidden" class="field-unit-cost" value="{{$item->unit_cost}}" disabled>
                             </td>
@@ -165,6 +185,51 @@
 <script>
     $(document).ready(function() {
         $('.item-row').addClass('dimmed');
+ 
+        // Product Search logic
+        $('#productSearch').on('input keyup', function() {
+            let query = $(this).val().toLowerCase().trim();
+            let visibleCount = 0;
+
+            // Remove existing no results row if any
+            $('#noResultsRow').remove();
+
+            if (query === '') {
+                $('.item-row').show();
+                $('#clearSearchBtnContainer').hide();
+            } else {
+                $('#clearSearchBtnContainer').show();
+
+                $('.item-row').each(function() {
+                    let title = $(this).find('.font-weight-bold').text().toLowerCase();
+                    let sku = $(this).find('.text-muted').text().toLowerCase();
+
+                    if (title.indexOf(query) !== -1 || sku.indexOf(query) !== -1) {
+                        $(this).show();
+                        visibleCount++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                if (visibleCount === 0) {
+                    $('#itemsTable tbody').append(
+                        '<tr id="noResultsRow">' +
+                        '  <td colspan="8" class="text-center text-muted py-4">' +
+                        '    <i class="fas fa-search fa-2x mb-2 text-gray-400"></i>' +
+                        '    <p class="mb-0 font-weight-bold">No products match your search</p>' +
+                        '    <small>Try checking the spelling or use a different keyword</small>' +
+                        '  </td>' +
+                        '</tr>'
+                    );
+                }
+            }
+        });
+
+        // Clear Search Button
+        $('#clearSearchBtn').on('click', function() {
+            $('#productSearch').val('').trigger('input');
+        });
  
         $('.item-check').on('change', function() {
             let row = $(this).closest('.item-row');
