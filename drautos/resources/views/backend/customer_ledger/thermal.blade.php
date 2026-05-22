@@ -141,7 +141,15 @@
                     <td>{{ date('d/m/y', strtotime($item->transaction_date)) }}</td>
                     <td>
                         {{ strtoupper($item->description) }}
-                        <div style="font-size: 8px; color: #666;">
+                        @if($item->category == 'return' && $item->saleReturn && $item->saleReturn->items->count() > 0)
+                            <div style="font-size: 8px; margin-top: 2px; text-transform: uppercase;">
+                                <strong>ITEMS:</strong>
+                                @foreach($item->saleReturn->items as $rItem)
+                                    {{ $rItem->product->title ?? 'ITEM' }} (X{{ $rItem->quantity }}){{ !$loop->last ? ', ' : '' }}
+                                @endforeach
+                            </div>
+                        @endif
+                        <div style="font-size: 8px; color: #666; margin-top: 2px;">
                             TYPE: {{ strtoupper($item->type) }}
                         </div>
                     </td>

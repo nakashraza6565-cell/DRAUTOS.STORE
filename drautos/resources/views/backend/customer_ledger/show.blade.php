@@ -130,6 +130,16 @@
                                         @endif
                                     </div>
                                     <div class="small text-dark">{{ $item->description }}</div>
+                                    @if($item->category == 'return' && $item->saleReturn && $item->saleReturn->items->count() > 0)
+                                        <div class="mt-1 small bg-light p-1 border rounded text-dark">
+                                            <strong>Returned Items:</strong>
+                                            <ul class="pl-3 mb-0 text-muted" style="list-style-type: square; font-size: 0.8rem;">
+                                                @foreach($item->saleReturn->items as $rItem)
+                                                    <li>{{ $rItem->product->title ?? 'Item' }} (x{{ $rItem->quantity }}) - Rs. {{ number_format($rItem->total_price, 0) }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td data-title="Category"><span class="badge badge-light">{{$item->category}}</span></td>
                                 <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>

@@ -59,7 +59,7 @@ class CustomerLedgerController extends Controller
             $balanceHistory[] = $runningBalance;
         }
 
-        $ledger = $query->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(5000);
+        $ledger = $query->with('saleReturn.items.product')->orderBy('transaction_date', 'desc')->orderBy('id', 'desc')->paginate(5000);
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
         return view('backend.customer_ledger.show', compact('user', 'ledger', 'graphLabels', 'balanceHistory', 'accounts'));
@@ -138,7 +138,7 @@ class CustomerLedgerController extends Controller
     public function generatePDF($userId)
     {
         $user = \App\User::findOrFail($userId);
-        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        $ledger = CustomerLedger::with('saleReturn.items.product')->where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
         $pdf = \PDF::loadView('backend.customer_ledger.pdf', compact('user', 'ledger'));
         return $pdf->download('ledger-' . $user->name . '-' . date('Y-m-d') . '.pdf');
     }
@@ -146,14 +146,14 @@ class CustomerLedgerController extends Controller
     public function print($userId)
     {
         $user = \App\User::findOrFail($userId);
-        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        $ledger = CustomerLedger::with('saleReturn.items.product')->where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
         return view('backend.customer_ledger.pdf', compact('user', 'ledger'));
     }
 
     public function sendWhatsApp(Request $request, $userId)
     {
         $user = \App\User::findOrFail($userId);
-        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        $ledger = CustomerLedger::with('saleReturn.items.product')->where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
         
         // Generate PDF path
         $pdf = \PDF::loadView('backend.customer_ledger.pdf', compact('user', 'ledger'));
@@ -198,7 +198,7 @@ class CustomerLedgerController extends Controller
     {
         $user = \App\User::findOrFail($userId);
         // Get all transactions to calculate balance correctly
-        $ledger = CustomerLedger::where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
+        $ledger = CustomerLedger::with('saleReturn.items.product')->where('user_id', $userId)->orderBy('transaction_date', 'asc')->get();
         return view('backend.customer_ledger.thermal', compact('user', 'ledger'));
     }
 

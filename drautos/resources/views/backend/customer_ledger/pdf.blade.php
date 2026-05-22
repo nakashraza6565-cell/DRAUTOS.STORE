@@ -86,7 +86,17 @@
                 <tr>
                     <td>{{ $item->transaction_date->format('d/m/Y') }}</td>
                     <td>{{ ucfirst($item->category) }}</td>
-                    <td>{{ $item->description }}</td>
+                    <td>
+                        {{ $item->description }}
+                        @if($item->category == 'return' && $item->saleReturn && $item->saleReturn->items->count() > 0)
+                            <div style="font-size: 9px; margin-top: 4px; color: #555;">
+                                <strong>Items:</strong> 
+                                @foreach($item->saleReturn->items as $rItem)
+                                    {{ $rItem->product->title ?? 'Item' }} (x{{ $rItem->quantity }}){{ !$loop->last ? ', ' : '' }}
+                                @endforeach
+                            </div>
+                        @endif
+                    </td>
                     <td class="text-right">{{ $item->type == 'debit' ? number_format($item->amount, 2) : '-' }}</td>
                     <td class="text-right">{{ $item->type == 'credit' ? number_format($item->amount, 2) : '-' }}</td>
                     <td class="text-right font-weight-bold">Rs. {{ number_format($item->balance, 2) }}</td>

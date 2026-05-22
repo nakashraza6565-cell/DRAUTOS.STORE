@@ -31,6 +31,11 @@ class CustomerLedger extends Model
         return $this->belongsTo(FinancialAccount::class);
     }
 
+    public function saleReturn()
+    {
+        return $this->belongsTo(SaleReturn::class, 'reference_id');
+    }
+
     public static function record($userId, $date, $type, $category, $description, $amount, $referenceId = null, $paymentMethod = null, $paymentDetails = null, $financialAccountId = null)
     {
         // Ensure columns exist before inserting
