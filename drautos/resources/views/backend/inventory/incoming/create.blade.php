@@ -106,7 +106,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-hover mb-0 responsive-table-to-cards" id="incoming-items-table">
+                                <table class="table table-hover mb-0 incoming-goods-card-layout" id="incoming-items-table">
                                     <thead class="bg-light small font-weight-bold text-uppercase">
                                         <tr>
                                             <th style="width: 30%;">Product / Description</th>
@@ -180,6 +180,248 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css">
 <style>
     .select2-container--bootstrap4 .select2-selection--single { height: 38px !important; }
+
+    /* Modern Mobile Card view for Add Incoming Goods */
+    @media (max-width: 768px) {
+        /* Remove table boundaries and force block flow */
+        table.incoming-goods-card-layout {
+            border: 0 !important;
+            display: block !important;
+            background: transparent !important;
+        }
+        table.incoming-goods-card-layout thead {
+            display: none !important;
+        }
+        table.incoming-goods-card-layout tbody {
+            display: block !important;
+            width: 100% !important;
+        }
+        
+        /* Make table responsive container visible overflow */
+        .table-responsive {
+            overflow-x: visible !important;
+            border: 0 !important;
+        }
+
+        /* Each Row becomes a premium Card */
+        table.incoming-goods-card-layout tr.item-row {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 16px 12px !important;
+            position: relative !important;
+            background: #ffffff !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+            padding: 20px 16px 16px 16px !important;
+            margin-bottom: 24px !important;
+            transition: all 0.2s ease;
+        }
+        table.incoming-goods-card-layout tr.item-row:hover,
+        table.incoming-goods-card-layout tr.item-row:focus-within {
+            border-color: rgba(78, 115, 223, 0.4) !important;
+            box-shadow: 0 12px 30px -5px rgba(78, 115, 223, 0.08) !important;
+        }
+
+        /* Layout Grid Cell Spans */
+        table.incoming-goods-card-layout tr.item-row td {
+            display: block !important;
+            width: 100% !important;
+            padding: 0 !important;
+            border: 0 !important;
+            margin: 0 !important;
+        }
+        
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] {
+            grid-column: span 2 !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding-bottom: 16px !important;
+            margin-bottom: 4px !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Avail. Stock"] {
+            grid-column: span 1 !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="New Qty"] {
+            grid-column: span 1 !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Unit Cost"] {
+            grid-column: span 2 !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Line Total"] {
+            grid-column: span 2 !important;
+        }
+
+        /* Add dynamic uppercase labels using data-title */
+        table.incoming-goods-card-layout tr.item-row td::before {
+            content: attr(data-title);
+            display: block !important;
+            font-size: 0.68rem !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.8px !important;
+            color: #64748b !important;
+            margin-bottom: 6px !important;
+            text-transform: uppercase !important;
+        }
+
+        /* Product input alignment */
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] > div {
+            display: flex !important;
+            align-items: center !important;
+            width: 100% !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .select2-container {
+            width: 100% !important;
+            flex-grow: 1 !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .btn-link {
+            flex-shrink: 0 !important;
+            margin-left: 8px !important;
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #4e73df !important;
+            text-decoration: none !important;
+            transition: all 0.2s ease !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .btn-link:hover {
+            background: #4e73df !important;
+            color: #ffffff !important;
+            border-color: #4e73df !important;
+        }
+
+        /* Hide packaging and additional cost completely on mobile */
+        table.incoming-goods-card-layout tr.item-row td[data-title="Unit Cost"] .btn-link,
+        table.incoming-goods-card-layout tr.item-row td[data-title="Unit Cost"] .collapse {
+            display: none !important;
+        }
+
+        /* Float Trash Button absolutely at Top Right of the card */
+        table.incoming-goods-card-layout tr.item-row td[data-title="Action"] {
+            position: absolute !important;
+            top: 12px !important;
+            right: 12px !important;
+            z-index: 10 !important;
+            width: auto !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Action"]::before {
+            display: none !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Action"] .remove-row {
+            background: #fff5f5 !important;
+            color: #e53e3e !important;
+            border: 1px solid #fed7d7 !important;
+            border-radius: 50% !important;
+            width: 36px !important;
+            height: 36px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s ease !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Action"] .remove-row:hover {
+            background: #e53e3e !important;
+            color: #ffffff !important;
+            border-color: #e53e3e !important;
+        }
+
+        /* Sleek Card Line Total footer */
+        table.incoming-goods-card-layout tr.item-row td[data-title="Line Total"] {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            border-top: 1px dashed #e2e8f0 !important;
+            padding-top: 14px !important;
+            margin-top: 6px !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Line Total"]::before {
+            content: "LINE TOTAL" !important;
+            display: inline-block !important;
+            font-size: 0.72rem !important;
+            font-weight: 800 !important;
+            color: #64748b !important;
+            margin-bottom: 0 !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Line Total"] .row-total-display {
+            font-size: 1.15rem !important;
+            font-weight: 800 !important;
+            color: #4e73df !important;
+            text-align: right !important;
+        }
+
+        /* Large Add Button Target on Mobile */
+        .card-footer button.btn-outline-primary {
+            width: 100% !important;
+            padding: 12px !important;
+            font-size: 0.95rem !important;
+            border-radius: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: bold !important;
+        }
+
+        /* Sticky Top Bar Optimization for Native-App responsiveness */
+        .sticky-top {
+            padding: 12px 16px !important;
+        }
+        .sticky-top .container-fluid {
+            padding: 0 !important;
+        }
+        .sticky-top .d-flex.justify-content-between {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .sticky-top .d-flex.justify-content-between > div:first-child {
+            text-align: center !important;
+            margin-bottom: 8px !important;
+        }
+        .sticky-top .d-flex.justify-content-between > div:first-child h5 {
+            font-size: 1.05rem !important;
+        }
+        .sticky-top .d-flex.justify-content-between > div:first-child .small {
+            display: none !important; /* hide subtitle to save real estate */
+        }
+        .sticky-top .d-flex.align-items-center {
+            justify-content: space-between !important;
+            width: 100% !important;
+            gap: 12px !important;
+        }
+        .sticky-top .text-right {
+            text-align: left !important;
+            flex-grow: 1 !important;
+        }
+        .sticky-top #grand-total-display {
+            font-size: 1.25rem !important;
+        }
+        .sticky-top .border-left {
+            border-left: 0 !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+            display: flex !important;
+            gap: 8px !important;
+        }
+        .sticky-top .btn-success {
+            padding: 8px 16px !important;
+            font-size: 0.88rem !important;
+            border-radius: 8px !important;
+        }
+        .sticky-top .btn-light {
+            padding: 8px 12px !important;
+            font-size: 0.88rem !important;
+            border-radius: 8px !important;
+        }
+        
+        /* General form margin tuning */
+        .px-4 {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+    }
 </style>
 @endpush
 
