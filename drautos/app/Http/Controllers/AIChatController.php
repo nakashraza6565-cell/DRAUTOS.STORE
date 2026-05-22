@@ -210,19 +210,45 @@ class AIChatController extends Controller
 
     private function callGemini($messages, $systemPrompt)
     {
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey;
-        
-        $body = [
-            'contents' => $messages,
-            'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
-            'tools' => [['functionDeclarations' => $this->getTools()]]
+        // Try stable production v1 endpoint first, with fallbacks to newer models
+        $endpoints = [
+            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $this->apiKey,
         ];
 
-        $response = Http::timeout(60)->post($url, $body);
-        if (!$response->successful()) {
-            throw new \Exception("Gemini API Error: " . $response->body());
+        $lastException = null;
+        foreach ($endpoints as $url) {
+            try {
+                $body = [
+                    'contents' => $messages,
+                    'systemInstruction' => ['parts' => [['text' => $systemPrompt]]],
+                    'tools' => [['functionDeclarations' => $this->getTools()]]
+                ];
+
+                $response = Http::timeout(45)->post($url, $body);
+                if ($response->successful()) {
+                    return $response->json();
+                }
+                
+                $responseBody = $response->body();
+                // If it's a clear invalid key error, throw it immediately to avoid looping uselessly
+                if (strpos($responseBody, 'API_KEY_INVALID') !== false || strpos($responseBody, 'API Key not found') !== false) {
+                    throw new \Exception("Invalid API Key: Please verify the GEMINI_API_KEY in your .env file.");
+                }
+
+                $lastException = new \Exception("Gemini API Error (" . parse_url($url, PHP_URL_PATH) . "): " . $responseBody);
+            } catch (\Throwable $e) {
+                $lastException = $e;
+                // If it's an explicit invalid key exception, bubble it up directly
+                if (strpos($e->getMessage(), 'Invalid API Key') !== false) {
+                    throw $e;
+                }
+            }
         }
-        return $response->json();
+
+        throw $lastException ?: new \Exception("All Gemini endpoints failed.");
     }
 
     private function handleFunctionCall($name, $args)
