@@ -203,6 +203,43 @@
             border: 0 !important;
         }
 
+        /* Supplier quick add button alignment & size optimization */
+        .input-group {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            align-items: stretch !important;
+            width: 100% !important;
+        }
+        .input-group .select2-container {
+            flex-grow: 1 !important;
+            width: auto !important;
+        }
+        .input-group-append {
+            margin-left: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .input-group-append .btn-primary {
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 0 !important;
+            background: #e74a3b !important; /* Matches red theme */
+            border: none !important;
+            box-shadow: none !important;
+            color: #ffffff !important;
+        }
+        .input-group-append .btn-primary:hover {
+            background: #be2617 !important;
+            color: #ffffff !important;
+        }
+        .input-group-append .btn-primary i {
+            font-size: 0.85rem !important;
+        }
+
         /* Each Row becomes a premium Card */
         table.incoming-goods-card-layout tr.item-row {
             display: grid !important;
@@ -237,6 +274,7 @@
             border-bottom: 1px solid #f1f5f9 !important;
             padding-bottom: 16px !important;
             margin-bottom: 4px !important;
+            padding-right: 45px !important; /* Leave room for floating trash button! */
         }
         table.incoming-goods-card-layout tr.item-row td[data-title="Avail. Stock"] {
             grid-column: span 1 !important;
@@ -276,22 +314,24 @@
         table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .btn-link {
             flex-shrink: 0 !important;
             margin-left: 8px !important;
-            background: #f1f5f9 !important;
-            border: 1px solid #cbd5e1 !important;
+            background: #2e59d9 !important; /* Make it a solid blue rounded button */
+            border: none !important;
             width: 38px !important;
             height: 38px !important;
             border-radius: 8px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            color: #4e73df !important;
+            color: #ffffff !important;
             text-decoration: none !important;
             transition: all 0.2s ease !important;
         }
         table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .btn-link:hover {
-            background: #4e73df !important;
+            background: #224abe !important;
             color: #ffffff !important;
-            border-color: #4e73df !important;
+        }
+        table.incoming-goods-card-layout tr.item-row td[data-title="Product"] .btn-link i {
+            font-size: 0.85rem !important;
         }
 
         /* Hide packaging and additional cost completely on mobile */
