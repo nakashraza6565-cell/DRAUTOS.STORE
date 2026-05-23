@@ -207,6 +207,12 @@ class AdminController extends Controller
         // Cash Flow Analytics (Last 7 Days)
         $money_in = [];
         $money_out = [];
+        $incoming_amounts = [];
+
+        $incoming_goods = \App\Models\InventoryIncoming::with('items')
+            ->where('received_date', '>=', Carbon::today()->subDays(6))
+            ->get();
+
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i)->format('Y-m-d');
             $in = \App\Models\AccountTransaction::whereDate('transaction_date', $date)
@@ -218,10 +224,19 @@ class AdminController extends Controller
             
             $money_in[] = (float)$in;
             $money_out[] = (float)$out;
+
+            // Incoming Goods
+            $dayIncoming = $incoming_goods->filter(function($item) use ($date) {
+                return $item->received_date->format('Y-m-d') === $date;
+            });
+            $incoming_amounts[] = (float)$dayIncoming->sum(function($incoming) {
+                return $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
+            });
         }
 
         $money_in = json_encode($money_in);
         $money_out = json_encode($money_out);
+        $incoming_amounts = json_encode($incoming_amounts);
         $order_labels = json_encode($order_labels);
         $order_amounts = json_encode($order_amounts);
         $order_counts = json_encode($order_counts);
@@ -244,7 +259,8 @@ class AdminController extends Controller
                 'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
                 'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
-                'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles'
+                'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
+                'incoming_amounts'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());

@@ -408,9 +408,6 @@
                 </div>
             </div>
         </div>
-    </div>
-  </div>
-
     <!-- Row 4: Cash Flow Chart -->
     <div class="row">
         <div class="col-12 mb-4">
@@ -425,6 +422,26 @@
                 <div class="panel-body p-4">
                     <div class="chart-area" style="height: 300px;">
                         <canvas id="cashFlowChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 5: Incoming Goods vs Customer Sales Comparison Chart -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="premium-panel shadow-sm border-left-info">
+                <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
+                    <h5 class="m-0 font-weight-bolder text-gray-800">
+                        <div class="icon-box bg-info-light mr-3"><i class="fas fa-boxes-packing text-info"></i></div>
+                        Incoming Goods vs Customer Sales (Last 7 Days)
+                    </h5>
+                    <div class="small text-muted font-weight-bold">Daily Amount Comparison</div>
+                </div>
+                <div class="panel-body p-4">
+                    <div class="chart-area" style="height: 300px;">
+                        <canvas id="incomingVsSalesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -821,6 +838,87 @@
                     bodyFontColor: "#fff",
                     titleMarginBottom: 10,
                     titleFontColor: '#e2e8f0',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            var label = chart.datasets[tooltipItem.datasetIndex].label || '';
+                            return label + ': Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Incoming Goods vs Customer Sales Chart
+        var ctxIncomingSales = document.getElementById("incomingVsSalesChart").getContext('2d');
+        
+        var gradientIncoming = ctxIncomingSales.createLinearGradient(0, 0, 0, 400);
+        gradientIncoming.addColorStop(0, "rgba(79, 70, 229, 0.4)");
+        gradientIncoming.addColorStop(1, "rgba(79, 70, 229, 0.05)");
+
+        var gradientSales = ctxIncomingSales.createLinearGradient(0, 0, 0, 400);
+        gradientSales.addColorStop(0, "rgba(16, 185, 129, 0.4)");
+        gradientSales.addColorStop(1, "rgba(16, 185, 129, 0.05)");
+
+        new Chart(ctxIncomingSales, {
+            type: 'line',
+            data: {
+                labels: {!! $order_labels !!},
+                datasets: [
+                    {
+                        label: "Incoming Goods Amount",
+                        lineTension: 0.3,
+                        backgroundColor: gradientIncoming,
+                        borderColor: "#4f46e5",
+                        pointRadius: 4,
+                        pointBackgroundColor: "#fff",
+                        pointBorderColor: "#4f46e5",
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: "#4f46e5",
+                        pointHoverBorderColor: "#fff",
+                        pointBorderWidth: 2,
+                        data: {!! $incoming_amounts !!},
+                    },
+                    {
+                        label: "Customer Sales Amount",
+                        lineTension: 0.3,
+                        backgroundColor: gradientSales,
+                        borderColor: "#10b981",
+                        pointRadius: 4,
+                        pointBackgroundColor: "#fff",
+                        pointBorderColor: "#10b981",
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: "#10b981",
+                        pointHoverBorderColor: "#fff",
+                        pointBorderWidth: 2,
+                        data: {!! $order_amounts !!},
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: { padding: { left: 10, right: 25, top: 25, bottom: 0 } },
+                scales: {
+                    xAxes: [{ gridLines: { display: false, drawBorder: false } }],
+                    yAxes: [{
+                        ticks: {
+                            maxTicksLimit: 5,
+                            padding: 10,
+                            callback: function(value) { return 'Rs ' + Number(value).toLocaleString(); }
+                        },
+                        gridLines: { color: "rgba(0, 0, 0, .05)", zeroLineColor: "transparent", drawBorder: false, borderDash: [5, 5] }
+                    }],
+                },
+                legend: { display: true, position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, fontStyle: 'bold' } },
+                tooltips: {
+                    backgroundColor: "#1e293b",
+                    bodyFontColor: "#fff",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#e2e8f0',
+                    titleFontSize: 13,
                     borderColor: 'rgba(255,255,255,0.1)',
                     borderWidth: 1,
                     xPadding: 15,
