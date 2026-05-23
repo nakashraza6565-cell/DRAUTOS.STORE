@@ -10,7 +10,7 @@
             src: url('/revue/reve.ttf?v=1.1') format("truetype");
         }
         body {
-            font-family: 'Revue', 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Helvetica', 'Arial', sans-serif;
             width: 80mm;
             margin: 0 auto;
             padding: 40px;
