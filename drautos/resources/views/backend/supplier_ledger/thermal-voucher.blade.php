@@ -12,7 +12,7 @@
             font-style: normal;
         }
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Revue', 'Helvetica', 'Arial', sans-serif;
             width: 80mm;
             margin: 0 auto;
             padding: 40px;
