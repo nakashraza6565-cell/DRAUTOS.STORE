@@ -408,6 +408,9 @@
                 </div>
             </div>
         </div>
+    </div>
+  </div>
+
     <!-- Row 4: Cash Flow Chart -->
     <div class="row">
         <div class="col-12 mb-4">
