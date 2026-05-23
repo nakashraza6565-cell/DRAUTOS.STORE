@@ -8,8 +8,6 @@
         @font-face {
             font-family: 'Revue';
             src: url('/revue/reve.ttf?v=1.1') format("truetype");
-            font-weight: normal;
-            font-style: normal;
         }
         body {
             font-family: 'Revue', 'Helvetica', 'Arial', sans-serif;
