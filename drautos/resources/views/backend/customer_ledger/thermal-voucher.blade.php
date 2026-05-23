@@ -31,14 +31,14 @@
             overflow: hidden;
         }
         .watermark-bg {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Revue', sans-serif;
             font-size: 150px;
             color: #000;
-            opacity: 0.08;
+            opacity: 0.22;
             z-index: -1;
             white-space: nowrap;
             pointer-events: none;
@@ -119,7 +119,7 @@
         $settings = \App\Models\Settings::first();
     @endphp
 
-<div id="receipt-content" style="background: #fff; padding-bottom: 10px;">
+<div id="receipt-content" style="background: #fff; padding-bottom: 10px; position: relative;">
 
     <div class="watermark-bg">DR</div>
 
