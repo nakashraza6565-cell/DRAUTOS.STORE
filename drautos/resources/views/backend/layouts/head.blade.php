@@ -18,7 +18,7 @@
     <style>
         @font-face {
             font-family: 'RevueCustom';
-            src: url("{{ asset('revue/reve.ttf') }}") format("truetype");
+            src: url('/revue/reve.ttf?v=1.1') format("truetype");
         }
         :root {
             --primary: #0c1b3d; /* Packaging Navy Blue */
