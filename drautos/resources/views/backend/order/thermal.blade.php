@@ -7,7 +7,7 @@
         @page { margin: 0; }
         @font-face {
             font-family: 'Revue';
-            src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
+            src: url("{{ asset('revue/reve.ttf') }}") format("truetype");
             font-weight: normal;
             font-style: normal;
         }
