@@ -20,6 +20,7 @@
             color: #000;
             line-height: 1.3;
             font-weight: 700;
+            position: relative;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -34,12 +35,13 @@
         }
         .watermark-bg {
             position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-family: 'Revue', sans-serif;
-            font-size: 80px;
+            font-size: 140px;
             color: #000;
-            opacity: 0.12;
+            opacity: 0.22;
             z-index: -1;
             white-space: nowrap;
             pointer-events: none;
@@ -117,8 +119,9 @@
         $settings = \App\Models\Settings::first();
     @endphp
 
+    <div class="watermark-bg">DR</div>
+
     <div class="header-container text-center">
-        <div class="watermark-bg">DA</div>
         <div class="merchant-name">{!! strip_tags(str_replace('&nbsp;', ' ', $settings->short_des ?? 'Danyal Autos')) !!}</div>
         <div class="merchant-address">{{ $settings->address ?? 'Liaquat Pur, RYK' }}</div>
         <div class="merchant-address">{{ $settings->phone }}</div>

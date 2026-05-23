@@ -20,6 +20,7 @@
             color: #000;
             line-height: 1.3;
             font-weight: 700;
+            position: relative;
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
@@ -34,12 +35,13 @@
         }
         .watermark-bg {
             position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-family: 'Revue', sans-serif;
-            font-size: 80px;
+            font-size: 140px;
             color: #000;
-            opacity: 0.12;
+            opacity: 0.22;
             z-index: -1;
             white-space: nowrap;
             pointer-events: none;
