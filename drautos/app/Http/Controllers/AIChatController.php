@@ -55,6 +55,17 @@ class AIChatController extends Controller
                 ]);
             }
 
+            // --- SELF-HEALING HISTORY RESET COMMAND ---
+            if (strtolower(trim($input)) === 'clear' || strtolower(trim($input)) === '/clear' || strtolower(trim($input)) === 'reset') {
+                DB::table('ai_chat_messages')->where('user_id', $user->id)->delete();
+                $memoryPath = storage_path("app/ai_memory_{$user->id}.json");
+                if (file_exists($memoryPath)) @unlink($memoryPath);
+                return response()->json([
+                    'reply' => '🧹 Chat history and memory have been cleared! Let\'s start a fresh, highly intelligent conversation. Ask me to open customer orders, incoming goods, ledgers, or specific customer orders now!',
+                    'history' => []
+                ]);
+            }
+
             if (empty($this->apiKey)) {
                 return response()->json([
                     'reply' => '❌ Error: Gemini API Key (GEMINI_API_KEY) is not set in the server environment (.env file). Please update your .env config.',
@@ -370,6 +381,14 @@ class AIChatController extends Controller
                 if (!$id) return "Error: Database ID is required for supplier_ledger_show.";
                 $this->redirectUrl = route('admin.supplier-ledger.show', $id);
                 return "Success: Opening Supplier Ledger for ID {$id}.";
+            case 'orders_show':
+                if (!$id) return "Error: Database ID is required for orders_show.";
+                $this->redirectUrl = route('sales-orders.show', $id);
+                return "Success: Opening Customer Order details for ID {$id}.";
+            case 'incoming_goods_show':
+                if (!$id) return "Error: Database ID is required for incoming_goods_show.";
+                $this->redirectUrl = route('inventory-incoming.show', $id);
+                return "Success: Opening Incoming Goods details for ID {$id}.";
             case 'products_index':
                 $this->redirectUrl = route('product.index');
                 return "Success: Opening Products list.";
@@ -445,11 +464,11 @@ class AIChatController extends Controller
                     'properties' => [
                         'destination' => [
                             'type' => 'STRING',
-                            'description' => 'The destination page name. Must be one of: "dashboard", "orders_index", "create_order", "incoming_goods_index", "create_incoming_goods", "customer_ledger_index", "customer_ledger_show", "supplier_ledger_index", "supplier_ledger_show", "products_index", "create_product", "expenses_index", "attendance_index", "suppliers_index"'
+                            'description' => 'The destination page name. Must be one of: "dashboard", "orders_index", "orders_show", "create_order", "incoming_goods_index", "incoming_goods_show", "create_incoming_goods", "customer_ledger_index", "customer_ledger_show", "supplier_ledger_index", "supplier_ledger_show", "products_index", "create_product", "expenses_index", "attendance_index", "suppliers_index"'
                         ],
                         'id' => [
                             'type' => 'INTEGER',
-                            'description' => 'Optional database ID (required only for specific ledger show pages: "customer_ledger_show" or "supplier_ledger_show")'
+                            'description' => 'Optional database ID (required for "customer_ledger_show", "supplier_ledger_show", "orders_show", or "incoming_goods_show")'
                         ]
                     ],
                     'required' => ['destination']
