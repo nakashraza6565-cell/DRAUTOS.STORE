@@ -12,6 +12,7 @@ use DB;
 class AIChatController extends Controller
 {
     private $apiKey;
+    private $redirectUrl = null;
 
     public function __construct()
     {
@@ -147,7 +148,8 @@ class AIChatController extends Controller
 
             return response()->json([
                 'reply' => $finalResponse,
-                'history' => []
+                'history' => [],
+                'redirect' => $this->redirectUrl
             ]);
 
         } catch (\Throwable $e) {
@@ -264,6 +266,8 @@ class AIChatController extends Controller
                 return $this->tool_open_whatsapp($args);
             case 'update_memory':
                 return $this->tool_update_memory($args);
+            case 'open_ledger':
+                return $this->tool_open_ledger($args);
             default:
                 return "Error: Tool {$name} not implemented.";
         }
@@ -332,6 +336,26 @@ class AIChatController extends Controller
         return "Success: Memory updated.";
     }
 
+    private function tool_open_ledger($args)
+    {
+        $type = $args['type'] ?? '';
+        $id = $args['id'] ?? null;
+
+        if (!$id) {
+            return "Error: Database ID is required to open the ledger.";
+        }
+
+        if ($type === 'customer') {
+            $this->redirectUrl = route('admin.customer-ledger.show', $id);
+            return "Success: Generating automatic redirect to Customer Ledger for ID {$id}.";
+        } elseif ($type === 'supplier') {
+            $this->redirectUrl = route('admin.supplier-ledger.show', $id);
+            return "Success: Generating automatic redirect to Supplier Ledger for ID {$id}.";
+        }
+
+        return "Error: Invalid ledger type. Supported types are 'customer' or 'supplier'.";
+    }
+
     private function getTools()
     {
         return [
@@ -377,6 +401,18 @@ class AIChatController extends Controller
                         'phone' => ['type' => 'STRING'],
                         'message' => ['type' => 'STRING']
                     ]
+                ]
+            ],
+            [
+                'name' => 'open_ledger',
+                'description' => 'Open or redirect browser to a Customer or Supplier ledger page.',
+                'parameters' => [
+                    'type' => 'OBJECT',
+                    'properties' => [
+                        'type' => ['type' => 'STRING', 'description' => 'Either "customer" or "supplier"'],
+                        'id' => ['type' => 'INTEGER', 'description' => 'The database ID of the user or supplier']
+                    ],
+                    'required' => ['type', 'id']
                 ]
             ]
         ];
