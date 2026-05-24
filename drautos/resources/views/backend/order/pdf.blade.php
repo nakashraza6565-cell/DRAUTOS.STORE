@@ -7,7 +7,9 @@
         /* International Minimalist Invoice Design */
         @page { margin: 10mm; size: a4; }
         body { 
-            font-family: {{ request('lang') === 'ur' ? "'Tahoma'" : "'Helvetica', 'Arial'" }}, sans-serif; 
+            font-family: {{ request('lang') === 'ur' ? "'DejaVu Sans'" : "'Helvetica', 'Arial'" }}, sans-serif; 
+            direction: {{ request('lang') === 'ur' ? 'rtl' : 'ltr' }};
+            text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};
             margin: 0; padding: 0; 
             color: #111; 
             line-height: 1.2; 
@@ -20,8 +22,18 @@
         .company-name { font-size: 24px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
         .company-details { font-size: 10px; color: #555; margin-top: 4px; }
         
-        .invoice-title { font-size: 28px; font-weight: bold; text-align: right; text-transform: uppercase; }
-        .invoice-meta { text-align: right; font-size: 10px; color: #333; margin-top: 4px; }
+        .invoice-title { 
+            font-size: 28px; 
+            font-weight: bold; 
+            text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
+            text-transform: uppercase; 
+        }
+        .invoice-meta { 
+            text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
+            font-size: 10px; 
+            color: #333; 
+            margin-top: 4px; 
+        }
         
         .info-table { margin-bottom: 15px; }
         .info-title { font-size: 10px; font-weight: bold; color: #777; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 2px; margin-bottom: 4px; }
@@ -35,21 +47,38 @@
             padding: 6px 4px; 
             font-size: 9px; 
             text-transform: uppercase; 
-            text-align: left; 
+            text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }}; 
         }
-        .item-table td { padding: 5px 4px; border-bottom: 1px solid #eee; }
-        .item-table th.text-right, .item-table td.text-right { text-align: right; }
+        .item-table td { padding: 5px 4px; border-bottom: 1px solid #eee; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }}; }
+        .item-table th.text-right, .item-table td.text-right { text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; }
         .item-table th.text-center, .item-table td.text-center { text-align: center; }
         
         .item-title { font-weight: bold; font-size: 11px; }
         .item-meta { font-size: 9px; color: #666; display: inline-block; margin-right: 6px; }
         
         .totals-wrapper { width: 100%; }
-        .payment-info { width: 50%; float: left; font-size: 10px; color: #555; padding-right: 20px; }
-        .totals-table { width: 45%; float: right; }
+        .payment-info { 
+            width: 50%; 
+            float: {{ request('lang') === 'ur' ? 'right' : 'left' }}; 
+            font-size: 10px; 
+            color: #555; 
+            padding-{{ request('lang') === 'ur' ? 'left' : 'right' }}: 20px; 
+        }
+        .totals-table { 
+            width: 45%; 
+            float: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
+        }
         .totals-table td { padding: 4px 0; border-bottom: 1px solid #f9f9f9; }
-        .totals-table td.label { color: #555; font-size: 10px; text-transform: uppercase; }
-        .totals-table td.value { text-align: right; font-weight: bold; }
+        .totals-table td.label { 
+            color: #555; 
+            font-size: 10px; 
+            text-transform: uppercase; 
+            text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};
+        }
+        .totals-table td.value { 
+            text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
+            font-weight: bold; 
+        }
         .grand-total { border-top: 2px solid #000; border-bottom: 2px solid #000; background: #f9f9f9; }
         .grand-total td { padding: 6px 0; font-size: 14px !important; }
         
@@ -60,10 +89,6 @@
         @font-face {
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
-        }
-        @font-face {
-            font-family: 'Tahoma';
-            src: url("{{ str_replace('\\', '/', public_path('revue/tahoma.ttf')) }}") format("truetype");
         }
         .watermark {
             position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%);
@@ -79,9 +104,9 @@
     <table class="header-table">
         <tr>
             <td width="50%">
-                <div class="company-name">{{ Helper::translatePartTitle('Danyal Autos', true) }}</div>
+                <div class="company-name">{{ Helper::translateLabel('Danyal Autos') }}</div>
                 <div class="company-details">
-                    {{ Helper::translatePartTitle('12-BUTT MARKET BADAMI BAGH LAHORE', true) }}<br>
+                    {{ Helper::translateLabel('12-BUTT MARKET BADAMI BAGH LAHORE') }}<br>
                     {{ Helper::translateLabel('SKU:') }} 54000 | {{ Helper::translateLabel('Phone:') }} +923042000274, 04237727045
                 </div>
             </td>
@@ -98,24 +123,24 @@
  
     <table class="info-table">
         <tr>
-            <td width="35%" style="padding-right: 15px;">
+            <td width="35%" style="padding-{{ request('lang') === 'ur' ? 'left' : 'right' }}: 15px;">
                 <div class="info-title">{{ Helper::translateLabel('Billed To') }}</div>
                 <div class="info-content">
-                    <strong>{{ Helper::translatePartTitle($order->first_name . ' ' . $order->last_name, true) }}</strong><br>
-                    {{ Helper::translatePartTitle($order->address1, true) }}<br>
+                    <strong>{{ $order->first_name . ' ' . $order->last_name }}</strong><br>
+                    {{ $order->address1 }}<br>
                     {{ Helper::translateLabel('Phone:') }} {{ $order->phone }}<br>
                     {{ Helper::translateLabel('Email:') }} {{ $order->email }}
                 </div>
             </td>
-            <td width="35%" style="padding-right: 15px;">
+            <td width="35%" style="padding-{{ request('lang') === 'ur' ? 'left' : 'right' }}: 15px;">
                 <div class="info-title">{{ Helper::translateLabel('Shipping Information') }}</div>
                 <div class="info-content">
                     {{ Helper::translateLabel('Type:') }} {{ Helper::translateLabel(strtoupper($order->order_type ?? 'courier')) }}<br>
                     @if($order->courier_company)
-                        <strong>{{ Helper::translateLabel('Courier:') }}</strong> {{ Helper::translatePartTitle(strtoupper($order->courier_company), true) }}<br>
+                        <strong>{{ Helper::translateLabel('Courier:') }}</strong> {{ strtoupper($order->courier_company) }}<br>
                         <strong>{{ Helper::translateLabel('Tracking:') }}</strong> {{ $order->courier_number }}
                     @else
-                        {{ Helper::translateLabel('Ship To:') }} {{ Helper::translatePartTitle($order->country ?? 'Pakistan', true) }}
+                        {{ Helper::translateLabel('Ship To:') }} {{ $order->country ?? 'Pakistan' }}
                     @endif
                 </div>
             </td>
@@ -157,15 +182,15 @@
                     @endif
  
                     @if($cart->product && $cart->product->brand)
-                        <span class="item-meta">{{ Helper::translateLabel('Brand:') }} {{ Helper::translatePartTitle($cart->product->brand->title, true) }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('Brand:') }} {{ $cart->product->brand->title }}</span>
                     @endif
  
                     @if($cart->product && $cart->product->model)
-                        <span class="item-meta">{{ Helper::translateLabel('Model:') }} {{ Helper::translatePartTitle($cart->product->model, true) }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('Model:') }} {{ $cart->product->model }}</span>
                     @endif
                     </div>
                 </td>
-                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ Helper::translateLabel(optional($cart->product)->unit ?? '') }}</span></td>
+                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ optional($cart->product)->unit ?? '' }}</span></td>
                 <td class="text-right">
                     @php
                         $dbBasePrice = ($cart->product->price ?? ($cart->bundle->price ?? $cart->price));
@@ -196,8 +221,8 @@
     <div class="clearfix">
         <div class="payment-info">
             <div class="info-title">{{ Helper::translateLabel('Payment Instructions') }}</div>
-            {{ Helper::translateLabel('Bank Name:') }} {{ Helper::translatePartTitle('Meezan Bank', true) }}<br>
-            {{ Helper::translateLabel('Beneficiary:') }} {{ Helper::translatePartTitle('Sheikh Imtiaz ali tahir', true) }}<br>
+            {{ Helper::translateLabel('Bank Name:') }} Meezan Bank<br>
+            {{ Helper::translateLabel('Beneficiary:') }} Sheikh Imtiaz ali tahir<br>
             {{ Helper::translateLabel('Account No:') }} 0256 0103847320<br>
             <br>
             <em>{{ Helper::translateLabel('Please include the Order # with your payment.') }}</em>

@@ -333,6 +333,8 @@ class Helper
         }
 
         $labels = [
+            'Danyal Autos' => 'دانیال آٹوز',
+            '12-BUTT MARKET BADAMI BAGH LAHORE' => '12-بٹ مارکیٹ، بدامی باغ، لاہور',
             'INVOICE' => 'انوائس',
             'Order #:' => 'آرڈر نمبر:',
             'Date:' => 'تاریخ:',
@@ -378,10 +380,6 @@ class Helper
             'UNPAID' => 'غیر ادا شدہ',
             'PAID' => 'ادا شدہ',
             'PARTIAL' => 'جزوی ادا شدہ',
-            'Pc' => 'پی سی',
-            'Pcs' => 'پی سی ایس',
-            'Piece' => 'پیس',
-            'Pieces' => 'پیسز',
         ];
 
         $translated = $labels[$label] ?? $label;
