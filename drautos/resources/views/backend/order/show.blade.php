@@ -34,7 +34,15 @@
                     <a class="dropdown-item font-weight-bold text-primary" href="{{route('order.pdf',$order->id)}}?lang=ur">Urdu (اردو)</a>
                 </div>
             </div>
-            <a href="#" onclick="shareInvoice(event)" class="btn btn-sm btn-success shadow-sm" id="shareBtn"><i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share</a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-success dropdown-toggle shadow-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="shareBtn">
+                    <i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item font-weight-bold" href="#" onclick="shareInvoice(event,'en')">English</a>
+                    <a class="dropdown-item font-weight-bold text-success" href="#" onclick="shareInvoice(event,'ur')">Urdu (اردو)</a>
+                </div>
+            </div>
         </div>
     </h5>
   <div class="card-body p-2 p-md-4">
@@ -250,28 +258,39 @@
 </style>
 <script>
 window.invoiceImageBlob = null;
+window.invoiceShareLang  = null;
 
-async function shareInvoice(e) {
+async function shareInvoice(e, lang) {
     e.preventDefault();
+    e.stopPropagation(); // prevent dropdown from re-opening
     const btn = document.getElementById('shareBtn');
-    const originalText = btn.innerHTML;
-    
-    // STEP 2: Share immediately if already generated
+    const originalHTML = '<i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share';
+
+    // If lang changed, discard old cached blob so we regenerate
+    if (lang !== window.invoiceShareLang) {
+        window.invoiceImageBlob = null;
+        window.invoiceShareLang = lang;
+    }
+
+    // STEP 2: Share immediately if already generated for this lang
     if (window.invoiceImageBlob) {
         if (navigator.share) {
             try {
+                const langLabel = lang === 'ur' ? '_Urdu' : '';
                 await navigator.share({
-                    files: [new File([window.invoiceImageBlob], 'Invoice_{{$order->order_number}}.png', { type: 'image/png' })]
+                    files: [new File([window.invoiceImageBlob], 'Invoice_{{$order->order_number}}' + langLabel + '.png', { type: 'image/png' })]
                 });
-                btn.innerHTML = originalText;
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-success');
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    alert("Native Share Failed: " + err.name + " - " + err.message);
-                    btn.innerHTML = originalText;
+                    alert('Native Share Failed: ' + err.name + ' - ' + err.message);
+                    btn.innerHTML = originalHTML;
                 }
             }
         } else {
-            alert("navigator.share is not supported.");
+            alert('navigator.share is not supported on this browser/device.');
         }
         return;
     }
@@ -279,13 +298,15 @@ async function shareInvoice(e) {
     // STEP 1: Generate the Image Blob
     btn.innerHTML = '<i class="fas fa-spinner fa-spin fa-sm mr-1"></i> Generating...';
     btn.classList.add('disabled');
-    
+
     try {
-        // Fetch the A4 Invoice HTML instead of the thermal receipt
-        const url = '{{ route("order.print", $order->id) }}';
+        // Build URL with correct lang param
+        const baseUrl = '{{ route("order.print", $order->id) }}';
+        const url = lang === 'ur' ? baseUrl + '?type=standard&lang=ur' : baseUrl + '?type=standard';
+
         const response = await fetch(url);
         let htmlText = await response.text();
-        
+
         // Strip out the auto-print command
         htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
         htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
@@ -293,8 +314,8 @@ async function shareInvoice(e) {
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
         iframe.style.right = '-9999px';
-        iframe.style.width = '800px'; // A4 width for the invoice
-        iframe.style.height = '2500px'; // Increased height to ensure full A4 document is rendered
+        iframe.style.width = '800px';
+        iframe.style.height = '2500px';
         document.body.appendChild(iframe);
 
         const iframeDoc = iframe.contentWindow.document;
@@ -302,9 +323,9 @@ async function shareInvoice(e) {
         iframeDoc.write(htmlText);
         iframeDoc.close();
 
-        await new Promise(r => setTimeout(r, 800));
-        
-        // Dynamically resize iframe to fit the entire content to prevent squishing
+        await new Promise(r => setTimeout(r, 900));
+
+        // Dynamically resize iframe to fit full content
         iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
 
         if (typeof html2canvas === 'undefined') {
@@ -325,20 +346,20 @@ async function shareInvoice(e) {
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
         window.invoiceImageBlob = blob;
-        
+
         document.body.removeChild(iframe);
 
-        // Turn button Yellow to prompt 2nd tap
-        btn.classList.remove('disabled');
-        btn.classList.remove('btn-success');
+        // Turn button yellow — prompt 2nd tap to actually share
+        btn.classList.remove('disabled', 'btn-success');
         btn.classList.add('btn-warning');
-        btn.innerHTML = '<i class="fas fa-share-alt text-dark mr-1"></i> Tap to Share!';
+        const langLabel = lang === 'ur' ? ' (اردو)' : ' (EN)';
+        btn.innerHTML = '<i class="fas fa-share-alt text-dark mr-1"></i> Tap to Share' + langLabel;
 
     } catch (error) {
-        console.error('Error generating image:', error);
-        btn.innerHTML = originalText;
+        console.error('Error generating invoice image:', error);
+        btn.innerHTML = originalHTML;
         btn.classList.remove('disabled');
-        alert("Failed to generate image snapshot.");
+        alert('Failed to generate image snapshot.');
     }
 }
 </script>
