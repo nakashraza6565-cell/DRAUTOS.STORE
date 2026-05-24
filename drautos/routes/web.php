@@ -152,28 +152,38 @@ Route::get('/test-gemini-key', function () {
         $output .= "❌ Discovery Error: " . $e->getMessage() . "\n\n";
     }
 
-    // 2. Try generateContent on gemini-2.5-flash
-    $generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
-    $output .= "🌐 Testing Content Generation (v1beta / gemini-2.5-flash):\nURL: $generateUrl\n";
-
-    $payload = [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => 'Hello, please say "Danyal Autos AI is ready" in one short sentence.']
-                ]
-            ]
-        ]
+    // 2. Try generateContent on multiple models to see which one has quota
+    $modelsToTest = [
+        'gemini-2.5-flash',
+        'gemini-3.5-flash',
+        'gemini-flash-latest',
+        'gemini-pro-latest',
+        'gemini-2.0-flash'
     ];
 
-    try {
-        $response = \Illuminate\Support\Facades\Http::timeout(15)
-            ->withHeaders(['Content-Type' => 'application/json'])
-            ->post($generateUrl, $payload);
-        $output .= "📥 HTTP Response Code: " . $response->status() . "\n";
-        $output .= "📥 Raw Generate Content Response:\n" . json_encode($response->json(), JSON_PRETTY_PRINT) . "\n\n";
-    } catch (\Throwable $e) {
-        $output .= "❌ Content Gen Error: " . $e->getMessage() . "\n\n";
+    foreach ($modelsToTest as $model) {
+        $generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . $apiKey;
+        $output .= "🌐 Testing Content Generation (v1beta / {$model}):\nURL: $generateUrl\n";
+
+        $payload = [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => 'Hello, please say "Danyal Autos AI is ready" in one short sentence.']
+                    ]
+                ]
+            ]
+        ];
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(10)
+                ->withHeaders(['Content-Type' => 'application/json'])
+                ->post($generateUrl, $payload);
+            $output .= "📥 HTTP Response Code: " . $response->status() . "\n";
+            $output .= "📥 Raw Generate Content Response:\n" . json_encode($response->json(), JSON_PRETTY_PRINT) . "\n\n";
+        } catch (\Throwable $e) {
+            $output .= "❌ Content Gen Error for {$model}: " . $e->getMessage() . "\n\n";
+        }
     }
 
     return response($output)->header('Content-Type', 'text/plain');
