@@ -268,6 +268,11 @@ class Helper
      */
     public static function translatePartTitle($title, $reshapedForPdf = false)
     {
+        // Only translate if explicitly requested via ?lang=ur query parameter
+        if (request()->get('lang') !== 'ur') {
+            return $title;
+        }
+
         $config = config('parts_translations');
         if (!$config || !$config['enabled']) {
             return $title;

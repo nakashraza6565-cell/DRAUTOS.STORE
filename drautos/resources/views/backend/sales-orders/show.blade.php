@@ -66,9 +66,15 @@
             Sale Order: {{$salesOrder->order_number}}
         </h6>
         <div class="d-flex" style="gap:6px; flex-wrap:wrap;">
-            <a href="{{route('sales-orders.thermal', $salesOrder->id)}}" target="_blank" class="btn btn-info btn-sm shadow-sm">
-                <i class="fas fa-print mr-1"></i> Print
-            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info btn-sm dropdown-toggle shadow-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-print mr-1"></i> Print
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item font-weight-bold" href="{{route('sales-orders.thermal', $salesOrder->id)}}" target="_blank">English</a>
+                    <a class="dropdown-item font-weight-bold text-info" href="{{route('sales-orders.thermal', $salesOrder->id)}}?lang=ur" target="_blank">Urdu (اردو)</a>
+                </div>
+            </div>
             <a href="{{route('sales-orders.index')}}" class="btn btn-secondary btn-sm">Back</a>
         </div>
     </div>

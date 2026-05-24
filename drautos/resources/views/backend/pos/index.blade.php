@@ -508,11 +508,19 @@
                 </div>
             </div>
             <div class="modal-footer border-0 p-4">
-                <div class="custom-control custom-checkbox mr-auto">
-                    <input type="checkbox" class="custom-control-input" id="print-receipt-toggle">
-                    <label class="custom-control-label font-weight-bold text-success" for="print-receipt-toggle">
-                        <i class="fas fa-print mr-1"></i> Print Thermal Receipt
-                    </label>
+                <div class="custom-control custom-checkbox mr-auto d-flex flex-column align-items-start" style="gap: 4px; padding-left: 0;">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="print-receipt-toggle">
+                        <label class="custom-control-label font-weight-bold text-success" for="print-receipt-toggle" style="cursor: pointer;">
+                            <i class="fas fa-print mr-1"></i> Print Thermal Receipt
+                        </label>
+                    </div>
+                    <div class="custom-control custom-checkbox mt-1" id="urdu-print-container" style="display: none; padding-left: 1.5rem;">
+                        <input type="checkbox" class="custom-control-input" id="print-receipt-urdu">
+                        <label class="custom-control-label font-weight-bold text-info" for="print-receipt-urdu" style="cursor: pointer;">
+                            <i class="fas fa-language mr-1"></i> Translate to Urdu (اردو)
+                        </label>
+                    </div>
                 </div>
                 <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-success btn-lg px-5 shadow" id="complete-order">SAVE ORDER</button>
@@ -1999,6 +2007,16 @@
         $('#editProductModal').modal('show');
     };
 
+    // Show/hide Urdu print option based on standard print checkbox
+    $('#print-receipt-toggle').on('change', function() {
+        if ($(this).is(':checked')) {
+            $('#urdu-print-container').slideDown(200);
+        } else {
+            $('#urdu-print-container').slideUp(200);
+            $('#print-receipt-urdu').prop('checked', false);
+        }
+    });
+
     $('#complete-order').on('click', function() {
         if (cart.length == 0) {
             Swal.fire('Error', 'Cart is empty!', 'error');
@@ -2044,7 +2062,11 @@
                 if (response.status == 'success') {
                     // Handle Printing via hidden iframe only if toggled ON
                     if ($('#print-receipt-toggle').is(':checked') && response.thermal_url) {
-                        $('#print-iframe').attr('src', response.thermal_url);
+                        let printUrl = response.thermal_url;
+                        if ($('#print-receipt-urdu').is(':checked')) {
+                            printUrl += (printUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                        }
+                        $('#print-iframe').attr('src', printUrl);
                     }
 
                     if (response.wa_sent) {

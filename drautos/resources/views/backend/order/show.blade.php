@@ -7,9 +7,33 @@
 <div class="card">
     <h5 class="card-header">Order 
         <div class="float-right mobile-stack">
-            <a href="{{route('order.print',$order->id)}}?type=standard" class="btn btn-sm btn-info shadow-sm"><i class="fas fa-print fa-sm text-white-50 mr-1"></i> Standard Print</a>
-            <a href="{{route('order.print',$order->id)}}?type=thermal" class="btn btn-sm btn-warning shadow-sm"><i class="fas fa-receipt fa-sm text-white-50 mr-1"></i> Thermal Print</a>
-            <a href="{{route('order.pdf',$order->id)}}" class="btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50 mr-1"></i> Generate PDF</a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-info dropdown-toggle shadow-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-print fa-sm text-white-50 mr-1"></i> Standard Print
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item font-weight-bold" href="{{route('order.print',$order->id)}}?type=standard">English</a>
+                    <a class="dropdown-item font-weight-bold text-info" href="{{route('order.print',$order->id)}}?type=standard&lang=ur">Urdu (اردو)</a>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-warning dropdown-toggle shadow-sm text-white" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-receipt fa-sm text-white-50 mr-1"></i> Thermal Print
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item font-weight-bold" href="{{route('order.print',$order->id)}}?type=thermal">English</a>
+                    <a class="dropdown-item font-weight-bold text-warning" href="{{route('order.print',$order->id)}}?type=thermal&lang=ur">Urdu (اردو)</a>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle shadow-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-download fa-sm text-white-50 mr-1"></i> Generate PDF
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a class="dropdown-item font-weight-bold" href="{{route('order.pdf',$order->id)}}">English</a>
+                    <a class="dropdown-item font-weight-bold text-primary" href="{{route('order.pdf',$order->id)}}?lang=ur">Urdu (اردو)</a>
+                </div>
+            </div>
             <a href="#" onclick="shareInvoice(event)" class="btn btn-sm btn-success shadow-sm" id="shareBtn"><i class="fas fa-share-alt fa-sm text-white-50 mr-1"></i> Share</a>
         </div>
     </h5>
