@@ -36,6 +36,7 @@ return [
         'China' => 'چائنہ',
         'Genuine' => 'جینون',
         'Regular' => 'ریگولر',
+        'Bedford' => 'بیڈفورڈ',
 
         // Position / Type Modifiers
         'Front' => 'فرنٹ',
