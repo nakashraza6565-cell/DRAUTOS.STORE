@@ -7,7 +7,7 @@
         /* International Minimalist Invoice Design */
         @page { margin: 10mm; size: a4; }
         body { 
-            font-family: {{ request('lang') === 'ur' ? "'DejaVu Sans'" : "'Helvetica', 'Arial'" }}, sans-serif; 
+            font-family: {{ request('lang') === 'ur' ? "'Tahoma'" : "'Helvetica', 'Arial'" }}, sans-serif; 
             margin: 0; padding: 0; 
             color: #111; 
             line-height: 1.2; 
@@ -60,6 +60,10 @@
         @font-face {
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
+        }
+        @font-face {
+            font-family: 'Tahoma';
+            src: url("{{ str_replace('\\', '/', public_path('revue/tahoma.ttf')) }}") format("truetype");
         }
         .watermark {
             position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%);
