@@ -212,10 +212,9 @@ class AIChatController extends Controller
 
     private function callGemini($messages, $systemPrompt)
     {
-        // Try latest stable production models (gemini-2.5-flash and gemini-2.0-flash) on robust v1beta endpoint
+        // Use gemini-2.5-flash as the sole stable endpoint
         $endpoints = [
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $this->apiKey,
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->apiKey,
         ];
 
         $lastException = null;
