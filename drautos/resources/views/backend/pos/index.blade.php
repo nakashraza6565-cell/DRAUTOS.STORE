@@ -1309,9 +1309,10 @@
         $('#paymentModal').on('show.bs.modal', function() {
             let id = $('#customer-select').val();
             
-            // Reset filter button styles and show all items on open
+            // Reset filter button styles and trigger Cash category by default to keep layout clean and uncrowded
             $('.filter-btn').removeClass('active btn-success btn-primary btn-warning btn-danger text-white');
             $('.payment-method-item').show();
+            $('.filter-btn[data-filter="cash"]').trigger('click');
             
             if (id == 1) {
                 $('.payment-option[data-method="credit"]').parent().hide();
