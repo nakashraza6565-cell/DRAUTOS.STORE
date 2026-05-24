@@ -133,7 +133,7 @@ class AIChatController extends Controller
             6. WHATSAPP: Use open_whatsapp with generated URLs for PDFs/Receipts.
             7. ANALYTICS: Use get_analytics for totals, top items, and sales reports.
             8. LEDGER CLARIFICATION: If the user asks to open a ledger for a contact (e.g. Waqar Auto), and that contact exists as both a Customer and a Supplier, you MUST explicitly ask the user: 'Should I open the Customer Ledger or the Supplier Ledger?' (or in Roman Urdu: 'Customer Ledger kholna hai ya Supplier Ledger?'). Do not ask ambiguous questions.
-            9. IMMEDIATE ACTION: Once the user specifies the ledger type (e.g., customer or supplier), immediately call the 'open_ledger' tool with the corresponding type and database ID. Do not repeat the question or ask for more confirmation.
+            9. IMMEDIATE ACTION / REDIRECTS: If the user asks to open or show any page (e.g., 'open customer orders', 'view incoming goods', 'kholo attendance page', or a specific customer ledger), you MUST immediately call the 'open_page' tool with the correct destination and any required ID. Do not repeat the question or ask for more confirmation.
             
             Today is: " . date('Y-m-d') . ".";
 
@@ -265,8 +265,8 @@ class AIChatController extends Controller
                 return $this->tool_open_whatsapp($args);
             case 'update_memory':
                 return $this->tool_update_memory($args);
-            case 'open_ledger':
-                return $this->tool_open_ledger($args);
+            case 'open_page':
+                return $this->tool_open_page($args);
             default:
                 return "Error: Tool {$name} not implemented.";
         }
@@ -335,24 +335,59 @@ class AIChatController extends Controller
         return "Success: Memory updated.";
     }
 
-    private function tool_open_ledger($args)
+    private function tool_open_page($args)
     {
-        $type = $args['type'] ?? '';
+        $destination = $args['destination'] ?? '';
         $id = $args['id'] ?? null;
 
-        if (!$id) {
-            return "Error: Database ID is required to open the ledger.";
+        switch ($destination) {
+            case 'dashboard':
+                $this->redirectUrl = '/admin';
+                return "Success: Opening Admin Dashboard.";
+            case 'orders_index':
+                $this->redirectUrl = route('sales-orders.index');
+                return "Success: Opening Customer Orders List.";
+            case 'create_order':
+                $this->redirectUrl = route('sales-orders.create');
+                return "Success: Opening Create Customer Order page.";
+            case 'incoming_goods_index':
+                $this->redirectUrl = route('inventory-incoming.index');
+                return "Success: Opening Incoming Goods List.";
+            case 'create_incoming_goods':
+                $this->redirectUrl = route('inventory-incoming.create');
+                return "Success: Opening Add Incoming Goods page.";
+            case 'customer_ledger_index':
+                $this->redirectUrl = route('admin.customer-ledger.index');
+                return "Success: Opening Customer Ledgers list.";
+            case 'customer_ledger_show':
+                if (!$id) return "Error: Database ID is required for customer_ledger_show.";
+                $this->redirectUrl = route('admin.customer-ledger.show', $id);
+                return "Success: Opening Customer Ledger for ID {$id}.";
+            case 'supplier_ledger_index':
+                $this->redirectUrl = route('admin.supplier-ledger.index');
+                return "Success: Opening Supplier Ledgers list.";
+            case 'supplier_ledger_show':
+                if (!$id) return "Error: Database ID is required for supplier_ledger_show.";
+                $this->redirectUrl = route('admin.supplier-ledger.show', $id);
+                return "Success: Opening Supplier Ledger for ID {$id}.";
+            case 'products_index':
+                $this->redirectUrl = route('product.index');
+                return "Success: Opening Products list.";
+            case 'create_product':
+                $this->redirectUrl = route('product.create');
+                return "Success: Opening Add Product page.";
+            case 'expenses_index':
+                $this->redirectUrl = route('expenses.index');
+                return "Success: Opening Expenses list.";
+            case 'attendance_index':
+                $this->redirectUrl = route('attendance.index');
+                return "Success: Opening Staff Attendance page.";
+            case 'suppliers_index':
+                $this->redirectUrl = route('suppliers.index');
+                return "Success: Opening Suppliers list.";
+            default:
+                return "Error: Unknown destination '{$destination}'.";
         }
-
-        if ($type === 'customer') {
-            $this->redirectUrl = route('admin.customer-ledger.show', $id);
-            return "Success: Generating automatic redirect to Customer Ledger for ID {$id}.";
-        } elseif ($type === 'supplier') {
-            $this->redirectUrl = route('admin.supplier-ledger.show', $id);
-            return "Success: Generating automatic redirect to Supplier Ledger for ID {$id}.";
-        }
-
-        return "Error: Invalid ledger type. Supported types are 'customer' or 'supplier'.";
     }
 
     private function getTools()
@@ -403,15 +438,21 @@ class AIChatController extends Controller
                 ]
             ],
             [
-                'name' => 'open_ledger',
-                'description' => 'Open or redirect browser to a Customer or Supplier ledger page.',
+                'name' => 'open_page',
+                'description' => 'Navigate or redirect browser to any section of the admin panel (Dashboard, Ledgers, Orders, Incoming Goods, Products, Expenses, Attendance, Suppliers, etc.).',
                 'parameters' => [
                     'type' => 'OBJECT',
                     'properties' => [
-                        'type' => ['type' => 'STRING', 'description' => 'Either "customer" or "supplier"'],
-                        'id' => ['type' => 'INTEGER', 'description' => 'The database ID of the user or supplier']
+                        'destination' => [
+                            'type' => 'STRING',
+                            'description' => 'The destination page name. Must be one of: "dashboard", "orders_index", "create_order", "incoming_goods_index", "create_incoming_goods", "customer_ledger_index", "customer_ledger_show", "supplier_ledger_index", "supplier_ledger_show", "products_index", "create_product", "expenses_index", "attendance_index", "suppliers_index"'
+                        ],
+                        'id' => [
+                            'type' => 'INTEGER',
+                            'description' => 'Optional database ID (required only for specific ledger show pages: "customer_ledger_show" or "supplier_ledger_show")'
+                        ]
                     ],
-                    'required' => ['type', 'id']
+                    'required' => ['destination']
                 ]
             ]
         ];
