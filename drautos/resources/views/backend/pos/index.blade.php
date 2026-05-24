@@ -451,7 +451,6 @@
 
                         <!-- Filter Bar -->
                         <div class="d-flex mb-3 align-items-center" style="gap: 6px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
-                            <button type="button" class="btn btn-sm btn-secondary filter-btn px-3 font-weight-bold active" data-filter="all" style="border-radius: 20px;">All</button>
                             <button type="button" class="btn btn-sm btn-outline-success filter-btn px-3 font-weight-bold" data-filter="cash" style="border-radius: 20px;"><i class="fas fa-money-bill-wave mr-1"></i> Cash</button>
                             <button type="button" class="btn btn-sm btn-outline-primary filter-btn px-3 font-weight-bold" data-filter="bank" style="border-radius: 20px;"><i class="fas fa-university mr-1"></i> Bank</button>
                             <button type="button" class="btn btn-sm btn-outline-warning filter-btn px-3 font-weight-bold" data-filter="wallet" style="border-radius: 20px;"><i class="fas fa-mobile-alt mr-1"></i> Wallets</button>
@@ -586,10 +585,54 @@
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 12px !important;
         white-space: nowrap;
+        border-radius: 20px !important;
+        padding: 4px 15px !important;
+        font-weight: 700 !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        background: #ffffff !important;
     }
     .filter-btn:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    /* Explicitly color inactive outline buttons to prevent theme white-out */
+    .filter-btn.btn-outline-success {
+        color: #2e7d32 !important;
+        border-color: #81c784 !important;
+    }
+    .filter-btn.btn-outline-primary {
+        color: #1565c0 !important;
+        border-color: #90caf9 !important;
+    }
+    .filter-btn.btn-outline-warning {
+        color: #ef6c00 !important;
+        border-color: #ffe082 !important;
+    }
+    .filter-btn.btn-outline-danger {
+        color: #c62828 !important;
+        border-color: #ef9a9a !important;
+    }
+    /* Dynamic active styles */
+    .filter-btn.active.btn-success {
+        background-color: #2e7d32 !important;
+        color: #ffffff !important;
+        border-color: #2e7d32 !important;
+    }
+    .filter-btn.active.btn-primary {
+        background-color: #1565c0 !important;
+        color: #ffffff !important;
+        border-color: #1565c0 !important;
+    }
+    .filter-btn.active.btn-warning {
+        background-color: #f9a825 !important;
+        color: #ffffff !important;
+        border-color: #f9a825 !important;
+    }
+    .filter-btn.active.btn-danger {
+        background-color: #c62828 !important;
+        color: #ffffff !important;
+        border-color: #c62828 !important;
     }
 
     .payment-option {
@@ -1265,6 +1308,11 @@
         // Ensure walk-in restrictions are applied when payment modal opens
         $('#paymentModal').on('show.bs.modal', function() {
             let id = $('#customer-select').val();
+            
+            // Reset filter button styles and show all items on open
+            $('.filter-btn').removeClass('active btn-success btn-primary btn-warning btn-danger text-white');
+            $('.payment-method-item').show();
+            
             if (id == 1) {
                 $('.payment-option[data-method="credit"]').parent().hide();
                 $('.payment-option[data-method="cod"]').parent().hide();
@@ -2036,31 +2084,41 @@
         }
     });
 
-    // Payment method category filtering
+    // Payment method category filtering with dynamic toggle-off support
     $('.filter-btn').on('click', function() {
-        $('.filter-btn').removeClass('active btn-secondary btn-success btn-primary btn-warning btn-danger').addClass('btn-outline-secondary');
+        let isAlreadyActive = $(this).hasClass('active');
+        
+        // Reset all buttons to default state
+        $('.filter-btn').removeClass('active btn-success btn-primary btn-warning btn-danger text-white');
         
         let filter = $(this).data('filter');
-        $(this).removeClass('btn-outline-secondary').addClass('active');
         
-        if (filter === 'all') {
-            $(this).addClass('btn-secondary');
-        } else if (filter === 'cash') {
-            $(this).removeClass('btn-outline-success').addClass('btn-success text-white');
-        } else if (filter === 'bank') {
-            $(this).removeClass('btn-outline-primary').addClass('btn-primary text-white');
-        } else if (filter === 'wallet') {
-            $(this).removeClass('btn-outline-warning').addClass('btn-warning text-white');
-        } else if (filter === 'credit') {
-            $(this).removeClass('btn-outline-danger').addClass('btn-danger text-white');
-        }
-        
-        if (filter === 'all') {
+        if (isAlreadyActive) {
+            // Toggle off: Show all payment methods
             $('.payment-method-item').show();
-        } else {
-            $('.payment-method-item').hide();
-            $('.filter-' + filter).show();
+            // Re-apply Walk-in restrictions if customer ID is 1 (Walk-in)
+            let customerId = $('#customer-select').val();
+            if (customerId == 1) {
+                $('.payment-option[data-method="credit"]').parent().hide();
+                $('.payment-option[data-method="cod"]').parent().hide();
+            }
+            return;
         }
+        
+        // Toggle on: Style active button and filter
+        $(this).addClass('active');
+        if (filter === 'cash') {
+            $(this).addClass('btn-success text-white');
+        } else if (filter === 'bank') {
+            $(this).addClass('btn-primary text-white');
+        } else if (filter === 'wallet') {
+            $(this).addClass('btn-warning text-white');
+        } else if (filter === 'credit') {
+            $(this).addClass('btn-danger text-white');
+        }
+        
+        $('.payment-method-item').hide();
+        $('.filter-' + filter).show();
 
         // Re-apply Walk-in restrictions if customer ID is 1 (Walk-in)
         let customerId = $('#customer-select').val();
