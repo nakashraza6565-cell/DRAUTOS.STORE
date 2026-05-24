@@ -210,12 +210,12 @@ class AIChatController extends Controller
 
     private function callGemini($messages, $systemPrompt)
     {
-        // Try stable production v1 endpoint first, with fallbacks to newer models
+        // Try latest stable production models (gemini-2.5-flash and gemini-2.0-flash)
         $endpoints = [
-            "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey,
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" . $this->apiKey,
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" . $this->apiKey,
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" . $this->apiKey,
+            "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=" . $this->apiKey,
         ];
 
         $lastException = null;

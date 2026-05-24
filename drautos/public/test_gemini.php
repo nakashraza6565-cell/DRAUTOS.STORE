@@ -43,9 +43,9 @@ curl_close($ch);
 echo "📥 HTTP Response Code: $listHttpCode\n";
 echo "📥 Raw Discovery Response:\n" . json_encode(json_decode($listResponse), JSON_PRETTY_PRINT) . "\n\n";
 
-// 3. Test generateContent on gemini-1.5-flash
-$generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $key;
-echo "🌐 Testing Content Generation (v1beta / gemini-1.5-flash):\nURL: $generateUrl\n";
+// 3. Test generateContent on gemini-2.5-flash
+$generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $key;
+echo "🌐 Testing Content Generation (v1beta / gemini-2.5-flash):\nURL: $generateUrl\n";
 
 $payload = [
     'contents' => [

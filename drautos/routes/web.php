@@ -152,9 +152,9 @@ Route::get('/test-gemini-key', function () {
         $output .= "❌ Discovery Error: " . $e->getMessage() . "\n\n";
     }
 
-    // 2. Try generateContent on gemini-1.5-flash
-    $generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey;
-    $output .= "🌐 Testing Content Generation (v1beta / gemini-1.5-flash):\nURL: $generateUrl\n";
+    // 2. Try generateContent on gemini-2.5-flash
+    $generateUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . $apiKey;
+    $output .= "🌐 Testing Content Generation (v1beta / gemini-2.5-flash):\nURL: $generateUrl\n";
 
     $payload = [
         'contents' => [
