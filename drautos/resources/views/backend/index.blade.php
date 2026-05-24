@@ -420,7 +420,19 @@
                         <div class="icon-box bg-success-light mr-3"><i class="fas fa-money-bill-trend-up text-success"></i></div>
                         Money In vs Money Out (Cash Flow)
                     </h5>
-                    <div class="small text-muted font-weight-bold">Last 7 Days Analysis</div>
+                    <div class="text-right">
+                        <div class="small text-muted font-weight-bold mb-1">Last 7 Days Analysis</div>
+                        <div class="d-flex align-items-center" style="gap: 10px; justify-content: flex-end;">
+                            <div style="background: rgba(16,185,129,0.1); border-radius: 8px; padding: 4px 10px; border: 1px solid rgba(16,185,129,0.3);">
+                                <span style="font-size: 10px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">&#9650; Money In</span>
+                                <div style="font-size: 13px; font-weight: 800; color: #065f46;">Rs. {{ number_format($total_money_in_7d) }}</div>
+                            </div>
+                            <div style="background: rgba(239,68,68,0.1); border-radius: 8px; padding: 4px 10px; border: 1px solid rgba(239,68,68,0.3);">
+                                <span style="font-size: 10px; color: #dc2626; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">&#9660; Money Out</span>
+                                <div style="font-size: 13px; font-weight: 800; color: #7f1d1d;">Rs. {{ number_format($total_money_out_7d) }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="panel-body p-4">
                     <div class="chart-area" style="height: 300px;">

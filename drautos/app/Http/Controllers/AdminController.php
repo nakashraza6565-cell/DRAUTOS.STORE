@@ -234,7 +234,9 @@ class AdminController extends Controller
             });
         }
 
-        $money_in = json_encode($money_in);
+        $total_money_in_7d  = array_sum($money_in);
+        $total_money_out_7d = array_sum($money_out);
+        $money_in  = json_encode($money_in);
         $money_out = json_encode($money_out);
         $incoming_amounts = json_encode($incoming_amounts);
         $order_labels = json_encode($order_labels);
@@ -260,7 +262,7 @@ class AdminController extends Controller
                 'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
                 'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
-                'incoming_amounts'
+                'incoming_amounts', 'total_money_in_7d', 'total_money_out_7d'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
