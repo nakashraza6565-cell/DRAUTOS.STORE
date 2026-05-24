@@ -283,8 +283,8 @@ class Helper
             return $title;
         }
 
-        // Split the title into words, keeping numbers and delimiters intact
-        $words = preg_split('/([\s,\-\/\(\)]+)/', $title, -1, PREG_SPLIT_DELIM_CAPTURE);
+        // Split the title into words, keeping numbers and delimiters intact while separating letters from digits (e.g. 2.5in -> 2.5 and in)
+        $words = preg_split('/([0-9]+\.?[0-9]*|[a-zA-Z]+|[\s,\-\/\(\)]+)/', $title, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
         
         $translatedWords = [];
         foreach ($words as $word) {
@@ -316,6 +316,81 @@ class Helper
         }
 
         return $translatedTitle;
+    }
+
+    /**
+     * Translate dynamic label keys to Urdu for standard table headers and meta labels on the PDF.
+     * Always reshapes the Urdu output so Arabic/Urdu ligatures render perfectly in DomPDF.
+     *
+     * @param string $label
+     * @param bool $reshaped
+     * @return string
+     */
+    public static function translateLabel($label, $reshaped = true)
+    {
+        if (request()->get('lang') !== 'ur') {
+            return $label;
+        }
+
+        $labels = [
+            'INVOICE' => 'انوائس',
+            'Order #:' => 'آرڈر نمبر:',
+            'Date:' => 'تاریخ:',
+            'Due Date:' => 'واجب الادا تاریخ:',
+            'Billed To' => 'بل بنام',
+            'Phone:' => 'فون:',
+            'Email:' => 'ای میل:',
+            'Shipping Information' => 'شپنگ کی معلومات',
+            'Type:' => 'شپنگ کی قسم:',
+            'Courier:' => 'کورئیر کمپنی:',
+            'Tracking:' => 'ٹریکنگ نمبر:',
+            'Ship To:' => 'شپنگ ملک:',
+            'Account Status' => 'اکاؤنٹ کی صورتحال',
+            'Current Balance:' => 'موجودہ بقایا لیجر:',
+            'Payment Status:' => 'ادائیگی کی صورتحال:',
+            'DESCRIPTION' => 'تفصیل',
+            'QTY' => 'تعداد',
+            'PRICE' => 'قیمت',
+            'DISCOUNT' => 'ڈسکاؤنٹ',
+            'DISC. PRICE' => 'رعایتی قیمت',
+            'TOTAL' => 'کل قیمت',
+            'SKU:' => 'کوڈ:',
+            'Brand:' => 'برانڈ:',
+            'Model:' => 'ماڈل:',
+            'Payment Instructions' => 'ادائیگی کی ہدایات',
+            'Bank Name:' => 'بینک کا نام:',
+            'Beneficiary:' => 'بینک اکاؤنٹ کا نام:',
+            'Account No:' => 'بینک اکاؤنٹ نمبر:',
+            'Please include the Order # with your payment.' => 'برائے مہربانی ادائیگی کے ساتھ آرڈر نمبر ضرور لکھیں۔',
+            'Sub Total' => 'سب ٹوٹل',
+            'Item Discounts' => 'آئٹم ڈسکاؤنٹ',
+            'Coupon Discount' => 'کوپن ڈسکاؤنٹ',
+            'Shipping' => 'شپنگ چارجز',
+            'Grand Total' => 'میزانِ کل',
+            'Current Bill Total' => 'موجودہ بل کل',
+            'Amount Paid' => 'ادا شدہ رقم',
+            'Previous Balance' => 'سابقہ واجب الادا بقایا',
+            'Balance Due' => 'کل واجب الادا رقم',
+            'THANK YOU FOR YOUR BUSINESS!' => 'آپ کی شراکت داری کا شکریہ!',
+            'This is a computer generated document. | Danyal Autos' => 'یہ کمپیوٹر سے تیار کردہ بل ہے۔ | دانیال آٹوز',
+            'COURIER' => 'کورئیر',
+            'LOCAL' => 'لوکل',
+            'UNPAID' => 'غیر ادا شدہ',
+            'PAID' => 'ادا شدہ',
+            'PARTIAL' => 'جزوی ادا شدہ',
+            'Pc' => 'پی سی',
+            'Pcs' => 'پی سی ایس',
+            'Piece' => 'پیس',
+            'Pieces' => 'پیسز',
+        ];
+
+        $translated = $labels[$label] ?? $label;
+
+        if ($reshaped) {
+            return self::reshapeUrdu($translated);
+        }
+
+        return $translated;
     }
 }
 

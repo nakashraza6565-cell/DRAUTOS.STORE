@@ -7,7 +7,7 @@
         /* International Minimalist Invoice Design */
         @page { margin: 10mm; size: a4; }
         body { 
-            font-family: 'Helvetica', 'Arial', sans-serif; 
+            font-family: {{ request('lang') === 'ur' ? "'DejaVu Sans'" : "'Helvetica', 'Arial'" }}, sans-serif; 
             margin: 0; padding: 0; 
             color: #111; 
             line-height: 1.2; 
@@ -56,7 +56,7 @@
         .footer { clear: both; margin-top: 30px; text-align: center; font-size: 9px; color: #888; border-top: 1px dashed #ddd; padding-top: 10px; }
         
         .clearfix::after { content: ""; clear: both; display: table; }
-
+ 
         @font-face {
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
@@ -75,68 +75,68 @@
     <table class="header-table">
         <tr>
             <td width="50%">
-                <div class="company-name">Danyal Autos</div>
+                <div class="company-name">{{ Helper::translatePartTitle('Danyal Autos', true) }}</div>
                 <div class="company-details">
-                    12-BUTT MARKET BADAMI BAGH LAHORE<br>
-                    Zip Code: 54000 | Contact: +923042000274, 04237727045
+                    {{ Helper::translatePartTitle('12-BUTT MARKET BADAMI BAGH LAHORE', true) }}<br>
+                    {{ Helper::translateLabel('SKU:') }} 54000 | {{ Helper::translateLabel('Phone:') }} +923042000274, 04237727045
                 </div>
             </td>
             <td width="50%" style="vertical-align: bottom;">
-                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-title">{{ Helper::translateLabel('INVOICE') }}</div>
                 <div class="invoice-meta">
-                    <strong>Order #:</strong> {{ $order->order_number }}<br>
-                    <strong>Date:</strong> {{ $order->created_at->format('M d, Y') }}<br>
-                    <strong>Due Date:</strong> {{ now()->addDays(7)->format('M d, Y') }}
+                    <strong>{{ Helper::translateLabel('Order #:') }}</strong> {{ $order->order_number }}<br>
+                    <strong>{{ Helper::translateLabel('Date:') }}</strong> {{ $order->created_at->format('M d, Y') }}<br>
+                    <strong>{{ Helper::translateLabel('Due Date:') }}</strong> {{ now()->addDays(7)->format('M d, Y') }}
                 </div>
             </td>
         </tr>
     </table>
-
+ 
     <table class="info-table">
         <tr>
             <td width="35%" style="padding-right: 15px;">
-                <div class="info-title">Billed To</div>
+                <div class="info-title">{{ Helper::translateLabel('Billed To') }}</div>
                 <div class="info-content">
-                    <strong>{{ strtoupper($order->first_name) }} {{ strtoupper($order->last_name) }}</strong><br>
-                    {{ $order->address1 }}<br>
-                    Phone: {{ $order->phone }}<br>
-                    Email: {{ $order->email }}
+                    <strong>{{ Helper::translatePartTitle($order->first_name . ' ' . $order->last_name, true) }}</strong><br>
+                    {{ Helper::translatePartTitle($order->address1, true) }}<br>
+                    {{ Helper::translateLabel('Phone:') }} {{ $order->phone }}<br>
+                    {{ Helper::translateLabel('Email:') }} {{ $order->email }}
                 </div>
             </td>
             <td width="35%" style="padding-right: 15px;">
-                <div class="info-title">Shipping Information</div>
+                <div class="info-title">{{ Helper::translateLabel('Shipping Information') }}</div>
                 <div class="info-content">
-                    Type: {{ strtoupper($order->order_type ?? 'courier') }}<br>
+                    {{ Helper::translateLabel('Type:') }} {{ Helper::translateLabel(strtoupper($order->order_type ?? 'courier')) }}<br>
                     @if($order->courier_company)
-                        <strong>Courier:</strong> {{ strtoupper($order->courier_company) }}<br>
-                        <strong>Tracking:</strong> {{ $order->courier_number }}
+                        <strong>{{ Helper::translateLabel('Courier:') }}</strong> {{ Helper::translatePartTitle(strtoupper($order->courier_company), true) }}<br>
+                        <strong>{{ Helper::translateLabel('Tracking:') }}</strong> {{ $order->courier_number }}
                     @else
-                        Ship To: {{ $order->country ?? 'Pakistan' }}
+                        {{ Helper::translateLabel('Ship To:') }} {{ Helper::translatePartTitle($order->country ?? 'Pakistan', true) }}
                     @endif
                 </div>
             </td>
             <td width="30%">
-                <div class="info-title">Account Status</div>
+                <div class="info-title">{{ Helper::translateLabel('Account Status') }}</div>
                 <div class="info-content">
                     @if($order->user_id != 1)
-                        Current Balance: <strong style="font-size:12px;">Rs. {{ number_format($order->user->current_balance ?? $order->total_amount, 2) }}</strong><br>
+                        {{ Helper::translateLabel('Current Balance:') }} <strong style="font-size:12px;">Rs. {{ number_format($order->user->current_balance ?? $order->total_amount, 2) }}</strong><br>
                     @endif
-                    Payment Status: {{ strtoupper($order->payment_status) }}
+                    {{ Helper::translateLabel('Payment Status:') }} {{ Helper::translateLabel(strtoupper($order->payment_status)) }}
                 </div>
             </td>
         </tr>
     </table>
-
+ 
     <table class="item-table">
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="33%">DESCRIPTION</th>
-                <th width="8%" class="text-center">QTY</th>
-                <th width="13%" class="text-right">PRICE</th>
-                <th width="13%" class="text-right">DISCOUNT</th>
-                <th width="13%" class="text-right">DISC. PRICE</th>
-                <th width="15%" class="text-right">TOTAL</th>
+                <th width="33%">{{ Helper::translateLabel('DESCRIPTION') }}</th>
+                <th width="8%" class="text-center">{{ Helper::translateLabel('QTY') }}</th>
+                <th width="13%" class="text-right">{{ Helper::translateLabel('PRICE') }}</th>
+                <th width="13%" class="text-right">{{ Helper::translateLabel('DISCOUNT') }}</th>
+                <th width="13%" class="text-right">{{ Helper::translateLabel('DISC. PRICE') }}</th>
+                <th width="15%" class="text-right">{{ Helper::translateLabel('TOTAL') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -147,21 +147,21 @@
                     <div class="item-title">{{ Helper::translatePartTitle($cart->product->title ?? ($cart->bundle->name ?? 'Item'), true) }}</div>
                     <div style="margin-top:2px;">
                     @if($cart->product && $cart->product->sku)
-                        <span class="item-meta">SKU: {{ $cart->product->sku }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('SKU:') }} {{ $cart->product->sku }}</span>
                     @elseif($cart->bundle && $cart->bundle->sku)
-                        <span class="item-meta">SKU: {{ $cart->bundle->sku }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('SKU:') }} {{ $cart->bundle->sku }}</span>
                     @endif
-
+ 
                     @if($cart->product && $cart->product->brand)
-                        <span class="item-meta">Brand: {{ Helper::translatePartTitle($cart->product->brand->title, true) }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('Brand:') }} {{ Helper::translatePartTitle($cart->product->brand->title, true) }}</span>
                     @endif
-
+ 
                     @if($cart->product && $cart->product->model)
-                        <span class="item-meta">Model: {{ $cart->product->model }}</span>
+                        <span class="item-meta">{{ Helper::translateLabel('Model:') }} {{ Helper::translatePartTitle($cart->product->model, true) }}</span>
                     @endif
                     </div>
                 </td>
-                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ optional($cart->product)->unit ?? '' }}</span></td>
+                <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ Helper::translateLabel(optional($cart->product)->unit ?? '') }}</span></td>
                 <td class="text-right">
                     @php
                         $dbBasePrice = ($cart->product->price ?? ($cart->bundle->price ?? $cart->price));
@@ -188,15 +188,15 @@
             @endforeach
         </tbody>
     </table>
-
+ 
     <div class="clearfix">
         <div class="payment-info">
-            <div class="info-title">Payment Instructions</div>
-            Bank Name: Meezan Bank<br>
-            Beneficiary: Sheikh Imtiaz ali tahir<br>
-            Account No: 0256 0103847320<br>
+            <div class="info-title">{{ Helper::translateLabel('Payment Instructions') }}</div>
+            {{ Helper::translateLabel('Bank Name:') }} {{ Helper::translatePartTitle('Meezan Bank', true) }}<br>
+            {{ Helper::translateLabel('Beneficiary:') }} {{ Helper::translatePartTitle('Sheikh Imtiaz ali tahir', true) }}<br>
+            {{ Helper::translateLabel('Account No:') }} 0256 0103847320<br>
             <br>
-            <em>Please include the Order # with your payment.</em>
+            <em>{{ Helper::translateLabel('Please include the Order # with your payment.') }}</em>
         </div>
         
         <table class="totals-table">
@@ -214,29 +214,29 @@
                 }
             @endphp
             <tr>
-                <td class="label">Sub Total</td>
+                <td class="label">{{ Helper::translateLabel('Sub Total') }}</td>
                 <td class="value">Rs. {{ number_format($gross_subtotal, 2) }}</td>
             </tr>
             @if($item_discounts > 0)
             <tr>
-                <td class="label">Item Discounts</td>
+                <td class="label">{{ Helper::translateLabel('Item Discounts') }}</td>
                 <td class="value">- Rs. {{ number_format($item_discounts, 2) }}</td>
             </tr>
             @endif
             @if($order->coupon > 0)
             <tr>
-                <td class="label">Coupon Discount</td>
+                <td class="label">{{ Helper::translateLabel('Coupon Discount') }}</td>
                 <td class="value">- Rs. {{ number_format($order->coupon, 2) }}</td>
             </tr>
             @endif
             @if($order->shipping && $order->shipping->price > 0)
             <tr>
-                <td class="label">Shipping</td>
+                <td class="label">{{ Helper::translateLabel('Shipping') }}</td>
                 <td class="value">Rs. {{ number_format($order->shipping->price, 2) }}</td>
             </tr>
             @endif
             <tr class="grand-total">
-                <td class="label" style="font-weight:bold;">Grand Total</td>
+                <td class="label" style="font-weight:bold;">{{ Helper::translateLabel('Grand Total') }}</td>
                 <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
             </tr>
             @php
@@ -265,27 +265,27 @@
                 }
             @endphp
             <tr>
-                <td class="label">Current Bill Total</td>
+                <td class="label">{{ Helper::translateLabel('Current Bill Total') }}</td>
                 <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
             </tr>
             <tr>
-                <td class="label">Amount Paid</td>
+                <td class="label">{{ Helper::translateLabel('Amount Paid') }}</td>
                 <td class="value">Rs. {{ number_format($amount_paid, 2) }}</td>
             </tr>
             <tr>
-                <td class="label">Previous Balance</td>
+                <td class="label">{{ Helper::translateLabel('Previous Balance') }}</td>
                 <td class="value">Rs. {{ number_format($previous_balance, 2) }}</td>
             </tr>
             <tr class="grand-total">
-                <td class="label" style="font-weight:bold; color:#d32f2f;">Balance Due</td>
+                <td class="label" style="font-weight:bold; color:#d32f2f;">{{ Helper::translateLabel('Balance Due') }}</td>
                 <td class="value" style="color:#d32f2f;">Rs. {{ number_format($final_balance_due, 2) }}</td>
             </tr>
         </table>
     </div>
-
+ 
     <div class="footer">
-        <strong>THANK YOU FOR YOUR BUSINESS!</strong><br>
-        This is a computer generated document. | Danyal Autos &copy; {{ date('Y') }}
+        <strong>{{ Helper::translateLabel('THANK YOU FOR YOUR BUSINESS!') }}</strong><br>
+        {{ Helper::translateLabel('This is a computer generated document. | Danyal Autos') }} &copy; {{ date('Y') }}
     </div>
     </div>
 </body>
