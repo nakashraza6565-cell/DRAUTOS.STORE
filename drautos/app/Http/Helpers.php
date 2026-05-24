@@ -257,6 +257,61 @@ class Helper
 
         return $text;
     }
+
+    /**
+     * Translate an English part name to Urdu dynamically using the local dictionary config.
+     * Optionally reshapes the Urdu text for correct DomPDF rendering.
+     *
+     * @param string $title
+     * @param bool $reshapedForPdf
+     * @return string
+     */
+    public static function translatePartTitle($title, $reshapedForPdf = false)
+    {
+        $config = config('parts_translations');
+        if (!$config || !$config['enabled']) {
+            return $title;
+        }
+
+        $dictionary = $config['dictionary'] ?? [];
+        if (empty($dictionary)) {
+            return $title;
+        }
+
+        // Split the title into words, keeping numbers and delimiters intact
+        $words = preg_split('/([\s,\-\/\(\)]+)/', $title, -1, PREG_SPLIT_DELIM_CAPTURE);
+        
+        $translatedWords = [];
+        foreach ($words as $word) {
+            $trimmedWord = trim($word);
+            if (empty($trimmedWord)) {
+                $translatedWords[] = $word;
+                continue;
+            }
+
+            // Find case-insensitive match in dictionary
+            $matched = false;
+            foreach ($dictionary as $en => $ur) {
+                if (strcasecmp($trimmedWord, $en) === 0) {
+                    $translatedWords[] = $ur;
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                $translatedWords[] = $word; // Keep numbers, codes, or unmapped words as-is
+            }
+        }
+
+        $translatedTitle = implode('', $translatedWords);
+
+        if ($reshapedForPdf) {
+            return self::reshapeUrdu($translatedTitle);
+        }
+
+        return $translatedTitle;
+    }
 }
 
 

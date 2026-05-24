@@ -144,7 +144,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>
-                    <div class="item-title">{{ $cart->product->title ?? ($cart->bundle->name ?? 'Item') }}</div>
+                    <div class="item-title">{{ Helper::translatePartTitle($cart->product->title ?? ($cart->bundle->name ?? 'Item'), true) }}</div>
                     <div style="margin-top:2px;">
                     @if($cart->product && $cart->product->sku)
                         <span class="item-meta">SKU: {{ $cart->product->sku }}</span>
@@ -153,7 +153,7 @@
                     @endif
 
                     @if($cart->product && $cart->product->brand)
-                        <span class="item-meta">Brand: {{ $cart->product->brand->title }}</span>
+                        <span class="item-meta">Brand: {{ Helper::translatePartTitle($cart->product->brand->title, true) }}</span>
                     @endif
 
                     @if($cart->product && $cart->product->model)

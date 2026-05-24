@@ -187,9 +187,9 @@
                     <tr>
                         <td>
                             <span class="item-name">
-                                {{ strtoupper($item->product->title ?? ($item->bundle->name ?? 'Item')) }}
+                                {{ Helper::translatePartTitle($item->product->title ?? ($item->bundle->name ?? 'Item'), false) }}
                                 @if($item->product && $item->product->brand)
-                                    ({{ strtoupper($item->product->brand->title) }})
+                                    ({{ Helper::translatePartTitle($item->product->brand->title, false) }})
                                 @endif
                             </span>
                             <span class="item-details">
