@@ -447,7 +447,16 @@
 
                     <!-- Right Side: Payment Methods -->
                     <div class="col-md-7 p-4 bg-white">
-                        <label class="font-weight-bold text-uppercase small text-muted mb-3 d-block">Select Payment Method</label>
+                        <label class="font-weight-bold text-uppercase small text-muted mb-2 d-block">Select Payment Method</label>
+
+                        <!-- Filter Bar -->
+                        <div class="d-flex mb-3 align-items-center" style="gap: 6px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                            <button type="button" class="btn btn-sm btn-secondary filter-btn px-3 font-weight-bold active" data-filter="all" style="border-radius: 20px;">All</button>
+                            <button type="button" class="btn btn-sm btn-outline-success filter-btn px-3 font-weight-bold" data-filter="cash" style="border-radius: 20px;"><i class="fas fa-money-bill-wave mr-1"></i> Cash</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary filter-btn px-3 font-weight-bold" data-filter="bank" style="border-radius: 20px;"><i class="fas fa-university mr-1"></i> Bank</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning filter-btn px-3 font-weight-bold" data-filter="wallet" style="border-radius: 20px;"><i class="fas fa-mobile-alt mr-1"></i> Wallets</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger filter-btn px-3 font-weight-bold" data-filter="credit" style="border-radius: 20px;"><i class="fas fa-user-clock mr-1"></i> Credit</button>
+                        </div>
 
                         <div class="row no-gutters mb-4" id="payment-methods-grid">
                             <!-- Show Active Cash Register as first option if exists -->
@@ -457,7 +466,7 @@
                             @endphp
                             
                             @foreach($accounts as $acc)
-                                <div class="col-6 p-1">
+                                <div class="col-6 p-1 payment-method-item filter-all filter-{{$acc->type}}">
                                     <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all {{ $acc->id == $activeAccountId ? 'active' : '' }}" 
                                          data-method="{{ $acc->id }}" 
                                          data-is-cash="{{ $acc->type == 'cash' ? 'yes' : 'no' }}">
@@ -469,7 +478,7 @@
                                 </div>
                             @endforeach
 
-                            <div class="col-6 p-1">
+                            <div class="col-6 p-1 payment-method-item filter-all filter-credit">
                                 <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="credit">
                                     <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
                                     <i class="fas fa-user-clock fa-lg text-danger mb-2"></i>
@@ -571,6 +580,16 @@
 
     .cursor-pointer {
         cursor: pointer;
+    }
+
+    .filter-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 12px !important;
+        white-space: nowrap;
+    }
+    .filter-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
     .payment-option {
@@ -2014,6 +2033,40 @@
         } else {
             $('#urdu-print-container').slideUp(200);
             $('#print-receipt-urdu').prop('checked', false);
+        }
+    });
+
+    // Payment method category filtering
+    $('.filter-btn').on('click', function() {
+        $('.filter-btn').removeClass('active btn-secondary btn-success btn-primary btn-warning btn-danger').addClass('btn-outline-secondary');
+        
+        let filter = $(this).data('filter');
+        $(this).removeClass('btn-outline-secondary').addClass('active');
+        
+        if (filter === 'all') {
+            $(this).addClass('btn-secondary');
+        } else if (filter === 'cash') {
+            $(this).removeClass('btn-outline-success').addClass('btn-success text-white');
+        } else if (filter === 'bank') {
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary text-white');
+        } else if (filter === 'wallet') {
+            $(this).removeClass('btn-outline-warning').addClass('btn-warning text-white');
+        } else if (filter === 'credit') {
+            $(this).removeClass('btn-outline-danger').addClass('btn-danger text-white');
+        }
+        
+        if (filter === 'all') {
+            $('.payment-method-item').show();
+        } else {
+            $('.payment-method-item').hide();
+            $('.filter-' + filter).show();
+        }
+
+        // Re-apply Walk-in restrictions if customer ID is 1 (Walk-in)
+        let customerId = $('#customer-select').val();
+        if (customerId == 1) {
+            $('.payment-option[data-method="credit"]').parent().hide();
+            $('.payment-option[data-method="cod"]').parent().hide();
         }
     });
 
