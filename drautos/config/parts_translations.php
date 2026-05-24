@@ -26,6 +26,27 @@
      |
      */
      'dictionary' => [
+         // Core Brands / Manufacturers (Restored for Product Titles)
+         'Mazda' => 'مازدا',
+         'Toyota' => 'ٹویوٹا',
+         'Suzuki' => 'سوزوکی',
+         'Honda' => 'ہونڈا',
+         'Nissan' => 'نسان',
+         'Mitsubishi' => 'مٹسوبشی',
+         'Hyundai' => 'ہونڈائی',
+         'Kia' => 'کیا',
+         'Daihatsu' => 'ڈیہاٹسو',
+         'Yamaha' => 'یمہا',
+         'China' => 'چائنہ',
+         'Genuine' => 'جینون',
+         'Regular' => 'ریگولر',
+         'Bedford' => 'بیڈفورڈ',
+         'Hino' => 'ہینو',
+         'Isuzu' => 'ایسوزو',
+         'Starco' => 'اسٹارکو',
+         'Dream' => 'ڈریم',
+         'DR' => 'ڈی آر',
+ 
          // Position / Type Modifiers
          'Front' => 'فرنٹ',
          'Rear' => 'ریئر',
@@ -41,9 +62,6 @@
          'Comp' => 'کمپلیٹ',
          'Kit' => 'کٹ',
          'Universal' => 'یونیورسل',
-         'Genuine' => 'جینون',
-         'Regular' => 'ریگولر',
-         'China' => 'چائنہ',
  
          // Automotive Components & Parts
          'Brake' => 'بریک',
@@ -162,5 +180,13 @@
          'Boaster' => 'بوسٹر',
          'Stopper' => 'اسٹاپر',
          'Accelerator' => 'ایکسلیٹر',
+         'Spindle' => 'اسپنڈل',
+         'Check' => 'چیک',
+         'Banjo' => 'بینجو',
+         'Fitting' => 'فٹنگ',
+         'Jain' => 'جین',
+         'W' => 'ڈبلیو',
+         'SG' => 'ایس جی',
+         'mm' => 'ایم ایم',
      ]
  ];
