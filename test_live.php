@@ -1,35 +1,58 @@
 <?php
-header('Content-Type: text/plain');
-echo "=== COMPREHENSIVE LIVE DIAGNOSTICS ===\n\n";
+header('Content-Type: text/plain; charset=utf-8');
+echo "=== LARAVEL DOMPDF PATHS DIAGNOSTIC ===\n\n";
 
 echo "Current Directory: " . __DIR__ . "\n";
 echo "Server Time: " . date("Y-m-d H:i:s") . "\n\n";
 
-echo "--- Directory Listing ---\n";
-if ($handle = opendir(__DIR__)) {
-    while (false !== ($entry = readdir($handle))) {
-        if ($entry != "." && $entry != "..") {
-            $isDir = is_dir(__DIR__ . '/' . $entry) ? '[DIR]' : '[FILE]';
-            $mtime = date("Y-m-d H:i:s", filemtime(__DIR__ . '/' . $entry));
-            echo "{$isDir} {$entry} (Modified: {$mtime})\n";
-        }
+// Bootstrap Laravel
+$appFile = __DIR__ . '/drautos/bootstrap/app.php';
+if (file_exists($appFile)) {
+    echo "Laravel bootstrap found. Booting application...\n";
+    $app = require_once $appFile;
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    $response = $kernel->handle(
+        $request = Illuminate\Http\Request::capture()
+    );
+    
+    echo "Laravel booted successfully!\n\n";
+    
+    // Check paths
+    $paths = [
+        'base_path()' => base_path(),
+        'public_path()' => public_path(),
+        'storage_path()' => storage_path(),
+        'app_path()' => app_path(),
+    ];
+    
+    foreach ($paths as $name => $val) {
+        echo "{$name} = {$val}\n";
     }
-    closedir($handle);
-}
-echo "\n";
-
-echo "--- Routing File Diagnostic ---\n";
-$routesPath = __DIR__ . '/drautos/routes/web.php';
-if (file_exists($routesPath)) {
-    echo "Routes file exists at: {$routesPath}\n";
-    echo "Modified: " . date("Y-m-d H:i:s", filemtime($routesPath)) . "\n";
-    $content = file_get_contents($routesPath);
-    if (strpos($content, '/ping-recent-activity') !== false) {
-        echo "RESULT: FOUND '/ping-recent-activity' route in file!\n";
-    } else {
-        echo "RESULT: '/ping-recent-activity' NOT found in file!\n";
+    echo "\n";
+    
+    // Check file existences
+    $filesToCheck = [
+        base_path('revue/tahoma.ttf'),
+        public_path('revue/tahoma.ttf'),
+        __DIR__ . '/revue/tahoma.ttf',
+        __DIR__ . '/public_html/revue/tahoma.ttf',
+        '/home/u745585093/domains/drautos.store/public_html/revue/tahoma.ttf', // Typical Hostinger structure
+        '/home/u745585093/public_html/revue/tahoma.ttf',
+    ];
+    
+    echo "--- File Existence Diagnostics ---\n";
+    foreach ($filesToCheck as $file) {
+        $exists = file_exists($file) ? "YES (Size: " . filesize($file) . " bytes)" : "NO";
+        echo "File: {$file}\nExists: {$exists}\n\n";
     }
+    
+    // Check write permissions for DomPDF cache
+    $dompdfFontDir = storage_path('fonts');
+    echo "--- DomPDF Font Cache Directory ---\n";
+    echo "Path: {$dompdfFontDir}\n";
+    echo "Exists: " . (file_exists($dompdfFontDir) ? "YES" : "NO") . "\n";
+    echo "Writable: " . (is_writable($dompdfFontDir) ? "YES" : "NO") . "\n";
+    
 } else {
-    echo "Routes file not found at: {$routesPath}\n";
+    echo "Laravel bootstrap not found at {$appFile}!\n";
 }
-echo "\n";
