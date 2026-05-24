@@ -132,6 +132,8 @@ class AIChatController extends Controller
             5. LANGUAGE: Match the user's language (English/Urdu/Roman Urdu).
             6. WHATSAPP: Use open_whatsapp with generated URLs for PDFs/Receipts.
             7. ANALYTICS: Use get_analytics for totals, top items, and sales reports.
+            8. LEDGER CLARIFICATION: If the user asks to open a ledger for a contact (e.g. Waqar Auto), and that contact exists as both a Customer and a Supplier, you MUST explicitly ask the user: 'Should I open the Customer Ledger or the Supplier Ledger?' (or in Roman Urdu: 'Customer Ledger kholna hai ya Supplier Ledger?'). Do not ask ambiguous questions.
+            9. IMMEDIATE ACTION: Once the user specifies the ledger type (e.g., customer or supplier), immediately call the 'open_ledger' tool with the corresponding type and database ID. Do not repeat the question or ask for more confirmation.
             
             Today is: " . date('Y-m-d') . ".";
 
