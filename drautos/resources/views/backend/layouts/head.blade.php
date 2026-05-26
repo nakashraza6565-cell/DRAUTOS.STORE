@@ -909,6 +909,8 @@
             
             /* Global Form Mobile Optimization */
             .card-body form .row > [class*="col-"] { margin-bottom: 1rem !important; }
+        } /* END @media (max-width: 768px) - Universal Mobile Card Table System */
+
         /* Global Select2 Modal Fixes */
         .select2-container--open {
             z-index: 999999999 !important;
