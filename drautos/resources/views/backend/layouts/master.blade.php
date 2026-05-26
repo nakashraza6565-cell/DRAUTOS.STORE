@@ -8,6 +8,9 @@
   <!-- Page Wrapper -->
   <div id="wrapper">
 
+    <!-- Sidebar (mobile: slide-out drawer + launcher; hidden on desktop via CSS) -->
+    @include('backend.layouts.sidebar')
+
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
 

@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
 
-    <!-- Brand -->
-    <a href="{{route('admin')}}" class="navbar-brand d-flex align-items-center font-weight-bold" style="font-weight: 800; letter-spacing: -0.5px;">
+    <!-- Brand (desktop only; mobile keeps original launcher-first header) -->
+    <a href="{{route('admin')}}" class="navbar-brand d-none d-md-flex align-items-center font-weight-bold" style="font-weight: 800; letter-spacing: -0.5px;">
         <i class="fas fa-truck-front mr-2" style="color: var(--accent); font-size: 1.2rem;"></i>
         <span style="font-size: 0.95rem;">DR AUTOS</span>
     </a>

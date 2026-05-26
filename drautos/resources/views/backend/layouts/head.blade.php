@@ -51,7 +51,7 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05) !important;
             padding: 1rem 1.5rem !important;
-            margin: 10px 15px !important; /* Topbar (no sidebar) */
+            margin: 10px 15px 10px 18.5rem !important; /* Desktop clears sidebar; mobile override below */
             border-radius: var(--radius-lg);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02) !important;
             z-index: 11000 !important;
@@ -923,24 +923,12 @@
            TABLER.IO DESKTOP SIDEBAR OVERHAUL (v1.2.0)
            ========================================== */
         @media (min-width: 769px) {
-            /* Dock sidebar permanently on desktop with clean Light theme */
+            /* Top-nav layout: hide left sidebar on desktop only */
             .sidebar, .sidebar-ghost-mode {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 17rem !important;
-                height: 100vh !important;
-                transform: translateX(0) !important;
-                z-index: 10000 !important;
-                background: #ffffff !important; /* Pure White background like Tabler */
-                display: flex !important;
-                flex-direction: column !important;
-                border-right: 1px solid #e6e8eb !important; /* Sleek Tabler light border */
-                box-shadow: none !important;
-                transition: none !important;
+                display: none !important;
             }
 
-            /* Ensure the content wrapper shifts to the right and clears sidebar */
+            /* Full-width content on desktop (no sidebar gutter) */
             #wrapper #content-wrapper {
                 margin-left: 0 !important;
                 width: 100% !important;
@@ -1143,15 +1131,6 @@
                 padding: 20px 14px 6px 20px !important;
                 margin: 0 !important;
             }
-        }
-
-        /* Top-view module (Tabler-like): hide the left sidebar */
-        .sidebar, .sidebar-ghost-mode {
-            display: none !important;
-        }
-        #wrapper #content-wrapper {
-            margin-left: 0 !important;
-            width: 100% !important;
         }
     </style>
     <!-- UI Version: 1.0.5 -->
