@@ -918,10 +918,10 @@
         }
 
         /* ==========================================
-           TABLER.IO DESKTOP SIDEBAR OVERHAUL (v1.1.0)
+           TABLER.IO DESKTOP SIDEBAR OVERHAUL (v1.2.0)
            ========================================== */
         @media (min-width: 769px) {
-            /* Dock sidebar permanently on desktop */
+            /* Dock sidebar permanently on desktop with clean Light theme */
             .sidebar, .sidebar-ghost-mode {
                 position: fixed !important;
                 top: 0 !important;
@@ -930,11 +930,11 @@
                 height: 100vh !important;
                 transform: translateX(0) !important;
                 z-index: 10000 !important;
-                background: var(--sidebar-bg) !important;
+                background: #ffffff !important; /* Pure White background like Tabler */
                 display: flex !important;
                 flex-direction: column !important;
-                border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-                box-shadow: 4px 0 25px rgba(0,0,0,0.1) !important;
+                border-right: 1px solid #e6e8eb !important; /* Sleek Tabler light border */
+                box-shadow: none !important;
                 transition: none !important;
             }
 
@@ -944,12 +944,15 @@
                 width: calc(100% - 17rem) !important;
                 transition: none !important;
                 min-height: 100vh !important;
+                background-color: #f8fafc !important; /* Extra light background for content area */
             }
 
             /* Shift the topbar layout correctly */
             .topbar {
                 margin: 15px 20px 20px 20px !important;
                 width: auto !important;
+                background: #ffffff !important;
+                border: 1px solid #e6e8eb !important;
             }
 
             /* Hide the desktop topbar hamburger toggle button */
@@ -976,8 +979,35 @@
                 background: transparent !important;
             }
             .sidebar::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.15) !important;
+                background: #cbd5e1 !important;
                 border-radius: 10px !important;
+            }
+
+            /* Logo & Brand container adjustments for white background */
+            .sidebar .sidebar-brand {
+                background: #ffffff !important;
+                margin-top: 1.5rem !important;
+                margin-bottom: 2rem !important;
+                opacity: 1 !important;
+            }
+
+            .sidebar .sidebar-brand .sidebar-brand-text span:first-child {
+                color: #1e293b !important; /* DR text in dark navy */
+            }
+            
+            .sidebar .sidebar-brand .sidebar-brand-text span:last-child {
+                color: #f97316 !important; /* AUTOS brand orange preserved */
+            }
+
+            .sidebar .sidebar-brand .sidebar-brand-text div:last-child {
+                color: #64748b !important; /* Spare Parts Store subheading */
+                border-top-color: #f1f5f9 !important;
+            }
+
+            .sidebar .sidebar-brand-icon > div {
+                background: #f8fafc !important;
+                border-color: #e2e8f0 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
             }
 
             /* Tabler Typography & Spacing adjustments */
@@ -989,21 +1019,21 @@
             .sidebar-dark .nav-item .nav-link {
                 padding: 9px 12px !important;
                 border-radius: 8px !important;
-                color: rgba(255, 255, 255, 0.7) !important;
+                color: #475569 !important; /* Slate grey default like Tabler */
                 font-weight: 500 !important;
-                font-size: 0.85rem !important;
+                font-size: 0.875rem !important;
                 display: flex !important;
                 align-items: center !important;
                 transition: all 0.2s ease !important;
             }
 
             .sidebar-dark .nav-item .nav-link:hover {
-                color: #fff !important;
-                background: rgba(255, 255, 255, 0.05) !important;
+                color: #1e293b !important;
+                background: rgba(30, 41, 59, 0.04) !important;
             }
 
             .sidebar-dark .nav-item .nav-link i {
-                color: rgba(255, 255, 255, 0.45) !important;
+                color: #64748b !important;
                 font-size: 1rem !important;
                 margin-right: 10px !important;
                 width: 1.25rem !important;
@@ -1012,27 +1042,35 @@
             }
 
             .sidebar-dark .nav-item .nav-link:hover i {
-                color: #fff !important;
+                color: #1e293b !important;
             }
 
-            /* Active navigation item styling */
+            /* Active navigation item styling - Tabler Blue */
             .sidebar-dark .nav-item.active {
-                background: rgba(255, 255, 255, 0.07) !important;
+                background: rgba(32, 107, 196, 0.06) !important; /* Soft blue tint */
                 border-radius: 8px !important;
                 margin: 2px 14px !important;
             }
 
             .sidebar-dark .nav-item.active .nav-link {
-                color: #fff !important;
+                color: #206bc4 !important; /* Tabler active blue */
                 font-weight: 600 !important;
             }
 
             .sidebar-dark .nav-item.active .nav-link i {
-                color: var(--accent) !important; /* Haz Orange accent color */
+                color: #206bc4 !important;
             }
 
             .sidebar-dark .nav-item.active .nav-link::before {
-                display: none !important; /* Remove old thick left bar indicator */
+                display: block !important;
+                content: '' !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                width: 3px !important;
+                background: #206bc4 !important; /* Tabler left border indicator */
+                border-radius: 0 4px 4px 0 !important;
             }
 
             /* Accordion Submenu Nested Items styling - Tabler Style */
@@ -1042,7 +1080,7 @@
 
             .sidebar-dark .collapse-inner {
                 background: transparent !important;
-                border-left: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+                border-left: 1.5px solid #cbd5e1 !important; /* Sleek vertical connector line */
                 margin-left: 1.7rem !important;
                 padding: 4px 0 4px 10px !important;
                 border-radius: 0 !important;
@@ -1053,7 +1091,7 @@
             }
 
             .sidebar-dark .collapse-inner .collapse-item {
-                color: rgba(255, 255, 255, 0.6) !important;
+                color: #475569 !important;
                 font-size: 0.8rem !important;
                 padding: 5px 10px !important;
                 display: block !important;
@@ -1065,14 +1103,14 @@
             }
 
             .sidebar-dark .collapse-inner .collapse-item:hover {
-                color: #fff !important;
-                background: rgba(255, 255, 255, 0.05) !important;
+                color: #1e293b !important;
+                background: rgba(30, 41, 59, 0.04) !important;
                 padding-left: 14px !important;
             }
 
             .sidebar-dark .collapse-inner .collapse-item.active {
-                color: var(--accent) !important;
-                background: rgba(249, 115, 22, 0.08) !important;
+                color: #206bc4 !important;
+                background: rgba(32, 107, 196, 0.06) !important;
                 font-weight: 700 !important;
             }
 
@@ -1085,17 +1123,17 @@
                 margin-left: auto !important;
                 font-size: 0.7rem !important;
                 transition: transform 0.25s ease !important;
-                color: rgba(255, 255, 255, 0.4) !important;
+                color: #94a3b8 !important;
             }
 
             .sidebar-dark .nav-item .nav-link[data-toggle="collapse"]:not(.collapsed)::after {
                 transform: rotate(180deg) !important;
-                color: #fff !important;
+                color: #206bc4 !important;
             }
 
             /* Refined Section Headers / Group Headings */
             .sidebar-heading {
-                color: rgba(255, 255, 255, 0.3) !important;
+                color: #94a3b8 !important; /* Tabler-style grey uppercase group titles */
                 font-size: 0.65rem !important;
                 font-weight: 700 !important;
                 text-transform: uppercase !important;
