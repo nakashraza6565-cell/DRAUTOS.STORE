@@ -916,6 +916,194 @@
         .select2-search__field {
             color: #1e293b !important;
         }
+
+        /* ==========================================
+           TABLER.IO DESKTOP SIDEBAR OVERHAUL (v1.1.0)
+           ========================================== */
+        @media (min-width: 769px) {
+            /* Dock sidebar permanently on desktop */
+            .sidebar, .sidebar-ghost-mode {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 17rem !important;
+                height: 100vh !important;
+                transform: translateX(0) !important;
+                z-index: 10000 !important;
+                background: var(--sidebar-bg) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+                box-shadow: 4px 0 25px rgba(0,0,0,0.1) !important;
+                transition: none !important;
+            }
+
+            /* Ensure the content wrapper shifts to the right and clears sidebar */
+            #wrapper #content-wrapper {
+                margin-left: 17rem !important;
+                width: calc(100% - 17rem) !important;
+                transition: none !important;
+                min-height: 100vh !important;
+            }
+
+            /* Shift the topbar layout correctly */
+            .topbar {
+                margin: 15px 20px 20px 20px !important;
+                width: auto !important;
+            }
+
+            /* Hide the desktop topbar hamburger toggle button */
+            #sidebarToggleTop {
+                display: none !important;
+            }
+
+            /* Hide the bottom circular sidebar toggler */
+            .sidebar .text-center {
+                display: none !important;
+            }
+
+            /* Scrollable container for nav items */
+            .sidebar {
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+
+            /* Slim Scrollbar for Sidebar */
+            .sidebar::-webkit-scrollbar {
+                width: 5px !important;
+            }
+            .sidebar::-webkit-scrollbar-track {
+                background: transparent !important;
+            }
+            .sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.15) !important;
+                border-radius: 10px !important;
+            }
+
+            /* Tabler Typography & Spacing adjustments */
+            .sidebar-dark .nav-item {
+                margin: 2px 14px !important;
+                position: relative !important;
+            }
+            
+            .sidebar-dark .nav-item .nav-link {
+                padding: 9px 12px !important;
+                border-radius: 8px !important;
+                color: rgba(255, 255, 255, 0.7) !important;
+                font-weight: 500 !important;
+                font-size: 0.85rem !important;
+                display: flex !important;
+                align-items: center !important;
+                transition: all 0.2s ease !important;
+            }
+
+            .sidebar-dark .nav-item .nav-link:hover {
+                color: #fff !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+            }
+
+            .sidebar-dark .nav-item .nav-link i {
+                color: rgba(255, 255, 255, 0.45) !important;
+                font-size: 1rem !important;
+                margin-right: 10px !important;
+                width: 1.25rem !important;
+                text-align: center !important;
+                transition: color 0.2s ease !important;
+            }
+
+            .sidebar-dark .nav-item .nav-link:hover i {
+                color: #fff !important;
+            }
+
+            /* Active navigation item styling */
+            .sidebar-dark .nav-item.active {
+                background: rgba(255, 255, 255, 0.07) !important;
+                border-radius: 8px !important;
+                margin: 2px 14px !important;
+            }
+
+            .sidebar-dark .nav-item.active .nav-link {
+                color: #fff !important;
+                font-weight: 600 !important;
+            }
+
+            .sidebar-dark .nav-item.active .nav-link i {
+                color: var(--accent) !important; /* Haz Orange accent color */
+            }
+
+            .sidebar-dark .nav-item.active .nav-link::before {
+                display: none !important; /* Remove old thick left bar indicator */
+            }
+
+            /* Accordion Submenu Nested Items styling - Tabler Style */
+            .sidebar-dark .collapse {
+                background: transparent !important;
+            }
+
+            .sidebar-dark .collapse-inner {
+                background: transparent !important;
+                border-left: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+                margin-left: 1.7rem !important;
+                padding: 4px 0 4px 10px !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 2px !important;
+            }
+
+            .sidebar-dark .collapse-inner .collapse-item {
+                color: rgba(255, 255, 255, 0.6) !important;
+                font-size: 0.8rem !important;
+                padding: 5px 10px !important;
+                display: block !important;
+                text-decoration: none !important;
+                border-radius: 6px !important;
+                transition: all 0.2s ease !important;
+                background: transparent !important;
+                text-align: left !important;
+            }
+
+            .sidebar-dark .collapse-inner .collapse-item:hover {
+                color: #fff !important;
+                background: rgba(255, 255, 255, 0.05) !important;
+                padding-left: 14px !important;
+            }
+
+            .sidebar-dark .collapse-inner .collapse-item.active {
+                color: var(--accent) !important;
+                background: rgba(249, 115, 22, 0.08) !important;
+                font-weight: 700 !important;
+            }
+
+            /* Beautiful rotating dropdown chevrons styling */
+            .sidebar-dark .nav-item .nav-link[data-toggle="collapse"]::after {
+                font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                content: "\f078" !important; /* chevron-down */
+                float: right !important;
+                margin-left: auto !important;
+                font-size: 0.7rem !important;
+                transition: transform 0.25s ease !important;
+                color: rgba(255, 255, 255, 0.4) !important;
+            }
+
+            .sidebar-dark .nav-item .nav-link[data-toggle="collapse"]:not(.collapsed)::after {
+                transform: rotate(180deg) !important;
+                color: #fff !important;
+            }
+
+            /* Refined Section Headers / Group Headings */
+            .sidebar-heading {
+                color: rgba(255, 255, 255, 0.3) !important;
+                font-size: 0.65rem !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.1em !important;
+                padding: 20px 14px 6px 20px !important;
+                margin: 0 !important;
+            }
+        }
     </style>
     <!-- UI Version: 1.0.5 -->
     @stack('styles')

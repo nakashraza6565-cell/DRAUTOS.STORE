@@ -457,21 +457,25 @@
         $(".sidebar").addClass("sidebar-ghost-mode");
         // Hover to reveal is removed as per user request
 
-        // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles
-        $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').off('click').on('click', function(e) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-            $(".sidebar").toggleClass("reveal toggled");
-            $("body").toggleClass("sidebar-toggled");
-        });
-
-        // Auto-expand sidebar if any dropdown menu is clicked while minimized
-        $('.sidebar .nav-link[data-toggle="collapse"]').on('click', function() {
-            if ($('body').hasClass('sidebar-toggled')) {
-                $(".sidebar").removeClass("toggled").addClass("reveal");
-                $("body").removeClass("sidebar-toggled");
-            }
-        });
+         // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles (Mobile only)
+         $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').off('click').on('click', function(e) {
+             if ($(window).width() <= 768) {
+                 e.preventDefault();
+                 e.stopImmediatePropagation();
+                 $(".sidebar").toggleClass("reveal toggled");
+                 $("body").toggleClass("sidebar-toggled");
+             }
+         });
+ 
+         // Auto-expand sidebar if any dropdown menu is clicked while minimized (Mobile only)
+         $('.sidebar .nav-link[data-toggle="collapse"]').on('click', function() {
+             if ($(window).width() <= 768) {
+                 if ($('body').hasClass('sidebar-toggled')) {
+                     $(".sidebar").removeClass("toggled").addClass("reveal");
+                     $("body").removeClass("sidebar-toggled");
+                 }
+             }
+         });
 
         // Robust Mobile & iPad Swipe Gesture to Open/Close Sidebar
         var touchStartX = 0;
