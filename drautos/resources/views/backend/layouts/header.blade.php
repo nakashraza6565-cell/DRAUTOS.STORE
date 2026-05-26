@@ -1,21 +1,75 @@
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow-sm" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
 
-    <!-- Sidebar Toggle (Topbar) -->
-    <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3 text-gray-600 d-none d-md-inline-block" style="background: #f8fafc;">
-      <i class="fa fa-bars"></i>
-    </button>
+    <!-- Brand -->
+    <a href="{{route('admin')}}" class="navbar-brand d-flex align-items-center font-weight-bold" style="font-weight: 800; letter-spacing: -0.5px;">
+        <i class="fas fa-truck-front mr-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+        <span style="font-size: 0.95rem;">DR AUTOS</span>
+    </a>
 
     <!-- Mobile Menu Trigger (Launcher) -->
     <button class="mobile-menu-trigger d-md-none border-0 mr-2" id="launcherTrigger" style="width: 45px; height: 45px; border-radius: 12px; background: #f1f5f9; color: #1e293b;">
         <i class="fas fa-th-large" style="font-size: 1.25rem;"></i>
     </button>
 
+    <!-- Tabler-like top navigation (desktop only) -->
+    <ul class="navbar-nav d-none d-md-flex align-items-center" style="gap: 4px;">
+        @can('view-dashboard')
+        <li class="nav-item">
+            <a class="nav-link px-2" href="{{route('admin')}}" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">Dashboard</a>
+        </li>
+        @endcan
 
-    <a href="{{route('cache.clear')}}"  class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">
-      Cache Clear
+        @can('view-order')
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavSales" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
+                Sales
+            </a>
+            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavSales" style="border-radius: 12px;">
+                <a class="dropdown-item py-2" href="{{route('admin.pos')}}">POS</a>
+                <a class="dropdown-item py-2" href="{{route('sales-orders.index')}}">Sale Orders</a>
+                <a class="dropdown-item py-2" href="{{route('order.index')}}">Orders &amp; Billing</a>
+                @can('view-cash-register')
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item py-2" href="{{route('admin.cash-register')}}">Cash Register</a>
+                @endcan
+            </div>
+        </li>
+        @endcan
+
+        @can('view-product')
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavInventory" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
+                Inventory
+            </a>
+            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavInventory" style="border-radius: 12px;">
+                <a class="dropdown-item py-2" href="{{route('product.index')}}">Products</a>
+                <a class="dropdown-item py-2" href="{{route('inventory-incoming.index')}}">Incoming Goods</a>
+                @can('view-purchase')
+                <a class="dropdown-item py-2" href="{{route('purchase-orders.index')}}">Purchase Orders</a>
+                @endcan
+            </div>
+        </li>
+        @endcan
+
+        @can('view-report')
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavReports" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
+                Reports
+            </a>
+            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavReports" style="border-radius: 12px;">
+                <a class="dropdown-item py-2" href="{{route('reports.sales')}}">Sales</a>
+                <a class="dropdown-item py-2" href="{{route('reports.stock')}}">Stock</a>
+                <a class="dropdown-item py-2" href="{{route('reports.profit-loss')}}">Profit &amp; Loss</a>
+            </div>
+        </li>
+        @endcan
+    </ul>
+
+    <a href="{{route('cache.clear')}}" class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">
+        Cache Clear
     </a>
 
-    <!-- Topbar Navbar -->
+    <!-- Topbar Navbar (right side) -->
     <ul class="navbar-nav ml-auto align-items-center">
 
 

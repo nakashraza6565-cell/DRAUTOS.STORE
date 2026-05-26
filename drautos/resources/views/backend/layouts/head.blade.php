@@ -51,7 +51,7 @@
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05) !important;
             padding: 1rem 1.5rem !important;
-            margin: 10px 15px 10px 18.5rem !important; /* Force clear sidebar */
+            margin: 10px 15px !important; /* Topbar (no sidebar) */
             border-radius: var(--radius-lg);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02) !important;
             z-index: 11000 !important;
@@ -942,8 +942,8 @@
 
             /* Ensure the content wrapper shifts to the right and clears sidebar */
             #wrapper #content-wrapper {
-                margin-left: 17rem !important;
-                width: calc(100% - 17rem) !important;
+                margin-left: 0 !important;
+                width: 100% !important;
                 transition: none !important;
                 min-height: 100vh !important;
                 background-color: #f8fafc !important; /* Extra light background for content area */
@@ -1143,6 +1143,15 @@
                 padding: 20px 14px 6px 20px !important;
                 margin: 0 !important;
             }
+        }
+
+        /* Top-view module (Tabler-like): hide the left sidebar */
+        .sidebar, .sidebar-ghost-mode {
+            display: none !important;
+        }
+        #wrapper #content-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
         }
     </style>
     <!-- UI Version: 1.0.5 -->
