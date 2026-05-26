@@ -476,12 +476,6 @@
                 return String(s || 'group').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             }
 
-            // Search header (sticky)
-            html += ''
-                + '<div class="modules-search">'
-                + '  <input type="text" id="topModulesSearch" placeholder="Search modules... (e.g. POS, ledger, stock)" autocomplete="off" />'
-                + '</div>';
-
             $('.sidebar .sidebar-heading').each(function() {
                 var heading = $(this).text().trim();
                 var $section = $(this).nextUntil('.sidebar-heading');
@@ -552,42 +546,6 @@
             }
 
             $menu.html(html);
-
-            // Wire search (desktop only)
-            var $search = $('#topModulesSearch');
-            if ($search.length) {
-                $search.off('input').on('input', function() {
-                    var q = $(this).val().trim().toLowerCase();
-
-                    if (!q) {
-                        $menu.find('.module-link').show();
-                        $menu.find('.module-group').show();
-                        return;
-                    }
-
-                    $menu.find('.module-group').each(function() {
-                        var $g = $(this);
-                        var any = false;
-                        $g.find('.module-link').each(function() {
-                            var $a = $(this);
-                            var txt = ($a.attr('data-text') || '');
-                            var ok = txt.indexOf(q) !== -1;
-                            $a.toggle(ok);
-                            if (ok) any = true;
-                        });
-                        $g.toggle(any);
-
-                        // Expand groups with matches for visibility
-                        if (any) {
-                            var $collapse = $g.find('.collapse').first();
-                            if ($collapse.length && !$collapse.hasClass('show')) {
-                                $collapse.collapse('show');
-                                $g.find('.module-group-header').attr('aria-expanded', 'true');
-                            }
-                        }
-                    });
-                });
-            }
         }
 
         buildDesktopModulesMenu();

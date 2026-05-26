@@ -1144,30 +1144,6 @@
                 border: 1px solid rgba(15, 23, 42, 0.06) !important;
                 box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.18) !important;
             }
-            .top-modules-menu .modules-search {
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 2 !important;
-                background: #ffffff !important;
-                padding: 0.35rem 0.35rem 0.65rem 0.35rem !important;
-                border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
-                margin: -0.75rem -0.75rem 0.5rem -0.75rem !important;
-            }
-            .top-modules-menu .modules-search input {
-                width: 100% !important;
-                border: 1px solid rgba(15, 23, 42, 0.10) !important;
-                border-radius: 12px !important;
-                padding: 10px 12px !important;
-                font-size: 0.85rem !important;
-                outline: none !important;
-                background: #f8fafc !important;
-            }
-            .top-modules-menu .modules-search input:focus {
-                background: #ffffff !important;
-                border-color: rgba(32, 107, 196, 0.35) !important;
-                box-shadow: 0 0 0 4px rgba(32, 107, 196, 0.10) !important;
-            }
-
             .top-modules-menu .module-group {
                 border: 1px solid rgba(15, 23, 42, 0.06) !important;
                 border-radius: 14px !important;
