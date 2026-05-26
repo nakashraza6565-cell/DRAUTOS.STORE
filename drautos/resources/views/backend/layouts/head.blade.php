@@ -1132,93 +1132,65 @@
                 margin: 0 !important;
             }
 
-            /* Desktop top modules mega-menu (synced from sidebar links) */
-            .top-modules-menu {
-                min-width: 420px !important;
-                max-width: 520px !important;
+            /* Desktop top category nav (each sidebar section = its own dropdown) */
+            .top-nav-categories {
+                gap: 2px !important;
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                max-width: calc(100% - 380px) !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                flex-wrap: nowrap !important;
+                scrollbar-width: none !important;
+            }
+            .top-nav-categories::-webkit-scrollbar { display: none !important; }
+            .top-nav-link {
+                font-weight: 600 !important;
+                font-size: 0.82rem !important;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+                color: #334155 !important;
+                white-space: nowrap !important;
+                transition: color 0.2s ease !important;
+            }
+            .top-nav-link:hover { color: #206bc4 !important; }
+            .top-nav-category.show > .top-nav-link,
+            .top-nav-category .top-nav-link[aria-expanded="true"] {
+                color: #206bc4 !important;
+            }
+            .top-category-menu {
+                min-width: 240px !important;
                 max-height: 70vh !important;
                 overflow-y: auto !important;
                 border-radius: 12px !important;
-                padding: 0.75rem !important;
-                background: #ffffff !important;
+                padding: 0.35rem 0 !important;
                 border: 1px solid rgba(15, 23, 42, 0.06) !important;
-                box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.18) !important;
+                box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.15) !important;
+                animation: topNavDropIn 0.2s ease !important;
             }
-            .top-modules-menu .module-group {
-                border: 1px solid rgba(15, 23, 42, 0.06) !important;
-                border-radius: 14px !important;
-                overflow: hidden !important;
-                margin-bottom: 10px !important;
-                background: #ffffff !important;
+            @keyframes topNavDropIn {
+                from { opacity: 0; transform: translateY(-8px); }
+                to { opacity: 1; transform: translateY(0); }
             }
-            .top-modules-menu .module-group:last-child { margin-bottom: 0 !important; }
-            .top-modules-menu .module-group-header {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                width: 100% !important;
-                padding: 10px 12px !important;
-                background: #f8fafc !important;
-                border: 0 !important;
-                cursor: pointer !important;
-                text-align: left !important;
+            .top-category-menu .dropdown-header {
+                color: #64748b !important;
+                font-size: 0.65rem !important;
                 font-weight: 800 !important;
-                font-size: 0.78rem !important;
                 letter-spacing: 0.08em !important;
                 text-transform: uppercase !important;
-                color: #334155 !important;
+                padding: 0.5rem 1rem !important;
             }
-            .top-modules-menu .module-group-header .count {
-                font-weight: 800 !important;
-                font-size: 0.72rem !important;
-                color: #64748b !important;
-                background: rgba(148, 163, 184, 0.18) !important;
-                padding: 2px 8px !important;
-                border-radius: 999px !important;
+            .top-category-menu .dropdown-item {
+                color: #1e293b !important;
+                font-size: 0.85rem !important;
+                font-weight: 500 !important;
+                padding: 0.45rem 1rem !important;
+                transition: background 0.15s ease, padding-left 0.15s ease !important;
             }
-            .top-modules-menu .module-group-header .chev {
-                width: 28px !important;
-                height: 28px !important;
-                border-radius: 10px !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                background: rgba(2, 6, 23, 0.04) !important;
-                color: #475569 !important;
-                transition: transform 180ms ease !important;
-            }
-            .top-modules-menu .module-group-header[aria-expanded="true"] .chev {
-                transform: rotate(180deg) !important;
-            }
-
-            .top-modules-menu .module-items {
-                padding: 6px 6px 10px 6px !important;
-                background: #ffffff !important;
-            }
-            .top-modules-menu .module-link {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                gap: 10px !important;
-                padding: 10px 10px !important;
-                margin: 4px 2px !important;
-                border-radius: 12px !important;
-                color: #0f172a !important;
-                text-decoration: none !important;
-                font-weight: 600 !important;
-                font-size: 0.88rem !important;
-                border: 1px solid transparent !important;
-                transition: transform 150ms ease, background 150ms ease, border-color 150ms ease !important;
-            }
-            .top-modules-menu .module-link .hint {
-                font-size: 0.72rem !important;
-                font-weight: 700 !important;
-                color: #64748b !important;
-            }
-            .top-modules-menu .module-link:hover {
+            .top-category-menu .dropdown-item:hover {
                 background: rgba(32, 107, 196, 0.06) !important;
-                border-color: rgba(32, 107, 196, 0.10) !important;
-                transform: translateY(-1px) !important;
+                color: #206bc4 !important;
+                padding-left: 1.15rem !important;
             }
         }
     </style>

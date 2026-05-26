@@ -453,33 +453,44 @@
 
   <script>
     $(document).ready(function() {
-        function buildDesktopModulesMenu() {
+        function buildDesktopTopNavCategories() {
             if ($(window).width() < 769) {
                 return;
             }
 
-            var $menu = $('#topNavModulesMenu');
-            if (!$menu.length) {
+            var $container = $('#topNavCategories');
+            if (!$container.length) {
                 return;
             }
 
-            var html = '';
+            $container.find('.top-nav-category').remove();
+
             var added = {};
-            var groupIndex = 0;
+            var catIndex = 0;
 
             function esc(s) {
                 return String(s || '').replace(/[&<>"']/g, function (m) {
                     return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
                 });
             }
-            function slugId(s) {
-                return String(s || 'group').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+            function topNavLabel(heading) {
+                var labels = {
+                    'Main Content': 'Content',
+                    'Point of Sale': 'POS',
+                    'Inventory & Assets': 'Inventory',
+                    'Financial Management': 'Finance',
+                    'Danyal Autos Enterprise': 'Enterprise',
+                    'Business Intelligence': 'Reports',
+                    'System Configuration': 'System'
+                };
+                return labels[heading] || heading;
             }
 
             $('.sidebar .sidebar-heading').each(function() {
                 var heading = $(this).text().trim();
                 var $section = $(this).nextUntil('.sidebar-heading');
-                var items = [];
+                var itemsHtml = '';
 
                 $section.each(function() {
                     var $item = $(this);
@@ -487,68 +498,47 @@
                         return;
                     }
 
-                    // Main nav link
                     var $mainLink = $item.find('> .nav-link[href]:not([href="#"])').first();
                     if ($mainLink.length) {
                         var mainHref = $mainLink.attr('href');
                         var mainText = $mainLink.clone().find('i,span.badge').remove().end().text().trim();
                         var mainKey = mainText + '|' + mainHref;
                         if (mainText && !added[mainKey]) {
-                            items.push({ text: mainText, href: mainHref, hint: 'Module' });
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(mainHref) + '">' + esc(mainText) + '</a>';
                             added[mainKey] = true;
                         }
                     }
 
-                    // Nested collapse items
                     $item.find('.collapse-item[href]').each(function() {
                         var subHref = $(this).attr('href');
                         var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
                         var subKey = subText + '|' + subHref;
                         if (subText && !added[subKey]) {
-                            items.push({ text: subText, href: subHref, hint: 'Sub-module' });
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
                             added[subKey] = true;
                         }
                     });
                 });
 
-                if (items.length) {
-                    groupIndex++;
-                    var groupId = 'topModulesGroup-' + groupIndex + '-' + slugId(heading);
-                    var expanded = groupIndex <= 2 ? 'true' : 'false';
-                    var showClass = groupIndex <= 2 ? 'show' : '';
+                if (itemsHtml) {
+                    catIndex++;
+                    var menuId = 'topNavCat-' + catIndex;
+                    var navLabel = esc(topNavLabel(heading));
 
-                    html += '<div class="module-group" data-group="' + esc(heading) + '">';
-                    html += '  <button class="module-group-header" type="button" data-toggle="collapse" data-target="#' + groupId + '" aria-expanded="' + expanded + '" aria-controls="' + groupId + '">';
-                    html += '    <span>' + esc(heading) + '</span>';
-                    html += '    <span class="d-flex align-items-center" style="gap:8px;">'
-                         + '      <span class="count">' + items.length + '</span>'
-                         + '      <span class="chev"><i class="fas fa-chevron-down"></i></span>'
-                         + '    </span>';
-                    html += '  </button>';
-                    html += '  <div id="' + groupId + '" class="collapse ' + showClass + '">';
-                    html += '    <div class="module-items">';
-
-                    items.forEach(function(it) {
-                        html += '<a class="module-link" href="' + esc(it.href) + '" data-text="' + esc(it.text.toLowerCase()) + '">'
-                             + '  <span>' + esc(it.text) + '</span>'
-                             + '  <span class="hint">' + esc(it.hint) + '</span>'
-                             + '</a>';
-                    });
-
-                    html += '    </div>';
-                    html += '  </div>';
-                    html += '</div>';
+                    $container.append(
+                        '<li class="nav-item dropdown top-nav-category">'
+                        + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + menuId + '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + navLabel + '</a>'
+                        + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + menuId + '">'
+                        + '<h6 class="dropdown-header">' + esc(heading) + '</h6>'
+                        + itemsHtml
+                        + '</div>'
+                        + '</li>'
+                    );
                 }
             });
-
-            if (!html) {
-                html = '<div class="dropdown-item text-muted small">No modules available.</div>';
-            }
-
-            $menu.html(html);
         }
 
-        buildDesktopModulesMenu();
+        buildDesktopTopNavCategories();
 
         // Project-wide Ghost Sidebar Logic
         $(".sidebar").addClass("sidebar-ghost-mode");

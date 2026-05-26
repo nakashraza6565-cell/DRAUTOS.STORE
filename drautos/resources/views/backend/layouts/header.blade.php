@@ -11,67 +11,17 @@
         <i class="fas fa-th-large" style="font-size: 1.25rem;"></i>
     </button>
 
-    <!-- Tabler-like top navigation (desktop only) -->
-    <ul class="navbar-nav d-none d-md-flex align-items-center" style="gap: 4px;">
+    <!-- Tabler-like top navigation (desktop only — each sidebar category becomes its own dropdown) -->
+    <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
         @can('view-dashboard')
         <li class="nav-item">
-            <a class="nav-link px-2" href="{{route('admin')}}" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">Dashboard</a>
+            <a class="nav-link px-2 top-nav-link" href="{{route('admin')}}">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link px-2 top-nav-link" href="{{route('admin.activity-logs')}}">Activity Log</a>
         </li>
         @endcan
-
-        @can('view-order')
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavSales" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
-                Sales
-            </a>
-            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavSales" style="border-radius: 12px;">
-                <a class="dropdown-item py-2" href="{{route('admin.pos')}}">POS</a>
-                <a class="dropdown-item py-2" href="{{route('sales-orders.index')}}">Sale Orders</a>
-                <a class="dropdown-item py-2" href="{{route('order.index')}}">Orders &amp; Billing</a>
-                @can('view-cash-register')
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item py-2" href="{{route('admin.cash-register')}}">Cash Register</a>
-                @endcan
-            </div>
-        </li>
-        @endcan
-
-        @can('view-product')
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavInventory" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
-                Inventory
-            </a>
-            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavInventory" style="border-radius: 12px;">
-                <a class="dropdown-item py-2" href="{{route('product.index')}}">Products</a>
-                <a class="dropdown-item py-2" href="{{route('inventory-incoming.index')}}">Incoming Goods</a>
-                @can('view-purchase')
-                <a class="dropdown-item py-2" href="{{route('purchase-orders.index')}}">Purchase Orders</a>
-                @endcan
-            </div>
-        </li>
-        @endcan
-
-        @can('view-report')
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavReports" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 600; padding-top: 10px; padding-bottom: 10px;">
-                Reports
-            </a>
-            <div class="dropdown-menu shadow border-0 animated--grow-in" aria-labelledby="topNavReports" style="border-radius: 12px;">
-                <a class="dropdown-item py-2" href="{{route('reports.sales')}}">Sales</a>
-                <a class="dropdown-item py-2" href="{{route('reports.stock')}}">Stock</a>
-                <a class="dropdown-item py-2" href="{{route('reports.profit-loss')}}">Profit &amp; Loss</a>
-            </div>
-        </li>
-        @endcan
-
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavModules" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 700; padding-top: 10px; padding-bottom: 10px;">
-                All Modules
-            </a>
-            <div class="dropdown-menu shadow border-0 animated--grow-in top-modules-menu" aria-labelledby="topNavModules" id="topNavModulesMenu">
-                <div class="dropdown-item text-muted small">Loading modules...</div>
-            </div>
-        </li>
+        {{-- Category dropdowns (Point of Sale, Inventory & Assets, etc.) injected from sidebar --}}
     </ul>
 
     <a href="{{route('cache.clear')}}" class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">
