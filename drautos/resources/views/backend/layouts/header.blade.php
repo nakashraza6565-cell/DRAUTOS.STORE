@@ -63,6 +63,15 @@
             </div>
         </li>
         @endcan
+
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle px-2" href="#" id="topNavModules" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: 700; padding-top: 10px; padding-bottom: 10px;">
+                All Modules
+            </a>
+            <div class="dropdown-menu shadow border-0 animated--grow-in top-modules-menu" aria-labelledby="topNavModules" id="topNavModulesMenu">
+                <div class="dropdown-item text-muted small">Loading modules...</div>
+            </div>
+        </li>
     </ul>
 
     <a href="{{route('cache.clear')}}" class="btn btn-outline-danger btn-sm mr-3 d-none d-md-inline-block">

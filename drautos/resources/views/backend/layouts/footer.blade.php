@@ -453,6 +453,70 @@
 
   <script>
     $(document).ready(function() {
+        function buildDesktopModulesMenu() {
+            if ($(window).width() < 769) {
+                return;
+            }
+
+            var $menu = $('#topNavModulesMenu');
+            if (!$menu.length) {
+                return;
+            }
+
+            var html = '';
+            var added = {};
+
+            $('.sidebar .sidebar-heading').each(function() {
+                var heading = $(this).text().trim();
+                var $section = $(this).nextUntil('.sidebar-heading');
+                var sectionItems = '';
+
+                $section.each(function() {
+                    var $item = $(this);
+                    if (!$item.hasClass('nav-item')) {
+                        return;
+                    }
+
+                    // Main nav link
+                    var $mainLink = $item.find('> .nav-link[href]:not([href="#"])').first();
+                    if ($mainLink.length) {
+                        var mainHref = $mainLink.attr('href');
+                        var mainText = $mainLink.clone().find('i,span.badge').remove().end().text().trim();
+                        var mainKey = mainText + '|' + mainHref;
+                        if (mainText && !added[mainKey]) {
+                            sectionItems += '<a class="dropdown-item" href="' + mainHref + '">' + mainText + '</a>';
+                            added[mainKey] = true;
+                        }
+                    }
+
+                    // Nested collapse items
+                    $item.find('.collapse-item[href]').each(function() {
+                        var subHref = $(this).attr('href');
+                        var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                        var subKey = subText + '|' + subHref;
+                        if (subText && !added[subKey]) {
+                            sectionItems += '<a class="dropdown-item pl-4" href="' + subHref + '">' + subText + '</a>';
+                            added[subKey] = true;
+                        }
+                    });
+                });
+
+                if (sectionItems) {
+                    html += '<h6 class="dropdown-header">' + heading + '</h6>' + sectionItems + '<div class="dropdown-divider"></div>';
+                }
+            });
+
+            if (!html) {
+                html = '<div class="dropdown-item text-muted small">No modules available.</div>';
+            } else {
+                html = html.replace(/<div class="dropdown-divider"><\/div>$/, '');
+            }
+
+            $menu.html(html);
+        }
+
+        buildDesktopModulesMenu();
+
         // Project-wide Ghost Sidebar Logic
         $(".sidebar").addClass("sidebar-ghost-mode");
         // Hover to reveal is removed as per user request

@@ -1131,6 +1131,40 @@
                 padding: 20px 14px 6px 20px !important;
                 margin: 0 !important;
             }
+
+            /* Desktop top modules mega-menu (synced from sidebar links) */
+            .top-modules-menu {
+                min-width: 420px !important;
+                max-width: 520px !important;
+                max-height: 70vh !important;
+                overflow-y: auto !important;
+                border-radius: 12px !important;
+                padding: 0.5rem 0 !important;
+            }
+            .top-modules-menu .dropdown-header {
+                color: #64748b !important;
+                font-size: 0.68rem !important;
+                font-weight: 800 !important;
+                letter-spacing: 0.08em !important;
+                text-transform: uppercase !important;
+                padding: 0.55rem 1rem !important;
+            }
+            .top-modules-menu .dropdown-item {
+                padding: 0.5rem 1rem !important;
+                color: #1f2937 !important;
+                font-size: 0.85rem !important;
+                font-weight: 500 !important;
+                white-space: normal !important;
+                border-left: 2px solid transparent !important;
+            }
+            .top-modules-menu .dropdown-item:hover {
+                background: #f8fafc !important;
+                color: #0f172a !important;
+                border-left-color: #206bc4 !important;
+            }
+            .top-modules-menu .dropdown-divider {
+                margin: 0.35rem 0 !important;
+            }
         }
     </style>
     <!-- UI Version: 1.0.5 -->
