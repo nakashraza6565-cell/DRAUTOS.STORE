@@ -63,5 +63,10 @@ class ManufacturingBill extends Model
                  $this->labour_cost + $this->packaging_cost + $this->overhead_cost;
         $this->total_cost_per_unit = $this->batch_quantity > 0 ? $total / $this->batch_quantity : 0;
         $this->save();
+
+        if ($this->product && $this->total_cost_per_unit > 0) {
+            $this->product->purchase_price = $this->total_cost_per_unit;
+            $this->product->save();
+        }
     }
 }
