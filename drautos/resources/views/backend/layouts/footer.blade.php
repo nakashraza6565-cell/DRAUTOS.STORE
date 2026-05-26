@@ -465,11 +465,27 @@
 
             var html = '';
             var added = {};
+            var groupIndex = 0;
+
+            function esc(s) {
+                return String(s || '').replace(/[&<>"']/g, function (m) {
+                    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+                });
+            }
+            function slugId(s) {
+                return String(s || 'group').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            }
+
+            // Search header (sticky)
+            html += ''
+                + '<div class="modules-search">'
+                + '  <input type="text" id="topModulesSearch" placeholder="Search modules... (e.g. POS, ledger, stock)" autocomplete="off" />'
+                + '</div>';
 
             $('.sidebar .sidebar-heading').each(function() {
                 var heading = $(this).text().trim();
                 var $section = $(this).nextUntil('.sidebar-heading');
-                var sectionItems = '';
+                var items = [];
 
                 $section.each(function() {
                     var $item = $(this);
@@ -484,7 +500,7 @@
                         var mainText = $mainLink.clone().find('i,span.badge').remove().end().text().trim();
                         var mainKey = mainText + '|' + mainHref;
                         if (mainText && !added[mainKey]) {
-                            sectionItems += '<a class="dropdown-item" href="' + mainHref + '">' + mainText + '</a>';
+                            items.push({ text: mainText, href: mainHref, hint: 'Module' });
                             added[mainKey] = true;
                         }
                     }
@@ -495,24 +511,83 @@
                         var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
                         var subKey = subText + '|' + subHref;
                         if (subText && !added[subKey]) {
-                            sectionItems += '<a class="dropdown-item pl-4" href="' + subHref + '">' + subText + '</a>';
+                            items.push({ text: subText, href: subHref, hint: 'Sub-module' });
                             added[subKey] = true;
                         }
                     });
                 });
 
-                if (sectionItems) {
-                    html += '<h6 class="dropdown-header">' + heading + '</h6>' + sectionItems + '<div class="dropdown-divider"></div>';
+                if (items.length) {
+                    groupIndex++;
+                    var groupId = 'topModulesGroup-' + groupIndex + '-' + slugId(heading);
+                    var expanded = groupIndex <= 2 ? 'true' : 'false';
+                    var showClass = groupIndex <= 2 ? 'show' : '';
+
+                    html += '<div class="module-group" data-group="' + esc(heading) + '">';
+                    html += '  <button class="module-group-header" type="button" data-toggle="collapse" data-target="#' + groupId + '" aria-expanded="' + expanded + '" aria-controls="' + groupId + '">';
+                    html += '    <span>' + esc(heading) + '</span>';
+                    html += '    <span class="d-flex align-items-center" style="gap:8px;">'
+                         + '      <span class="count">' + items.length + '</span>'
+                         + '      <span class="chev"><i class="fas fa-chevron-down"></i></span>'
+                         + '    </span>';
+                    html += '  </button>';
+                    html += '  <div id="' + groupId + '" class="collapse ' + showClass + '">';
+                    html += '    <div class="module-items">';
+
+                    items.forEach(function(it) {
+                        html += '<a class="module-link" href="' + esc(it.href) + '" data-text="' + esc(it.text.toLowerCase()) + '">'
+                             + '  <span>' + esc(it.text) + '</span>'
+                             + '  <span class="hint">' + esc(it.hint) + '</span>'
+                             + '</a>';
+                    });
+
+                    html += '    </div>';
+                    html += '  </div>';
+                    html += '</div>';
                 }
             });
 
             if (!html) {
                 html = '<div class="dropdown-item text-muted small">No modules available.</div>';
-            } else {
-                html = html.replace(/<div class="dropdown-divider"><\/div>$/, '');
             }
 
             $menu.html(html);
+
+            // Wire search (desktop only)
+            var $search = $('#topModulesSearch');
+            if ($search.length) {
+                $search.off('input').on('input', function() {
+                    var q = $(this).val().trim().toLowerCase();
+
+                    if (!q) {
+                        $menu.find('.module-link').show();
+                        $menu.find('.module-group').show();
+                        return;
+                    }
+
+                    $menu.find('.module-group').each(function() {
+                        var $g = $(this);
+                        var any = false;
+                        $g.find('.module-link').each(function() {
+                            var $a = $(this);
+                            var txt = ($a.attr('data-text') || '');
+                            var ok = txt.indexOf(q) !== -1;
+                            $a.toggle(ok);
+                            if (ok) any = true;
+                        });
+                        $g.toggle(any);
+
+                        // Expand groups with matches for visibility
+                        if (any) {
+                            var $collapse = $g.find('.collapse').first();
+                            if ($collapse.length && !$collapse.hasClass('show')) {
+                                $collapse.collapse('show');
+                                $g.find('.module-group-header').attr('aria-expanded', 'true');
+                            }
+                        }
+                    });
+                });
+            }
         }
 
         buildDesktopModulesMenu();
