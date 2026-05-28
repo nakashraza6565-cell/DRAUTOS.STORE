@@ -143,6 +143,7 @@
                   right: 20px;
                   width: 55px;
                   height: 55px;
+                  touch-action: none !important;
               }
           }
           #ai-chat-header {
@@ -731,31 +732,31 @@
             }
         }
 
-        // Floating Draggable Menu Launcher (#launcherTrigger) logic for Mobile screen
-        (function() {
-            var $btn = $('#launcherTrigger');
-            if (!$btn.length || $(window).width() > 768) return;
+        // Reusable touch drag positioning helper for Mobile screens (place ANYWHERE)
+        function makeElementDraggable(selector, storageKey, defaultBottomOffset) {
+            var $elem = $(selector);
+            if (!$elem.length || $(window).width() > 768) return;
 
-            var btn = $btn[0];
+            var elem = $elem[0];
             var isDragging = false;
             var startX, startY, initialX, initialY;
             var screenWidth = $(window).width();
             var screenHeight = $(window).height();
-            var btnWidth = $btn.outerWidth() || 56;
-            var btnHeight = $btn.outerHeight() || 56;
+            var elemWidth = $elem.outerWidth() || 56;
+            var elemHeight = $elem.outerHeight() || 56;
 
             // Load saved coordinates from localStorage if present
-            var savedTop = localStorage.getItem('launcher_fab_top');
-            var savedLeft = localStorage.getItem('launcher_fab_left');
+            var savedTop = localStorage.getItem(storageKey + '_top');
+            var savedLeft = localStorage.getItem(storageKey + '_left');
 
             function applyCoordinates(x, y) {
-                // Bounds enforcement
+                // Keep strictly inside bounds with 10px safe margin
                 if (x < 10) x = 10;
-                if (x > screenWidth - btnWidth - 10) x = screenWidth - btnWidth - 10;
+                if (x > screenWidth - elemWidth - 10) x = screenWidth - elemWidth - 10;
                 if (y < 10) y = 10;
-                if (y > screenHeight - btnHeight - 10) y = screenHeight - btnHeight - 10;
+                if (y > screenHeight - elemHeight - 10) y = screenHeight - elemHeight - 10;
 
-                $btn.css({
+                $elem.css({
                     'top': y + 'px',
                     'left': x + 'px',
                     'bottom': 'auto',
@@ -766,32 +767,32 @@
             if (savedTop !== null && savedLeft !== null) {
                 applyCoordinates(parseFloat(savedLeft), parseFloat(savedTop));
             } else {
-                // Default position: bottom-right (bottom: 120px, right: 20px)
-                var defaultTop = screenHeight - btnHeight - 120;
-                var defaultLeft = screenWidth - btnWidth - 20;
+                // Position default from bottom-right
+                var defaultTop = screenHeight - elemHeight - defaultBottomOffset;
+                var defaultLeft = screenWidth - elemWidth - 20;
                 applyCoordinates(defaultLeft, defaultTop);
             }
 
-            // Touch Drag Handling
-            btn.addEventListener('touchstart', function(e) {
+            // Touch Drag Event Listeners
+            elem.addEventListener('touchstart', function(e) {
                 var touch = e.touches[0];
                 startX = touch.clientX;
                 startY = touch.clientY;
 
-                var rect = btn.getBoundingClientRect();
+                var rect = elem.getBoundingClientRect();
                 initialX = rect.left;
                 initialY = rect.top;
 
                 isDragging = false;
-                $btn.css('transition', 'none'); // Disable transition for instant, lag-free visual tracking
+                $elem.css('transition', 'none'); // Remove transitions during touch moves for zero-lag responsiveness
             }, { passive: true });
 
-            btn.addEventListener('touchmove', function(e) {
+            elem.addEventListener('touchmove', function(e) {
                 var touch = e.touches[0];
                 var deltaX = touch.clientX - startX;
                 var deltaY = touch.clientY - startY;
 
-                // Threshold to differentiate tap vs drag (5 pixels)
+                // Threshold of 5px to distinguish drag vs normal tap
                 if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
                     isDragging = true;
                 }
@@ -800,65 +801,59 @@
                     var newLeft = initialX + deltaX;
                     var newTop = initialY + deltaY;
 
-                    // Bound checks
+                    // Keep inside bounds
                     if (newLeft < 10) newLeft = 10;
-                    if (newLeft > screenWidth - btnWidth - 10) newLeft = screenWidth - btnWidth - 10;
+                    if (newLeft > screenWidth - elemWidth - 10) newLeft = screenWidth - elemWidth - 10;
                     if (newTop < 10) newTop = 10;
-                    if (newTop > screenHeight - btnHeight - 10) newTop = screenHeight - btnHeight - 10;
+                    if (newTop > screenHeight - elemHeight - 10) newTop = screenHeight - elemHeight - 10;
 
-                    $btn.css({
+                    $elem.css({
                         'left': newLeft + 'px',
                         'top': newTop + 'px'
                     });
 
-                    // Prevent page scrolling while dragging the floating button
+                    // Prevent scrolling on mobile while dragging the button
                     if (e.cancelable) {
                         e.preventDefault();
                     }
                 }
             }, { passive: false });
 
-            btn.addEventListener('touchend', function(e) {
-                // Re-enable smooth transitions for edge-snapping
-                $btn.css('transition', 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)');
+            elem.addEventListener('touchend', function(e) {
+                // Restore transition properties
+                $elem.css('transition', 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease');
 
                 if (isDragging) {
-                    var rect = btn.getBoundingClientRect();
-                    var currentLeft = rect.left;
-                    var currentTop = rect.top;
+                    var rect = elem.getBoundingClientRect();
+                    
+                    // Allow dropping ANYWHERE on the screen (no horizontal side snapping)
+                    var dropLeft = rect.left;
+                    var dropTop = rect.top;
 
-                    // Snap horizontally to nearest side (iOS AssistiveTouch style)
-                    var snapLeft;
-                    if (currentLeft + btnWidth / 2 < screenWidth / 2) {
-                        snapLeft = 20; // Snap to left edge
-                    } else {
-                        snapLeft = screenWidth - btnWidth - 20; // Snap to right edge
-                    }
-
-                    var snapTop = currentTop;
-                    if (snapTop < 20) snapTop = 20;
-                    if (snapTop > screenHeight - btnHeight - 20) snapTop = screenHeight - btnHeight - 20;
-
-                    applyCoordinates(snapLeft, snapTop);
+                    applyCoordinates(dropLeft, dropTop);
 
                     // Save position
-                    localStorage.setItem('launcher_fab_top', snapTop);
-                    localStorage.setItem('launcher_fab_left', snapLeft);
+                    localStorage.setItem(storageKey + '_top', dropTop);
+                    localStorage.setItem(storageKey + '_left', dropLeft);
 
-                    // Prevent synthetic click event
+                    // Prevent firing standard click events
                     e.preventDefault();
                     e.stopPropagation();
                 }
             }, { passive: false });
 
-            // Recalculate limits on screen resize or orientation change
+            // Ensure window scaling behaves on resize / rotate
             $(window).on('resize orientationchange', function() {
                 screenWidth = $(window).width();
                 screenHeight = $(window).height();
-                var rect = btn.getBoundingClientRect();
+                var rect = elem.getBoundingClientRect();
                 applyCoordinates(rect.left, rect.top);
             });
-        })();
+        }
+
+        // Initialize mobile draggable controllers
+        makeElementDraggable('#launcherTrigger', 'launcher_fab', 120);
+        makeElementDraggable('#ai-chat-trigger', 'ai_fab', 20);
 
         setTimeout(function(){
           $('.alert').slideUp();

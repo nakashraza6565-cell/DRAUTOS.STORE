@@ -853,9 +853,9 @@
             }
             #launcherTrigger {
                 position: fixed !important;
-                bottom: 120px !important;
-                right: 20px !important;
-                left: auto !important;
+                bottom: 120px;
+                right: 20px;
+                left: auto;
                 width: 56px !important;
                 height: 56px !important;
                 border-radius: 50% !important;
