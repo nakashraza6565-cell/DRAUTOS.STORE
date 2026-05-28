@@ -1138,8 +1138,7 @@
                 flex: 1 1 auto !important;
                 min-width: 0 !important;
                 max-width: calc(100% - 380px) !important;
-                overflow-x: auto !important;
-                overflow-y: hidden !important;
+                overflow: visible !important;
                 flex-wrap: nowrap !important;
                 scrollbar-width: none !important;
             }
@@ -1158,7 +1157,14 @@
             .top-nav-category .top-nav-link[aria-expanded="true"] {
                 color: #206bc4 !important;
             }
+            .top-nav-category {
+                position: relative !important;
+            }
             .top-category-menu {
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                z-index: 99999 !important;
                 min-width: 240px !important;
                 max-height: 70vh !important;
                 overflow-y: auto !important;
@@ -1166,7 +1172,14 @@
                 padding: 0.35rem 0 !important;
                 border: 1px solid rgba(15, 23, 42, 0.06) !important;
                 box-shadow: 0 20px 40px -12px rgba(2, 6, 23, 0.15) !important;
+                background-color: #ffffff !important;
+                display: none;
                 animation: topNavDropIn 0.2s ease !important;
+            }
+            .top-nav-category.show .top-category-menu {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
             @keyframes topNavDropIn {
                 from { opacity: 0; transform: translateY(-8px); }

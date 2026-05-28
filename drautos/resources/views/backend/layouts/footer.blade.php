@@ -540,6 +540,40 @@
 
         buildDesktopTopNavCategories();
 
+        // Bulletproof manual click event listener for dynamically-injected categories
+        $(document).on('click', '.top-nav-category .top-nav-link', function(e) {
+            var $parent = $(this).closest('.top-nav-category');
+            var $menu = $parent.find('.top-category-menu');
+            
+            // Toggle active menu state
+            var isShowing = $parent.hasClass('show');
+            
+            // Close any other open dropdowns first
+            $('.top-nav-category').removeClass('show').find('.top-category-menu').hide();
+            $('.top-nav-category .top-nav-link').attr('aria-expanded', 'false');
+            
+            if (!isShowing) {
+                $parent.addClass('show');
+                $menu.show();
+                $(this).attr('aria-expanded', 'true');
+            } else {
+                $parent.removeClass('show');
+                $menu.hide();
+                $(this).attr('aria-expanded', 'false');
+            }
+            
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        // Close dropdown menus when clicking anywhere else on the document
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.top-nav-category').length) {
+                $('.top-nav-category').removeClass('show').find('.top-category-menu').hide();
+                $('.top-nav-category .top-nav-link').attr('aria-expanded', 'false');
+            }
+        });
+
         // Project-wide Ghost Sidebar Logic
         $(".sidebar").addClass("sidebar-ghost-mode");
         // Hover to reveal is removed as per user request
