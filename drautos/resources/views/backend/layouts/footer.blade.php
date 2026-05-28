@@ -574,7 +574,52 @@
                     );
                 }
             });
+
+            // ── Manufacturing Dropdown ──────────────────────────────────────────
+            // Built separately because Die Management & Manufacturing are standalone
+            // sidebar nav-items not nested under any sidebar-heading section.
+            (function() {
+                var mfgHtml = '';
+
+                // 1. Die Management – direct nav-link
+                var $dieMgmt = $('.sidebar .nav-item').filter(function() {
+                    return $(this).find('> .nav-link span').text().trim() === 'Die Management';
+                }).first();
+                if ($dieMgmt.length) {
+                    var dieHref = $dieMgmt.find('> .nav-link').attr('href');
+                    if (dieHref && !added['Die Management|' + dieHref]) {
+                        mfgHtml += '<a class="dropdown-item py-2" href="' + esc(dieHref) + '">Die Management</a>';
+                        added['Die Management|' + dieHref] = true;
+                    }
+                }
+
+                // 2. Manufacturing collapse items (Raw Materials & Labor, Bill of Materials, etc.)
+                $('#manufacturingCollapse .collapse-item[href]').each(function() {
+                    var subHref = $(this).attr('href');
+                    var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                    var subKey = subText + '|' + subHref;
+                    if (subText && !added[subKey]) {
+                        mfgHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
+                        added[subKey] = true;
+                    }
+                });
+
+                if (mfgHtml) {
+                    catIndex++;
+                    var mfgMenuId = 'topNavCat-' + catIndex;
+                    $container.append(
+                        '<li class="nav-item dropdown top-nav-category">'
+                        + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + mfgMenuId + '" role="button" aria-haspopup="true" aria-expanded="false">Manufacturing</a>'
+                        + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + mfgMenuId + '">'
+                        + '<h6 class="dropdown-header">Manufacturing</h6>'
+                        + mfgHtml
+                        + '</div>'
+                        + '</li>'
+                    );
+                }
+            })();
         }
+
 
         buildDesktopTopNavCategories();
 
