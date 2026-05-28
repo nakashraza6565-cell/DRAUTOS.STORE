@@ -15,9 +15,6 @@
     <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
         @can('view-dashboard')
         <li class="nav-item">
-            <a class="nav-link px-2 top-nav-link" href="{{route('admin')}}">Dashboard</a>
-        </li>
-        <li class="nav-item">
             <a class="nav-link px-2 top-nav-link" href="{{route('admin.activity-logs')}}">Activity Log</a>
         </li>
         @endcan

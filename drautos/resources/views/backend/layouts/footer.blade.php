@@ -490,6 +490,44 @@
             $('.sidebar .sidebar-heading').each(function() {
                 var heading = $(this).text().trim();
                 var $section = $(this).nextUntil('.sidebar-heading');
+                
+                // Special separation: Extract "Stock Control" collapsible menu items from "Inventory & Assets"
+                if (heading === 'Inventory & Assets') {
+                    var $productItem = $section.filter(function() {
+                        return $(this).find('[data-target="#productCollapse"]').length > 0;
+                    });
+                    
+                    if ($productItem.length) {
+                        var productItemsHtml = '';
+                        $productItem.find('.collapse-item[href]').each(function() {
+                            var subHref = $(this).attr('href');
+                            var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                            var subKey = subText + '|' + subHref;
+                            if (subText && !added[subKey]) {
+                                productItemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
+                                added[subKey] = true;
+                            }
+                        });
+                        
+                        if (productItemsHtml) {
+                            catIndex++;
+                            var productMenuId = 'topNavCat-' + catIndex;
+                            $container.append(
+                                '<li class="nav-item dropdown top-nav-category">'
+                                + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + productMenuId + '" role="button" aria-haspopup="true" aria-expanded="false">Product</a>'
+                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + productMenuId + '">'
+                                + '<h6 class="dropdown-header">Stock Control</h6>'
+                                + productItemsHtml
+                                + '</div>'
+                                + '</li>'
+                            );
+                        }
+                        
+                        // Exclude the product nav-item from the general "Inventory & Assets" section
+                        $section = $section.not($productItem);
+                    }
+                }
+
                 var itemsHtml = '';
 
                 $section.each(function() {
