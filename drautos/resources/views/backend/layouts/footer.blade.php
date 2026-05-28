@@ -634,6 +634,7 @@
                             );
                         }
                     })();
+                }
             });
             } catch (err) {
                 console.error("buildDesktopTopNavCategories error: ", err);
