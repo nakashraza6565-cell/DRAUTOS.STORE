@@ -527,7 +527,7 @@
 
                     $container.append(
                         '<li class="nav-item dropdown top-nav-category">'
-                        + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + menuId + '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + navLabel + '</a>'
+                        + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + menuId + '" role="button" aria-haspopup="true" aria-expanded="false">' + navLabel + '</a>'
                         + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + menuId + '">'
                         + '<h6 class="dropdown-header">' + esc(heading) + '</h6>'
                         + itemsHtml
