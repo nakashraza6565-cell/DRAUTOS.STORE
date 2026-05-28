@@ -2191,24 +2191,117 @@
                     let shareReceiptPromise = Promise.resolve();
                     if ($('#share-receipt-toggle').is(':checked') && response.invoice_url) {
                         let shareUrl = response.invoice_url;
-                        if ($('#print-receipt-urdu').is(':checked')) {
+                        let lang = $('#print-receipt-urdu').is(':checked') ? 'ur' : 'en';
+                        if (lang === 'ur') {
                             shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
                         }
                         
                         let text = "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
-                        if ($('#print-receipt-urdu').is(':checked')) {
+                        if (lang === 'ur') {
                             text = "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:";
                         }
 
-                        if (navigator.share) {
-                            shareReceiptPromise = navigator.share({
-                                title: 'Danyal Autos Invoice',
-                                text: text,
-                                url: shareUrl
-                            }).catch(err => {
-                                console.log('Share canceled or failed:', err);
+                        // Check if Web Share API with file support is available
+                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([new Blob()], 'test.png', { type: 'image/png' })] })) {
+                            // Show loading SweetAlert during image generation
+                            Swal.fire({
+                                title: lang === 'ur' ? 'تصویر تیار ہو رہی ہے...' : 'Generating Image Receipt...',
+                                html: lang === 'ur' ? 'براہ کرم چند سیکنڈ انتظار کریں' : 'Please wait a few seconds...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            shareReceiptPromise = new Promise(async (resolveShare) => {
+                                try {
+                                    // Generate the print URL from invoice PDF URL
+                                    let printUrl = response.invoice_url.replace('/pdf/', '/print/') + '?type=standard';
+                                    if (lang === 'ur') {
+                                        printUrl += '&lang=ur';
+                                    }
+
+                                    const printResponse = await fetch(printUrl);
+                                    let htmlText = await printResponse.text();
+
+                                    // Strip auto-print scripts
+                                    htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                                    htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+
+                                    // Render inside iframe
+                                    const iframe = document.createElement('iframe');
+                                    iframe.style.position = 'fixed';
+                                    iframe.style.right = '-9999px';
+                                    iframe.style.width = '800px';
+                                    iframe.style.height = '2500px';
+                                    document.body.appendChild(iframe);
+
+                                    const iframeDoc = iframe.contentWindow.document;
+                                    iframeDoc.open();
+                                    iframeDoc.write(htmlText);
+                                    iframeDoc.close();
+
+                                    // Wait for assets/fonts to load
+                                    await new Promise(r => setTimeout(r, 1000));
+
+                                    // Auto-resize
+                                    iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+
+                                    // Load html2canvas if needed
+                                    if (typeof html2canvas === 'undefined') {
+                                        await new Promise((resolveScript) => {
+                                            const script = document.createElement('script');
+                                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                                            script.onload = resolveScript;
+                                            document.head.appendChild(script);
+                                        });
+                                    }
+
+                                    const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
+                                    const canvas = await html2canvas(wrapper, {
+                                        scale: 2,
+                                        useCORS: true,
+                                        backgroundColor: '#ffffff'
+                                    });
+
+                                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                                    document.body.removeChild(iframe);
+
+                                    // Close loading popup
+                                    Swal.close();
+
+                                    // Prepare file for native share
+                                    const filename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                    const file = new File([blob], filename, { type: 'image/png' });
+
+                                    await navigator.share({
+                                        files: [file],
+                                        title: 'Danyal Autos Invoice',
+                                        text: text
+                                    });
+
+                                    resolveShare();
+                                } catch (err) {
+                                    console.error('POS Image share failed:', err);
+                                    Swal.close();
+                                    // Fallback to text link share if file sharing fails
+                                    if (err.name !== 'AbortError') {
+                                        if (navigator.share) {
+                                            navigator.share({
+                                                title: 'Danyal Autos Invoice',
+                                                text: text,
+                                                url: shareUrl
+                                            }).then(resolveShare).catch(resolveShare);
+                                        } else {
+                                            resolveShare();
+                                        }
+                                    } else {
+                                        resolveShare();
+                                    }
+                                }
                             });
                         } else {
+                            // Desktop / non-capable fallback: share url via WhatsApp
                             let customerPhone = $('#customer-select option:selected').data('phone') || '';
                             let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
                             if (cleanedPhone && !cleanedPhone.startsWith('92')) {
