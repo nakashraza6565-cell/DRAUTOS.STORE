@@ -526,6 +526,15 @@
                         // Exclude the product nav-item from the general "Inventory & Assets" section
                         $section = $section.not($productItem);
                     }
+
+                    // Always exclude Die Management and Manufacturing from Inventory & Assets
+                    var $dieMgmtItem = $section.filter(function() {
+                        return $(this).find('> .nav-link span').text().trim() === 'Die Management';
+                    });
+                    var $mfgItem = $section.filter(function() {
+                        return $(this).find('[data-target="#manufacturingCollapse"]').length > 0;
+                    });
+                    $section = $section.not($dieMgmtItem).not($mfgItem);
                 }
 
                 var itemsHtml = '';
