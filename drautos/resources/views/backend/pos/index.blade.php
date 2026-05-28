@@ -52,9 +52,9 @@
                     <button class="btn btn-sm btn-link text-primary p-0" data-toggle="modal" data-target="#addCustomerModal"><i class="fas fa-plus-circle fa-lg"></i></button>
                 </div>
                 <select class="form-control select2" id="customer-select">
-                    <option value="{{$walkInId}}" data-type="walkin">Walk-in Customer</option>
+                    <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
                     @foreach($customers as $customer)
-                    <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}">
+                    <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
                         {{$customer->name}} ({{$customer->phone}}) | Bal: Rs. {{number_format($customer->current_balance ?? 0, 2)}}
                     </option>
                     @endforeach
@@ -527,6 +527,12 @@
                         <input type="checkbox" class="custom-control-input" id="print-receipt-urdu">
                         <label class="custom-control-label font-weight-bold text-info" for="print-receipt-urdu" style="cursor: pointer;">
                             <i class="fas fa-language mr-1"></i> Translate to Urdu (اردو)
+                        </label>
+                    </div>
+                    <div class="custom-control custom-checkbox mt-1">
+                        <input type="checkbox" class="custom-control-input" id="share-receipt-toggle" checked>
+                        <label class="custom-control-label font-weight-bold text-primary" for="share-receipt-toggle" style="cursor: pointer;">
+                            <i class="fas fa-share-nodes mr-1"></i> Share Receipt / Image (رسید / تصویر شیئر کریں)
                         </label>
                     </div>
                 </div>
@@ -2181,25 +2187,64 @@
                         $('#print-iframe').attr('src', printUrl);
                     }
 
-                    if (response.wa_sent) {
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
-                            icon: 'success',
-                            timer: 4000
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Order Saved',
-                            text: 'Order created' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Sent to Printer' : '') + ', but WhatsApp could not be sent.',
-                            icon: 'warning',
-                            timer: 5000
-                        }).then(() => {
-                            location.reload();
-                        });
+                    // Share Receipt / Image logic
+                    let shareReceiptPromise = Promise.resolve();
+                    if ($('#share-receipt-toggle').is(':checked') && response.invoice_url) {
+                        let shareUrl = response.invoice_url;
+                        if ($('#print-receipt-urdu').is(':checked')) {
+                            shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                        }
+                        
+                        let text = "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
+                        if ($('#print-receipt-urdu').is(':checked')) {
+                            text = "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:";
+                        }
+
+                        if (navigator.share) {
+                            shareReceiptPromise = navigator.share({
+                                title: 'Danyal Autos Invoice',
+                                text: text,
+                                url: shareUrl
+                            }).catch(err => {
+                                console.log('Share canceled or failed:', err);
+                            });
+                        } else {
+                            let customerPhone = $('#customer-select option:selected').data('phone') || '';
+                            let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
+                            if (cleanedPhone && !cleanedPhone.startsWith('92')) {
+                                if (cleanedPhone.startsWith('0')) {
+                                    cleanedPhone = '92' + cleanedPhone.substring(1);
+                                } else {
+                                    cleanedPhone = '92' + cleanedPhone;
+                                }
+                            }
+                            let shareText = encodeURIComponent(text + "\n" + shareUrl);
+                            let waUrl = cleanedPhone ? `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${shareText}` : `https://api.whatsapp.com/send?text=${shareText}`;
+                            window.open(waUrl, '_blank');
+                        }
                     }
+
+                    shareReceiptPromise.then(() => {
+                        if (response.wa_sent) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
+                                icon: 'success',
+                                timer: 4000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Order Saved',
+                                text: 'Order created' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Sent to Printer' : '') + ', but WhatsApp could not be sent.',
+                                icon: 'warning',
+                                timer: 5000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    });
                 } else {
                     Swal.fire('Error', response.message, 'error');
                     $('#complete-order').prop('disabled', false).text('SAVE ORDER');
