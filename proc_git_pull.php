@@ -35,3 +35,23 @@ if (is_resource($process)) {
     $returnValue = proc_close($process);
     echo "Git Status Output:\n$output\n";
 }
+
+echo "\n--- Git Remote ---\n";
+$process = proc_open('git remote -v 2>&1', $descriptorspec, $pipes);
+if (is_resource($process)) {
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    proc_close($process);
+    echo "Remote Info:\n$output\n";
+}
+
+echo "\n--- Git Recent Log ---\n";
+$process = proc_open('git log -n 5 --oneline 2>&1', $descriptorspec, $pipes);
+if (is_resource($process)) {
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    proc_close($process);
+    echo "Log Output:\n$output\n";
+}
