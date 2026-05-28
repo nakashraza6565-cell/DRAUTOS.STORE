@@ -1134,10 +1134,10 @@
 
             /* Desktop top category nav (each sidebar section = its own dropdown) */
             .top-nav-categories {
-                gap: 2px !important;
+                gap: 1px !important;
                 flex: 1 1 auto !important;
                 min-width: 0 !important;
-                max-width: calc(100% - 380px) !important;
+                max-width: calc(100% - 340px) !important;
                 overflow: visible !important;
                 flex-wrap: nowrap !important;
                 scrollbar-width: none !important;
@@ -1145,7 +1145,9 @@
             .top-nav-categories::-webkit-scrollbar { display: none !important; }
             .top-nav-link {
                 font-weight: 600 !important;
-                font-size: 0.82rem !important;
+                font-size: 0.78rem !important;
+                padding-left: 6px !important;
+                padding-right: 6px !important;
                 padding-top: 10px !important;
                 padding-bottom: 10px !important;
                 color: #334155 !important;
