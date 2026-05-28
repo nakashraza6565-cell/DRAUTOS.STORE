@@ -731,6 +731,135 @@
             }
         }
 
+        // Floating Draggable Menu Launcher (#launcherTrigger) logic for Mobile screen
+        (function() {
+            var $btn = $('#launcherTrigger');
+            if (!$btn.length || $(window).width() > 768) return;
+
+            var btn = $btn[0];
+            var isDragging = false;
+            var startX, startY, initialX, initialY;
+            var screenWidth = $(window).width();
+            var screenHeight = $(window).height();
+            var btnWidth = $btn.outerWidth() || 56;
+            var btnHeight = $btn.outerHeight() || 56;
+
+            // Load saved coordinates from localStorage if present
+            var savedTop = localStorage.getItem('launcher_fab_top');
+            var savedLeft = localStorage.getItem('launcher_fab_left');
+
+            function applyCoordinates(x, y) {
+                // Bounds enforcement
+                if (x < 10) x = 10;
+                if (x > screenWidth - btnWidth - 10) x = screenWidth - btnWidth - 10;
+                if (y < 10) y = 10;
+                if (y > screenHeight - btnHeight - 10) y = screenHeight - btnHeight - 10;
+
+                $btn.css({
+                    'top': y + 'px',
+                    'left': x + 'px',
+                    'bottom': 'auto',
+                    'right': 'auto'
+                });
+            }
+
+            if (savedTop !== null && savedLeft !== null) {
+                applyCoordinates(parseFloat(savedLeft), parseFloat(savedTop));
+            } else {
+                // Default position: bottom-right (bottom: 120px, right: 20px)
+                var defaultTop = screenHeight - btnHeight - 120;
+                var defaultLeft = screenWidth - btnWidth - 20;
+                applyCoordinates(defaultLeft, defaultTop);
+            }
+
+            // Touch Drag Handling
+            btn.addEventListener('touchstart', function(e) {
+                var touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                var rect = btn.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+
+                isDragging = false;
+                $btn.css('transition', 'none'); // Disable transition for instant, lag-free visual tracking
+            }, { passive: true });
+
+            btn.addEventListener('touchmove', function(e) {
+                var touch = e.touches[0];
+                var deltaX = touch.clientX - startX;
+                var deltaY = touch.clientY - startY;
+
+                // Threshold to differentiate tap vs drag (5 pixels)
+                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                    isDragging = true;
+                }
+
+                if (isDragging) {
+                    var newLeft = initialX + deltaX;
+                    var newTop = initialY + deltaY;
+
+                    // Bound checks
+                    if (newLeft < 10) newLeft = 10;
+                    if (newLeft > screenWidth - btnWidth - 10) newLeft = screenWidth - btnWidth - 10;
+                    if (newTop < 10) newTop = 10;
+                    if (newTop > screenHeight - btnHeight - 10) newTop = screenHeight - btnHeight - 10;
+
+                    $btn.css({
+                        'left': newLeft + 'px',
+                        'top': newTop + 'px'
+                    });
+
+                    // Prevent page scrolling while dragging the floating button
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
+                }
+            }, { passive: false });
+
+            btn.addEventListener('touchend', function(e) {
+                // Re-enable smooth transitions for edge-snapping
+                $btn.css('transition', 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)');
+
+                if (isDragging) {
+                    var rect = btn.getBoundingClientRect();
+                    var currentLeft = rect.left;
+                    var currentTop = rect.top;
+
+                    // Snap horizontally to nearest side (iOS AssistiveTouch style)
+                    var snapLeft;
+                    if (currentLeft + btnWidth / 2 < screenWidth / 2) {
+                        snapLeft = 20; // Snap to left edge
+                    } else {
+                        snapLeft = screenWidth - btnWidth - 20; // Snap to right edge
+                    }
+
+                    var snapTop = currentTop;
+                    if (snapTop < 20) snapTop = 20;
+                    if (snapTop > screenHeight - btnHeight - 20) snapTop = screenHeight - btnHeight - 20;
+
+                    applyCoordinates(snapLeft, snapTop);
+
+                    // Save position
+                    localStorage.setItem('launcher_fab_top', snapTop);
+                    localStorage.setItem('launcher_fab_left', snapLeft);
+
+                    // Prevent synthetic click event
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+
+            // Recalculate limits on screen resize or orientation change
+            $(window).on('resize orientationchange', function() {
+                screenWidth = $(window).width();
+                screenHeight = $(window).height();
+                var rect = btn.getBoundingClientRect();
+                applyCoordinates(rect.left, rect.top);
+            });
+        })();
+
         setTimeout(function(){
           $('.alert').slideUp();
         },4000);

@@ -851,6 +851,31 @@
                 border: none;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
+            #launcherTrigger {
+                position: fixed !important;
+                bottom: 120px !important;
+                right: 20px !important;
+                left: auto !important;
+                width: 56px !important;
+                height: 56px !important;
+                border-radius: 50% !important;
+                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+                color: #fff !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                box-shadow: 0 10px 25px rgba(12, 27, 61, 0.35), 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+                z-index: 999999 !important;
+                border: 2px solid rgba(255, 255, 255, 0.15) !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+                touch-action: none;
+            }
+            #launcherTrigger:active {
+                transform: scale(0.9) !important;
+                box-shadow: 0 5px 15px rgba(12, 27, 61, 0.25) !important;
+            }
             .mobile-search-trigger {
                 width: 42px;
                 height: 42px;
@@ -1206,79 +1231,6 @@
                 background: rgba(32, 107, 196, 0.06) !important;
                 color: #206bc4 !important;
                 padding-left: 1.15rem !important;
-            }
-        }
-
-        /* Mobile Sticky Bottom Navigation Bar (Visible only on screens <= 768px) */
-        @media (max-width: 768px) {
-            body {
-                padding-bottom: 75px !important;
-            }
-            .mobile-bottom-nav {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                height: 65px;
-                background: rgba(255, 255, 255, 0.96) !important;
-                backdrop-filter: blur(12px) !important;
-                -webkit-backdrop-filter: blur(12px) !important;
-                border-top: 1px solid rgba(0,0,0,0.06);
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-                z-index: 1020 !important; /* Above page content but below Bootstrap modal */
-                box-shadow: 0 -8px 25px rgba(0,0,0,0.05);
-                padding: 0 5px;
-            }
-            .bottom-nav-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                text-decoration: none !important;
-                color: #64748b !important;
-                font-size: 0.65rem;
-                font-weight: 700;
-                transition: all 0.2s ease;
-                position: relative;
-                flex: 1;
-                height: 100%;
-            }
-            .bottom-nav-item i {
-                font-size: 1.2rem;
-                margin-bottom: 4px;
-                transition: transform 0.2s ease, color 0.2s ease;
-                color: #64748b;
-            }
-            .bottom-nav-item.active {
-                color: var(--accent) !important;
-            }
-            .bottom-nav-item.active i {
-                transform: translateY(-2px);
-                color: var(--accent) !important;
-            }
-            .bottom-nav-item:active i {
-                transform: scale(0.9) translateY(-1px);
-            }
-            
-            /* Special Launcher Floating Button */
-            .bottom-nav-launcher-btn {
-                position: absolute;
-                top: -22px;
-                width: 48px;
-                height: 48px;
-                border-radius: 50%;
-                background: var(--accent-gradient);
-                box-shadow: var(--accent-glow);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border: 3px solid #fff;
-                transition: all 0.2s ease;
-            }
-            .bottom-nav-item:active .bottom-nav-launcher-btn {
-                transform: scale(0.9) translateY(-2px);
             }
         }
     </style>
