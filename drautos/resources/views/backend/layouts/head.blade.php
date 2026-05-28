@@ -54,7 +54,7 @@
             margin: 10px 15px 10px 18.5rem !important; /* Desktop clears sidebar; mobile override below */
             border-radius: var(--radius-lg);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02) !important;
-            z-index: 11000 !important;
+            z-index: 1030 !important;
         }
         @media (max-width: 768px) {
             .topbar { margin: 10px 15px !important; }
