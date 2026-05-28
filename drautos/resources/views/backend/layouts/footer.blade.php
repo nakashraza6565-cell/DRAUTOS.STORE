@@ -454,20 +454,28 @@
   <script>
     $(document).ready(function() {
         function buildDesktopTopNavCategories() {
+            var $container = $('#topNavCategories');
+            if ($container.length) {
+                // Clear out any old diagnostics first
+                $container.find('.mfg-diag').remove();
+                $container.append('<li class="nav-item text-muted px-2 font-weight-bold mfg-diag" style="font-size:0.75rem;">Diag: Init (w: ' + $(window).width() + ')</li>');
+            }
             try {
                 if ($(window).width() < 769) {
+                    if ($container.length) {
+                        $container.find('.mfg-diag').text('Diag: Skipped (width ' + $(window).width() + ' < 769)');
+                    }
                     return;
                 }
 
-            var $container = $('#topNavCategories');
-            if (!$container.length) {
-                return;
-            }
+                if (!$container.length) {
+                    return;
+                }
 
-            $container.find('.top-nav-category').remove();
+                $container.find('.top-nav-category').remove();
 
-            var added = {};
-            var catIndex = 0;
+                var added = {};
+                var catIndex = 0;
 
             function esc(s) {
                 return String(s || '').replace(/[&<>"']/g, function (m) {
