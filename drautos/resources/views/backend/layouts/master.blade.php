@@ -160,9 +160,36 @@
 
   @include('backend.layouts.footer')
 
+  <!-- Mobile Sticky Bottom Navigation Bar (Sticky at bottom, mobile only) -->
+  <div class="mobile-bottom-nav d-md-none">
+      <a href="{{route('admin')}}" class="bottom-nav-item {{Request::is('admin') ? 'active' : ''}}">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+      </a>
+      <a href="{{route('admin.pos')}}" class="bottom-nav-item">
+          <i class="fas fa-desktop"></i>
+          <span>POS</span>
+      </a>
+      <a href="#" id="bottomLauncherTrigger" class="bottom-nav-item">
+          <div class="bottom-nav-launcher-btn">
+              <i class="fas fa-th-large text-white"></i>
+          </div>
+          <span style="margin-top: 25px;">Menu</span>
+      </a>
+      <a href="#" class="bottom-nav-item" data-toggle="modal" data-target="#quickExpenseModal">
+          <i class="fas fa-money-bill-wave"></i>
+          <span>Expense</span>
+      </a>
+      <a href="{{route('admin.activity-logs')}}" class="bottom-nav-item {{Request::is('admin/activity-logs') ? 'active' : ''}}">
+          <i class="fas fa-newspaper"></i>
+          <span>Logs</span>
+      </a>
+  </div>
+
   <script>
       $(document).ready(function() {
-          $('#launcherTrigger').on('click', function() {
+          $('#launcherTrigger, #bottomLauncherTrigger').on('click', function(e) {
+              e.preventDefault();
               $('#adminAppLauncher').fadeIn(300).addClass('active');
               $('body').css('overflow', 'hidden');
           });
