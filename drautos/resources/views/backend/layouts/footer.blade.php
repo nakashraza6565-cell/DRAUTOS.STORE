@@ -454,9 +454,10 @@
   <script>
     $(document).ready(function() {
         function buildDesktopTopNavCategories() {
-            if ($(window).width() < 769) {
-                return;
-            }
+            try {
+                if ($(window).width() < 769) {
+                    return;
+                }
 
             var $container = $('#topNavCategories');
             if (!$container.length) {
@@ -626,6 +627,10 @@
                         }
                     })();
             });
+            } catch (err) {
+                console.error("buildDesktopTopNavCategories error: ", err);
+                $('#topNavCategories').append('<li class="nav-item text-danger px-2 font-weight-bold" style="font-size:0.8rem;">JS Error: ' + err.message + '</li>');
+            }
         }
 
 
