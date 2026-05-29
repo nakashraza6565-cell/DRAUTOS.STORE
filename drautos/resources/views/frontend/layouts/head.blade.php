@@ -325,16 +325,35 @@
         align-items: center;
         justify-content: center;
         z-index: 2;
-        pointer-events: none;
+        pointer-events: auto;   /* allow drag events through */
+        cursor: grab;
+        /* 3D perspective origin */
+        perspective: 900px;
+        perspective-origin: 50% 50%;
+    }
+    .showroom-truck-wrap:active { cursor: grabbing; }
+
+    /* The rotating 3D stage that holds the image + hotspots */
+    .truck-3d-stage {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform-style: preserve-3d;
+        will-change: transform;
+        width: 58%;
+        height: 90%;
+        user-select: none;
     }
 
     .showroom-truck-img {
-        max-width: 58%;
-        max-height: 90%;
+        max-width: 100%;
+        max-height: 100%;
         object-fit: contain;
         filter: drop-shadow(0 0 30px rgba(0,200,255,0.35)) drop-shadow(0 0 60px rgba(0,100,200,0.2));
-        transition: transform 0.1s linear;
+        pointer-events: none;
         user-select: none;
+        display: block;
     }
 
     /* Scan label */
@@ -496,13 +515,13 @@
         #chassis-3d-showroom { height: 560px; }
         .hud-left { width: 190px; left: 16px; padding: 14px; }
         .hud-right { width: 220px; right: 16px; padding: 14px; }
-        .showroom-truck-img { max-width: 52%; }
+        .truck-3d-stage { width: 54%; }
     }
     @media screen and (max-width: 767px) {
-        #chassis-3d-showroom { height: auto; min-height: 480px; padding: 120px 0 80px; flex-direction: column; }
+        #chassis-3d-showroom { height: auto; min-height: 480px; padding: 120px 0 80px; flex-direction: column; cursor: default; }
         .hud-left, .hud-right { position: relative; top: auto !important; left: auto !important; right: auto !important; transform: none !important; width: 92% !important; margin: 8px auto; }
-        .showroom-truck-wrap { position: relative; width: 100%; height: 260px; }
-        .showroom-truck-img { max-width: 85%; max-height: 100%; }
+        .showroom-truck-wrap { position: relative; width: 100%; height: 260px; perspective: 600px; }
+        .truck-3d-stage { width: 85%; height: 100%; }
         .hud-controls-info { bottom: 10px; font-size: 9px; }
     }
 </style>

@@ -40,15 +40,18 @@
     </div>
 
     <!-- ===== CENTER: Holographic Truck Image + Hotspots ===== -->
-    <div class="showroom-truck-wrap">
-        <img src="{{ asset('frontend/images/holographic_truck.png') }}" alt="Holographic Semi-Truck Chassis" class="showroom-truck-img" id="showroom-truck-img">
-        <!-- Floating hotspot rings on key parts -->
-        <div class="img-hotspot" id="hs-engine"   style="top:52%; left:28%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
-        <div class="img-hotspot" id="hs-cabin"    style="top:35%; left:50%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
-        <div class="img-hotspot" id="hs-wheel-f"  style="top:68%; left:38%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
-        <div class="img-hotspot" id="hs-wheel-r"  style="top:68%; left:72%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
+    <div class="showroom-truck-wrap" id="showroom-truck-wrap">
+        <!-- 3D perspective stage -->
+        <div class="truck-3d-stage" id="truck-3d-stage">
+            <img src="{{ asset('frontend/images/holographic_truck.png') }}" alt="Holographic Semi-Truck Chassis" class="showroom-truck-img" id="showroom-truck-img">
+            <!-- Floating hotspot rings on key parts -->
+            <div class="img-hotspot" id="hs-engine"   style="top:52%; left:28%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
+            <div class="img-hotspot" id="hs-cabin"    style="top:35%; left:50%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
+            <div class="img-hotspot" id="hs-wheel-f"  style="top:68%; left:38%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
+            <div class="img-hotspot" id="hs-wheel-r"  style="top:68%; left:72%;"><div class="hotspot-ring"><div class="hotspot-dot"></div><div class="hotspot-pulse"></div></div></div>
+        </div>
         <!-- Scan label overlay -->
-        <div class="truck-scan-label">WEBGL 3D EXPERIENCE &nbsp;&#8212;&nbsp; ASTRA HD-7</div>
+        <div class="truck-scan-label">DRAG TO ROTATE &nbsp;&#8212;&nbsp; ASTRA HD-7 HOLOGRAM</div>
     </div>
 
     <!-- ===== RIGHT PANEL: Live Charts ===== -->
@@ -84,7 +87,7 @@
 
     <!-- HUD Info Bar -->
     <div class="hud-controls-info">
-        <i class="fa fa-info-circle mr-1"></i> Hover hotspots &bull; Click parts to explore &bull; Danyal Autos Co.
+        <i class="fa fa-mouse-pointer mr-1"></i> Drag to rotate &bull; Click part cards to explore &bull; Danyal Autos Co.
     </div>
 </section>
 
@@ -691,9 +694,140 @@
         }
     </script>
 
-    <!-- Holographic Showroom: lightweight chart engine (no Three.js needed) -->
+    <!-- Holographic Showroom: 3D drag-rotate + live charts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            /* ============================================================
+               3D DRAG-TO-ROTATE ENGINE
+            ============================================================ */
+            const stage      = document.getElementById('truck-3d-stage');
+            const wrap       = document.getElementById('showroom-truck-wrap');
+            const showroom   = document.getElementById('chassis-3d-showroom');
+
+            // Current and target rotation angles
+            let rotY  =  -18;   // start at slight angle matching original photo perspective
+            let rotX  =    6;
+            let targY = rotY;
+            let targX = rotX;
+
+            // Auto-spin state
+            let autoSpin   = true;
+            let isDragging = false;
+            let lastX = 0, lastY = 0;
+            let velX  = 0, velY  = 0;   // drag velocity for inertia
+            let idleTimer = null;
+
+            // Clamp X rotation so truck doesn't flip
+            const MAX_X =  30;
+            const MIN_X = -20;
+
+            function resumeAutoSpin() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(function() {
+                    autoSpin = true;
+                }, 2800); // resume auto-spin 2.8 s after last drag
+            }
+
+            /* ---- Mouse drag ---- */
+            showroom.addEventListener('mousedown', function(e) {
+                if (e.target.closest('.hud-panel') || e.target.closest('.img-hotspot')) return;
+                isDragging = true;
+                autoSpin   = false;
+                lastX = e.clientX;
+                lastY = e.clientY;
+                velX  = 0; velY = 0;
+                showroom.style.cursor = 'grabbing';
+                clearTimeout(idleTimer);
+            });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - lastX;
+                const dy = e.clientY - lastY;
+                velX = dx * 0.5;  velY = dy * 0.25;
+                targY += dx * 0.35;
+                targX -= dy * 0.18;
+                targX  = Math.max(MIN_X, Math.min(MAX_X, targX));
+                lastX  = e.clientX;
+                lastY  = e.clientY;
+            });
+
+            window.addEventListener('mouseup', function() {
+                if (!isDragging) return;
+                isDragging = false;
+                showroom.style.cursor = '';
+                resumeAutoSpin();
+            });
+
+            /* ---- Touch drag ---- */
+            showroom.addEventListener('touchstart', function(e) {
+                if (e.target.closest('.hud-panel') || e.target.closest('.img-hotspot')) return;
+                if (e.touches.length === 1) {
+                    isDragging = true; autoSpin = false;
+                    lastX = e.touches[0].clientX;
+                    lastY = e.touches[0].clientY;
+                    velX = 0; velY = 0;
+                    clearTimeout(idleTimer);
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', function(e) {
+                if (!isDragging || e.touches.length !== 1) return;
+                const dx = e.touches[0].clientX - lastX;
+                const dy = e.touches[0].clientY - lastY;
+                velX = dx * 0.5; velY = dy * 0.25;
+                targY += dx * 0.35;
+                targX -= dy * 0.18;
+                targX  = Math.max(MIN_X, Math.min(MAX_X, targX));
+                lastX  = e.touches[0].clientX;
+                lastY  = e.touches[0].clientY;
+            }, { passive: true });
+
+            window.addEventListener('touchend', function() {
+                if (!isDragging) return;
+                isDragging = false;
+                resumeAutoSpin();
+            });
+
+            /* ---- Render loop ---- */
+            let floatPhase = 0;
+
+            function render3D() {
+                // Auto spin
+                if (autoSpin) {
+                    targY += 0.25;
+                }
+
+                // Inertia after drag release
+                if (!isDragging && !autoSpin) {
+                    targY += velX * 0.4;
+                    targX += velY * -0.2;
+                    velX  *= 0.92;
+                    velY  *= 0.92;
+                    targX  = Math.max(MIN_X, Math.min(MAX_X, targX));
+                }
+
+                // Smooth damp toward target
+                rotY += (targY - rotY) * 0.06;
+                rotX += (targX - rotX) * 0.06;
+
+                // Gentle float up-down (very subtle when rotating)
+                floatPhase += 0.018;
+                const floatY = Math.sin(floatPhase) * (isDragging ? 0 : 4);
+
+                // Apply 3D transform
+                if (stage) {
+                    stage.style.transform =
+                        'translateY(' + floatY.toFixed(2) + 'px)' +
+                        ' rotateX(' + rotX.toFixed(2) + 'deg)' +
+                        ' rotateY(' + rotY.toFixed(2) + 'deg)';
+                }
+
+                requestAnimationFrame(render3D);
+            }
+
+            render3D();
 
             /* ============================================================
                CANVAS BAR CHARTS (right HUD panel)
