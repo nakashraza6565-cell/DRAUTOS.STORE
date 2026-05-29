@@ -155,444 +155,355 @@
         position: relative;
         width: 100%;
         height: 650px;
-        background: radial-gradient(circle at 50% 50%, #0b1528 0%, #020617 100%);
+        background: radial-gradient(ellipse at 50% 60%, #071324 0%, #020817 60%, #000 100%);
         overflow: hidden;
-        border-bottom: 2px solid #1e293b;
-    }
-
-    #chassis-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        cursor: grab;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 2;
-    }
-
-    #chassis-canvas:active {
-        cursor: grabbing;
+        border-bottom: 2px solid #0f1f3a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Sci-fi Blueprint Grid Overlay */
     .showroom-grid-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: 30px 30px;
-        background-image: 
-            linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-size: 40px 40px;
+        background-image:
+            linear-gradient(to right, rgba(0, 200, 255, 0.035) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 200, 255, 0.035) 1px, transparent 1px);
         pointer-events: none;
         z-index: 1;
     }
 
-    /* Tech Hotspots positioned responsively via coordinates */
-    .tech-hotspot {
+    /* Animated scanning sweep line */
+    .scan-sweep {
         position: absolute;
-        transform: translate(-50%, -50%);
+        top: 0; left: 0;
+        width: 3px; height: 100%;
+        background: linear-gradient(to bottom, transparent, rgba(0,240,255,0.5), transparent);
+        box-shadow: 0 0 20px rgba(0,240,255,0.4), 0 0 40px rgba(0,240,255,0.2);
+        animation: sweepX 5s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 3;
+    }
+    @keyframes sweepX {
+        0%   { left: 0%; opacity: 0; }
+        10%  { opacity: 1; }
+        90%  { opacity: 1; }
+        100% { left: 100%; opacity: 0; }
+    }
+
+    /* ===== LEFT PANEL: Part Cards ===== */
+    .hud-panel {
+        position: absolute;
+        background: rgba(5, 12, 28, 0.72);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(0, 200, 255, 0.1);
+        padding: 20px 18px;
+        border-radius: 14px;
+        color: #fff;
+        z-index: 5;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0,200,255,0.04);
+        transition: border-color 0.3s ease;
+    }
+
+    .hud-left {
+        top: 50%;
+        transform: translateY(-50%);
+        left: 28px;
+        width: 230px;
+        border-left: 3px solid #06b6d4;
+    }
+
+    .hud-right {
+        top: 50%;
+        transform: translateY(-50%);
+        right: 28px;
+        width: 270px;
+        border-right: 3px solid #f97316;
+    }
+
+    .hud-title {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: #06b6d4;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+    }
+
+    .hud-right .hud-title { color: #f97316; }
+
+    .blink-dot {
+        display: inline-block;
+        width: 6px; height: 6px;
+        background: #22c55e;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: hudBlink 1.4s infinite alternate;
+        box-shadow: 0 0 6px #22c55e;
+    }
+    @keyframes hudBlink {
+        0% { opacity: 0.2; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Part Cards */
+    .part-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(6,182,212,0.12);
+        border-radius: 10px;
+        color: #e2e8f0;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         cursor: pointer;
-        z-index: 10;
-        pointer-events: auto;
+    }
+    .part-card:last-child { margin-bottom: 0; }
+    .part-card:hover {
+        background: rgba(6,182,212,0.1);
+        border-color: rgba(6,182,212,0.5);
+        transform: translateX(4px);
+        box-shadow: 0 8px 25px rgba(6,182,212,0.15);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .part-card-icon {
+        width: 34px; height: 34px;
+        background: rgba(6,182,212,0.1);
+        border: 1px solid rgba(6,182,212,0.3);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px;
+        color: #06b6d4;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+    .part-card:hover .part-card-icon {
+        background: rgba(6,182,212,0.2);
+        color: #fff;
+        box-shadow: 0 0 12px rgba(6,182,212,0.4);
+    }
+    .part-card-body { flex: 1; min-width: 0; }
+    .part-card-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .part-card-desc {
+        font-size: 9px;
+        color: #64748b;
+        margin-top: 2px;
+        font-family: monospace;
+    }
+    .part-card-arrow {
+        font-size: 10px;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
+    .part-card:hover .part-card-arrow { color: #06b6d4; }
+
+    /* ===== CENTER: Holographic Truck Image ===== */
+    .showroom-truck-wrap {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 2;
+        pointer-events: none;
     }
 
-    .tech-hotspot:hover {
-        transform: translate(-50%, -50%) scale(1.2);
+    .showroom-truck-img {
+        max-width: 58%;
+        max-height: 90%;
+        object-fit: contain;
+        filter: drop-shadow(0 0 30px rgba(0,200,255,0.35)) drop-shadow(0 0 60px rgba(0,100,200,0.2));
+        transition: transform 0.1s linear;
+        user-select: none;
+    }
+
+    /* Scan label */
+    .truck-scan-label {
+        position: absolute;
+        bottom: 38px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(0,200,255,0.45);
+        font-family: monospace;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    /* Image-overlaid hotspot rings */
+    .img-hotspot {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        z-index: 6;
+        pointer-events: auto;
+        cursor: pointer;
     }
 
     .hotspot-ring {
         position: relative;
-        width: 32px;
-        height: 32px;
+        width: 30px; height: 30px;
         border-radius: 50%;
-        background: rgba(6, 182, 212, 0.15);
-        border: 2px solid #06b6d4;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 15px rgba(6, 182, 212, 0.5), inset 0 0 8px rgba(6, 182, 212, 0.3);
+        background: rgba(249,115,22,0.12);
+        border: 2px solid #f97316;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 12px rgba(249,115,22,0.5), inset 0 0 6px rgba(249,115,22,0.2);
         transition: all 0.4s ease;
     }
-
-    .tech-hotspot:hover .hotspot-ring {
-        background: rgba(249, 115, 22, 0.25);
-        border-color: #f97316;
-        box-shadow: 0 0 25px rgba(249, 115, 22, 0.8), inset 0 0 12px rgba(249, 115, 22, 0.5);
+    .img-hotspot:hover .hotspot-ring {
+        background: rgba(249,115,22,0.25);
+        box-shadow: 0 0 25px rgba(249,115,22,0.8), inset 0 0 12px rgba(249,115,22,0.4);
+        transform: scale(1.2);
     }
 
     .hotspot-dot {
-        width: 8px;
-        height: 8px;
+        width: 7px; height: 7px;
         border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 0 10px #fff;
-        transition: all 0.3s ease;
-    }
-
-    .tech-hotspot:hover .hotspot-dot {
         background: #f97316;
-        box-shadow: 0 0 12px #f97316;
+        box-shadow: 0 0 8px #f97316;
     }
 
     .hotspot-pulse {
         position: absolute;
-        width: 52px;
-        height: 52px;
+        width: 50px; height: 50px;
         border-radius: 50%;
-        border: 2px solid rgba(6, 182, 212, 0.4);
-        animation: hotspotPulse 2.5s infinite linear;
+        border: 2px solid rgba(249,115,22,0.4);
+        animation: hotspotPulse 2.2s infinite linear;
         pointer-events: none;
     }
-
-    .tech-hotspot:hover .hotspot-pulse {
-        border-color: rgba(249, 115, 22, 0.5);
-    }
-
     @keyframes hotspotPulse {
-        0% { transform: scale(0.5); opacity: 1; }
-        100% { transform: scale(1.6); opacity: 0; }
+        0%   { transform: scale(0.5); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
     }
 
-    /* Hotspot Tooltip / Label */
-    .hotspot-tooltip {
-        position: absolute;
-        bottom: 45px;
-        background: rgba(10, 15, 30, 0.85);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(6, 182, 212, 0.4);
-        padding: 10px 16px;
-        border-radius: 10px;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(10px);
-        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        color: #fff;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(6, 182, 212, 0.1);
-        pointer-events: none;
+    /* ===== RIGHT PANEL: Charts ===== */
+    .chart-block {
+        margin-bottom: 16px;
+    }
+    .chart-block:last-child { margin-bottom: 0; }
+
+    .chart-header {
         display: flex;
-        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
     }
 
-    .tech-hotspot:hover .hotspot-tooltip {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-        border-color: rgba(249, 115, 22, 0.5);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(249, 115, 22, 0.15);
-    }
-
-    .tooltip-title {
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 0.08em;
+    .chart-label {
+        font-size: 10px;
+        color: #64748b;
         text-transform: uppercase;
-        color: #06b6d4;
-        transition: color 0.3s ease;
+        letter-spacing: 0.08em;
     }
 
-    .tech-hotspot:hover .tooltip-title {
-        color: #f97316;
-    }
-
-    .tooltip-desc {
-        font-size: 11px;
-        color: #94a3b8;
-        margin-top: 3px;
+    .chart-value {
+        font-size: 12px;
+        font-weight: 800;
         font-family: monospace;
+        color: #f97316;
+        letter-spacing: 0.05em;
+    }
+
+    .hud-chart {
+        display: block;
+        width: 100%;
+        height: 48px;
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.04);
+        background: rgba(0,0,0,0.3);
+    }
+
+    /* HUD Controls Info */
+    .hud-controls-info {
+        position: absolute;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 5;
+        font-size: 10px;
+        color: #475569;
+        background: rgba(5,12,28,0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        padding: 7px 18px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.05);
+        pointer-events: none;
+        white-space: nowrap;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     }
 
     /* Glassmorphism Side Drawer */
     #parts-side-drawer {
         position: fixed;
-        top: 0;
-        right: -460px;
-        width: 450px;
-        height: 100vh;
-        background: rgba(10, 15, 30, 0.82);
+        top: 0; right: -460px;
+        width: 450px; height: 100vh;
+        background: rgba(10,15,30,0.82);
         backdrop-filter: blur(25px);
         -webkit-backdrop-filter: blur(25px);
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: -20px 0 60px rgba(0, 0, 0, 0.7);
+        border-left: 1px solid rgba(255,255,255,0.1);
+        box-shadow: -20px 0 60px rgba(0,0,0,0.7);
         z-index: 99999;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
         padding: 35px;
         color: #f8fafc;
-        display: flex;
-        flex-direction: column;
+        display: flex; flex-direction: column;
     }
-
-    #parts-side-drawer.open {
-        right: 0;
-    }
+    #parts-side-drawer.open { right: 0; }
 
     .drawer-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding-bottom: 20px;
-        margin-bottom: 25px;
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 20px; margin-bottom: 25px;
     }
-
-    .drawer-title {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #fff;
-        display: flex;
-        align-items: center;
-    }
-
-    .drawer-title i {
-        color: #f97316;
-        margin-right: 12px;
-    }
-
+    .drawer-title { font-size: 1.5rem; font-weight: 800; color: #fff; display: flex; align-items: center; }
+    .drawer-title i { color: #f97316; margin-right: 12px; }
     .drawer-close {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        color: #fff; width: 38px; height: 38px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.3s ease;
     }
+    .drawer-close:hover { background: #f97316; border-color: #f97316; transform: rotate(90deg); box-shadow: 0 0 15px rgba(249,115,22,0.5); }
+    .drawer-content { flex: 1; overflow-y: auto; padding-right: 8px; }
+    .drawer-content::-webkit-scrollbar { width: 6px; }
+    .drawer-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+    .drawer-content::-webkit-scrollbar-thumb:hover { background: #f97316; }
 
-    .drawer-close:hover {
-        background: #f97316;
-        border-color: #f97316;
-        transform: rotate(90deg);
-        box-shadow: 0 0 15px rgba(249, 115, 22, 0.5);
-    }
-
-    .drawer-content {
-        flex: 1;
-        overflow-y: auto;
-        padding-right: 8px;
-    }
-
-    .drawer-content::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .drawer-content::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.02);
-        border-radius: 3px;
-    }
-
-    .drawer-content::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.15);
-        border-radius: 3px;
-    }
-
-    .drawer-content::-webkit-scrollbar-thumb:hover {
-        background: #f97316;
-    }
-
-    /* WebGL Showroom Floating HUD Panels */
-    .hud-panel {
-        position: absolute;
-        background: rgba(10, 15, 30, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        padding: 20px;
-        border-radius: 16px;
-        color: #fff;
-        z-index: 5;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 182, 212, 0.05);
-        pointer-events: auto;
-        transition: all 0.3s ease;
-    }
-
-    .hud-panel:hover {
-        border-color: rgba(255, 255, 255, 0.12);
-        background: rgba(10, 15, 30, 0.75);
-    }
-
-    .hud-left {
-        top: 30px;
-        left: 30px;
-        width: 240px;
-        border-left: 4px solid #06b6d4;
-    }
-
-    .hud-right {
-        top: 30px;
-        right: 30px;
-        width: 260px;
-        border-right: 4px solid #f97316;
-    }
-
-    .hud-title {
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        color: #06b6d4;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-    }
-
-    .hud-right .hud-title {
-        color: #f97316;
-        justify-content: flex-end;
-    }
-
-    .hud-title .blink-dot {
-        width: 6px;
-        height: 6px;
-        background-color: #22c55e;
-        border-radius: 50%;
-        margin-right: 8px;
-        animation: hudBlink 1.5s infinite alternate;
-        box-shadow: 0 0 8px #22c55e;
-    }
-
-    .hud-right .hud-title .blink-dot {
-        margin-right: 0;
-        margin-left: 8px;
-        order: 2;
-    }
-
-    @keyframes hudBlink {
-        0% { opacity: 0.3; transform: scale(0.9); }
-        100% { opacity: 1; transform: scale(1.1); }
-    }
-
-    .hud-metric {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        font-size: 12px;
-        border-bottom: 1px dashed rgba(255,255,255,0.05);
-        padding-bottom: 8px;
-    }
-
-    .hud-metric:last-child {
-        margin-bottom: 0;
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    .hud-label {
-        color: #94a3b8;
-    }
-
-    .hud-value {
-        font-family: monospace;
-        font-weight: bold;
-        color: #fff;
-        letter-spacing: 0.05em;
-    }
-
-    .hud-value.text-success {
-        color: #22c55e !important;
-        text-shadow: 0 0 8px rgba(34, 197, 150, 0.4);
-    }
-
-    /* Telemetry Sparklines Styles */
-    .telemetry-sparkline {
-        width: 100%;
-        height: 32px;
-        margin-top: 6px;
-        background: rgba(0, 0, 0, 0.25);
-        border-radius: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    /* Tech HUD overlay controls info */
-    .hud-controls-info {
-        position: absolute;
-        bottom: 30px;
-        left: 30px;
-        z-index: 5;
-        font-size: 11px;
-        color: #94a3b8;
-        background: rgba(10, 15, 30, 0.6);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        padding: 8px 16px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        pointer-events: none;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    }
-
-    /* Responsive Viewport Optimizations */
+    /* Responsive */
     @media screen and (max-width: 991px) {
-        #chassis-3d-showroom {
-            height: 520px;
-        }
-        .hud-left {
-            top: 20px;
-            left: 20px;
-            width: 200px;
-            padding: 12px;
-        }
-        .hud-right {
-            top: 20px;
-            right: 20px;
-            width: 220px;
-            padding: 12px;
-        }
-        .hud-controls-info {
-            bottom: 20px;
-            left: 20px;
-            font-size: 10px;
-            padding: 6px 12px;
-        }
-        .telemetry-sparkline {
-            height: 24px;
-        }
+        #chassis-3d-showroom { height: 560px; }
+        .hud-left { width: 190px; left: 16px; padding: 14px; }
+        .hud-right { width: 220px; right: 16px; padding: 14px; }
+        .showroom-truck-img { max-width: 52%; }
     }
-
     @media screen and (max-width: 767px) {
-        #chassis-3d-showroom {
-            height: 700px; /* Taller viewport to stack panels neatly */
-        }
-        .hud-panel {
-            position: relative;
-            top: 15px !important;
-            left: 5% !important;
-            right: auto !important;
-            width: 90% !important;
-            margin-bottom: 12px;
-            border-left: none !important;
-            border-right: none !important;
-            border-top: 3px solid #06b6d4 !important;
-        }
-        .hud-right {
-            border-top: 3px solid #f97316 !important;
-        }
-        .hud-right .hud-title {
-            justify-content: flex-start;
-        }
-        .hud-right .hud-title .blink-dot {
-            margin-right: 8px;
-            margin-left: 0;
-            order: 0;
-        }
-        .hud-controls-info {
-            bottom: 15px;
-            left: 5%;
-            width: 90%;
-            text-align: center;
-        }
+        #chassis-3d-showroom { height: auto; min-height: 480px; padding: 120px 0 80px; flex-direction: column; }
+        .hud-left, .hud-right { position: relative; top: auto !important; left: auto !important; right: auto !important; transform: none !important; width: 92% !important; margin: 8px auto; }
+        .showroom-truck-wrap { position: relative; width: 100%; height: 260px; }
+        .showroom-truck-img { max-width: 85%; max-height: 100%; }
+        .hud-controls-info { bottom: 10px; font-size: 9px; }
     }
 </style>
 @stack('styles')
