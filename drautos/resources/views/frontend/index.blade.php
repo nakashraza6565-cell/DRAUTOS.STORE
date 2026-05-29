@@ -74,7 +74,7 @@
     @endphp
 
     <!-- Hotspot 1: Engine -->
-    <div class="tech-hotspot" id="hotspot-engine" data-cat-id="{{ $engineId }}" data-cat-title="{{ $engineTitle }}" style="display: none;">
+    <div class="tech-hotspot" id="hotspot-engine" data-cat-id="{{ $engineId }}" data-cat-title="{{ $engineTitle }}">
         <div class="hotspot-ring">
             <div class="hotspot-dot"></div>
             <div class="hotspot-pulse"></div>
@@ -86,7 +86,7 @@
     </div>
     
     <!-- Hotspot 2: Clutch / Gearbox -->
-    <div class="tech-hotspot" id="hotspot-clutch" data-cat-id="{{ $clutchId }}" data-cat-title="{{ $clutchTitle }}" style="display: none;">
+    <div class="tech-hotspot" id="hotspot-clutch" data-cat-id="{{ $clutchId }}" data-cat-title="{{ $clutchTitle }}">
         <div class="hotspot-ring">
             <div class="hotspot-dot"></div>
             <div class="hotspot-pulse"></div>
@@ -98,7 +98,7 @@
     </div>
     
     <!-- Hotspot 3: Brakes -->
-    <div class="tech-hotspot" id="hotspot-brakes" data-cat-id="{{ $brakeId }}" data-cat-title="{{ $brakeTitle }}" style="display: none;">
+    <div class="tech-hotspot" id="hotspot-brakes" data-cat-id="{{ $brakeId }}" data-cat-title="{{ $brakeTitle }}">
         <div class="hotspot-ring">
             <div class="hotspot-dot"></div>
             <div class="hotspot-pulse"></div>
@@ -110,7 +110,7 @@
     </div>
     
     <!-- Hotspot 4: Suspension -->
-    <div class="tech-hotspot" id="hotspot-suspension" data-cat-id="{{ $suspensionId }}" data-cat-title="{{ $suspensionTitle }}" style="display: none;">
+    <div class="tech-hotspot" id="hotspot-suspension" data-cat-id="{{ $suspensionId }}" data-cat-title="{{ $suspensionTitle }}">
         <div class="hotspot-ring">
             <div class="hotspot-dot"></div>
             <div class="hotspot-pulse"></div>
@@ -120,13 +120,10 @@
             <span class="tooltip-desc">Leaf Springs & Shocks</span>
         </div>
     </div>
-
-    <!-- Canvas -->
-    <canvas id="chassis-canvas"></canvas>
     
     <!-- HUD Info -->
     <div class="hud-controls-info">
-        <i class="fa fa-info-circle mr-1"></i> Left-Click + Drag to rotate. Mousewheel to zoom. Click glowing rings to explore parts.
+        <i class="fa fa-info-circle mr-1"></i> Click on glowing rings to explore dynamic categorized inventory parts.
     </div>
 </section>
 
@@ -733,417 +730,32 @@
         }
     </script>
 
-    <!-- 3D WebGL Showroom Engine Script -->
+    <!-- Interactive High-Fidelity Showroom Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof THREE === 'undefined') {
-                console.error('Three.js is not loaded.');
-                return;
-            }
-
-            const container = document.getElementById('chassis-3d-showroom');
-            const canvas = document.getElementById('chassis-canvas');
-            
-            // 1. Scene Setup
-            const scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x020617, 0.015);
-
-            // 2. Camera Setup
-            const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.set(-8, 5, 9);
-
-            // 3. Renderer Setup
-            const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.setClearColor(0x020617, 1);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-            // 4. Orbit Controls
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't go below ground
-            controls.minDistance = 3;
-            controls.maxDistance = 20;
-            controls.target.set(0, 0.2, 0);
-
-            // 5. Lighting
-            const ambientLight = new THREE.AmbientLight(0x1e293b, 1.2);
-            scene.add(ambientLight);
-
-            // Tech spotlighting
-            const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
-            mainLight.position.set(5, 15, 5);
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 1024;
-            mainLight.shadow.mapSize.height = 1024;
-            scene.add(mainLight);
-
-            const neonLight = new THREE.PointLight(0xf97316, 3, 15);
-            neonLight.position.set(-3.2, 1, 0); // Above Engine
-            scene.add(neonLight);
-
-            const blueTechLight = new THREE.PointLight(0x3b82f6, 2, 20);
-            blueTechLight.position.set(1.5, 1, -2);
-            scene.add(blueTechLight);
-
-            // Ground floor plane shadow
-            const floorGeo = new THREE.PlaneGeometry(100, 100);
-            const floorMat = new THREE.ShadowMaterial({ opacity: 0.4 });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.position.y = -1.2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-
-            // Dynamic grid helper
-            const gridHelper = new THREE.GridHelper(60, 60, 0x4f46e5, 0x1e293b);
-            gridHelper.position.y = -1.19;
-            gridHelper.material.opacity = 0.35;
-            gridHelper.material.transparent = true;
-            scene.add(gridHelper);
-
-            // 6. BUILD FUTURISTIC PROCEDURAL 3D TRUCK CHASSIS
-            const chassisGroup = new THREE.Group();
-
-            // Glowing Wireframe Blueprint Shell Helper
-            function addGlowingWireframe(parentMesh, colorHex, opacity = 0.4) {
-                const wireMat = new THREE.MeshBasicMaterial({
-                    color: colorHex,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: opacity,
-                    blending: THREE.AdditiveBlending
-                });
-                const wireMesh = new THREE.Mesh(parentMesh.geometry, wireMat);
-                parentMesh.add(wireMesh);
-            }
-
-            // Materials
-            const darkMetalMat = new THREE.MeshStandardMaterial({
-                color: 0x0f172a,
-                metalness: 0.9,
-                roughness: 0.1
-            });
-
-            const brightChromeMat = new THREE.MeshStandardMaterial({
-                color: 0xe2e8f0,
-                metalness: 0.95,
-                roughness: 0.05
-            });
-
-            const glowingEngineMat = new THREE.MeshStandardMaterial({
-                color: 0x020617,
-                emissive: 0xf97316,
-                emissiveIntensity: 2.2,
-                roughness: 0.3
-            });
-
-            const techGlassMat = new THREE.MeshPhysicalMaterial({
-                color: 0x3b82f6,
-                transparent: true,
-                opacity: 0.35,
-                roughness: 0.05,
-                transmission: 0.8,
-                thickness: 0.5
-            });
-
-            const rubberMat = new THREE.MeshStandardMaterial({
-                color: 0x020617,
-                metalness: 0.1,
-                roughness: 0.9
-            });
-
-            // A. Main Beams (Twin Rail Frame with Blue Glowing Blueprint)
-            const railGeo = new THREE.BoxGeometry(9, 0.25, 0.15);
-            const leftRail = new THREE.Mesh(railGeo, darkMetalMat);
-            leftRail.position.set(0, 0.4, 0.7);
-            leftRail.castShadow = true;
-            addGlowingWireframe(leftRail, 0x3b82f6, 0.55);
-            chassisGroup.add(leftRail);
-
-            const rightRail = leftRail.clone();
-            rightRail.position.z = -0.7;
-            chassisGroup.add(rightRail);
-
-            // Crossmembers (Braced Beams)
-            for(let i = -4; i <= 4; i += 2) {
-                const crossGeo = new THREE.BoxGeometry(0.15, 0.2, 1.3);
-                const cross = new THREE.Mesh(crossGeo, darkMetalMat);
-                cross.position.set(i, 0.4, 0);
-                cross.castShadow = true;
-                addGlowingWireframe(cross, 0x3b82f6, 0.45);
-                chassisGroup.add(cross);
-            }
-
-            // B. Engine block (Glowing Power Unit at Front with pulsing orange wireframe)
-            const engineBlockGeo = new THREE.BoxGeometry(1.6, 1.0, 0.9);
-            const engineBlock = new THREE.Mesh(engineBlockGeo, glowingEngineMat);
-            engineBlock.position.set(-3.2, 0.6, 0);
-            engineBlock.castShadow = true;
-            addGlowingWireframe(engineBlock, 0xf97316, 0.7);
-            chassisGroup.add(engineBlock);
-
-            // Engine tech fan / cylinder attachments
-            const fanGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.2, 12);
-            const fan = new THREE.Mesh(fanGeo, brightChromeMat);
-            fan.rotation.z = Math.PI / 2;
-            fan.position.set(-4.05, 0.6, 0);
-            addGlowingWireframe(fan, 0xf97316, 0.5);
-            chassisGroup.add(fan);
-
-            // C. Gearbox / Transmission Unit (Mounted behind engine with Cyan cyber-glow)
-            const gearboxGeo = new THREE.CylinderGeometry(0.35, 0.25, 1.2, 16);
-            const gearbox = new THREE.Mesh(gearboxGeo, brightChromeMat);
-            gearbox.rotation.z = Math.PI / 2;
-            gearbox.position.set(-1.8, 0.4, 0);
-            gearbox.castShadow = true;
-            addGlowingWireframe(gearbox, 0x06b6d4, 0.6);
-            chassisGroup.add(gearbox);
-
-            // Driveshaft
-            const driveShaftGeo = new THREE.CylinderGeometry(0.08, 0.08, 4.2, 8);
-            const driveShaft = new THREE.Mesh(driveShaftGeo, brightChromeMat);
-            driveShaft.rotation.z = Math.PI / 2;
-            driveShaft.position.set(1.0, 0.2, 0);
-            addGlowingWireframe(driveShaft, 0x3b82f6, 0.4);
-            chassisGroup.add(driveShaft);
-
-            // D. Axles & Brakes
-            const axleGeo = new THREE.CylinderGeometry(0.1, 0.1, 2.2, 12);
-            
-            // Front steer axle
-            const frontAxle = new THREE.Mesh(axleGeo, darkMetalMat);
-            frontAxle.rotation.x = Math.PI / 2;
-            frontAxle.position.set(-3.2, -0.2, 0);
-            frontAxle.castShadow = true;
-            addGlowingWireframe(frontAxle, 0x3b82f6, 0.5);
-            chassisGroup.add(frontAxle);
-
-            // Rear differential axle 1
-            const rearAxle1 = new THREE.Mesh(axleGeo, darkMetalMat);
-            rearAxle1.rotation.x = Math.PI / 2;
-            rearAxle1.position.set(2.2, -0.2, 0);
-            rearAxle1.castShadow = true;
-            addGlowingWireframe(rearAxle1, 0x3b82f6, 0.5);
-            chassisGroup.add(rearAxle1);
-
-            // Rear differential axle 2
-            const rearAxle2 = new THREE.Mesh(axleGeo, darkMetalMat);
-            rearAxle2.rotation.x = Math.PI / 2;
-            rearAxle2.position.set(3.6, -0.2, 0);
-            rearAxle2.castShadow = true;
-            addGlowingWireframe(rearAxle2, 0x3b82f6, 0.5);
-            chassisGroup.add(rearAxle2);
-
-            // Differential center housings
-            const diffGeo = new THREE.SphereGeometry(0.3, 16, 16);
-            const diff1 = new THREE.Mesh(diffGeo, darkMetalMat);
-            diff1.position.set(2.2, -0.2, 0);
-            addGlowingWireframe(diff1, 0x3b82f6, 0.55);
-            chassisGroup.add(diff1);
-
-            const diff2 = diff1.clone();
-            diff2.position.set(3.6, -0.2, 0);
-            chassisGroup.add(diff2);
-
-            // Brake Discs (Rotors with orange cyber-pad) inside wheels
-            const brakeGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.08, 16);
-            const brakeLeft = new THREE.Mesh(brakeGeo, brightChromeMat);
-            brakeLeft.rotation.x = Math.PI / 2;
-            brakeLeft.position.set(2.2, -0.2, 0.9);
-            addGlowingWireframe(brakeLeft, 0xf97316, 0.6);
-            chassisGroup.add(brakeLeft);
-
-            const brakeRight = brakeLeft.clone();
-            brakeRight.position.z = -0.9;
-            chassisGroup.add(brakeRight);
-
-            // E. Heavy Truck Wheels (6 large cylinders)
-            const tireGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.45, 24);
-            const hubGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.48, 12);
-            
-            function createWheel(x, y, z) {
-                const wheelGroup = new THREE.Group();
-                
-                const tire = new THREE.Mesh(tireGeo, rubberMat);
-                tire.rotation.x = Math.PI / 2;
-                tire.castShadow = true;
-                addGlowingWireframe(tire, 0x3b82f6, 0.25);
-                wheelGroup.add(tire);
-                
-                const hub = new THREE.Mesh(hubGeo, brightChromeMat);
-                hub.rotation.x = Math.PI / 2;
-                addGlowingWireframe(hub, 0xf97316, 0.55);
-                wheelGroup.add(hub);
-                
-                wheelGroup.position.set(x, y, z);
-                return wheelGroup;
-            }
-
-            // Add tires
-            // Front steer wheels (Single)
-            chassisGroup.add(createWheel(-3.2, -0.2, 1.1));
-            chassisGroup.add(createWheel(-3.2, -0.2, -1.1));
-
-            // Tandem rear wheels (Dual tires on each side)
-            // Rear axle 1
-            chassisGroup.add(createWheel(2.2, -0.2, 1.1));
-            chassisGroup.add(createWheel(2.2, -0.2, 1.3));
-            chassisGroup.add(createWheel(2.2, -0.2, -1.1));
-            chassisGroup.add(createWheel(2.2, -0.2, -1.3));
-            
-            // Rear axle 2
-            chassisGroup.add(createWheel(3.6, -0.2, 1.1));
-            chassisGroup.add(createWheel(3.6, -0.2, 1.3));
-            chassisGroup.add(createWheel(3.6, -0.2, -1.1));
-            chassisGroup.add(createWheel(3.6, -0.2, -1.3));
-
-            // F. Suspension springs
-            const suspensionGroup = new THREE.Group();
-            // Spiral shock absorbers inside leaf frame
-            for(let side of [0.65, -0.65]) {
-                // Front shocks
-                const shockFrontGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 8);
-                const shockFront = new THREE.Mesh(shockFrontGeo, brightChromeMat);
-                shockFront.position.set(-3.2, 0.1, side);
-                addGlowingWireframe(shockFront, 0x06b6d4, 0.6);
-                suspensionGroup.add(shockFront);
-                
-                // Rear Leaf/Coil structures
-                const coilGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 12);
-                const coil1 = new THREE.Mesh(coilGeo, glowingEngineMat);
-                coil1.position.set(2.2, 0.1, side);
-                addGlowingWireframe(coil1, 0xf97316, 0.7);
-                suspensionGroup.add(coil1);
-
-                const coil2 = new THREE.Mesh(coilGeo, glowingEngineMat);
-                coil2.position.set(3.6, 0.1, side);
-                addGlowingWireframe(coil2, 0xf97316, 0.7);
-                suspensionGroup.add(coil2);
-            }
-            chassisGroup.add(suspensionGroup);
-
-            // G. Sci-Fi Holographic Cabin Base Outlines
-            const cabBaseGeo = new THREE.BoxGeometry(2.4, 0.1, 1.8);
-            const cabBase = new THREE.Mesh(cabBaseGeo, techGlassMat);
-            cabBase.position.set(-3.0, 1.1, 0);
-            addGlowingWireframe(cabBase, 0x3b82f6, 0.45);
-            chassisGroup.add(cabBase);
-
-            // cabin transparent structural frame
-            const cabStructureGeo = new THREE.BoxGeometry(2.2, 1.6, 1.7);
-            const cabStructure = new THREE.Mesh(cabStructureGeo, techGlassMat);
-            cabStructure.position.set(-3.0, 1.9, 0);
-            addGlowingWireframe(cabStructure, 0x3b82f6, 0.6);
-            chassisGroup.add(cabStructure);
-
-            scene.add(chassisGroup);
-
-            // Adjust Group offset
-            chassisGroup.position.set(0, 0, 0);
-
-            // 7. Hotspot Vectors (Exact 3D Coordinates of physical items)
-            const hotspotCoords = {
-                engine: new THREE.Vector3(-3.2, 0.6, 0),
-                clutch: new THREE.Vector3(-1.8, 0.4, 0),
-                brakes: new THREE.Vector3(2.2, -0.2, 1.35),
-                suspension: new THREE.Vector3(2.9, 0.1, 0.65)
-            };
-
-            // Camera Targets (Zoom Coordinates for cinematic focus)
-            const zoomTargets = {
-                home: {
-                    cam: new THREE.Vector3(-8, 5, 9),
-                    look: new THREE.Vector3(0, 0.2, 0)
-                },
-                engine: {
-                    cam: new THREE.Vector3(-5.5, 2.5, 3.5),
-                    look: new THREE.Vector3(-3.2, 0.6, 0)
-                },
-                clutch: {
-                    cam: new THREE.Vector3(-3.2, 1.8, 2.8),
-                    look: new THREE.Vector3(-1.8, 0.4, 0)
-                },
-                brakes: {
-                    cam: new THREE.Vector3(3.2, 0.2, 2.8),
-                    look: new THREE.Vector3(2.2, -0.2, 1.1)
-                },
-                suspension: {
-                    cam: new THREE.Vector3(4.0, 1.5, -2.6),
-                    look: new THREE.Vector3(2.9, 0.1, -0.65)
-                }
-            };
-
-            // Project 3D vector coordinates onto 2D viewport coordinates
-            const tempV = new THREE.Vector3();
-            function updateHotspotOverlay() {
-                const rect = canvas.getBoundingClientRect();
-                const widthHalf = rect.width / 2;
-                const heightHalf = rect.height / 2;
-
-                for (let key in hotspotCoords) {
-                    const el = document.getElementById('hotspot-' + key);
-                    if (!el) continue;
-
-                    tempV.copy(hotspotCoords[key]);
-                    tempV.project(camera);
-
-                    // Check if coordinate is behind camera clipping plane
-                    if (tempV.z > 1) {
-                        el.style.display = 'none';
-                        continue;
-                    }
-
-                    const x = (tempV.x * widthHalf) + widthHalf;
-                    const y = -(tempV.y * heightHalf) + heightHalf;
-
-                    el.style.left = `${x}px`;
-                    el.style.top = `${y}px`;
-                    el.style.display = 'flex';
-                }
-            }
-
-            // 8. Event Listeners & Drawer Integration
+        $(document).ready(function() {
             const drawer = document.getElementById('parts-side-drawer');
             const drawerClose = document.getElementById('drawer-close-btn');
             const drawerTitle = document.getElementById('drawer-category-name');
             const drawerContainer = document.getElementById('drawer-parts-container');
-            let isZoomed = false;
+            let activeHotspot = null;
 
-            // Hotspot click binds
+            // 1. Hotspot click event handlers
             $('.tech-hotspot').on('click', function(e) {
                 e.stopPropagation();
-                const key = this.id.replace('hotspot-', '');
+                
+                // Add active glowing class to clicked hotspot
+                if (activeHotspot) {
+                    $(activeHotspot).find('.hotspot-ring').css('border-color', '#f97316');
+                    $(activeHotspot).find('.hotspot-ring').css('box-shadow', '0 0 15px rgba(249, 115, 22, 0.6)');
+                }
+                
+                activeHotspot = this;
+                $(this).find('.hotspot-ring').css('border-color', '#22c55e');
+                $(this).find('.hotspot-ring').css('box-shadow', '0 0 25px rgba(34, 197, 94, 0.9)');
+
                 const catId = $(this).data('cat-id');
                 const catTitle = $(this).data('cat-title');
                 
-                isZoomed = true;
-                
-                // Cinematic Zoom Action
-                const target = zoomTargets[key] || zoomTargets.home;
-                
-                gsap.to(camera.position, {
-                    x: target.cam.x,
-                    y: target.cam.y,
-                    z: target.cam.z,
-                    duration: 1.6,
-                    ease: 'power3.inOut'
-                });
-                
-                gsap.to(controls.target, {
-                    x: target.look.x,
-                    y: target.look.y,
-                    z: target.look.z,
-                    duration: 1.6,
-                    ease: 'power3.inOut',
-                    onUpdate: function() {
-                        controls.update();
-                    }
-                });
-
                 // Populate and Slide Drawer
                 drawerTitle.innerText = catTitle;
                 drawer.classList.add('open');
@@ -1154,7 +766,7 @@
                         <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
                             <span class="sr-only">Scanning Database...</span>
                         </div>
-                        <p class="text-muted mt-3" style="font-family: monospace;">SCANNING SYSTEM DATABASE...</p>
+                        <p class="text-muted mt-3" style="font-family: monospace; letter-spacing: 0.1em;">SCANNING COMPONENT DATABASE...</p>
                     </div>
                 `;
 
@@ -1177,7 +789,7 @@
 
                                 cardsHtml += `
                                     <div class="col-12 mb-4">
-                                        <div class="card bg-dark border-secondary overflow-hidden rounded" style="background: rgba(30, 41, 59, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                                        <div class="card bg-dark border-secondary overflow-hidden rounded" style="background: rgba(30, 41, 59, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; transition: all 0.3s ease;">
                                             <div class="position-relative" style="height: 160px; overflow: hidden; background: #0f172a;">
                                                 ${badgeHtml}
                                                 <img src="${p.photo}" alt="${p.title}" class="w-100 h-100" style="object-fit: cover; opacity: 0.85; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.85">
@@ -1207,8 +819,8 @@
                         } else {
                             drawerContainer.innerHTML = `
                                 <div class="text-center py-5">
-                                    <i class="fa fa-info-circle text-muted" style="font-size: 40px;"></i>
-                                    <p class="text-muted mt-3" style="font-family: monospace;">NO LIVE PRODUCTS FOUND IN THIS COMPONENT</p>
+                                    <i class="fa fa-info-circle text-muted" style="font-size: 40px; color: #94a3b8 !important;"></i>
+                                    <p class="text-muted mt-3" style="font-family: monospace; letter-spacing: 0.05em;">NO LIVE PRODUCTS FOUND IN THIS COMPONENT</p>
                                 </div>
                             `;
                         }
@@ -1224,77 +836,32 @@
                 });
             });
 
-            // Close Drawer & Reset Camera
+            // Close Drawer & Reset Active Hotspot Highlight
             function resetShowroom() {
-                isZoomed = false;
                 drawer.classList.remove('open');
-                
-                const home = zoomTargets.home;
-                gsap.to(camera.position, {
-                    x: home.cam.x,
-                    y: home.cam.y,
-                    z: home.cam.z,
-                    duration: 1.4,
-                    ease: 'power3.inOut'
-                });
-                
-                gsap.to(controls.target, {
-                    x: home.look.x,
-                    y: home.look.y,
-                    z: home.look.z,
-                    duration: 1.4,
-                    ease: 'power3.inOut',
-                    onUpdate: function() {
-                        controls.update();
-                    }
-                });
+                if (activeHotspot) {
+                    $(activeHotspot).find('.hotspot-ring').css('border-color', '#f97316');
+                    $(activeHotspot).find('.hotspot-ring').css('box-shadow', '0 0 15px rgba(249, 115, 22, 0.6)');
+                    activeHotspot = null;
+                }
             }
 
             drawerClose.addEventListener('click', resetShowroom);
-            container.addEventListener('click', function(e) {
-                // If drawer open and clicked outside of hotspots, reset
-                if (drawer.classList.contains('open') && !e.target.closest('#parts-side-drawer') && !e.target.closest('.tech-hotspot')) {
+            
+            // Close if clicked on grid/backdrop but not on active hotspots/drawer
+            $(document).on('click', function(e) {
+                if (drawer.classList.contains('open') && !$(e.target).closest('#parts-side-drawer').length && !$(e.target).closest('.tech-hotspot').length) {
                     resetShowroom();
                 }
             });
 
-            // 9. Real-Time Diagnostics HUD Mock Jiggle (making HUD look alive)
+            // 2. Real-Time Diagnostics HUD Jiggle (dynamic dashboard feeling)
             setInterval(function() {
-                if(!isZoomed) {
-                    document.getElementById('hud-engine').innerText = (98.0 + Math.random() * 0.8).toFixed(1) + '%';
-                    document.getElementById('hud-clutch').innerText = (1.00 + (Math.random() - 0.5) * 0.02).toFixed(2);
-                    document.getElementById('hud-suspension').innerText = (12.2 + Math.random() * 0.6).toFixed(1) + ' kN';
-                }
-            }, 2500);
-
-            // 10. Responsive Viewport Scaling
-            window.addEventListener('resize', function() {
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-            });
-
-            // 11. Core Animation Frame
-            function animate() {
-                requestAnimationFrame(animate);
-                
-                // Slow rotation on idle
-                if (!isZoomed && !controls.state === -1) {
-                    chassisGroup.rotation.y += 0.002;
-                }
-                
-                // Spin hubs slightly on active drag for feedback
-                if (controls.state !== -1) {
-                    // Update controls damping
-                    controls.update();
-                }
-                
-                renderer.render(scene, camera);
-                updateHotspotOverlay();
-            }
-
-            // Start loop
-            animate();
+                document.getElementById('hud-engine').innerText = (98.0 + Math.random() * 0.8).toFixed(1) + '%';
+                document.getElementById('hud-clutch').innerText = (1.00 + (Math.random() - 0.5) * 0.02).toFixed(2);
+                document.getElementById('hud-brakes').innerText = (95.0 + Math.random() * 3.5).toFixed(1) + '%';
+                document.getElementById('hud-suspension').innerText = (12.0 + Math.random() * 0.8).toFixed(1) + ' kN';
+            }, 2000);
         });
     </script>
 @endpush
