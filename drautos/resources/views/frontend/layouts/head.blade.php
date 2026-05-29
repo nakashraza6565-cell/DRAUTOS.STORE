@@ -155,7 +155,7 @@
         position: relative;
         width: 100%;
         height: 600px;
-        background: #020617 url('/frontend/images/truck_showroom.png') no-repeat center center;
+        background: #020617 url("{{asset('frontend/images/truck_showroom.png')}}") no-repeat center center;
         background-size: cover;
         overflow: hidden;
         border-bottom: 2px solid #1e293b;
