@@ -48,6 +48,57 @@ class FrontendController extends Controller
                 ->with('category_lists',$category);
     }   
 
+    public function getCategoryProductsAjax($id){
+        $category = Category::findOrFail($id);
+        
+        $products = Product::where('status','active')
+            ->where(function($q) use ($id) {
+                $q->where('cat_id', $id)
+                  ->orWhere('sub_cat_id', $id);
+            })
+            ->orderBy('id','DESC')
+            ->limit(12)
+            ->get();
+            
+        $formatted = $products->map(function($product) {
+            $photos = explode(',', $product->photo);
+            $photoUrl = (count($photos) > 0 && !empty($photos[0])) ? $photos[0] : 'https://via.placeholder.com/400x300';
+            
+            $priceHtml = '';
+            $after_discount = ($product->price - ($product->price * $product->discount) / 100);
+            
+            if (Auth::check()) {
+                if ($product->discount > 0) {
+                    $priceHtml = '<span class="price-amount" style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">$' . number_format($after_discount, 2) . '</span>' .
+                                 '<del class="price-del text-muted ml-2" style="font-size: 0.9rem;">$' . number_format($product->price, 2) . '</del>';
+                } else {
+                    $priceHtml = '<span class="price-amount text-white" style="font-weight: 700; font-size: 1.1rem;">$' . number_format($product->price, 2) . '</span>';
+                }
+            } else {
+                $priceHtml = '<span class="price-login"><a href="' . route('login') . '" style="color: #f59e0b; font-weight: 600; text-decoration: underline;">Login to see price</a></span>';
+            }
+            
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'slug' => $product->slug,
+                'photo' => $photoUrl,
+                'price_html' => $priceHtml,
+                'discount' => $product->discount,
+                'stock' => $product->stock,
+                'condition' => $product->condition,
+                'detail_url' => route('product-detail', $product->slug),
+                'add_to_cart_url' => route('add-to-cart', $product->slug)
+            ];
+        });
+        
+        return response()->json([
+            'status' => 'success',
+            'category' => $category->title,
+            'products' => $formatted
+        ]);
+    }
+
     public function aboutUs(){
         return view('frontend.pages.about-us');
     }
