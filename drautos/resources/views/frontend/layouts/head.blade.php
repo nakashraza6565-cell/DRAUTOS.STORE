@@ -154,14 +154,24 @@
     #chassis-3d-showroom {
         position: relative;
         width: 100%;
-        height: 600px;
-        background: #020617 url("{{asset('frontend/images/truck_showroom.png')}}") no-repeat center center;
-        background-size: cover;
+        height: 650px;
+        background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
         overflow: hidden;
         border-bottom: 2px solid #1e293b;
     }
 
-    /* Tech Hotspots positioned responsively via percentages */
+    #chassis-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: grab;
+    }
+
+    #chassis-canvas:active {
+        cursor: grabbing;
+    }
+
+    /* Tech Hotspots positioned responsively via coordinates */
     .tech-hotspot {
         position: absolute;
         transform: translate(-50%, -50%);
@@ -173,11 +183,6 @@
         justify-content: center;
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
-    #hotspot-engine { left: 45%; top: 60%; }
-    #hotspot-clutch { left: 58%; top: 72%; }
-    #hotspot-brakes { left: 51%; top: 90%; }
-    #hotspot-suspension { left: 68%; top: 86%; }
 
     /* Sci-fi Blueprint Grid Overlay */
     .showroom-grid-overlay {
