@@ -101,6 +101,16 @@
     </li>
     @endcan
 
+    @can('view-return')
+    {{-- Sale Returns shifted here from Inventory --}}
+    <li class="nav-item {{ Request::is('admin/returns/sale*') ? 'active' : '' }}">
+        <a class="nav-link py-2" href="{{route('returns.sale.index')}}">
+            <i class="fas fa-undo mr-2"></i>
+            <span>Sale Returns</span>
+        </a>
+    </li>
+    @endcan
+
     <!-- Section: Inventory -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
         Inventory & Assets
@@ -174,18 +184,12 @@
     @endcan
 
     @can('view-return')
-    {{-- Returns Management --}}
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#returnsCollapse" aria-expanded="true" aria-controls="returnsCollapse">
-          <i class="fas fa-undo mr-2"></i>
-          <span>Returns</span>
+    {{-- Purchase Returns standalone --}}
+    <li class="nav-item {{ Request::is('admin/returns/purchase*') ? 'active' : '' }}">
+        <a class="nav-link py-2" href="{{route('returns.purchase.index')}}">
+            <i class="fas fa-file-import mr-2"></i>
+            <span>Purchase Returns</span>
         </a>
-        <div id="returnsCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('returns.sale.index')}}">Sale Returns</a>
-            <a class="collapse-item" href="{{route('returns.purchase.index')}}">Purchase Returns</a>
-          </div>
-        </div>
     </li>
     @endcan
 
