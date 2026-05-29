@@ -532,7 +532,7 @@
                     <div class="custom-control custom-checkbox mt-1">
                         <input type="checkbox" class="custom-control-input" id="share-receipt-toggle" checked>
                         <label class="custom-control-label font-weight-bold text-primary" for="share-receipt-toggle" style="cursor: pointer;">
-                            <i class="fas fa-share-nodes mr-1"></i> Share Receipt / Image (رسید / تصویر شیئر کریں)
+                            <i class="fas fa-share-nodes mr-1"></i> Share Invoice
                         </label>
                     </div>
                 </div>
@@ -2190,131 +2190,170 @@
                     // Share Receipt / Image logic
                     let shareReceiptPromise = Promise.resolve();
                     if ($('#share-receipt-toggle').is(':checked') && response.invoice_url) {
-                        let shareUrl = response.invoice_url;
-                        let lang = $('#print-receipt-urdu').is(':checked') ? 'ur' : 'en';
-                        if (lang === 'ur') {
-                            shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
-                        }
-                        
-                        let text = "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
-                        if (lang === 'ur') {
-                            text = "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:";
-                        }
-
-                        // Check if Web Share API with file support is available
-                        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([new Blob()], 'test.png', { type: 'image/png' })] })) {
-                            // Show loading SweetAlert during image generation
+                        shareReceiptPromise = new Promise((resolveOuter) => {
                             Swal.fire({
-                                title: lang === 'ur' ? 'تصویر تیار ہو رہی ہے...' : 'Generating Image Receipt...',
-                                html: lang === 'ur' ? 'براہ کرم چند سیکنڈ انتظار کریں' : 'Please wait a few seconds...',
+                                title: '<i class="fas fa-share-nodes text-primary mr-1"></i> Share Invoice / Image',
+                                html: `
+                                    <div class="p-2 text-center">
+                                        <p class="text-muted small mb-4">Choose your invoice language.<br><b>First Tap:</b> Generates & downloads invoice image.<br><b>Second Tap:</b> Opens share menu!</p>
+                                        <div class="d-flex flex-column" style="gap: 12px;">
+                                            <button id="pos-share-en" class="btn btn-outline-primary btn-block py-3 font-weight-bold d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-file-invoice mr-2"></i> Share in English (EN)
+                                            </button>
+                                            <button id="pos-share-ur" class="btn btn-outline-success btn-block py-3 font-weight-bold text-success d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-language mr-2"></i> Share in Urdu (اردو)
+                                            </button>
+                                        </div>
+                                    </div>
+                                `,
+                                showConfirmButton: false,
+                                showCancelButton: true,
+                                cancelButtonText: 'Close',
+                                cancelButtonColor: '#6c757d',
                                 allowOutsideClick: false,
                                 didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
+                                    let enBlob = null;
+                                    let urBlob = null;
 
-                            shareReceiptPromise = new Promise(async (resolveShare) => {
-                                try {
-                                    // Generate the print URL from invoice PDF URL
-                                    let printUrl = response.invoice_url.replace('/pdf/', '/print/') + '?type=standard';
-                                    if (lang === 'ur') {
-                                        printUrl += '&lang=ur';
-                                    }
+                                    async function handleLanguageTap(lang, $btn) {
+                                        let currentBlob = lang === 'ur' ? urBlob : enBlob;
 
-                                    const printResponse = await fetch(printUrl);
-                                    let htmlText = await printResponse.text();
+                                        // SECOND TAP: Open share menu
+                                        if (currentBlob) {
+                                            const filename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            const file = new File([currentBlob], filename, { type: 'image/png' });
+                                            let text = lang === 'ur' ? "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:" : "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
 
-                                    // Strip auto-print scripts
-                                    htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
-                                    htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
-
-                                    // Render inside iframe
-                                    const iframe = document.createElement('iframe');
-                                    iframe.style.position = 'fixed';
-                                    iframe.style.right = '-9999px';
-                                    iframe.style.width = '800px';
-                                    iframe.style.height = '2500px';
-                                    document.body.appendChild(iframe);
-
-                                    const iframeDoc = iframe.contentWindow.document;
-                                    iframeDoc.open();
-                                    iframeDoc.write(htmlText);
-                                    iframeDoc.close();
-
-                                    // Wait for assets/fonts to load
-                                    await new Promise(r => setTimeout(r, 1000));
-
-                                    // Auto-resize
-                                    iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
-
-                                    // Load html2canvas if needed
-                                    if (typeof html2canvas === 'undefined') {
-                                        await new Promise((resolveScript) => {
-                                            const script = document.createElement('script');
-                                            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                                            script.onload = resolveScript;
-                                            document.head.appendChild(script);
-                                        });
-                                    }
-
-                                    const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
-                                    const canvas = await html2canvas(wrapper, {
-                                        scale: 2,
-                                        useCORS: true,
-                                        backgroundColor: '#ffffff'
-                                    });
-
-                                    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-                                    document.body.removeChild(iframe);
-
-                                    // Close loading popup
-                                    Swal.close();
-
-                                    // Prepare file for native share
-                                    const filename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
-                                    const file = new File([blob], filename, { type: 'image/png' });
-
-                                    await navigator.share({
-                                        files: [file],
-                                        title: 'Danyal Autos Invoice',
-                                        text: text
-                                    });
-
-                                    resolveShare();
-                                } catch (err) {
-                                    console.error('POS Image share failed:', err);
-                                    Swal.close();
-                                    // Fallback to text link share if file sharing fails
-                                    if (err.name !== 'AbortError') {
-                                        if (navigator.share) {
-                                            navigator.share({
-                                                title: 'Danyal Autos Invoice',
-                                                text: text,
-                                                url: shareUrl
-                                            }).then(resolveShare).catch(resolveShare);
-                                        } else {
-                                            resolveShare();
+                                            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                                                try {
+                                                    await navigator.share({
+                                                        files: [file],
+                                                        title: 'Danyal Autos Invoice',
+                                                        text: text
+                                                    });
+                                                } catch (err) {
+                                                    if (err.name !== 'AbortError') {
+                                                        console.log('Native Share Failed:', err);
+                                                    }
+                                                }
+                                            } else {
+                                                // Fallback to text url share via WhatsApp
+                                                let shareUrl = response.invoice_url;
+                                                if (lang === 'ur') {
+                                                    shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                                                }
+                                                let customerPhone = $('#customer-select option:selected').data('phone') || '';
+                                                let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
+                                                if (cleanedPhone && !cleanedPhone.startsWith('92')) {
+                                                    if (cleanedPhone.startsWith('0')) {
+                                                        cleanedPhone = '92' + cleanedPhone.substring(1);
+                                                    } else {
+                                                        cleanedPhone = '92' + cleanedPhone;
+                                                    }
+                                                }
+                                                let shareText = encodeURIComponent(text + "\n" + shareUrl);
+                                                let waUrl = cleanedPhone ? `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${shareText}` : `https://api.whatsapp.com/send?text=${shareText}`;
+                                                window.open(waUrl, '_blank');
+                                            }
+                                            return;
                                         }
-                                    } else {
-                                        resolveShare();
+
+                                        // FIRST TAP: Generate standard invoice screenshot & download
+                                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Generating & Downloading...');
+
+                                        try {
+                                            let printUrl = response.invoice_url.replace('/pdf/', '/print/') + '?type=standard';
+                                            if (lang === 'ur') {
+                                                printUrl += '&lang=ur';
+                                            }
+
+                                            const printResponse = await fetch(printUrl);
+                                            let htmlText = await printResponse.text();
+
+                                            // Strip auto-print scripts
+                                            htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                                            htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+
+                                            // Render inside iframe
+                                            const iframe = document.createElement('iframe');
+                                            iframe.style.position = 'fixed';
+                                            iframe.style.right = '-9999px';
+                                            iframe.style.width = '800px';
+                                            iframe.style.height = '2500px';
+                                            document.body.appendChild(iframe);
+
+                                            const iframeDoc = iframe.contentWindow.document;
+                                            iframeDoc.open();
+                                            iframeDoc.write(htmlText);
+                                            iframeDoc.close();
+
+                                            // Wait for assets/fonts to load
+                                            await new Promise(r => setTimeout(r, 1000));
+
+                                            // Auto-resize
+                                            iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+
+                                            // Load html2canvas if needed
+                                            if (typeof html2canvas === 'undefined') {
+                                                await new Promise((resolveScript) => {
+                                                    const script = document.createElement('script');
+                                                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                                                    script.onload = resolveScript;
+                                                    document.head.appendChild(script);
+                                                });
+                                            }
+
+                                            const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
+                                            const canvas = await html2canvas(wrapper, {
+                                                scale: 2,
+                                                useCORS: true,
+                                                backgroundColor: '#ffffff'
+                                            });
+
+                                            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                                            document.body.removeChild(iframe);
+
+                                            // Save blob
+                                            if (lang === 'ur') {
+                                                urBlob = blob;
+                                            } else {
+                                                enBlob = blob;
+                                            }
+
+                                            // Trigger automatic download
+                                            const downloadLink = document.createElement('a');
+                                            downloadLink.href = URL.createObjectURL(blob);
+                                            const downloadFilename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            downloadLink.download = downloadFilename;
+                                            document.body.appendChild(downloadLink);
+                                            downloadLink.click();
+                                            document.body.removeChild(downloadLink);
+
+                                            // Update button UI for the SECOND TAP
+                                            $btn.prop('disabled', false)
+                                                .removeClass('btn-outline-primary btn-outline-success text-success')
+                                                .addClass('btn-warning text-dark')
+                                                .html('<i class="fas fa-share-alt mr-2"></i> Tap to Share ' + (lang === 'ur' ? 'Urdu (اردو)' : 'English (EN)'));
+
+                                        } catch (err) {
+                                            console.error('POS Image share generation failed:', err);
+                                            $btn.prop('disabled', false).html(lang === 'ur' ? '<i class="fas fa-language mr-2"></i> Share in Urdu (اردو)' : '<i class="fas fa-file-invoice mr-2"></i> Share in English (EN)');
+                                            alert('Failed to generate standard printed image screenshot.');
+                                        }
                                     }
+
+                                    $('#pos-share-en').on('click', function() {
+                                        handleLanguageTap('en', $(this));
+                                    });
+
+                                    $('#pos-share-ur').on('click', function() {
+                                        handleLanguageTap('ur', $(this));
+                                    });
                                 }
+                            }).then(() => {
+                                resolveOuter();
                             });
-                        } else {
-                            // Desktop / non-capable fallback: share url via WhatsApp
-                            let customerPhone = $('#customer-select option:selected').data('phone') || '';
-                            let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
-                            if (cleanedPhone && !cleanedPhone.startsWith('92')) {
-                                if (cleanedPhone.startsWith('0')) {
-                                    cleanedPhone = '92' + cleanedPhone.substring(1);
-                                } else {
-                                    cleanedPhone = '92' + cleanedPhone;
-                                }
-                            }
-                            let shareText = encodeURIComponent(text + "\n" + shareUrl);
-                            let waUrl = cleanedPhone ? `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${shareText}` : `https://api.whatsapp.com/send?text=${shareText}`;
-                            window.open(waUrl, '_blank');
-                        }
+                        });
                     }
 
                     shareReceiptPromise.then(() => {
