@@ -1295,4 +1295,3 @@
         });
     </script>
 @endpush
-@endpush
