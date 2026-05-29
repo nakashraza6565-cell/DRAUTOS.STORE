@@ -808,46 +808,60 @@
             // 6. BUILD FUTURISTIC PROCEDURAL 3D TRUCK CHASSIS
             const chassisGroup = new THREE.Group();
 
+            // Glowing Wireframe Blueprint Shell Helper
+            function addGlowingWireframe(parentMesh, colorHex, opacity = 0.4) {
+                const wireMat = new THREE.MeshBasicMaterial({
+                    color: colorHex,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: opacity,
+                    blending: THREE.AdditiveBlending
+                });
+                const wireMesh = new THREE.Mesh(parentMesh.geometry, wireMat);
+                parentMesh.add(wireMesh);
+            }
+
             // Materials
             const darkMetalMat = new THREE.MeshStandardMaterial({
-                color: 0x1e293b,
+                color: 0x0f172a,
                 metalness: 0.9,
-                roughness: 0.2
+                roughness: 0.1
             });
 
             const brightChromeMat = new THREE.MeshStandardMaterial({
-                color: 0xcbd5e1,
+                color: 0xe2e8f0,
                 metalness: 0.95,
                 roughness: 0.05
             });
 
             const glowingEngineMat = new THREE.MeshStandardMaterial({
-                color: 0x111827,
+                color: 0x020617,
                 emissive: 0xf97316,
-                emissiveIntensity: 1.8,
+                emissiveIntensity: 2.2,
                 roughness: 0.3
             });
 
             const techGlassMat = new THREE.MeshPhysicalMaterial({
                 color: 0x3b82f6,
                 transparent: true,
-                opacity: 0.4,
-                roughness: 0.1,
-                transmission: 0.6,
+                opacity: 0.35,
+                roughness: 0.05,
+                transmission: 0.8,
                 thickness: 0.5
             });
 
             const rubberMat = new THREE.MeshStandardMaterial({
-                color: 0x090d16,
+                color: 0x020617,
                 metalness: 0.1,
-                roughness: 0.8
+                roughness: 0.9
             });
 
-            // A. Main Beams (Twin Rail Frame)
+            // A. Main Beams (Twin Rail Frame with Blue Glowing Blueprint)
             const railGeo = new THREE.BoxGeometry(9, 0.25, 0.15);
             const leftRail = new THREE.Mesh(railGeo, darkMetalMat);
             leftRail.position.set(0, 0.4, 0.7);
             leftRail.castShadow = true;
+            addGlowingWireframe(leftRail, 0x3b82f6, 0.55);
             chassisGroup.add(leftRail);
 
             const rightRail = leftRail.clone();
@@ -860,14 +874,16 @@
                 const cross = new THREE.Mesh(crossGeo, darkMetalMat);
                 cross.position.set(i, 0.4, 0);
                 cross.castShadow = true;
+                addGlowingWireframe(cross, 0x3b82f6, 0.45);
                 chassisGroup.add(cross);
             }
 
-            // B. Engine block (Glowing Power Unit at Front)
+            // B. Engine block (Glowing Power Unit at Front with pulsing orange wireframe)
             const engineBlockGeo = new THREE.BoxGeometry(1.6, 1.0, 0.9);
             const engineBlock = new THREE.Mesh(engineBlockGeo, glowingEngineMat);
             engineBlock.position.set(-3.2, 0.6, 0);
             engineBlock.castShadow = true;
+            addGlowingWireframe(engineBlock, 0xf97316, 0.7);
             chassisGroup.add(engineBlock);
 
             // Engine tech fan / cylinder attachments
@@ -875,14 +891,16 @@
             const fan = new THREE.Mesh(fanGeo, brightChromeMat);
             fan.rotation.z = Math.PI / 2;
             fan.position.set(-4.05, 0.6, 0);
+            addGlowingWireframe(fan, 0xf97316, 0.5);
             chassisGroup.add(fan);
 
-            // C. Gearbox / Transmission Unit (Mounted behind engine)
+            // C. Gearbox / Transmission Unit (Mounted behind engine with Cyan cyber-glow)
             const gearboxGeo = new THREE.CylinderGeometry(0.35, 0.25, 1.2, 16);
             const gearbox = new THREE.Mesh(gearboxGeo, brightChromeMat);
             gearbox.rotation.z = Math.PI / 2;
             gearbox.position.set(-1.8, 0.4, 0);
             gearbox.castShadow = true;
+            addGlowingWireframe(gearbox, 0x06b6d4, 0.6);
             chassisGroup.add(gearbox);
 
             // Driveshaft
@@ -890,6 +908,7 @@
             const driveShaft = new THREE.Mesh(driveShaftGeo, brightChromeMat);
             driveShaft.rotation.z = Math.PI / 2;
             driveShaft.position.set(1.0, 0.2, 0);
+            addGlowingWireframe(driveShaft, 0x3b82f6, 0.4);
             chassisGroup.add(driveShaft);
 
             // D. Axles & Brakes
@@ -900,6 +919,7 @@
             frontAxle.rotation.x = Math.PI / 2;
             frontAxle.position.set(-3.2, -0.2, 0);
             frontAxle.castShadow = true;
+            addGlowingWireframe(frontAxle, 0x3b82f6, 0.5);
             chassisGroup.add(frontAxle);
 
             // Rear differential axle 1
@@ -907,6 +927,7 @@
             rearAxle1.rotation.x = Math.PI / 2;
             rearAxle1.position.set(2.2, -0.2, 0);
             rearAxle1.castShadow = true;
+            addGlowingWireframe(rearAxle1, 0x3b82f6, 0.5);
             chassisGroup.add(rearAxle1);
 
             // Rear differential axle 2
@@ -914,23 +935,26 @@
             rearAxle2.rotation.x = Math.PI / 2;
             rearAxle2.position.set(3.6, -0.2, 0);
             rearAxle2.castShadow = true;
+            addGlowingWireframe(rearAxle2, 0x3b82f6, 0.5);
             chassisGroup.add(rearAxle2);
 
             // Differential center housings
             const diffGeo = new THREE.SphereGeometry(0.3, 16, 16);
             const diff1 = new THREE.Mesh(diffGeo, darkMetalMat);
             diff1.position.set(2.2, -0.2, 0);
+            addGlowingWireframe(diff1, 0x3b82f6, 0.55);
             chassisGroup.add(diff1);
 
             const diff2 = diff1.clone();
             diff2.position.set(3.6, -0.2, 0);
             chassisGroup.add(diff2);
 
-            // Brake Discs (Rotors) inside wheels
+            // Brake Discs (Rotors with orange cyber-pad) inside wheels
             const brakeGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.08, 16);
             const brakeLeft = new THREE.Mesh(brakeGeo, brightChromeMat);
             brakeLeft.rotation.x = Math.PI / 2;
             brakeLeft.position.set(2.2, -0.2, 0.9);
+            addGlowingWireframe(brakeLeft, 0xf97316, 0.6);
             chassisGroup.add(brakeLeft);
 
             const brakeRight = brakeLeft.clone();
@@ -947,10 +971,12 @@
                 const tire = new THREE.Mesh(tireGeo, rubberMat);
                 tire.rotation.x = Math.PI / 2;
                 tire.castShadow = true;
+                addGlowingWireframe(tire, 0x3b82f6, 0.25);
                 wheelGroup.add(tire);
                 
                 const hub = new THREE.Mesh(hubGeo, brightChromeMat);
                 hub.rotation.x = Math.PI / 2;
+                addGlowingWireframe(hub, 0xf97316, 0.55);
                 wheelGroup.add(hub);
                 
                 wheelGroup.position.set(x, y, z);
@@ -983,16 +1009,19 @@
                 const shockFrontGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.6, 8);
                 const shockFront = new THREE.Mesh(shockFrontGeo, brightChromeMat);
                 shockFront.position.set(-3.2, 0.1, side);
+                addGlowingWireframe(shockFront, 0x06b6d4, 0.6);
                 suspensionGroup.add(shockFront);
                 
                 // Rear Leaf/Coil structures
                 const coilGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 12);
                 const coil1 = new THREE.Mesh(coilGeo, glowingEngineMat);
                 coil1.position.set(2.2, 0.1, side);
+                addGlowingWireframe(coil1, 0xf97316, 0.7);
                 suspensionGroup.add(coil1);
 
-                const coil2 = coil1.clone();
+                const coil2 = new THREE.Mesh(coilGeo, glowingEngineMat);
                 coil2.position.set(3.6, 0.1, side);
+                addGlowingWireframe(coil2, 0xf97316, 0.7);
                 suspensionGroup.add(coil2);
             }
             chassisGroup.add(suspensionGroup);
@@ -1001,12 +1030,14 @@
             const cabBaseGeo = new THREE.BoxGeometry(2.4, 0.1, 1.8);
             const cabBase = new THREE.Mesh(cabBaseGeo, techGlassMat);
             cabBase.position.set(-3.0, 1.1, 0);
+            addGlowingWireframe(cabBase, 0x3b82f6, 0.45);
             chassisGroup.add(cabBase);
 
             // cabin transparent structural frame
             const cabStructureGeo = new THREE.BoxGeometry(2.2, 1.6, 1.7);
             const cabStructure = new THREE.Mesh(cabStructureGeo, techGlassMat);
             cabStructure.position.set(-3.0, 1.9, 0);
+            addGlowingWireframe(cabStructure, 0x3b82f6, 0.6);
             chassisGroup.add(cabStructure);
 
             scene.add(chassisGroup);
