@@ -816,6 +816,12 @@ class HomeController extends Controller
 
     public function storePhotoOrder(Request $request)
     {
+        \Log::info('storePhotoOrder triggered', $request->all());
+
+        if (!$request->hasFile('order_photos')) {
+            return redirect()->back()->with('error', 'Upload failed: No photos received. The pictures might be too large for the server (try uploading smaller images or one at a time), or your connection was interrupted.');
+        }
+
         $request->validate([
             'order_photos'   => 'required|array|min:1|max:10',
             'order_photos.*' => 'required|file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480',
