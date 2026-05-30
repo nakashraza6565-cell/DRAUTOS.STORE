@@ -83,7 +83,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3 ml-1">
             <h6 class="font-weight-bold text-gray-800 mb-0"><i class="fas fa-camera mr-1"></i> Order Reference Photos</h6>
             <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('customer_photo_input').click()">
-                <i class="fas fa-upload mr-1"></i> Upload Evidence
+                <i class="fas fa-upload mr-1"></i> Upload Order/Item Photo
             </button>
             <form id="customer-photo-upload-form" action="{{ route('user.sales-orders.photos.upload', $salesOrder->id) }}" method="POST" enctype="multipart/form-data" style="display:none;">
                 @csrf
