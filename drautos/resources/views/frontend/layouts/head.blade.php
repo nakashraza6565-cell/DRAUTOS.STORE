@@ -41,14 +41,14 @@
 <style>
     /* ===== PREMIUM B2B COMMERCIAL DESIGN TOKENS ===== */
     :root {
-        --primary: #0f172a;       /* Deep Corporate Navy */
-        --primary-light: #1e293b; /* Slightly lighter navy */
-        --accent: #facc15;        /* Industrial Yellow */
-        --accent-alt: #eab308;    /* Darker Industrial Yellow */
+        --primary: #083259;       /* Rich Corporate Marine Blue */
+        --primary-light: #0d467a; /* Lighter Marine Blue */
+        --accent: #fbbf24;        /* Industrial Yellow */
+        --accent-alt: #f59e0b;    /* Darker Industrial Yellow */
         --text-main: #334155;     /* Slate text for light backgrounds */
-        --text-muted: #64748b;    /* Muted slate */
+        --text-muted: #8b9cb3;    /* Metallic Silver Blue */
         --bg-soft: #f8fafc;       /* Pearl white / silver background */
-        --border-color: #e2e8f0;  /* Standard silver border */
+        --border-color: #cbd5e1;  /* Standard silver border */
     }
 
     body {
