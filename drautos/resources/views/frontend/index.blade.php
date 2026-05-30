@@ -366,62 +366,41 @@
     }
 </style>
 
-<!-- B2B Hero Section -->
-<section class="b2b-hero">
-    <div class="container">
-        <div class="row align-items-center">
+<!-- B2B Exact Hero Section -->
+<section class="b2b-hero-exact" style="position: relative; height: 600px; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1596541578135-c322b7dcaf96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-resolution;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.6) 40%, transparent 100%); z-index: 1;"></div>
+    <div class="container" style="position: relative; z-index: 2;">
+        <div class="row">
             <div class="col-lg-8 col-md-10">
-                <div class="hero-content">
-                    <span class="hero-badge"><i class="fa fa-star text-dark mr-1"></i> Official B2B Distributor</span>
-                    <h1 class="hero-title">HEAVY DUTY <span class="text-accent">COMMERCIAL</span> PARTS</h1>
-                    <p class="hero-subtitle">Premium OEM components and genuine spare parts engineered for commercial trucks, fleet logistics, and heavy machinery. Built for the long haul.</p>
+                <div class="hero-content" style="text-align: left;">
+                    <h1 class="hero-title" style="font-size: 4.5rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 25px; text-transform: uppercase;">
+                        PREMIUM COMMERCIAL <br>TRUCK PARTS <span style="color: var(--accent);">|</span> FOR THE <br>B2B INDUSTRY
+                    </h1>
+                    <p class="hero-subtitle" style="font-size: 1.25rem; color: #e2e8f0; margin-bottom: 40px; font-weight: 500;">
+                        Your Trusted Partner for Heavy-Duty Reliability. <br>Quality Parts. Delivered Fast.
+                    </p>
                     
-                    <div class="d-flex flex-wrap" style="gap: 15px;">
-                        <a href="{{route('product-grids')}}" class="btn-b2b">
-                            <i class="fa fa-cogs"></i> View Catalog
-                        </a>
-                        @guest
-                        <a href="{{route('login')}}" class="btn-b2b-outline">
-                            <i class="fa fa-lock"></i> Client Login
-                        </a>
-                        @else
-                        <a href="{{route('user')}}" class="btn-b2b-outline">
-                            <i class="fa fa-briefcase"></i> Dashboard
-                        </a>
-                        @endguest
-                    </div>
+                    <a href="{{route('product-grids')}}" class="btn font-weight-bold" style="background: var(--accent); color: #000; padding: 15px 35px; font-size: 15px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; border: none;">
+                        SHOP ALL PARTS <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
             </div>
-            <!-- Optional Hero Right Side Graphic / Empty for clean look -->
         </div>
     </div>
 </section>
 
-<!-- B2B Features Section -->
-<section class="section py-5 bg-soft">
+<!-- Shop By Vehicle Type Section -->
+<section class="section py-4" style="background: #ffffff; border-bottom: 1px solid var(--border-color);">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="b2b-feature-card">
-                    <div class="b2b-feature-icon"><i class="fa fa-check-square"></i></div>
-                    <h3 class="b2b-feature-title">OEM Quality Certified</h3>
-                    <p class="b2b-feature-desc">Every part we stock is rigorously tested against original equipment manufacturer blueprints to guarantee durability and flawless performance under heavy load.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="b2b-feature-card">
-                    <div class="b2b-feature-icon"><i class="fa fa-truck"></i></div>
-                    <h3 class="b2b-feature-title">Rapid Fleet Fulfillment</h3>
-                    <p class="b2b-feature-desc">Our dedicated logistics network ensures your critical spare parts are dispatched immediately to minimize your fleet's downtime.</p>
-                </div>
-            </div>
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="b2b-feature-card">
-                    <div class="b2b-feature-icon"><i class="fa fa-shield"></i></div>
-                    <h3 class="b2b-feature-title">B2B Warranty Protection</h3>
-                    <p class="b2b-feature-desc">We stand firmly behind our hardware. All commercial components come with an extended industrial warranty for your peace of mind.</p>
-                </div>
-            </div>
+        <div class="text-center mb-4">
+            <h2 style="color: var(--text-main); font-weight: 800; font-size: 1.8rem;">Shop by Vehicle Type</h2>
+        </div>
+        <!-- Placeholders for the categories (matching the dark block below the hero in the image) -->
+        <div class="d-flex justify-content-center align-items-center" style="gap: 2px;">
+            <div style="background: #0d1e30; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Problems</div>
+            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Output</div>
+            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Terminal</div>
+            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Ports</div>
         </div>
     </div>
 </section>

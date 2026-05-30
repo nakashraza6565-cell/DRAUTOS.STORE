@@ -1,165 +1,118 @@
-<header class="header shop b2b-header">
-    <!-- Topbar -->
-    <div class="topbar py-2" style="background: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1);">
+<header class="header shop b2b-header-exact">
+    <!-- Topbar (White) -->
+    <div class="middle-inner py-3" style="background: #ffffff;">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-5 col-md-12 col-12">
-                    <!-- Top Left -->
-                    <div class="top-left">
-                        <ul class="list-main d-flex align-items-center mb-0" style="gap: 15px; flex-wrap: wrap;">
-                            <li class="text-white" style="font-size: 12px;"><i class="ti-headphone-alt mr-1" style="color: var(--accent);"></i> +923042000274</li>
-                            <li class="text-white" style="font-size: 12px;"><i class="ti-email mr-1" style="color: var(--accent);"></i> support@danyalautos.com</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-7 col-md-12 col-12">
-                    <!-- Top Right -->
-                    <div class="right-content">
-                        <ul class="list-main d-flex align-items-center justify-content-end mb-0" style="gap: 10px;">
-                            <li class="d-none d-lg-block small"><i class="ti-location-pin mr-1" style="color: var(--accent);"></i> <a href="{{route('contact')}}" class="text-white">Store location</a></li>
-                            @auth 
-                                @if(Auth::user()->role == 'admin')
-                                    <li><a href="{{route('admin')}}" class="btn btn-sm font-weight-bold px-3 py-1" style="border-radius: 4px; color: #000 !important; background: var(--accent) !important; border: none !important;"><i class="ti-user mr-1"></i> Dashboard</a></li>
-                                @else 
-                                    <li><a href="{{route('user')}}" class="btn btn-sm font-weight-bold px-3 py-1" style="border-radius: 4px; color: #000 !important; background: var(--accent) !important; border: none !important;"><i class="ti-user mr-1"></i> Dashboard</a></li>
-                                @endif
-                                <li><a href="{{route('user.logout')}}" class="btn btn-sm font-weight-bold px-3 py-1" style="border-radius: 4px; font-size: 11px; color: #fff !important; border: 1px solid rgba(255,255,255,0.3) !important; background: transparent;"><i class="ti-power-off mr-1"></i> Logout</a></li>
-                            @else
-                                <li><a href="{{route('login')}}" class="btn btn-sm font-weight-bold px-4 py-2" style="border-radius: 4px; color: #000 !important; background: var(--accent) !important; border: none !important; text-transform: uppercase; letter-spacing: 1px; font-size: 12px;"><i class="ti-lock mr-1"></i> Login</a></li>
-                                <li class="d-none d-sm-block"><a href="{{route('register')}}" class="btn btn-sm font-weight-bold px-3 py-1" style="border-radius: 4px; color: #fff !important; border: 1px solid rgba(255,255,255,0.3) !important; background: transparent;">Register</a></li>
-                            @endauth
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Middle Header -->
-    <div class="middle-inner py-4" style="background: #ffffff; border-bottom: 1px solid var(--border-color);">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-3 col-md-3 col-12">
-                    <div class="logo">
-                        <a href="{{route('home')}}">
-                            <h3 class="font-weight-bold" style="color: var(--primary); letter-spacing: -1px;">
-                                <span class="px-2 rounded mr-1" style="background: var(--accent); color: #000;"><i class="fas fa-truck-moving"></i> Danyal Autos</span> Co.
-                            </h3>
+            <div class="row align-items-center justify-content-between">
+                <!-- Logo -->
+                <div class="col-lg-4 col-md-4 col-12">
+                    <div class="logo m-0">
+                        <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
+                            <div class="d-flex align-items-center justify-content-center mr-2" style="width: 45px; height: 45px; background: var(--primary); border-radius: 4px; border-bottom: 4px solid var(--accent);">
+                                <span class="font-weight-bold" style="color: #fff; font-size: 24px; font-style: italic;">D<span style="color: var(--accent);">R</span></span>
+                            </div>
+                            <div class="d-flex flex-column justify-content-center">
+                                <h3 class="font-weight-bold mb-0" style="color: var(--primary); font-size: 20px; letter-spacing: -0.5px;">DANYAL AUTOS</h3>
+                                <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Premium Truck Parts B2B</span>
+                            </div>
                         </a>
                     </div>
-                    <!-- Search Form -->
-                    <div class="search-top">
-                        <div class="top-search"><a href="#0" style="color: var(--primary);"><i class="ti-search"></i></a></div>
-                        <div class="search-top">
-                            <form class="search-form" method="POST" action="{{route('product.search')}}">
-                                @csrf
-                                <input type="text" placeholder="Search part # or keyword..." name="search" style="border-radius: 4px; background: #fff; color: var(--text-main); border: 2px solid var(--primary);">
-                                <button value="search" type="submit" style="border-radius: 0 4px 4px 0; background: var(--primary); color: #fff;"><i class="ti-search"></i></button>
-                            </form>
-                        </div>
-                    </div>
-                    <!--/ End Search Form -->
                     <div class="mobile-nav"></div>
                 </div>
-                <div class="col-lg-6 col-md-6 col-12">
-                     <!-- Search Form -->
-                     <form method="POST" action="{{route('product.search')}}">
-                     @csrf
-                     <div class="search-bar-top">
-                        <div class="search-bar" style="border: 2px solid var(--primary); border-radius: 6px; overflow: hidden; background: #fff;">
-                            <select name="cat_id" style="background: var(--bg-soft); border: none; border-right: 1px solid var(--border-color); font-weight: 600; color: var(--text-main);">
-                                <option value="">Categories</option>
-                                @php
-                                    $categories = DB::table('categories')->where('status', 'active')->where('is_parent', 1)->get();
-                                @endphp
-                                @foreach($categories as $cat)
-                                    <option value="{{$cat->id}}">{{$cat->title}}</option>
-                                @endforeach
-                            </select>
-                            <input name="search" placeholder="Search OEM part numbers, tools, components..." type="search" style="background: transparent; color: var(--text-main);">
-                            <button class="btnn" type="submit" style="background: var(--primary); color: #fff; height: 100%; border-radius: 0 4px 4px 0; transition: all 0.3s;"><i class="ti-search"></i></button>
-                        </div>
-                    </div>
-                    </form>
-                    <!--/ End Search Form -->
-                </div>
-                <div class="col-lg-3 col-md-3 col-12 d-flex justify-content-end">
-                   <div class="right-bar d-flex align-items-center" style="gap: 20px;">
-                         <!-- Search Form -->
-                         <div class="sinlge-bar shopping">
-                            <a href="{{route('wishlist')}}" class="single-icon" style="font-size: 20px; color: var(--primary);"><i class="fa fa-heart-o"></i> <span class="total-count" style="background: var(--accent); color: #000; top: -5px; right: -10px;">{{Helper::wishlistCount()}}</span></a>
-                        </div>
-                        <div class="sinlge-bar shopping">
-                            <a href="{{route('cart')}}" class="single-icon" style="font-size: 20px; color: var(--primary);"><i class="ti-bag"></i> <span class="total-count" style="background: var(--primary); color: #fff; top: -5px; right: -10px;">{{Helper::cartCount()}}</span></a>
-                             <!-- Shopping Item -->
-                            @auth
-                                <div class="shopping-item shadow-lg border-0" style="border-radius: 8px; overflow: hidden; padding: 0; background: #fff; border: 1px solid var(--border-color) !important;">
-                                    <div class="dropdown-cart-header p-3" style="background: var(--bg-soft); border-bottom: 1px solid var(--border-color);">
-                                        <span class="font-weight-bold" style="color: var(--primary);">{{count(Helper::getAllProductFromCart())}} Items</span>
-                                        <a href="{{route('cart')}}" class="font-weight-bold" style="color: var(--primary);">View Cart</a>
-                                    </div>
-                                    <ul class="shopping-list p-3" style="max-height: 300px; overflow-y: auto;">
-                                        @foreach(Helper::getAllProductFromCart() as $data)
-                                                @php
-                                                    $photo=explode(',',$data->product['photo']);
-                                                @endphp
-                                                <li class="mb-3 d-flex align-items-center">
-                                                    <a href="{{route('cart-delete',$data->id)}}" class="remove mr-3" style="color: #ef4444;" title="Remove item"><i class="fa fa-remove"></i></a>
-                                                    <a class="cart-img rounded overflow-hidden mr-3" href="#" style="width: 50px; height: 50px; flex-shrink: 0; border: 1px solid var(--border-color);"><img src="{{$photo[0]}}" alt="{{$photo[0]}}" style="object-fit: cover; width: 100%; height: 100%;"></a>
-                                                    <div class="flex-grow-1">
-                                                        <h4 class="mb-0" style="font-size: 13px;"><a href="{{route('product-detail',$data->product['slug'])}}" class="font-weight-bold" style="color: var(--text-main);">{{$data->product['title']}}</a></h4>
-                                                        <p class="quantity small text-muted">{{$data->quantity}} x <span class="amount font-weight-bold" style="color: var(--primary);">${{number_format($data->price,2)}}</span></p>
-                                                    </div>
-                                                </li>
-                                        @endforeach
-                                    </ul>
-                                    <div class="bottom p-3" style="background: var(--bg-soft); border-top: 1px solid var(--border-color);">
-                                        <div class="total d-flex justify-content-between mb-3">
-                                            <span class="text-muted font-weight-bold">Total</span>
-                                            <span class="total-amount h5 mb-0 font-weight-bold" style="color: var(--primary);">${{number_format(Helper::totalCartPrice(),2)}}</span>
-                                        </div>
-                                        <div class="d-flex" style="gap: 10px;">
-                                            <a href="{{route('checkout')}}" class="btn flex-grow-1 py-2 font-weight-bold" style="background: var(--primary); color: #fff; border-radius: 4px;">Checkout</a>
-                                            <a href="{{route('cart.clear')}}" class="btn flex-grow-1 py-2 font-weight-bold" style="border: 1px solid var(--primary); color: var(--primary); background: transparent; border-radius: 4px;">Clear</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endauth
-                            <!--/ End Shopping Item -->
-                        </div>
-                    </div>
+                
+                <!-- Right Navigation -->
+                <div class="col-lg-8 col-md-8 col-12 d-none d-md-block">
+                    <ul class="list-main d-flex align-items-center justify-content-end mb-0" style="gap: 25px;">
+                        <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Truck Models</a></li>
+                        <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Brands</a></li>
+                        <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Bulk Orders</a></li>
+                        
+                        @auth
+                            <li class="dropdown">
+                                <a href="{{ Auth::user()->role == 'admin' ? route('admin') : route('user') }}" class="font-weight-bold text-dark text-uppercase d-flex align-items-center" style="font-size: 13px; letter-spacing: 0.5px;">
+                                    My Account <i class="ti-user ml-1" style="font-size: 16px;"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li>
+                                <a href="{{route('login')}}" class="font-weight-bold text-dark text-uppercase d-flex align-items-center" style="font-size: 13px; letter-spacing: 0.5px;">
+                                    Login / Register <i class="ti-user ml-1" style="font-size: 16px;"></i>
+                                </a>
+                            </li>
+                        @endauth
+                        
+                        <!-- Cart -->
+                        <li class="shopping ml-2" style="position: relative;">
+                            <a href="{{route('cart')}}" class="text-dark d-flex align-items-center" style="font-size: 22px;">
+                                <i class="ti-shopping-cart"></i> 
+                                <span class="total-count" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Bottom Header -->
-    <div class="header-inner" style="background: var(--primary); border-top: 1px solid rgba(255,255,255,0.05);">
+    
+    <!-- Bottom Bar (Navy) -->
+    <div class="header-inner py-2" style="background: var(--primary);">
         <div class="container">
-            <div class="cat-nav-head">
-                <div class="row">
-                    <div class="col-lg-12 col-12">
-                        <div class="menu-area">
-                            <!-- Main Menu -->
-                            <nav class="navbar navbar-expand-lg p-0">
-                                <div class="navbar-collapse">	
-                                    <div class="nav-inner">	
-                                        <ul class="nav main-menu menu navbar-nav d-flex align-items-center" style="gap: 30px;">
-                                            <li class="{{Request::path()=='home' ? 'active' : ''}}"><a href="{{route('home')}}" class="font-weight-bold py-3 text-uppercase" style="color: #fff; letter-spacing: 0.5px; transition: color 0.3s; font-size: 14px;">Home</a></li>
-                                            <li class="{{Request::path()=='about-us' ? 'active' : ''}}"><a href="{{route('about-us')}}" class="font-weight-bold py-3 text-uppercase" style="color: #fff; letter-spacing: 0.5px; transition: color 0.3s; font-size: 14px;">About Us</a></li>
-                                            <li class="{{Request::path()=='contact' ? 'active' : ''}}"><a href="{{route('contact')}}" class="font-weight-bold py-3 text-uppercase" style="color: #fff; letter-spacing: 0.5px; transition: color 0.3s; font-size: 14px;">Contact Us</a></li>
-                                            <li class="{{Request::path()=='cart' ? 'active' : ''}}"><a href="{{route('cart')}}" class="font-weight-bold py-3 text-uppercase" style="color: #fff; letter-spacing: 0.5px; transition: color 0.3s; font-size: 14px;">Cart</a></li>
-                                            <li class="{{Request::path()=='wishlist' ? 'active' : ''}}"><a href="{{route('wishlist')}}" class="font-weight-bold py-3 text-uppercase" style="color: #fff; letter-spacing: 0.5px; transition: color 0.3s; font-size: 14px;">Wishlist</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </nav>
-                            <!--/ End Main Menu -->	
+            <div class="row align-items-center">
+                <!-- Main Menu Links -->
+                <div class="col-lg-5 col-md-5 col-12">
+                    <nav class="navbar navbar-expand-lg p-0">
+                        <div class="navbar-collapse">	
+                            <ul class="nav main-menu menu navbar-nav d-flex align-items-center" style="gap: 30px; margin: 0;">
+                                <li class="{{Request::path()=='home' ? 'active' : ''}}">
+                                    <a href="{{route('home')}}" class="font-weight-bold text-uppercase" style="color: var(--accent); font-size: 13px; letter-spacing: 0.5px;">Home</a>
+                                </li>
+                                <li class="dropdown">
+                                    <a href="#" class="font-weight-bold text-uppercase text-white d-flex align-items-center" style="font-size: 13px; letter-spacing: 0.5px;">
+                                        Shop By Category <i class="ti-angle-down ml-1" style="font-size: 10px;"></i>
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
+                    </nav>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="col-lg-7 col-md-7 col-12">
+                    <form method="POST" action="{{route('product.search')}}" class="w-100">
+                        @csrf
+                        <div class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden;">
+                            <input name="search" placeholder="Search by Part No., OEM, Vehicle VIN" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
+                            <button type="submit" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
+                                <i class="ti-search"></i>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </header>
+<style>
+    /* Exact Mockup Header Overrides */
+    .header.b2b-header-exact .nav.main-menu li.active a {
+        color: var(--accent) !important;
+        position: relative;
+    }
+    .header.b2b-header-exact .nav.main-menu li.active a::after {
+        content: "";
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--accent);
+    }
+    .header.b2b-header-exact .nav.main-menu li:hover a {
+        color: var(--accent) !important;
+    }
+    .header.b2b-header-exact .list-main li a:hover {
+        color: var(--primary) !important;
+    }
+</style>
 <style>
     /* Header Active states & Hovers */
     .header.b2b-header .nav.main-menu li.active a {
