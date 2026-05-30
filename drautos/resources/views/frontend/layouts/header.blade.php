@@ -35,7 +35,17 @@
                 <!-- Right Navigation -->
                 <div class="col-lg-8 col-md-8 col-12 d-none d-md-block">
                     <ul class="list-main d-flex align-items-center justify-content-end mb-0" style="gap: 25px;">
-                        <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Truck Models</a></li>
+                        <li class="dropdown" style="position: relative;">
+                            <a href="#" class="font-weight-bold text-dark text-uppercase dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 13px; letter-spacing: 0.5px;">Truck Models <i class="ti-angle-down ml-1" style="font-size: 10px;"></i></a>
+                            <div class="dropdown-menu" style="position: absolute; left: 0; top: 100%; border-radius: 4px; border: 1px solid #eee; padding: 10px 0; min-width: 200px; box-shadow: 0px 5px 15px rgba(0,0,0,0.05); z-index: 9999;">
+                                @php
+                                    $truck_models = \App\Models\Product::whereNotNull('model')->where('model', '!=', '')->distinct()->orderBy('model')->pluck('model');
+                                @endphp
+                                @foreach($truck_models as $model)
+                                    <a href="{{route('product-grids')}}?model={{urlencode($model)}}" class="dropdown-item" style="padding: 8px 20px; color: #333; font-size: 13px; font-weight: 500; display: block; transition: all 0.3s;" onmouseover="this.style.color='var(--primary)'; this.style.backgroundColor='#f8f9fa';" onmouseout="this.style.color='#333'; this.style.backgroundColor='transparent';">{{$model}}</a>
+                                @endforeach
+                            </div>
+                        </li>
                         <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Brands</a></li>
                         <li><a href="#" class="font-weight-bold text-dark text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Bulk Orders</a></li>
                         

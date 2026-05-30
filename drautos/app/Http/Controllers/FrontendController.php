@@ -124,6 +124,10 @@ class FrontendController extends Controller
             $products->whereIn('cat_id',$cat_ids);
             // return $products;
         }
+        if(!empty($_GET['model'])){
+            $models=explode(',',$_GET['model']);
+            $products->whereIn('model',$models);
+        }
         if(!empty($_GET['brand'])){
             $slugs=explode(',',$_GET['brand']);
             $brand_ids=Brand::select('id')->whereIn('slug',$slugs)->pluck('id')->toArray();
@@ -171,6 +175,10 @@ class FrontendController extends Controller
             // dd($cat_ids);
             $products->whereIn('cat_id',$cat_ids)->paginate;
             // return $products;
+        }
+        if(!empty($_GET['model'])){
+            $models=explode(',',$_GET['model']);
+            $products->whereIn('model',$models);
         }
         if(!empty($_GET['brand'])){
             $slugs=explode(',',$_GET['brand']);
@@ -245,6 +253,20 @@ class FrontendController extends Controller
                     }
                 }
             }
+
+            $modelURL="";
+            if(!empty($data['model'])){
+                // Handle both array and string cases for model parameter
+                $models = is_array($data['model']) ? $data['model'] : [$data['model']];
+                foreach($models as $model){
+                    if(empty($modelURL)){
+                        $modelURL .='&model='.$model;
+                    }
+                    else{
+                        $modelURL .=','.$model;
+                    }
+                }
+            }
             // return $brandURL;
 
             $priceRangeURL="";
@@ -252,10 +274,10 @@ class FrontendController extends Controller
                 $priceRangeURL .='&price='.$data['price_range'];
             }
             if(request()->is('e-shop.loc/product-grids')){
-                return redirect()->route('product-grids',$catURL.$brandURL.$priceRangeURL.$showURL.$sortByURL);
+                return redirect()->route('product-grids',$catURL.$brandURL.$modelURL.$priceRangeURL.$showURL.$sortByURL);
             }
             else{
-                return redirect()->route('product-lists',$catURL.$brandURL.$priceRangeURL.$showURL.$sortByURL);
+                return redirect()->route('product-lists',$catURL.$brandURL.$modelURL.$priceRangeURL.$showURL.$sortByURL);
             }
     }
     public function productSearch(Request $request){
