@@ -4,6 +4,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#083259">
+    <meta name="color-scheme" content="light">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -17,6 +18,7 @@
     
     <style>
         :root {
+            color-scheme: light;
             --primary:      #083259;   /* Danyal Autos Navy */
             --primary-light:#0e4a7a;
             --accent:       #facc15;  /* Danyal Autos Gold */

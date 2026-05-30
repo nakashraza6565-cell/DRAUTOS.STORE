@@ -2,6 +2,7 @@
 @yield('meta')
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="theme-color" content="#083259">
+<meta name="color-scheme" content="light only">
 <!-- Title Tag  -->
 <title>@yield('title')</title>
 <!-- Favicon -->
@@ -42,6 +43,7 @@
 <style>
     /* ===== PREMIUM B2B COMMERCIAL DESIGN TOKENS ===== */
     :root {
+        color-scheme: light;
         --primary: #083259;       /* Rich Corporate Marine Blue */
         --primary-light: #0d467a; /* Lighter Marine Blue */
         --accent: #fbbf24;        /* Industrial Yellow */
