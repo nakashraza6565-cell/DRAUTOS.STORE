@@ -367,20 +367,20 @@
 </style>
 
 <!-- B2B Exact Hero Section -->
-<section class="b2b-hero-exact" style="position: relative; height: 600px; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1596541578135-c322b7dcaf96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
-    <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.6) 40%, transparent 100%); z-index: 1;"></div>
+<section class="b2b-hero-exact" style="position: relative; min-height: 600px; padding: 100px 0; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1596541578135-c322b7dcaf96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
+    <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(8,50,89,0.95) 0%, rgba(8,50,89,0.6) 50%, rgba(8,50,89,0.2) 100%); z-index: 1;"></div>
     <div class="container" style="position: relative; z-index: 2;">
         <div class="row">
             <div class="col-lg-8 col-md-10">
                 <div class="hero-content" style="text-align: left;">
-                    <h1 class="hero-title" style="font-size: 4.5rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 25px; text-transform: uppercase;">
+                    <h1 class="hero-title" style="font-size: clamp(2.5rem, 5vw + 1rem, 4.5rem); font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 25px; text-transform: uppercase;">
                         PREMIUM COMMERCIAL <br>TRUCK PARTS <span style="color: var(--accent);">|</span> FOR THE <br>B2B INDUSTRY
                     </h1>
-                    <p class="hero-subtitle" style="font-size: 1.25rem; color: #e2e8f0; margin-bottom: 40px; font-weight: 500;">
-                        Your Trusted Partner for Heavy-Duty Reliability. <br>Quality Parts. Delivered Fast.
+                    <p class="hero-subtitle" style="font-size: clamp(1rem, 2vw + 0.5rem, 1.25rem); color: #e2e8f0; margin-bottom: 40px; font-weight: 500; max-width: 600px;">
+                        Your Trusted Partner for Heavy-Duty Reliability. <br class="d-none d-md-block">Quality Parts. Delivered Fast.
                     </p>
                     
-                    <a href="{{route('product-grids')}}" class="btn font-weight-bold" style="background: var(--accent); color: #000; padding: 15px 35px; font-size: 15px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; border: none;">
+                    <a href="{{route('product-grids')}}" class="btn font-weight-bold" style="background: var(--accent); color: #000; padding: 15px 35px; font-size: 15px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; border: none; display: inline-block;">
                         SHOP ALL PARTS <i class="fa fa-arrow-right ml-2"></i>
                     </a>
                 </div>
@@ -393,14 +393,14 @@
 <section class="section py-4" style="background: #ffffff; border-bottom: 1px solid var(--border-color);">
     <div class="container">
         <div class="text-center mb-4">
-            <h2 style="color: var(--text-main); font-weight: 800; font-size: 1.8rem;">Shop by Vehicle Type</h2>
+            <h2 style="color: var(--primary); font-weight: 900; font-size: clamp(1.5rem, 3vw, 1.8rem);">Shop by Vehicle Type</h2>
         </div>
         <!-- Placeholders for the categories (matching the dark block below the hero in the image) -->
-        <div class="d-flex justify-content-center align-items-center" style="gap: 2px;">
-            <div style="background: #0d1e30; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Problems</div>
-            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Output</div>
-            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Terminal</div>
-            <div style="background: var(--primary); color: #64748b; padding: 15px 30px; font-weight: 600; border-radius: 4px 4px 0 0; text-align: center;">Ports</div>
+        <div class="d-flex justify-content-center align-items-center flex-wrap" style="gap: 5px;">
+            <div style="background: #0d1e30; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Problems</div>
+            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Output</div>
+            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Terminal</div>
+            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Ports</div>
         </div>
     </div>
 </section>

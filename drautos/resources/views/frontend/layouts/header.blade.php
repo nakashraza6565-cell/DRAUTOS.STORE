@@ -4,21 +4,29 @@
         <div class="container">
             <div class="row align-items-center justify-content-between">
                 <!-- Logo -->
-                <div class="col-lg-4 col-md-4 col-12">
+                <div class="col-lg-4 col-md-4 col-8">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
                             <!-- Intertwined DR Graphic (Revue Font) -->
-                            <div style="position: relative; width: 70px; height: 60px; margin-right: 15px;">
-                                <span style="position: absolute; left: 0; top: 0; font-size: 65px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: var(--primary); line-height: 1; z-index: 1;">D</span>
-                                <span style="position: absolute; left: 28px; top: 10px; font-size: 60px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #a3b1c6; line-height: 1; z-index: 2; text-shadow: -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff, 3px 3px 0 #fff;">R</span>
+                            <div style="position: relative; width: 60px; height: 50px; margin-right: 15px; flex-shrink: 0;">
+                                <span style="position: absolute; left: 0; top: 0; font-size: 55px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: var(--primary); line-height: 1; z-index: 1;">D</span>
+                                <span style="position: absolute; left: 24px; top: 8px; font-size: 50px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #a3b1c6; line-height: 1; z-index: 2; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;">R</span>
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
-                                <h3 style="color: #031430; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
-                                <span style="color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">PREMIUM TRUCK PARTS B2B</span>
+                                <h3 style="color: #031430; font-size: clamp(18px, 4vw, 26px); font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
+                                <span style="color: #64748b; font-size: clamp(9px, 2vw, 13px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">PREMIUM TRUCK PARTS B2B</span>
                             </div>
                         </a>
                     </div>
+                </div>
+
+                <!-- Mobile Cart & Nav Toggle -->
+                <div class="col-4 d-md-none d-flex justify-content-end align-items-center">
+                    <a href="{{route('cart')}}" class="text-dark d-flex align-items-center mr-3" style="font-size: 22px; position: relative;">
+                        <i class="ti-shopping-cart"></i> 
+                        <span class="total-count" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
+                    </a>
                     <div class="mobile-nav"></div>
                 </div>
                 
