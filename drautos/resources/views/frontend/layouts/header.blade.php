@@ -17,7 +17,9 @@
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center" style="white-space: nowrap; transform: translateY(-1px);">
                                 <h3 style="color: #083259; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 21px; font-weight: 900; letter-spacing: 0px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
-                                <span style="color: #64748b; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;">PREMIUM TRUCK PARTS B2B</span>
+                                <div style="height: 15px; overflow: hidden; margin-top: 3px;">
+                                    <span id="logoSubtext" style="color: #64748b; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; transition: all 0.4s ease-in-out; transform: translateY(0); opacity: 1;">PREMIUM TRUCK PARTS B2B</span>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -103,7 +105,7 @@
                     <form method="POST" action="{{route('product.search')}}" class="w-100">
                         @csrf
                         <div class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden;">
-                            <input name="search" placeholder="Search by Part No., OEM, Vehicle VIN" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
+                            <input id="mainSearchInput" name="search" placeholder="Search by Part No., OEM, Vehicle VIN" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
                             <button type="submit" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
                                 <i class="ti-search"></i>
                             </button>
@@ -166,3 +168,23 @@
         color: var(--border-color);
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('mainSearchInput');
+        var logoSubtext = document.getElementById('logoSubtext');
+        
+        if(searchInput && logoSubtext) {
+            searchInput.addEventListener('focus', function() {
+                logoSubtext.style.transform = 'translateY(-15px)';
+                logoSubtext.style.opacity = '0';
+            });
+            searchInput.addEventListener('blur', function() {
+                if(this.value.trim() === '') {
+                    logoSubtext.style.transform = 'translateY(0)';
+                    logoSubtext.style.opacity = '1';
+                }
+            });
+        }
+    });
+</script>

@@ -168,7 +168,7 @@
                                     <div class="col-lg-4 col-md-6 col-12">
                                         <div class="single-product">
                                             <div class="product-img">
-                                                <a href="{{route('product-detail',$product->slug)}}">
+                                                <a href="{{route('add-to-cart',$product->slug)}}">
                                                     @php
                                                         $photo=explode(',',$product->photo);
                                                     @endphp
@@ -187,13 +187,13 @@
                                                     </div>
                                                     @auth
                                                     <div class="product-action-2">
-                                                        <a title="Add to cart" href="{{route('add-to-cart',$product->slug)}}">Add to cart</a>
+                                                        <a title="View Product" href="{{route('product-detail',$product->slug)}}">View Product</a>
                                                     </div>
                                                     @endauth
                                                 </div>
                                             </div>
                                             <div class="product-content">
-                                                <h3><a href="{{route('product-detail',$product->slug)}}">{{$product->title}}</a></h3>
+                                                <h3><a href="{{route('add-to-cart',$product->slug)}}">{{$product->title}}</a></h3>
                                                 @auth
                                                 @php
                                                     $after_discount=($product->price-($product->price*$product->discount)/100);
