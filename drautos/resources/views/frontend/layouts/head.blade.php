@@ -39,25 +39,29 @@
 <link rel="stylesheet" href="{{asset('frontend/css/responsive.css')}}">
 
 <style>
-    /* Design Tokens */
+    /* ===== CYBER INDUSTRIAL DARK MODE DESIGN TOKENS ===== */
     :root {
-        --primary: #1e293b;
-        --accent: #f59e0b;
-        --text-main: #334155;
-        --bg-soft: #f8fafc;
+        --primary: #0a0f18;       /* Deep charcoal/black */
+        --primary-light: #162032; /* Slightly lighter panel bg */
+        --accent: #00f0ff;        /* Neon Cyber-Cyan */
+        --accent-alt: #ff6a00;    /* Electric Orange */
+        --text-main: #e2e8f0;     /* Crisp white-gray */
+        --text-muted: #94a3b8;    /* Muted gray */
+        --bg-soft: #0f172a;       /* Dark slate background */
+        --border-color: rgba(0, 240, 255, 0.15);
     }
 
     body {
         font-family: 'Outfit', sans-serif !important;
         color: var(--text-main);
-        background-color: #fff;
+        background-color: var(--primary);
         scroll-behavior: smooth;
     }
 
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700;
-        color: var(--primary);
+        color: #ffffff;
     }
 
     .btn {
@@ -65,26 +69,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Multilevel dropdown */
-    .dropdown-submenu {
-    position: relative;
-    }
-
-    .dropdown-submenu>a:after {
-    content: "\f0da";
-    float: right;
-    border: none;
-    font-family: 'FontAwesome';
-    }
-
-    .dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: 0px;
-    margin-left: 0px;
-    }
-
-    /* WhatsApp Floating Button */
+    /* WhatsApp Floating Button - Dark Mode Adapted */
     .whatsapp-float {
         position: fixed;
         bottom: 30px;
@@ -103,16 +88,13 @@
         justify-content: center;
         text-decoration: none !important;
         transition: all 0.3s ease;
+        animation: pulse-whatsapp 2s infinite;
     }
 
     .whatsapp-float:hover {
         background-color: #128c7e;
         transform: scale(1.1) translateY(-5px);
         color: #fff;
-    }
-
-    .whatsapp-float i {
-        margin-top: 1px;
     }
 
     @media screen and (max-width: 767px) {
@@ -125,28 +107,24 @@
         }
     }
 
-    /* Pulse Animation */
     @keyframes pulse-whatsapp {
         0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
         70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
     }
 
-    .whatsapp-float {
-        animation: pulse-whatsapp 2s infinite;
-    }
-
-    /* Premium Transitions */
+    /* Cyber Transitions */
     .single-product {
         transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border-radius: 16px;
+        border-radius: 12px;
         overflow: hidden;
-        border: 1px solid #f1f5f9;
+        border: 1px solid var(--border-color);
+        background: var(--primary-light);
     }
 
     .single-product:hover {
         transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        box-shadow: 0 15px 40px rgba(0, 240, 255, 0.15);
         border-color: var(--accent);
     }
 </style>
