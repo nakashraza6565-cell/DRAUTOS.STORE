@@ -17,7 +17,7 @@
             <p class="text-muted mb-0" style="font-size: 0.95rem;">Here is what's happening today.</p>
         </div>
             <!-- Quick Expense Button -->
-            <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-danger btn-sm rounded-pill px-2 shadow-sm font-weight-bold mr-0 mr-md-2 w-100 w-md-auto mb-2 mb-md-0" style="font-size: 10px; height: 30px;">
+            <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-sm rounded-pill px-3 shadow-sm font-weight-bold mr-0 mr-md-2 w-100 w-md-auto mb-2 mb-md-0" style="font-size: 11px; height: 32px; background: #083259; color: #facc15; border: 1px solid #facc15;">
                 <i class="fas fa-minus-circle mr-1"></i> EXPENSE
             </button>
 
@@ -25,11 +25,11 @@
             <a href="javascript:void(0)" data-toggle="modal" data-target="#quickAttendanceModal" class="text-decoration-none w-100 w-md-auto mb-2 mb-md-0">
                 <div class="glass-card px-3 py-2 mr-0 mr-md-3 d-flex align-items-center shadow-sm justify-content-center" style="cursor: pointer; transition: transform 0.2s;">
                     <div class="mr-3">
-                        <i class="fas fa-users-viewfinder fa-2x" style="color: #6366f1;"></i>
+                        <i class="fas fa-users-viewfinder fa-2x" style="color: #083259;"></i>
                     </div>
                     <div>
-                        <div class="text-xs font-weight-bold text-uppercase" style="color: #6366f1; letter-spacing: 1px;">Staff Attendance</div>
-                        <div class="h5 mb-0 font-weight-bolder text-gray-800">{{ $present_staff_count }} / {{ $staff_count }} Present</div>
+                        <div class="text-xs font-weight-bold text-uppercase" style="color: #083259; letter-spacing: 1px;">Staff Attendance</div>
+                        <div class="h5 mb-0 font-weight-bolder" style="color: #facc15; text-shadow: 1px 1px 0px rgba(8,50,89,0.2);">{{ $present_staff_count }} / {{ $staff_count }} Present</div>
                     </div>
                 </div>
             </a>
@@ -37,8 +37,8 @@
             <!-- Live Clock Glass Card -->
             <div class="glass-card px-3 py-2 d-flex align-items-center shadow-sm justify-content-center w-100 w-md-auto">
                 <div>
-                    <div class="text-xs font-weight-bold text-muted text-uppercase text-center text-md-left" style="letter-spacing: 1px;">{{ date('l, M d, Y') }}</div>
-                    <div id="live-clock" class="h5 mb-0 font-weight-bolder text-primary text-center text-md-left">--:--:--</div>
+                    <div class="text-xs font-weight-bold text-uppercase text-center text-md-left" style="letter-spacing: 1px; color: #083259;">{{ date('l, M d, Y') }}</div>
+                    <div id="live-clock" class="h5 mb-0 font-weight-bolder text-center text-md-left" style="color: #facc15; text-shadow: 1px 1px 0px rgba(8,50,89,0.2);">--:--:--</div>
                 </div>
             </div>
         </div>
@@ -569,10 +569,10 @@
         pointer-events: none;
     }
 
-    .gradient-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .gradient-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-    .gradient-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
-    .gradient-info { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+    .gradient-success { background: linear-gradient(135deg, #083259 0%, #0d467a 100%); }
+    .gradient-danger { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+    .gradient-primary { background: linear-gradient(135deg, #083259 0%, #0a2540 100%); }
+    .gradient-info { background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); color: #083259 !important; }
 
     .premium-panel {
         background: #ffffff;
@@ -642,8 +642,8 @@
         position: relative;
     }
     .ticker-label {
-        background: #ef4444;
-        color: white;
+        background: #facc15;
+        color: #083259;
         padding: 0 1.25rem;
         height: 100%;
         display: flex;
