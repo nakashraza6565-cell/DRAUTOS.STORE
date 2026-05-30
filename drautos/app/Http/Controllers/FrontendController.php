@@ -292,6 +292,67 @@ class FrontendController extends Controller
         return view('frontend.pages.product-grids')->with('products',$products)->with('recent_products',$recent_products);
     }
 
+    public function ajaxSearch(Request $request){
+        $search = $request->input('search', '');
+        
+        if (strlen($search) < 2) {
+            return response()->json(['status' => 'success', 'html' => '', 'count' => 0]);
+        }
+
+        $products = Product::where('status', 'active')
+            ->where(function($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                  ->orWhere('slug', 'like', '%'.$search.'%')
+                  ->orWhere('sku', 'like', '%'.$search.'%')
+                  ->orWhere('summary', 'like', '%'.$search.'%');
+            })
+            ->orderBy('id', 'DESC')
+            ->limit(24)
+            ->get();
+
+        $html = '';
+        foreach ($products as $product) {
+            $photos = explode(',', $product->photo);
+            $photo = $photos[0] ?? '';
+            $after_discount = ($product->price - ($product->price * $product->discount) / 100);
+            
+            if (Auth::check()) {
+                $priceHtml = '<span style="color: var(--primary); font-weight: 800; font-size: 1.1rem;">Rs. ' . number_format($after_discount, 2) . '</span>';
+                $addBtn = '<a href="' . route('add-to-cart', $product->slug) . '" class="ajax-add-to-cart-btn btn btn-sm" data-slug="' . $product->slug . '" style="background: var(--primary); color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; text-transform: uppercase;"><i class="fa fa-cart-plus mr-1"></i> ADD</a>';
+            } else {
+                $priceHtml = '<a href="' . route('login') . '" style="color: var(--primary); font-weight: 600; font-size: 12px; text-decoration: underline;">Login to view price</a>';
+                $addBtn = '<a href="' . route('login') . '" class="btn btn-sm" style="background: var(--bg-soft); color: var(--text-muted); border: 1px dashed #ccc; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;"><i class="fa fa-lock mr-1"></i> Login</a>';
+            }
+
+            $html .= '
+            <div class="col-lg-3 col-md-4 col-6 mb-4">
+                <div class="ajax-product-card" style="background: #fff; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <a href="' . route('product-detail', $product->slug) . '" style="display:block; overflow:hidden; height: 180px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                        <img src="' . $photo . '" alt="' . htmlspecialchars($product->title) . '" style="max-width:100%; max-height:100%; object-fit: contain; transition: transform 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">
+                    </a>
+                    <div style="padding: 14px;">
+                        <a href="' . route('product-detail', $product->slug) . '" style="text-decoration: none;">
+                            <h6 style="color: var(--primary); font-weight: 700; font-size: 13px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' . htmlspecialchars($product->title) . '">' . htmlspecialchars($product->title) . '</h6>
+                        </a>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                            ' . $priceHtml . '
+                            ' . $addBtn . '
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <a href="' . route('product-detail', $product->slug) . '" style="color: var(--text-muted); font-size: 11px; text-decoration: none; font-weight: 600;"><i class="fa fa-eye mr-1"></i> View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>';
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'html' => $html,
+            'count' => count($products)
+        ]);
+    }
+
     public function productBrand(Request $request){
         $products=Brand::getProductByBrand($request->slug);
         $recent_products=Product::where('status','active')->orderBy('id','DESC')->limit(3)->get();

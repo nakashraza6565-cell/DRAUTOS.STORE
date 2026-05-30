@@ -258,4 +258,75 @@ class CartController extends Controller
         // }
         return view('frontend.pages.checkout');
     }
+
+    public function ajaxAddToCart(Request $request) {
+        if (empty($request->slug)) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid Products']);
+        }        
+        $product = Product::where('slug', $request->slug)->first();
+        if (empty($product)) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid Products']);
+        }
+
+        $already_cart = Cart::where('user_id', auth()->user()->id)->where('order_id',null)->where('product_id', $product->id)->first();
+        
+        if($already_cart) {
+            $already_cart->quantity = $already_cart->quantity + 1;
+            $already_cart->amount = $product->price + $already_cart->amount;
+            if ($already_cart->product->stock < $already_cart->quantity || $already_cart->product->stock <= 0) {
+                return response()->json(['status' => 'error', 'message' => 'Stock not sufficient!']);
+            }
+            $already_cart->save();
+        } else {
+            $cart = new Cart;
+            $cart->user_id = auth()->user()->id;
+            $cart->product_id = $product->id;
+            $cart->price = ($product->price-($product->price*$product->discount)/100);
+            $cart->quantity = 1;
+            $cart->amount = $cart->price * $cart->quantity;
+            if ($cart->product->stock < $cart->quantity || $cart->product->stock <= 0) {
+                return response()->json(['status' => 'error', 'message' => 'Stock not sufficient!']);
+            }
+            $cart->save();
+            Wishlist::where('user_id',auth()->user()->id)->where('cart_id',null)->update(['cart_id'=>$cart->id]);
+        }
+        
+        return response()->json(['status' => 'success', 'message' => 'Product added to cart', 'cart_count' => Helper::cartCount()]);
+    }
+
+    public function ajaxGetCart() {
+        if (!auth()->check()) {
+            return response()->json(['status' => 'error', 'message' => 'Unauthenticated']);
+        }
+        
+        $carts = Cart::where('user_id', auth()->user()->id)->where('order_id', null)->get();
+        $total_amount = Helper::totalCartPrice();
+        
+        $html = '';
+        foreach($carts as $cart) {
+            $photo = explode(',', $cart->product['photo'])[0];
+            $html .= '
+            <div class="d-flex align-items-center mb-3 p-2 border rounded" style="background:#fff;">
+                <img src="'.$photo.'" alt="'.$cart->product['title'].'" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                <div class="ml-3 flex-grow-1">
+                    <h6 class="mb-0" style="font-size:13px; font-weight:700;">'.$cart->product['title'].'</h6>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="text-muted" style="font-size:12px;">'.$cart->quantity.' x $'.number_format($cart->price, 2).'</span>
+                        <a href="'.route('cart-delete', $cart->id).'" class="text-danger" style="font-size:12px;"><i class="fa fa-trash"></i></a>
+                    </div>
+                </div>
+            </div>';
+        }
+        
+        if(count($carts) == 0) {
+            $html = '<div class="text-center py-4 text-muted"><i class="fa fa-shopping-cart fa-3x mb-3"></i><p>Your cart is empty.</p></div>';
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'html' => $html,
+            'total' => number_format($total_amount, 2),
+            'count' => Helper::cartCount()
+        ]);
+    }
 }

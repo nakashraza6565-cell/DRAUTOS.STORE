@@ -23,11 +23,22 @@
                     </div>
                 </div>
 
-                <!-- Mobile Cart & Nav Toggle -->
-                <div class="col-auto d-md-none d-flex justify-content-end align-items-center">
-                    <a href="{{route('cart')}}" class="text-dark d-flex align-items-center mr-3" style="font-size: 22px; position: relative;">
-                        <i class="ti-shopping-cart"></i> 
-                        <span class="total-count" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
+                <!-- Mobile Login + Cart + Nav Toggle -->
+                <div class="col-auto d-md-none d-flex justify-content-end align-items-center" style="gap: 12px;">
+                    <!-- Mobile Login / Account Button -->
+                    @auth
+                        <a href="{{ Auth::user()->role == 'admin' ? route('admin') : route('user') }}" class="d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 16px; text-decoration: none; flex-shrink: 0;" title="My Account">
+                            <i class="ti-user"></i>
+                        </a>
+                    @else
+                        <a href="{{route('login')}}" class="d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 16px; text-decoration: none; flex-shrink: 0;" title="Login">
+                            <i class="ti-user"></i>
+                        </a>
+                    @endauth
+                    <!-- Mobile Cart -->
+                    <a href="#" id="mobileCartToggle" onclick="openCartPane(); return false;" class="text-dark d-flex align-items-center" style="font-size: 22px; position: relative;">
+                        <i class="ti-shopping-cart"></i>
+                        <span class="total-count cart-count-badge" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
                     </a>
                     <div class="mobile-nav"></div>
                 </div>
@@ -65,9 +76,9 @@
                         
                         <!-- Cart -->
                         <li class="shopping ml-2" style="position: relative;">
-                            <a href="{{route('cart')}}" class="text-dark d-flex align-items-center" style="font-size: 22px;">
+                            <a href="#" onclick="openCartPane(); return false;" class="text-dark d-flex align-items-center" style="font-size: 22px;" title="View Cart">
                                 <i class="ti-shopping-cart"></i> 
-                                <span class="total-count" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
+                                <span class="total-count cart-count-badge" style="position: absolute; top: -8px; right: -12px; background: var(--accent); color: #000; width: 18px; height: 18px; border-radius: 50%; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center;">{{Helper::cartCount()}}</span>
                             </a>
                         </li>
                     </ul>
@@ -100,15 +111,14 @@
                 
                 <!-- Search Bar -->
                 <div class="col-lg-7 col-md-7 col-12">
-                    <form method="POST" action="{{route('product.search')}}" class="w-100">
-                        @csrf
+                    <div class="w-100" style="position: relative;">
                         <div class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden;">
-                            <input id="mainSearchInput" name="search" placeholder="Search by Part No., OEM, Vehicle VIN" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
-                            <button type="submit" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
+                            <input id="mainSearchInput" name="search" placeholder="Search by Part No., OEM, VIN..." autocomplete="off" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
+                            <button type="button" id="mainSearchBtn" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
                                 <i class="ti-search"></i>
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,26 +178,105 @@
 </style>
 
 <script>
+    var searchTimeout = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         var searchInput = document.getElementById('mainSearchInput');
-        var heroSection = document.querySelector('.b2b-hero-exact');
-        
-        if(searchInput && heroSection) {
-            searchInput.addEventListener('focus', function() {
-                // Slide away the hero section
-                heroSection.style.transition = 'all 0.5s ease-in-out';
-                heroSection.style.maxHeight = '0';
-                heroSection.style.padding = '0';
-                heroSection.style.opacity = '0';
-                heroSection.style.overflow = 'hidden';
-            });
-            searchInput.addEventListener('blur', function() {
-                if(this.value.trim() === '') {
-                    // Bring it back if search is empty and unfocused
-                    heroSection.style.maxHeight = '1000px'; // large enough to fit content
-                    heroSection.style.padding = '100px 0';
+        var searchBtn = document.getElementById('mainSearchBtn');
+
+        if (!searchInput) return;
+
+        function runSearch(query) {
+            var heroSection = document.querySelector('.b2b-hero-exact');
+            var resultsSection = document.getElementById('ajax-search-results-section');
+            var resultsGrid = document.getElementById('ajax-results-grid');
+            var resultsCount = document.getElementById('ajax-results-count');
+            var resultsQuery = document.getElementById('ajax-results-query');
+
+            if (!resultsSection) return;
+
+            if (!query || query.length < 2) {
+                // Hide results, show hero
+                resultsSection.style.maxHeight = '0';
+                resultsSection.style.opacity = '0';
+                resultsSection.style.overflow = 'hidden';
+                setTimeout(function() { resultsSection.style.display = 'none'; }, 400);
+                if (heroSection) {
+                    heroSection.style.transition = 'all 0.5s ease-in-out';
+                    heroSection.style.maxHeight = '1000px';
+                    heroSection.style.minHeight = '';
                     heroSection.style.opacity = '1';
+                    heroSection.style.paddingTop = '';
+                    heroSection.style.paddingBottom = '';
+                    heroSection.style.overflow = '';
                 }
+                return;
+            }
+
+            // Slide hero away — must override min-height so it can fully collapse
+            if (heroSection) {
+                heroSection.style.transition = 'all 0.5s ease-in-out';
+                heroSection.style.overflow = 'hidden';
+                heroSection.style.minHeight = '0';  // override the CSS min-height: 600px
+                heroSection.style.maxHeight = '0';
+                heroSection.style.opacity = '0';
+                heroSection.style.paddingTop = '0';
+                heroSection.style.paddingBottom = '0';
+            }
+
+            // Show results loading
+            if (resultsGrid) resultsGrid.innerHTML = '<div class="col-12 text-center py-5"><i class="fa fa-spinner fa-spin fa-2x" style="color:var(--primary);"></i><p class="mt-3 text-muted">Searching...</p></div>';
+            if (resultsQuery) resultsQuery.textContent = query;
+            resultsSection.style.display = 'block';
+            resultsSection.style.overflow = 'hidden';
+            setTimeout(function() {
+                resultsSection.style.transition = 'all 0.5s ease-in-out';
+                resultsSection.style.maxHeight = '5000px';
+                resultsSection.style.opacity = '1';
+            }, 10);
+
+            // AJAX search
+            var csrf = document.querySelector('meta[name="csrf-token"]');
+            var csrfToken = csrf ? csrf.getAttribute('content') : '';
+
+            fetch('/ajax-product-search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ search: query })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (resultsGrid) {
+                    if (data.count === 0) {
+                        resultsGrid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="fa fa-search fa-3x mb-3"></i><p class="font-weight-bold">No parts found for "' + query + '"</p><a href="/product-grids" class="btn btn-sm" style="background:var(--primary);color:#fff;border-radius:4px;">Browse All Parts</a></div>';
+                    } else {
+                        resultsGrid.innerHTML = data.html;
+                        if (resultsCount) resultsCount.textContent = data.count + ' part(s) found';
+                    }
+                }
+            })
+            .catch(function() {
+                if (resultsGrid) resultsGrid.innerHTML = '<div class="col-12 text-center py-3 text-muted">Search error. <a href="/product-grids">Browse all parts</a></div>';
+            });
+        }
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            var q = this.value.trim();
+            searchTimeout = setTimeout(function() { runSearch(q); }, 350);
+        });
+
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                clearTimeout(searchTimeout);
+                runSearch(this.value.trim());
+            }
+        });
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function() {
+                clearTimeout(searchTimeout);
+                runSearch(searchInput.value.trim());
             });
         }
     });

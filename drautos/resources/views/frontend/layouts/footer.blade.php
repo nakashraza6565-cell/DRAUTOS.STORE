@@ -92,7 +92,187 @@
     <a href="https://wa.me/{{ $whatsapp_phone }}" class="whatsapp-float" target="_blank">
         <i class="fa fa-whatsapp"></i>
     </a>
- 
+
+    <!-- ====== OFFCANVAS CART PANE ====== -->
+    <!-- Overlay -->
+    <div id="cart-pane-overlay" onclick="closeCartPane()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:9998; backdrop-filter:blur(3px); opacity:0; transition: opacity 0.35s ease;"></div>
+
+    <!-- Slide-out Cart Sidebar -->
+    <div id="cart-pane" style="
+        position: fixed;
+        top: 0; right: 0;
+        width: 380px; max-width: 95vw;
+        height: 100vh;
+        background: #ffffff;
+        z-index: 9999;
+        transform: translateX(100%);
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        display: flex; flex-direction: column;
+        box-shadow: -8px 0 40px rgba(15,23,42,0.15);
+    ">
+        <!-- Pane Header -->
+        <div style="background: var(--primary); color: #fff; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+            <div class="d-flex align-items-center">
+                <i class="ti-shopping-cart mr-2" style="font-size: 20px;"></i>
+                <div>
+                    <h6 style="margin:0; font-weight: 800; font-size: 15px;">Your Cart</h6>
+                    <small style="color: #cbd5e1; font-size: 11px;" id="cart-pane-item-count">0 items</small>
+                </div>
+            </div>
+            <button onclick="closeCartPane()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Pane Body (scrollable) -->
+        <div id="cart-pane-body" style="flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc;">
+            <div class="text-center py-5 text-muted">
+                <i class="ti-shopping-cart fa-3x mb-3" style="font-size: 48px; display:block;"></i>
+                <p style="font-weight: 600;">Your cart is empty.</p>
+                <a href="{{ route('product-grids') }}" onclick="closeCartPane()" class="btn btn-sm" style="background: var(--primary); color: #fff; border-radius: 4px; font-weight: 600;">Browse Parts</a>
+            </div>
+        </div>
+
+        <!-- Pane Footer -->
+        <div id="cart-pane-footer" style="background: #fff; border-top: 2px solid var(--border-color); padding: 16px 20px; flex-shrink: 0;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span style="font-weight: 700; color: var(--text-main); font-size: 14px;">Total</span>
+                <span id="cart-pane-total" style="font-weight: 900; font-size: 1.3rem; color: var(--primary);">Rs. 0.00</span>
+            </div>
+            <div class="d-flex" style="gap: 10px;">
+                <a href="{{ route('cart') }}" onclick="closeCartPane()" style="flex: 1; text-align:center; background: var(--bg-soft); color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 4px; font-weight: 700; font-size: 13px; text-decoration: none; transition: all 0.2s;">
+                    <i class="fa fa-shopping-cart mr-1"></i> View Cart
+                </a>
+                <a href="{{ route('checkout') }}" onclick="closeCartPane()" style="flex: 1; text-align:center; background: var(--accent); color: #000; border: none; padding: 10px; border-radius: 4px; font-weight: 800; font-size: 13px; text-decoration: none; transition: all 0.2s;">
+                    Checkout <i class="fa fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add-to-cart success toast -->
+    <div id="cart-toast" style="position:fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #16a34a; color:#fff; padding: 12px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; z-index: 99999; opacity:0; transition: all 0.4s ease; box-shadow: 0 8px 25px rgba(22,163,74,0.35); white-space: nowrap;">
+        <i class="fa fa-check-circle mr-2"></i><span id="cart-toast-msg">Added to cart!</span>
+    </div>
+
+    <style>
+        #cart-pane::-webkit-scrollbar { width: 5px; }
+        #cart-pane-body::-webkit-scrollbar { width: 5px; }
+        #cart-pane-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+        .cart-item-row { background: #fff; border-radius: 8px; border: 1px solid var(--border-color); padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .cart-item-row img { width: 55px; height: 55px; object-fit: contain; border-radius: 4px; background: #f8f9fa; border: 1px solid #eee; }
+    </style>
+
+    <script>
+        // ---- CART PANE OPEN / CLOSE ----
+        function openCartPane() {
+            var pane = document.getElementById('cart-pane');
+            var overlay = document.getElementById('cart-pane-overlay');
+            if (!pane) return;
+            overlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            setTimeout(function() { overlay.style.opacity = '1'; pane.style.transform = 'translateX(0)'; }, 10);
+            loadCartContents();
+        }
+
+        function closeCartPane() {
+            var pane = document.getElementById('cart-pane');
+            var overlay = document.getElementById('cart-pane-overlay');
+            if (!pane) return;
+            pane.style.transform = 'translateX(100%)';
+            overlay.style.opacity = '0';
+            document.body.style.overflow = '';
+            setTimeout(function() { overlay.style.display = 'none'; }, 400);
+        }
+
+        // ---- LOAD CART CONTENTS ----
+        function loadCartContents() {
+            fetch('/ajax-get-cart', { headers: { 'Accept': 'application/json' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var body = document.getElementById('cart-pane-body');
+                var totalEl = document.getElementById('cart-pane-total');
+                var countEl = document.getElementById('cart-pane-item-count');
+                if (body) body.innerHTML = data.html || '<div class="text-center py-5 text-muted"><i class="ti-shopping-cart" style="font-size:48px;display:block;margin-bottom:12px;"></i><p style="font-weight:600;">Your cart is empty.</p><a href="/product-grids" onclick="closeCartPane()" class="btn btn-sm" style="background:var(--primary);color:#fff;border-radius:4px;font-weight:600;">Browse Parts</a></div>';
+                if (totalEl) totalEl.textContent = 'Rs. ' + (data.total || '0.00');
+                if (countEl) countEl.textContent = (data.count || 0) + ' item(s)';
+                // Update all cart badge counts in header
+                document.querySelectorAll('.cart-count-badge, .total-count').forEach(function(el) {
+                    el.textContent = data.count || 0;
+                });
+            })
+            .catch(function() {
+                var body = document.getElementById('cart-pane-body');
+                if (body) body.innerHTML = '<div class="text-center py-4 text-muted"><p>Please <a href="/login">login</a> to view your cart.</p></div>';
+            });
+        }
+
+        // ---- SHOW TOAST ----
+        function showCartToast(msg) {
+            var toast = document.getElementById('cart-toast');
+            var msgEl = document.getElementById('cart-toast-msg');
+            if (!toast) return;
+            if (msgEl) msgEl.textContent = msg || 'Added to cart!';
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(100px)';
+            }, 3000);
+        }
+
+        // ---- GLOBAL AJAX ADD TO CART INTERCEPTOR ----
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.ajax-add-to-cart-btn');
+            if (!btn) return;
+
+            e.preventDefault();
+            var slug = btn.dataset.slug;
+            if (!slug) return;
+
+            var csrf = document.querySelector('meta[name="csrf-token"]');
+            var csrfToken = csrf ? csrf.getAttribute('content') : '';
+
+            // Visual feedback
+            var origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+            btn.style.pointerEvents = 'none';
+
+            fetch('/ajax-add-to-cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ slug: slug })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                btn.innerHTML = origHtml;
+                btn.style.pointerEvents = '';
+                if (data.status === 'success') {
+                    showCartToast('✓ Added to cart!');
+                    // Update badge
+                    document.querySelectorAll('.cart-count-badge, .total-count').forEach(function(el) {
+                        el.textContent = data.cart_count;
+                    });
+                    // Open cart pane after a short delay
+                    setTimeout(function() { openCartPane(); }, 300);
+                } else {
+                    showCartToast(data.message || 'Error adding to cart');
+                    var toast = document.getElementById('cart-toast');
+                    if (toast) toast.style.background = '#dc2626';
+                }
+            })
+            .catch(function() {
+                btn.innerHTML = origHtml;
+                btn.style.pointerEvents = '';
+                showCartToast('Please login to add to cart');
+            });
+        });
+
+        // ESC to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeCartPane();
+        });
+    </script>
 	<!-- Jquery -->
     <script src="{{asset('frontend/js/jquery.min.js')}}"></script>
     <script src="{{asset('frontend/js/jquery-migrate-3.0.0.js')}}"></script>

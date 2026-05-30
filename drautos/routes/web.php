@@ -214,6 +214,22 @@ Route::get('cache-clear', function () {
     return redirect()->back();
 })->name('cache.clear');
 
+// HARD RESET ROUTE (clears OPcache + views from web process)
+Route::get('hard-reset', function () {
+    // Reset OPcache from within PHP web process
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
+    // Delete all compiled views
+    $viewPath = storage_path('framework/views');
+    $files = glob($viewPath . '/*.php');
+    $deleted = 0;
+    foreach ($files as $f) {
+        if (unlink($f)) $deleted++;
+    }
+    return "<h2 style='font-family:monospace;padding:20px;'>✅ Hard Reset Done!<br><small>OPcache cleared. $deleted view file(s) deleted.</small><br><br><a href='/'>← Go to Homepage</a></h2>";
+});
+
 
 // STORAGE LINKED ROUTE
 Route::get('storage-link', [AdminController::class, 'storageLink'])->name('storage.link');
@@ -262,6 +278,11 @@ Route::get('/api/category/{id}/products', [FrontendController::class, 'getCatego
 // Cart section
 Route::get('/add-to-cart/{slug}', [CartController::class, 'addToCart'])->name('add-to-cart')->middleware('user');
 Route::post('/add-to-cart', [CartController::class, 'singleAddToCart'])->name('single-add-to-cart')->middleware('user');
+
+// AJAX Frontend Routes
+Route::post('/ajax-add-to-cart', [CartController::class, 'ajaxAddToCart'])->name('ajax-add-to-cart')->middleware('user');
+Route::get('/ajax-get-cart', [CartController::class, 'ajaxGetCart'])->name('ajax-get-cart')->middleware('user');
+Route::post('/ajax-product-search', [FrontendController::class, 'ajaxSearch'])->name('ajax-product-search');
 Route::get('cart-delete/{id}', [CartController::class, 'cartDelete'])->name('cart-delete');
 Route::get('cart-clear', [CartController::class, 'cartClear'])->name('cart.clear');
 Route::post('cart-update', [CartController::class, 'cartUpdate'])->name('cart.update');
