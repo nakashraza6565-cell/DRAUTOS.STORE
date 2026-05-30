@@ -99,7 +99,7 @@ class SalesOrderController extends Controller
         DB::beginTransaction();
         try {
             // Determine status
-            $initialStatus = ($hasPhotos && !$hasItems) ? 'photo_pending' : 'pending';
+            $initialStatus = 'pending';
             $totalAmount = $hasItems
                 ? collect($request->items)->sum(fn($item) => $item['quantity'] * $item['price'])
                 : 0;

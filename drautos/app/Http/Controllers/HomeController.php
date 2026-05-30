@@ -124,7 +124,7 @@ class HomeController extends Controller
         
         // "Booking" tab: Admin-generated Sales Orders (Active/Partial)
         $sales_orders = SalesOrder::where('user_id', $user_id)
-                                 ->whereIn('status', ['pending', 'partial'])
+                                 ->whereIn('status', ['pending', 'partially_delivered'])
                                  ->orderBy('id', 'DESC')
                                  ->get();
 
@@ -831,7 +831,8 @@ class HomeController extends Controller
                 'staff_id'     => null,
                 'total_amount' => 0,
                 'note'         => 'Order created via photo upload from customer portal.',
-                'status'       => 'photo_pending',
+                'status'       => 'pending',
+                'is_priority'  => 1, // Automatically prioritize photo uploads
             ]);
 
             $dir = 'sale-order-photos/' . $salesOrder->id;
