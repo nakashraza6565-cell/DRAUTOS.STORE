@@ -1,11 +1,10 @@
 <?php
-$logFile = __DIR__ . '/drautos/storage/logs/laravel.log';
-if (!file_exists($logFile)) {
-    echo "Log file not found.";
-    exit;
-}
-$lines = file($logFile);
-$lastLines = array_slice($lines, -150);
-echo "<pre>";
-echo htmlspecialchars(implode("", $lastLines));
-echo "</pre>";
+require 'drautos/vendor/autoload.php';
+$app = require_once 'drautos/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+$photos = \App\Models\SalesOrderPhoto::orderBy('id', 'desc')->take(5)->get();
+echo "Latest photos: " . json_encode($photos) . "\n";
+$latestOrders = \App\Models\SalesOrder::orderBy('id', 'desc')->take(5)->get();
+echo "Latest SOs: " . json_encode($latestOrders) . "\n";
