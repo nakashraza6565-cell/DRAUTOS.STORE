@@ -98,7 +98,8 @@
                     <h6 class="font-weight-bold mb-2 small text-uppercase text-muted">Order Info</h6>
                     <div class="d-flex justify-content-between mb-1">
                         <span class="small text-muted">Status</span>
-                        @if($salesOrder->status=='pending') <span class="badge badge-warning">Pending</span>
+                        @if($salesOrder->status=='photo_pending') <span class="badge badge-warning"><i class="fas fa-camera mr-1"></i>Photo Pending</span>
+                        @elseif($salesOrder->status=='pending') <span class="badge badge-warning">Pending</span>
                         @elseif($salesOrder->status=='partially_delivered') <span class="badge badge-info">Partial</span>
                         @elseif($salesOrder->status=='delivered') <span class="badge badge-success">Delivered</span>
                         @else <span class="badge badge-secondary">{{$salesOrder->status}}</span>
@@ -476,6 +477,109 @@
 
 @include('backend.product.partials.modals')
 
+{{-- ===============================================================
+     FLOATING PHOTO PANEL (fixed to right side of screen)
+================================================================ --}}
+
+{{-- Floating trigger button --}}
+<button id="photo-panel-toggle" onclick="togglePhotoPanel()"
+    style="position:fixed; right:0; top:50%; transform:translateY(-50%);
+           background: linear-gradient(135deg,#ffc107,#ff8800); color:#fff; border:none;
+           border-radius:12px 0 0 12px; padding:14px 10px; cursor:pointer;
+           box-shadow:-3px 3px 12px rgba(0,0,0,0.2); z-index:1050;
+           display:flex; flex-direction:column; align-items:center; gap:6px;
+           transition: all 0.2s; min-width:44px;">
+    <i class="fas fa-camera" style="font-size:18px;"></i>
+    <span id="photo-panel-badge" style="background:#fff; color:#ff8800; border-radius:50%; width:22px; height:22px;
+          font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+        {{ $salesOrder->photos->count() }}
+    </span>
+    <span style="font-size:9px; letter-spacing:0.5px; writing-mode:vertical-rl; text-orientation:mixed;">PHOTOS</span>
+</button>
+
+{{-- Side Panel --}}
+<div id="so-photo-panel"
+     style="position:fixed; right:-360px; top:0; height:100vh; width:350px;
+            background:#fff; box-shadow:-4px 0 20px rgba(0,0,0,0.15);
+            z-index:1049; transition:right 0.3s ease; display:flex; flex-direction:column;">
+
+    {{-- Panel Header --}}
+    <div style="background:linear-gradient(135deg,#ffc107,#ff8800); color:#fff; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+        <div>
+            <div style="font-weight:700; font-size:15px;"><i class="fas fa-camera mr-2"></i>Order Photos</div>
+            <div style="font-size:11px; opacity:0.85;">Evidence &amp; Reference — Internal Only</div>
+        </div>
+        <button onclick="togglePhotoPanel()" style="background:rgba(255,255,255,0.2); border:none; border-radius:50%; width:32px; height:32px; color:#fff; cursor:pointer; font-size:16px;">✕</button>
+    </div>
+
+    {{-- Upload area --}}
+    <div style="padding:12px; background:#fffdf0; border-bottom:1px solid #ffc10730; flex-shrink:0;">
+        <div id="panel-dropzone" onclick="document.getElementById('panel-photo-input').click()"
+             style="border:2px dashed #ffc107; border-radius:8px; padding:14px; text-align:center; cursor:pointer; transition:background 0.2s;">
+            <i class="fas fa-cloud-upload-alt text-warning"></i>
+            <span class="small font-weight-bold text-muted ml-2">Upload More Photos</span>
+            <input type="file" id="panel-photo-input" multiple accept="image/*,.pdf" style="display:none;"
+                   onchange="panelUploadPhotos(this)">
+        </div>
+        <div id="panel-upload-progress" style="display:none;" class="mt-2 text-center small text-muted">
+            <i class="fas fa-spinner fa-spin mr-1"></i>Uploading...
+        </div>
+    </div>
+
+    {{-- Scrollable photo grid --}}
+    <div id="panel-photo-grid" style="flex:1; overflow-y:auto; padding:12px;">
+        @if($salesOrder->photos->count() > 0)
+            <div class="row" id="panel-photos-row" style="margin:0 -4px;">
+                @foreach($salesOrder->photos as $photo)
+                <div class="col-6 px-1 mb-2 panel-photo-col" id="panel-photo-col-{{$photo->id}}">
+                    <div class="card border shadow-sm" style="border-radius:8px; overflow:hidden; cursor:pointer;"
+                         onclick="openLightbox('{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}','{{addslashes($photo->original_name)}}')">
+                        <div style="height:90px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; position:relative;">
+                            @if(str_contains($photo->mime_type ?? '', 'pdf'))
+                                <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                            @else
+                                <img src="{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}"
+                                     style="max-height:90px; max-width:100%; object-fit:cover; width:100%;" loading="lazy"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                                <i class="fas fa-image fa-2x text-muted" style="display:none;"></i>
+                            @endif
+                            <button onclick="event.stopPropagation(); panelDeletePhoto({{$photo->id}}, '{{ route('sales-orders.photos.delete', [$salesOrder->id, $photo->id]) }}')"
+                                style="position:absolute;top:3px;right:3px;background:rgba(220,53,69,0.85);border:none;border-radius:50%;width:20px;height:20px;color:white;font-size:10px;line-height:1;cursor:pointer;">
+                                &times;
+                            </button>
+                        </div>
+                        <div class="p-1 text-center" style="background:#fff;">
+                            <p class="mb-0 text-truncate" style="font-size:9px;max-width:100%;" title="{{$photo->original_name}}">{{$photo->original_name}}</p>
+                            <p class="mb-0 text-muted" style="font-size:8px;">{{$photo->human_file_size}} &bull; {{$photo->created_at->format('d M')}}</p>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-center py-4 text-muted" id="panel-empty-msg">
+                <i class="fas fa-camera fa-2x mb-2 d-block opacity-50"></i>
+                <p class="small mb-0">No photos yet.</p>
+                <p class="small">Tap "Upload More Photos" above to add evidence.</p>
+            </div>
+        @endif
+    </div>
+
+    {{-- Panel Footer --}}
+    <div style="padding:10px 14px; border-top:1px solid #eee; background:#f8f9fa; flex-shrink:0; font-size:10px; color:#94a3b8; text-align:center;">
+        Photos are for internal reference only &bull; Not shown on invoices
+    </div>
+</div>
+
+{{-- Lightbox overlay --}}
+<div id="so-lightbox" onclick="closeLightbox()"
+     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+    <button onclick="closeLightbox()" style="position:fixed;top:16px;right:20px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:20px;cursor:pointer;z-index:10000;">✕</button>
+    <p id="lightbox-caption" style="color:#ccc;font-size:12px;margin-bottom:8px;"></p>
+    <img id="lightbox-img" src="" style="max-width:95vw;max-height:88vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.6); object-fit:contain;" onclick="event.stopPropagation()">
+    <p style="color:#888;font-size:11px;margin-top:8px;">Click anywhere to close</p>
+</div>
+
 @endsection
 
 @push('styles')
@@ -730,4 +834,157 @@ function removeItem(url) {
     @csrf
     @method('DELETE')
 </form>
+
+<script>
+/* ================================================================
+   PHOTO PANEL & LIGHTBOX JS
+================================================================ */
+let panelOpen = false;
+
+function togglePhotoPanel() {
+    panelOpen = !panelOpen;
+    document.getElementById('so-photo-panel').style.right = panelOpen ? '0' : '-360px';
+    // shift panel toggle button slightly
+    document.getElementById('photo-panel-toggle').style.right = panelOpen ? '350px' : '0';
+}
+
+function openLightbox(url, caption) {
+    const lb = document.getElementById('so-lightbox');
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox-caption').textContent = caption;
+    lb.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('so-lightbox').style.display = 'none';
+    document.getElementById('lightbox-img').src = '';
+    document.body.style.overflow = '';
+}
+
+// Escape key closes lightbox
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLightbox(); });
+
+// Drag over panel dropzone
+const panelDz = document.getElementById('panel-dropzone');
+if (panelDz) {
+    panelDz.addEventListener('dragover', e => { e.preventDefault(); panelDz.style.background = '#fff3cd'; });
+    panelDz.addEventListener('dragleave', () => { panelDz.style.background = 'transparent'; });
+    panelDz.addEventListener('drop', e => {
+        e.preventDefault();
+        panelDz.style.background = 'transparent';
+        panelUploadPhotos({ files: e.dataTransfer.files });
+    });
+}
+
+function panelUploadPhotos(input) {
+    const files = Array.from(input.files);
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    files.forEach(f => formData.append('order_photos[]', f));
+
+    document.getElementById('panel-upload-progress').style.display = 'block';
+    document.getElementById('panel-dropzone').style.opacity = '0.5';
+
+    fetch('{{ route("sales-orders.photos.upload", $salesOrder->id) }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') {
+            // Re-render photo grid from server response
+            const grid = document.getElementById('panel-photos-row');
+            const emptyMsg = document.getElementById('panel-empty-msg');
+
+            if (emptyMsg) emptyMsg.remove();
+            if (!grid) {
+                const container = document.getElementById('panel-photo-grid');
+                container.innerHTML = '<div class="row" id="panel-photos-row" style="margin:0 -4px;"></div>';
+            }
+
+            res.photos.forEach(photo => {
+                if (!document.getElementById('panel-photo-col-' + photo.id)) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 px-1 mb-2 panel-photo-col';
+                    col.id = 'panel-photo-col-' + photo.id;
+                    const isPdf = photo.url.endsWith('.pdf');
+                    col.innerHTML = `
+                        <div class="card border shadow-sm" style="border-radius:8px;overflow:hidden;cursor:pointer;"
+                             onclick="openLightbox('${photo.url}','${photo.original_name}')">
+                            <div style="height:90px;display:flex;align-items:center;justify-content:center;background:#f8f9fa;position:relative;">
+                                ${isPdf
+                                    ? '<i class="fas fa-file-pdf fa-2x text-danger"></i>'
+                                    : `<img src="${photo.url}" style="max-height:90px;max-width:100%;object-fit:cover;width:100%;" loading="lazy">`
+                                }
+                                <button onclick="event.stopPropagation(); panelDeletePhoto(${photo.id},'');"
+                                    style="position:absolute;top:3px;right:3px;background:rgba(220,53,69,0.85);border:none;border-radius:50%;width:20px;height:20px;color:white;font-size:10px;line-height:1;cursor:pointer;">
+                                    &times;
+                                </button>
+                            </div>
+                            <div class="p-1 text-center" style="background:#fff;">
+                                <p class="mb-0 text-truncate" style="font-size:9px;" title="${photo.original_name}">${photo.original_name}</p>
+                                <p class="mb-0 text-muted" style="font-size:8px;">${photo.human_size}</p>
+                            </div>
+                        </div>`;
+                    document.getElementById('panel-photos-row').appendChild(col);
+                }
+            });
+
+            // Update badge count
+            document.getElementById('photo-panel-badge').textContent = res.photos.length;
+
+            Swal.fire({ icon:'success', title:'Photos Uploaded', toast:true, position:'top-end', showConfirmButton:false, timer:2500 });
+        } else {
+            Swal.fire('Error', res.message || 'Upload failed', 'error');
+        }
+    })
+    .catch(() => Swal.fire('Error', 'Network error during upload', 'error'))
+    .finally(() => {
+        document.getElementById('panel-upload-progress').style.display = 'none';
+        document.getElementById('panel-dropzone').style.opacity = '1';
+        document.getElementById('panel-photo-input').value = '';
+    });
+}
+
+function panelDeletePhoto(photoId, deleteUrl) {
+    if (!confirm('Delete this photo? This cannot be undone.')) return;
+
+    // Build delete URL if not provided (for dynamically added photos)
+    if (!deleteUrl) {
+        deleteUrl = `/admin/sales-orders/{{ $salesOrder->id }}/photos/${photoId}`;
+    }
+
+    fetch(deleteUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: '_token={{ csrf_token() }}&_method=DELETE'
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') {
+            const col = document.getElementById('panel-photo-col-' + photoId);
+            if (col) col.remove();
+
+            // Update count
+            const remaining = document.querySelectorAll('.panel-photo-col').length;
+            document.getElementById('photo-panel-badge').textContent = remaining;
+
+            if (remaining === 0) {
+                document.getElementById('panel-photo-grid').innerHTML =
+                    '<div class="text-center py-4 text-muted" id="panel-empty-msg">' +
+                    '<i class="fas fa-camera fa-2x mb-2 d-block opacity-50"></i>' +
+                    '<p class="small mb-0">No photos yet.</p></div>';
+            }
+
+            Swal.fire({ icon:'success', title:'Photo Deleted', toast:true, position:'top-end', showConfirmButton:false, timer:2000 });
+        } else {
+            Swal.fire('Error', 'Could not delete photo', 'error');
+        }
+    })
+    .catch(() => Swal.fire('Error', 'Network error', 'error'));
+}
+</script>
 @endpush

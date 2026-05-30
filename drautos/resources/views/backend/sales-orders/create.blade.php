@@ -7,7 +7,7 @@
     </div>
     <div class="card-body">
         @include('backend.layouts.notification')
-        <form method="post" action="{{route('sales-orders.store')}}">
+        <form method="post" action="{{route('sales-orders.store')}}" enctype="multipart/form-data" id="so-create-form">
             {{csrf_field()}}
 
             <div class="row">
@@ -119,11 +119,44 @@
                 </div>
             </div>
 
+            {{-- ===== PHOTO UPLOAD SECTION ===== --}}
+            <div class="card border-warning mb-4" id="photo-upload-section">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-2">
+                    <span class="font-weight-bold"><i class="fas fa-camera mr-2"></i>Order Photos <small class="text-muted font-weight-normal">(Evidence / Reference — max 10 photos, 20MB each)</small></span>
+                    <span class="badge badge-dark" id="photo-count-badge">0 / 10</span>
+                </div>
+                <div class="card-body p-3">
+                    {{-- Dropzone --}}
+                    <div id="so-photo-dropzone"
+                         style="border: 2px dashed #ffc107; border-radius: 10px; padding: 28px 20px; text-align: center; cursor: pointer; background: #fffdf0; transition: background 0.2s;"
+                         onclick="document.getElementById('order_photos_input').click()">
+                        <i class="fas fa-cloud-upload-alt fa-2x text-warning mb-2"></i>
+                        <p class="mb-1 font-weight-bold text-muted">Tap to upload photos</p>
+                        <p class="small text-muted mb-0">JPEG, PNG, WEBP, HEIC or PDF &bull; Up to 10 files &bull; 20 MB each</p>
+                        <input type="file" id="order_photos_input" name="order_photos[]" multiple accept="image/*,.pdf"
+                               style="display:none;" onchange="handlePhotoSelect(this)">
+                    </div>
+
+                    {{-- Preview grid --}}
+                    <div id="photo-preview-grid" class="row mt-3" style="display:none;">
+                        {{-- Thumbnails added by JS --}}
+                    </div>
+                    <p id="photo-hint" class="small text-success mt-2 mb-0" style="display:none;">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Photos attached — you can save the order with just these photos and add items later.
+                    </p>
+                </div>
+            </div>
+
             <div class="form-group mb-3">
-                <button type="submit" class="btn btn-success px-5 shadow-sm font-weight-bold" id="submit-order" disabled>SAVE SALE ORDER</button>
+                <button type="submit" class="btn btn-success px-5 shadow-sm font-weight-bold" id="submit-order" disabled>
+                    <i class="fas fa-save mr-1"></i> SAVE SALE ORDER
+                </button>
                 <a href="{{route('sales-orders.index')}}" class="btn btn-secondary px-4 ml-2">Back</a>
+                <span id="submit-hint" class="small text-muted ml-3">Add items or upload photos to enable save</span>
             </div>
         </form>
+
     </div>
 </div>
 
@@ -466,15 +499,13 @@
             $('#added-items-table tbody').append(row);
             itemsCount++;
             updateGrandTotal();
-            $('#submit-order').prop('disabled', false);
+            checkSubmitEnable();
         }
 
         $(document).on('click', '.remove-item', function() {
             $(this).closest('tr').remove();
             updateGrandTotal();
-            if ($('#added-items-table tbody tr').length === 0) {
-                $('#submit-order').prop('disabled', true);
-            }
+            checkSubmitEnable();
         });
 
         function updateGrandTotal() {
@@ -485,6 +516,132 @@
             $('#grand-total').text('Rs. ' + grandTotal.toLocaleString(undefined, {
                 minimumFractionDigits: 2
             }));
+        }
+
+        /* ================================================================
+           PHOTO SELECTION & PREVIEW
+        ================================================================ */
+        let selectedPhotoFiles = [];   // track DataTransfer-style array
+
+        window.handlePhotoSelect = function(input) {
+            const MAX = 10;
+            const newFiles = Array.from(input.files);
+            const remaining = MAX - selectedPhotoFiles.length;
+            const toAdd = newFiles.slice(0, remaining);
+
+            if (newFiles.length > remaining) {
+                alert('Maximum 10 photos allowed. Only the first ' + remaining + ' photo(s) were added.');
+            }
+
+            toAdd.forEach(file => {
+                selectedPhotoFiles.push(file);
+                renderPhotoThumb(file, selectedPhotoFiles.length - 1);
+            });
+
+            syncFileInputToForm();
+            refreshPhotoUI();
+        };
+
+        function renderPhotoThumb(file, idx) {
+            const grid = document.getElementById('photo-preview-grid');
+            const isPDF = file.type === 'application/pdf';
+            const sizeKB = (file.size / 1024).toFixed(0);
+
+            const col = document.createElement('div');
+            col.className = 'col-6 col-sm-4 col-md-3 mb-3';
+            col.id = 'photo-thumb-' + idx;
+            col.innerHTML = `
+                <div class="card border shadow-sm h-100" style="border-radius:8px; overflow:hidden;">
+                    <div style="height:100px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; position:relative;">
+                        ${isPDF
+                            ? '<i class="fas fa-file-pdf fa-3x text-danger"></i>'
+                            : '<img src="" class="photo-preview-img" style="max-height:100px;max-width:100%;object-fit:contain;" />'
+                        }
+                        <button type="button" onclick="removePhoto(${idx})"
+                            style="position:absolute;top:4px;right:4px;background:rgba(220,53,69,0.85);border:none;border-radius:50%;width:22px;height:22px;color:white;font-size:11px;line-height:1;cursor:pointer;">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="card-body p-1 text-center">
+                        <p class="mb-0 small text-truncate" style="max-width:100%;font-size:10px;" title="${file.name}">${file.name}</p>
+                        <p class="mb-0 text-muted" style="font-size:9px;">${sizeKB} KB</p>
+                    </div>
+                </div>`;
+
+            if (!isPDF) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = col.querySelector('.photo-preview-img');
+                    if (img) img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            grid.appendChild(col);
+        }
+
+        window.removePhoto = function(idx) {
+            selectedPhotoFiles.splice(idx, 1);
+            // Rebuild entire preview grid
+            const grid = document.getElementById('photo-preview-grid');
+            grid.innerHTML = '';
+            selectedPhotoFiles.forEach((f, i) => renderPhotoThumb(f, i));
+            syncFileInputToForm();
+            refreshPhotoUI();
+        };
+
+        // Re-build the file input using DataTransfer so the form submits real files
+        function syncFileInputToForm() {
+            try {
+                const dt = new DataTransfer();
+                selectedPhotoFiles.forEach(f => dt.items.add(f));
+                document.getElementById('order_photos_input').files = dt.files;
+            } catch(e) {
+                // DataTransfer not supported in older browsers; files submitted anyway
+            }
+        }
+
+        function refreshPhotoUI() {
+            const count = selectedPhotoFiles.length;
+            $('#photo-count-badge').text(count + ' / 10');
+            $('#photo-preview-grid').toggle(count > 0);
+            $('#photo-hint').toggle(count > 0);
+
+            // Dropzone highlight color
+            if (count >= 10) {
+                $('#so-photo-dropzone').css('border-color', '#28a745').css('background', '#f0fff4');
+            } else {
+                $('#so-photo-dropzone').css('border-color', '#ffc107').css('background', '#fffdf0');
+            }
+
+            checkSubmitEnable();
+        }
+
+        // Drag-and-drop support for the dropzone
+        const dz = document.getElementById('so-photo-dropzone');
+        if (dz) {
+            dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.background = '#fff3cd'; });
+            dz.addEventListener('dragleave', () => { dz.style.background = '#fffdf0'; });
+            dz.addEventListener('drop', e => {
+                e.preventDefault();
+                dz.style.background = '#fffdf0';
+                const fake = { files: e.dataTransfer.files };
+                handlePhotoSelect(fake);
+            });
+        }
+
+        /* Enable submit when items > 0 OR photos > 0 */
+        function checkSubmitEnable() {
+            const hasItems  = $('#added-items-table tbody tr').length > 0;
+            const hasPhotos = selectedPhotoFiles.length > 0;
+            const canSubmit = hasItems || hasPhotos;
+            $('#submit-order').prop('disabled', !canSubmit);
+
+            if (canSubmit) {
+                $('#submit-hint').hide();
+            } else {
+                $('#submit-hint').show();
+            }
         }
 
         // --- Quick Add Product Logic ---

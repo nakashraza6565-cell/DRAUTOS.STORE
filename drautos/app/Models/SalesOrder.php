@@ -38,4 +38,13 @@ class SalesOrder extends Model
     {
         return $this->hasMany(Order::class, 'sales_order_id');
     }
+
+    /**
+     * Photos attached as evidence/reference for this order.
+     */
+    public function photos()
+    {
+        return $this->hasMany(SalesOrderPhoto::class);
+    }
 }
+

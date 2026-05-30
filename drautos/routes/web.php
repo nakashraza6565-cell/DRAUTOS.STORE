@@ -53,7 +53,8 @@ Route::get('/fix-db', function () {
             '2026_05_17_160700_add_ingredient_type_to_manufacturing_bill_components_table.php',
             '2026_05_17_170700_add_overhead_details_to_manufacturing_bills_table.php',
             '2026_05_17_180700_alter_status_in_manufacturing_bills_table.php',
-            '2026_05_17_190700_add_subcontractor_id_to_manufacturing_bills_table.php'
+            '2026_05_17_190700_add_subcontractor_id_to_manufacturing_bills_table.php',
+            '2026_05_30_120000_create_sale_order_photos_table.php',
         ];
 
         foreach ($migrations as $file) {
@@ -428,6 +429,10 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::delete('sales-orders/{id}/remove-item/{itemId}', 'SalesOrderController@removeItem')->name('sales-orders.remove-item');
     Route::get('sales-orders/pending-items/{userId}', 'SalesOrderController@getPendingItems')->name('sales-orders.pending-items');
     Route::get('sales-orders/get-price', 'SalesOrderController@getCustomerPrice')->name('sales-orders.get-price');
+    // Sale Order Photos (evidence/reference)
+    Route::post('sales-orders/{id}/upload-photos', 'SalesOrderController@uploadPhotos')->name('sales-orders.photos.upload');
+    Route::delete('sales-orders/{id}/photos/{photoId}', 'SalesOrderController@deletePhoto')->name('sales-orders.photos.delete');
+    Route::get('sales-orders/{id}/photos/{photoId}', 'SalesOrderController@viewPhoto')->name('sales-orders.photos.view');
     Route::resource('sales-orders', 'SalesOrderController');
 
     // Data Export Routes

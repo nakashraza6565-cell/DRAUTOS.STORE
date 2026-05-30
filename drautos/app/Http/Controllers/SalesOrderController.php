@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
+use App\Models\SalesOrderPhoto;
 use App\Models\Product;
 use App\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use DB;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\StatusNotification;
@@ -71,29 +73,53 @@ class SalesOrderController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.price' => 'required|numeric|min:0',
-        ]);
+        // Items are optional IF photos are being uploaded
+        $hasPhotos = $request->hasFile('order_photos');
+        $hasItems  = !empty($request->items);
+
+        if (!$hasItems && !$hasPhotos) {
+            return back()->with('error', 'Please add at least one item OR upload at least one photo to create the order.')
+                         ->withInput();
+        }
+
+        // Validate items only when they exist
+        $rules = ['user_id' => 'required|exists:users,id'];
+        if ($hasItems) {
+            $rules['items']                = 'array';
+            $rules['items.*.product_id']   = 'required|exists:products,id';
+            $rules['items.*.quantity']     = 'required|numeric|min:0.01';
+            $rules['items.*.price']        = 'required|numeric|min:0';
+        }
+        if ($hasPhotos) {
+            $rules['order_photos']   = 'array|max:10';
+            $rules['order_photos.*'] = 'file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480'; // 20 MB
+        }
+        $request->validate($rules);
 
         DB::beginTransaction();
         try {
+            // Determine status
+            $initialStatus = ($hasPhotos && !$hasItems) ? 'photo_pending' : 'pending';
+            $totalAmount = $hasItems
+                ? collect($request->items)->sum(fn($item) => $item['quantity'] * $item['price'])
+                : 0;
+
             $salesOrder = SalesOrder::create([
                 'order_number' => 'SO-' . strtoupper(Str::random(8)),
-                'user_id' => $request->user_id,
-                'staff_id' => auth()->id(),
-                'total_amount' => collect($request->items)->sum(function($item) {
-                    return $item['quantity'] * $item['price'];
-                }),
-                'note' => $request->note,
-                'status' => 'pending'
+                'user_id'      => $request->user_id,
+                'staff_id'     => auth()->id(),
+                'total_amount' => $totalAmount,
+                'note'         => $request->note,
+                'status'       => $initialStatus,
             ]);
 
+            // ---- Save uploaded photos ----
+            if ($hasPhotos) {
+                $this->storePhotos($request->file('order_photos'), $salesOrder->id);
+            }
+
             $allMergedOrderNumbers = [];
-            foreach ($request->items as $item) {
+            if ($hasItems) {
                 SalesOrderItem::create([
                     'sales_order_id' => $salesOrder->id,
                     'product_id' => $item['product_id'],
@@ -129,6 +155,7 @@ class SalesOrderController extends Controller
                     })
                     ->update(['status' => 'merged']);
             }
+            } // end if ($hasItems)
 
             // Update new order note with consolidated references once
             $uniqueMergedOrders = array_unique($allMergedOrderNumbers);
@@ -404,5 +431,136 @@ class SalesOrderController extends Controller
             'price' => $product->price ?? 0,
             'source' => 'default'
         ]);
+    }
+
+    /* =========================================================
+     *  PHOTO UPLOAD / SERVE METHODS
+     * ========================================================= */
+
+    /**
+     * Upload photos to an existing sale order (AJAX / standard POST).
+     */
+    public function uploadPhotos(Request $request, $id)
+    {
+        $salesOrder = SalesOrder::findOrFail($id);
+
+        $request->validate([
+            'order_photos'   => 'required|array|min:1|max:10',
+            'order_photos.*' => 'required|file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480',
+        ]);
+
+        // Enforce global limit of 10 per order
+        $existing = $salesOrder->photos()->count();
+        $incoming = count($request->file('order_photos'));
+        if ($existing + $incoming > 10) {
+            $msg = "Cannot upload {$incoming} photo(s). Order already has {$existing} and limit is 10.";
+            if ($request->ajax()) return response()->json(['status' => 'error', 'message' => $msg], 422);
+            return back()->with('error', $msg);
+        }
+
+        $this->storePhotos($request->file('order_photos'), $salesOrder->id);
+
+        // If order was photo_pending and now has items, keep status — admin handles it
+        // If it was photo_pending and still no items, stays photo_pending
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status'  => 'success',
+                'message' => $incoming . ' photo(s) uploaded successfully.',
+                'photos'  => $salesOrder->fresh()->photos()->with('uploader')->get()->map(fn($p) => [
+                    'id'            => $p->id,
+                    'url'           => route('sales-orders.photos.view', [$salesOrder->id, $p->id]),
+                    'original_name' => $p->original_name,
+                    'human_size'    => $p->human_file_size,
+                    'uploaded_by'   => $p->uploader->name ?? 'Staff',
+                    'uploaded_at'   => $p->created_at->format('d M Y, h:i A'),
+                ]),
+            ]);
+        }
+
+        return back()->with('success', $incoming . ' photo(s) uploaded successfully.');
+    }
+
+    /**
+     * Delete a single photo from a sale order.
+     */
+    public function deletePhoto($id, $photoId)
+    {
+        $salesOrder = SalesOrder::findOrFail($id);
+        $photo      = SalesOrderPhoto::where('sales_order_id', $id)->findOrFail($photoId);
+
+        // Remove file from disk
+        if (Storage::exists($photo->disk_path)) {
+            Storage::delete($photo->disk_path);
+        }
+        $photo->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['status' => 'success', 'message' => 'Photo deleted.']);
+        }
+        return back()->with('success', 'Photo deleted.');
+    }
+
+    /**
+     * Serve a photo file (protected — not publicly accessible).
+     * Accessible by: admin/staff (backend) and the customer who owns the order (frontend).
+     */
+    public function viewPhoto($id, $photoId)
+    {
+        $salesOrder = SalesOrder::findOrFail($id);
+
+        // Customer auth check: if not admin/staff, ensure they own the order
+        if (auth()->check()) {
+            $role = auth()->user()->role ?? 'user';
+            if (!in_array($role, ['admin', 'staff', 'manager'])) {
+                if ($salesOrder->user_id !== auth()->id()) {
+                    abort(403, 'Access denied.');
+                }
+            }
+        } else {
+            abort(401);
+        }
+
+        $photo = SalesOrderPhoto::where('sales_order_id', $id)->findOrFail($photoId);
+
+        if (!Storage::exists($photo->disk_path)) {
+            abort(404, 'Photo file not found.');
+        }
+
+        $file     = Storage::get($photo->disk_path);
+        $mimeType = $photo->mime_type ?? 'image/jpeg';
+
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline; filename="' . $photo->original_name . '"')
+            ->header('Cache-Control', 'private, max-age=3600');
+    }
+
+    /**
+     * Internal helper: saves uploaded files to private storage.
+     */
+    private function storePhotos(array $files, $salesOrderId)
+    {
+        $dir = 'sale-order-photos/' . $salesOrderId;
+
+        foreach ($files as $file) {
+            if (!$file->isValid()) continue;
+
+            $ext      = $file->getClientOriginalExtension();
+            $filename = Str::uuid() . '.' . $ext;
+            $path     = $dir . '/' . $filename;
+
+            Storage::put($path, file_get_contents($file));
+
+            SalesOrderPhoto::create([
+                'sales_order_id' => $salesOrderId,
+                'filename'       => $filename,
+                'original_name'  => $file->getClientOriginalName(),
+                'disk_path'      => $path,
+                'uploaded_by'    => auth()->id(),
+                'file_size'      => $file->getSize(),
+                'mime_type'      => $file->getMimeType(),
+            ]);
+        }
     }
 }

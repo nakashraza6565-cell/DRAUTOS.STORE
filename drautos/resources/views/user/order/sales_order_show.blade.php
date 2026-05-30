@@ -78,6 +78,31 @@
     </div>
     @endforeach
 
+    @if($salesOrder->photos->count() > 0)
+    <div class="mt-4">
+        <h6 class="font-weight-bold text-gray-800 mb-3 ml-1"><i class="fas fa-camera mr-1"></i> Order Reference Photos</h6>
+        <div class="row px-1">
+            @foreach($salesOrder->photos as $photo)
+            <div class="col-6 col-md-4 px-2 mb-3">
+                <a href="{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" target="_blank" class="card shadow-sm border-0 rounded-lg overflow-hidden text-decoration-none">
+                    <div style="height: 120px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                        @if(str_contains($photo->mime_type ?? '', 'pdf'))
+                            <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                        @else
+                            <img src="{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Order Photo">
+                        @endif
+                    </div>
+                    <div class="card-footer bg-white py-2 px-2 border-0 text-center">
+                        <div class="text-xs text-truncate text-gray-800 font-weight-bold" title="{{$photo->original_name}}">{{$photo->original_name}}</div>
+                        <div class="text-xs text-muted" style="font-size: 10px;">{{$photo->created_at->format('d M Y')}}</div>
+                    </div>
+                </a>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     @if($salesOrder->note)
     <div class="mt-4 p-3 bg-light rounded-lg">
         <div class="text-xs font-weight-bold text-uppercase text-muted mb-1">Note</div>
