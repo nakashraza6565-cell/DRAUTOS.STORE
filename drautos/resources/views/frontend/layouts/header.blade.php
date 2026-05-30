@@ -7,9 +7,14 @@
                 <div class="col-lg-4 col-md-4 col-12">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <div class="d-flex align-items-center justify-content-center mr-3" style="width: 55px; height: 55px; background: #111827; border-radius: 6px; border-bottom: 5px solid #facc15;">
-                                <span style="color: #ffffff; font-size: 32px; font-weight: 900; font-style: italic; line-height: 1; margin-left: -2px;">D<span style="color: #facc15;">R</span></span>
+                            <!-- Intertwined DR Logo Graphic -->
+                            <div style="position: relative; width: 60px; height: 50px; margin-right: 10px;">
+                                <!-- The Navy D -->
+                                <span style="position: absolute; left: 0; top: 0; font-size: 52px; font-weight: 900; font-family: 'Arial Black', Impact, sans-serif; color: #0f172a; line-height: 1;">D</span>
+                                <!-- The Silver R with white stroke cutout effect -->
+                                <span style="position: absolute; left: 24px; top: 4px; font-size: 48px; font-weight: 900; font-family: 'Arial Black', Impact, sans-serif; color: #94a3b8; line-height: 1; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;">R</span>
                             </div>
+                            <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
                                 <h3 style="color: #031430; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
                                 <span style="color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">PREMIUM TRUCK PARTS B2B</span>
