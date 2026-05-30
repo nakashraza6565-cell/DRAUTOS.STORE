@@ -103,6 +103,7 @@
 											
 											<!-- Product Buy -->
 											<div class="product-buy">
+												@auth
 												<form action="{{route('single-add-to-cart')}}" method="POST">
 													@csrf 
 													<div class="quantity">
@@ -129,6 +130,7 @@
 														<a href="{{route('add-to-wishlist',$product_detail->slug)}}" class="btn min"><i class="ti-heart"></i></a>
 													</div>
 												</form>
+												@endauth
 
 												<p class="cat">Category :<a href="{{route('product-cat',$product_detail->cat_info->slug ?? '#')}}">{{$product_detail->cat_info->title ?? 'N/A'}}</a></p>
 												@if($product_detail->sub_cat_info)
@@ -317,6 +319,7 @@
                                                                     {{-- <span class="out-of-stock">Hot</span> --}}
                                         </a>
                                         <div class="button-head">
+                                            @auth
                                             <div class="product-action">
                                                 <a data-toggle="modal" data-target="#modelExample" title="Quick View" href="#"><i class=" ti-eye"></i><span>Quick Shop</span></a>
                                                 <a title="Wishlist" href="#"><i class=" ti-heart "></i><span>Add to Wishlist</span></a>
@@ -325,6 +328,7 @@
                                             <div class="product-action-2">
                                                 <a title="Add to cart" href="#">Add to cart</a>
                                             </div>
+                                            @endauth
                                         </div>
                                     </div>
                                     <div class="product-content">
@@ -432,6 +436,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @auth
                             <div class="quantity">
                                 <!-- Input Order -->
                                 <div class="input-group">
@@ -454,6 +459,7 @@
                                 <a href="#" class="btn min"><i class="ti-heart"></i></a>
                                 <a href="#" class="btn min"><i class="fa fa-compress"></i></a>
                             </div>
+                            @endauth
                             <div class="default-social">
                                 <h4 class="share-now">Share:</h4>
                                 <ul>
