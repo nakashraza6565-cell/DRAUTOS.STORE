@@ -7,12 +7,12 @@
                 <div class="col-lg-4 col-md-4 col-12">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <div class="d-flex align-items-center justify-content-center mr-2" style="width: 45px; height: 45px; background: var(--primary); border-radius: 4px; border-bottom: 4px solid var(--accent);">
-                                <span class="font-weight-bold" style="color: #fff; font-size: 24px; font-style: italic;">D<span style="color: var(--accent);">R</span></span>
+                            <div class="d-flex align-items-center justify-content-center mr-3" style="width: 55px; height: 55px; background: #111827; border-radius: 6px; border-bottom: 5px solid #facc15;">
+                                <span style="color: #ffffff; font-size: 32px; font-weight: 900; font-style: italic; line-height: 1; margin-left: -2px;">D<span style="color: #facc15;">R</span></span>
                             </div>
                             <div class="d-flex flex-column justify-content-center">
-                                <h3 class="font-weight-bold mb-0" style="color: var(--primary); font-size: 20px; letter-spacing: -0.5px;">DANYAL AUTOS</h3>
-                                <span style="color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Premium Truck Parts B2B</span>
+                                <h3 style="color: #031430; font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
+                                <span style="color: #64748b; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;">PREMIUM TRUCK PARTS B2B</span>
                             </div>
                         </a>
                     </div>
