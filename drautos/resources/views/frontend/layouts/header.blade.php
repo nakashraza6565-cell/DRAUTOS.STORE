@@ -9,7 +9,7 @@
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
                             <!-- Intertwined DR Custom Graphic -->
                             <div style="width: 55px; height: 55px; margin-right: 15px; flex-shrink: 0;">
-                                <img src="{{asset('frontend/images/dr_logo.png')}}" alt="DR Logo" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;">
+                                <img src="{{asset('frontend/img/dr_logo.png')}}" alt="DR Logo" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;">
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
