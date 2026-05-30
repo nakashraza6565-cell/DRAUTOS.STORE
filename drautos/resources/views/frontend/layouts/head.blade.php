@@ -39,29 +39,29 @@
 <link rel="stylesheet" href="{{asset('frontend/css/responsive.css')}}">
 
 <style>
-    /* ===== CYBER INDUSTRIAL DARK MODE DESIGN TOKENS ===== */
+    /* ===== PREMIUM B2B COMMERCIAL DESIGN TOKENS ===== */
     :root {
-        --primary: #0a0f18;       /* Deep charcoal/black */
-        --primary-light: #162032; /* Slightly lighter panel bg */
-        --accent: #00f0ff;        /* Neon Cyber-Cyan */
-        --accent-alt: #ff6a00;    /* Electric Orange */
-        --text-main: #e2e8f0;     /* Crisp white-gray */
-        --text-muted: #94a3b8;    /* Muted gray */
-        --bg-soft: #0f172a;       /* Dark slate background */
-        --border-color: rgba(0, 240, 255, 0.15);
+        --primary: #0f172a;       /* Deep Corporate Navy */
+        --primary-light: #1e293b; /* Slightly lighter navy */
+        --accent: #facc15;        /* Industrial Yellow */
+        --accent-alt: #eab308;    /* Darker Industrial Yellow */
+        --text-main: #334155;     /* Slate text for light backgrounds */
+        --text-muted: #64748b;    /* Muted slate */
+        --bg-soft: #f8fafc;       /* Pearl white / silver background */
+        --border-color: #e2e8f0;  /* Standard silver border */
     }
 
     body {
         font-family: 'Outfit', sans-serif !important;
         color: var(--text-main);
-        background-color: var(--primary);
+        background-color: #ffffff; /* Clean white background */
         scroll-behavior: smooth;
     }
 
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700;
-        color: #ffffff;
+        color: var(--primary); /* Navy headings */
     }
 
     .btn {
@@ -69,7 +69,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* WhatsApp Floating Button - Dark Mode Adapted */
+    /* WhatsApp Floating Button - Corporate Adapted */
     .whatsapp-float {
         position: fixed;
         bottom: 30px;
@@ -108,24 +108,24 @@
     }
 
     @keyframes pulse-whatsapp {
-        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5); }
         70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
     }
 
-    /* Cyber Transitions */
+    /* B2B Transitions */
     .single-product {
         transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border-radius: 12px;
+        border-radius: 8px; /* Sharper corporate corners */
         overflow: hidden;
         border: 1px solid var(--border-color);
-        background: var(--primary-light);
+        background: #ffffff;
     }
 
     .single-product:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 40px rgba(0, 240, 255, 0.15);
-        border-color: var(--accent);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
+        border-color: var(--primary);
     }
 </style>
 @stack('styles')
