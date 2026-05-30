@@ -1,17 +1,11 @@
 <?php
-require 'drautos/vendor/autoload.php';
-$app = require_once 'drautos/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
-try {
-    $photo = \App\Models\SalesOrderPhoto::create([
-        'sales_order_id' => 1,
-        'filename' => 'test',
-        'original_name' => 'test',
-        'disk_path' => 'test'
-    ]);
-    echo "Inserted photo: " . json_encode($photo);
-} catch (\Exception $e) {
-    echo "Error inserting photo: " . $e->getMessage();
+$logFile = __DIR__ . '/drautos/storage/logs/laravel.log';
+if (!file_exists($logFile)) {
+    echo "Log file not found.";
+    exit;
 }
+$lines = file($logFile);
+$lastLines = array_slice($lines, -150);
+echo "<pre>";
+echo htmlspecialchars(implode("", $lastLines));
+echo "</pre>";
