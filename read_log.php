@@ -4,7 +4,14 @@ $app = require_once 'drautos/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$photos = \App\Models\SalesOrderPhoto::orderBy('id', 'desc')->take(5)->get();
-echo "Latest photos: " . json_encode($photos) . "\n";
-$latestOrders = \App\Models\SalesOrder::orderBy('id', 'desc')->take(5)->get();
-echo "Latest SOs: " . json_encode($latestOrders) . "\n";
+try {
+    $photo = \App\Models\SalesOrderPhoto::create([
+        'sales_order_id' => 1,
+        'filename' => 'test',
+        'original_name' => 'test',
+        'disk_path' => 'test'
+    ]);
+    echo "Inserted photo: " . json_encode($photo);
+} catch (\Exception $e) {
+    echo "Error inserting photo: " . $e->getMessage();
+}
