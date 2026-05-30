@@ -7,10 +7,9 @@
                 <div class="col-lg-4 col-md-4 col-8">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <!-- Intertwined DR Graphic (Revue Font) -->
-                            <div style="position: relative; width: 60px; height: 50px; margin-right: 15px; flex-shrink: 0;">
-                                <span style="position: absolute; left: 0; top: 0; font-size: 55px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: var(--primary); line-height: 1; z-index: 1;">D</span>
-                                <span style="position: absolute; left: 24px; top: 8px; font-size: 50px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #a3b1c6; line-height: 1; z-index: 2; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;">R</span>
+                            <!-- Intertwined DR Custom Graphic -->
+                            <div style="width: 55px; height: 55px; margin-right: 15px; flex-shrink: 0;">
+                                <img src="{{asset('frontend/images/dr_logo.png')}}" alt="DR Logo" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;">
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
@@ -65,11 +64,11 @@
     </div>
     
     <!-- Bottom Bar (Navy) -->
-    <div class="header-inner py-2" style="background: var(--primary);">
+    <div class="header-inner py-2" style="background: var(--primary); display: block !important;">
         <div class="container">
             <div class="row align-items-center">
                 <!-- Main Menu Links -->
-                <div class="col-lg-5 col-md-5 col-12">
+                <div class="col-lg-5 col-md-5 d-none d-md-block">
                     <nav class="navbar navbar-expand-lg p-0">
                         <div class="navbar-collapse">	
                             <ul class="nav main-menu menu navbar-nav d-flex align-items-center" style="gap: 30px; margin: 0;">
