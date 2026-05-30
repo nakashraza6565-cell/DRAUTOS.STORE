@@ -6,13 +6,9 @@
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h3 class="h4 font-weight-bold text-gray-800 mb-0">My Orders</h3>
         <div class="d-flex align-items-center" style="gap: 10px;">
-            <button class="btn btn-outline-primary btn-sm rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" onclick="document.getElementById('new_photo_order_input').click()" title="Create Order from Photo">
+            <button class="btn btn-outline-primary btn-sm rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" data-toggle="modal" data-target="#photoOrderModal" title="Create Order from Photo">
                 <i class="fas fa-camera"></i>
             </button>
-            <form id="new-photo-order-form" action="{{ route('user.online-order.photo-store') }}" method="POST" enctype="multipart/form-data" style="display:none;">
-                @csrf
-                <input type="file" id="new_photo_order_input" name="order_photos[]" multiple accept="image/*,.pdf" onchange="if(this.files.length > 0) { document.getElementById('new-photo-order-form').submit(); }">
-            </form>
             <a href="{{route('user.online-order')}}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                 <i class="fas fa-plus mr-1"></i> New Order
             </a>
@@ -169,6 +165,34 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for Photo Upload -->
+<div class="modal fade" id="photoOrderModal" tabindex="-1" role="dialog" aria-labelledby="photoOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="{{ route('user.online-order.photo-store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title font-weight-bold text-gray-800" id="photoOrderModalLabel"><i class="fas fa-camera text-primary mr-2"></i>Create Order from Photo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body pt-2">
+                    <p class="text-muted small mb-3">Upload a photo of your handwritten order or required items. We'll manually review it and create the order for you!</p>
+                    <div class="form-group mb-0">
+                        <input type="file" class="form-control-file" id="order_photos" name="order_photos[]" multiple accept="image/*,.pdf" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm"><i class="fas fa-upload mr-1"></i> Upload & Create Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
