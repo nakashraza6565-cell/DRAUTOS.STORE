@@ -11,7 +11,7 @@
     <!-- Custom fonts for this template-->
     <link href="{{asset('backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Passion+One:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
     <!-- Custom styles for this template-->
     <link href="{{asset('backend/css/sb-admin-2.min.css')}}" rel="stylesheet">
@@ -21,21 +21,24 @@
             src: url('/revue/reve.ttf?v=1.1') format("truetype");
         }
         :root {
-            --primary: #0c1b3d; /* Packaging Navy Blue */
-            --primary-light: #162a55;
-            --accent: #f97316; /* Packaging Hazard Orange */
-            --accent-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            --accent-glow: 0 10px 30px -10px rgba(249, 115, 22, 0.5);
-            --bg-body: #f1f5f9;
-            --sidebar-bg: #0c1b3d;
+            --primary:      #083259;   /* Danyal Autos Navy */
+            --primary-light:#0e4a7a;
+            --accent:       #facc15;  /* Danyal Autos Gold */
+            --accent-dark:  #d97706;
+            --silver:       #a3b1c6;
+            --silver-light: #d1dae6;
+            --accent-gradient: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+            --accent-glow: 0 10px 30px -10px rgba(250, 204, 21, 0.35);
+            --bg-body: #f0f4f8;
+            --sidebar-bg: #062038;
             --card-shadow: 0 20px 40px -10px rgba(0,0,0,0.04), 0 10px 20px -5px rgba(0,0,0,0.02);
-            --radius-xl: 24px;
-            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-lg: 14px;
             --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         
         body {
-            font-family: 'Outfit', sans-serif !important;
+            font-family: 'Inter', 'Montserrat', sans-serif !important;
             background-color: var(--bg-body) !important;
             color: #0f172a !important;
             letter-spacing: -0.2px;
@@ -266,17 +269,17 @@
         }
 
         .btn-primary, .bg-primary, .badge-primary {
-            background: var(--accent-gradient) !important;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
             border: none !important;
             color: #fff !important;
             font-weight: 700 !important;
-            border-radius: 50px !important;
-            padding: 0.7rem 1.8rem !important;
-            box-shadow: var(--accent-glow) !important;
+            border-radius: 8px !important;
+            padding: 0.6rem 1.5rem !important;
+            box-shadow: 0 6px 20px rgba(8,50,89,0.25) !important;
         }
         .btn-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 35px -5px rgba(249, 115, 22, 0.4) !important;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 12px 28px rgba(8,50,89,0.35) !important;
         }
 
         .sidebar {
@@ -395,12 +398,12 @@
         .sidebar-dark .nav-item.active .nav-link::before {
             content: '';
             position: absolute;
-            left: -12px;
-            top: 25%;
-            height: 50%;
-            width: 4px;
+            left: 0;
+            top: 15%;
+            height: 70%;
+            width: 3px;
             background: var(--accent);
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 3px 3px 0;
         }
 
         .sidebar-divider {

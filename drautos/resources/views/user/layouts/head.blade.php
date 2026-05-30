@@ -8,27 +8,31 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Danyal Autos Co. || DASHBOARD</title>
   
-    <!-- Custom fonts for this template-->
     <link href="{{asset('backend/vendor/fontawesome-free/css/all.min.css')}}" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
     <!-- Custom styles for this template-->
     <link href="{{asset('backend/css/sb-admin-2.min.css')}}" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #0f172a;
-            --accent: #3b82f6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-light: #f8fafc;
-            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --primary:      #083259;   /* Danyal Autos Navy */
+            --primary-light:#0e4a7a;
+            --accent:       #facc15;  /* Danyal Autos Gold */
+            --accent-dark:  #d97706;
+            --silver:       #a3b1c6;
+            --silver-light: #d1dae6;
+            --success:      #10b981;
+            --warning:      #f59e0b;
+            --danger:       #ef4444;
+            --bg-light:     #f0f4f8;
+            --sidebar-bg:   #062038;
+            --card-shadow:  0 4px 20px rgba(8,50,89,0.08);
             --border-radius: 16px;
         }
 
         body {
-            font-family: 'Outfit', sans-serif !important;
+            font-family: 'Inter', 'Montserrat', sans-serif !important;
             background-color: var(--bg-light) !important;
             color: #334155;
         }
