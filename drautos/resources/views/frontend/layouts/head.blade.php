@@ -35,7 +35,7 @@
 
 <!-- Danyal Autos Co. StyleSheet -->
 <link rel="stylesheet" href="{{asset('frontend/css/reset.css')}}">
-<link rel="stylesheet" href="{{asset('frontend/css/style.css')}}?v=2">
+<link rel="stylesheet" href="{{asset('frontend/css/style.css')}}?v=3">
 <link rel="stylesheet" href="{{asset('frontend/css/responsive.css')}}">
 
 <style>
