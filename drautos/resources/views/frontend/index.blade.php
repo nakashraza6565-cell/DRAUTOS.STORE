@@ -367,7 +367,7 @@
 </style>
 
 <!-- B2B Exact Hero Section -->
-<section class="b2b-hero-exact" style="position: relative; height: 600px; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1596541578135-c322b7dcaf96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-resolution;">
+<section class="b2b-hero-exact" style="position: relative; height: 600px; display: flex; align-items: center; background: url('https://images.unsplash.com/photo-1596541578135-c322b7dcaf96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
     <div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.6) 40%, transparent 100%); z-index: 1;"></div>
     <div class="container" style="position: relative; z-index: 2;">
         <div class="row">
