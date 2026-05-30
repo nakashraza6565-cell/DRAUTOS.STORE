@@ -7,10 +7,12 @@
                 <div class="col-lg-4 col-md-4 col-8">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <!-- Intertwined DR Graphic (Revue Font) -->
-                            <div style="position: relative; width: 60px; height: 50px; margin-right: 15px; flex-shrink: 0;">
-                                <span style="position: absolute; left: 0; top: 0; font-size: 55px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: var(--primary); line-height: 1; z-index: 1;">D</span>
-                                <span style="position: absolute; left: 24px; top: 8px; font-size: 50px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #a3b1c6; line-height: 1; z-index: 2; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;">R</span>
+                            <!-- Intertwined DR Graphic (Revue Font Native SVG Paths) -->
+                            <div style="width: 70px; height: 60px; margin-right: 15px; flex-shrink: 0;">
+                                <svg width="100%" height="100%" viewBox="0 0 72 65" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M 22.74 58.73 M 13.17 58.73 M 13.17 25.29 M 24.94 25.29 M 24.94 48.61 M 28.98 48.47 M 32.29 46.74 M 34.87 43.44 M 37.46 40.14 M 38.75 36.49 M 38.75 32.5 M 38.75 29.89 M 38.25 28.01 M 37.26 26.83 M 36.27 25.66 M 35.19 24.87 M 34.02 24.47 M 33.25 24.21 M 32.51 24.06 M 31.79 24.03 M 31.08 23.99 M 30.5 23.97 M 30.06 23.97 M 10.97 23.92 M 13.72 13.8 M 32.81 13.8 M 39.52 13.83 M 44.19 15.65 M 46.83 19.24 M 49.47 22.84 M 50.79 26.91 M 50.79 31.45 M 50.79 39.92 M 47.99 46.59 M 42.38 51.45 M 36.77 56.3 M 30.22 58.73 M 22.74 58.73 Z " fill="var(--primary)" />
+                                  <path d="M 36.48 20.54 M 56.18 20.54 M 60.18 20.58 M 63.08 21.43 M 64.9 23.11 M 66.72 24.78 M 67.86 26.64 M 68.33 28.68 M 68.39 29.08 M 68.45 29.5 M 68.5 29.94 M 68.55 30.37 M 68.58 30.79 M 68.58 31.19 M 68.58 34.16 M 67.71 36.67 M 65.98 38.73 M 64.24 40.79 M 62.19 42.57 M 59.83 44.07 M 61.39 47.2 M 63.18 50.21 M 65.2 53.11 M 67.22 56 M 69.38 58.76 M 71.68 61.39 M 62.73 67.59 M 59.43 63.86 M 56.49 59.84 M 53.93 55.53 M 51.36 51.22 M 49.06 46.79 M 47.03 42.23 M 47.53 41.83 M 48.14 41.38 M 48.88 40.88 M 49.61 40.38 M 50.36 39.85 M 51.13 39.28 M 52.46 38.28 M 53.68 37.19 M 54.8 36.01 M 55.92 34.83 M 56.48 33.62 M 56.48 32.39 M 56.48 31.43 M 56.13 30.78 M 55.45 30.44 M 54.77 30.11 M 54.03 29.93 M 53.23 29.89 M 52.96 29.86 M 52.7 29.84 M 52.45 29.84 M 52.2 29.84 M 51.96 29.84 M 51.73 29.84 M 51.66 29.84 M 51.59 29.84 M 51.53 29.84 M 51.46 29.84 M 51.39 29.84 M 51.33 29.84 M 33.98 29.79 M 36.48 20.54 Z M 46.68 31.04 M 46.68 61.39 M 35.98 61.39 M 35.98 31.04 M 46.68 31.04 Z " fill="#a3b1c6" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+                                </svg>
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
