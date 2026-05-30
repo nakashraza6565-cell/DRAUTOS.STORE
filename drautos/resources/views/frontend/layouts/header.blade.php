@@ -7,9 +7,10 @@
                 <div class="col-lg-4 col-md-4 col-12">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <!-- Intertwined DR Custom Graphic -->
-                            <div style="width: 55px; height: 55px; margin-right: 15px;">
-                                <img src="{{asset('frontend/images/dr_logo.png')}}" alt="DR Logo" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;">
+                            <!-- Intertwined DR Graphic (Revue Font) -->
+                            <div style="position: relative; width: 70px; height: 60px; margin-right: 15px;">
+                                <span style="position: absolute; left: 0; top: 0; font-size: 65px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #0f172a; line-height: 1; z-index: 1;">D</span>
+                                <span style="position: absolute; left: 28px; top: 10px; font-size: 60px; font-family: 'Revue', 'Revue BT', 'Revue Normal', Impact, sans-serif; color: #94a3b8; line-height: 1; z-index: 2; text-shadow: -3px -3px 0 #fff, 3px -3px 0 #fff, -3px 3px 0 #fff, 3px 3px 0 #fff;">R</span>
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
