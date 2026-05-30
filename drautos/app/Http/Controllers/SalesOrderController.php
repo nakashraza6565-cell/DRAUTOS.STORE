@@ -73,12 +73,14 @@ class SalesOrderController extends Controller
 
     public function store(Request $request)
     {
-        // Items are optional IF photos are being uploaded
+        \Log::info('Admin SalesOrder@store triggered', $request->all());
+
+        $hasItems  = $request->has('items') && is_array($request->items) && count($request->items) > 0;
         $hasPhotos = $request->hasFile('order_photos');
-        $hasItems  = !empty($request->items);
 
         if (!$hasItems && !$hasPhotos) {
-            return back()->with('error', 'Please add at least one item OR upload at least one photo to create the order.')
+            \Log::error('Admin SalesOrder@store failed: No items and no photos received. Post_max_size may be exceeded.');
+            return back()->with('error', 'Please add at least one item OR upload at least one photo to create the order (If you uploaded a photo and see this, the file may be too large).')
                          ->withInput();
         }
 
@@ -95,6 +97,8 @@ class SalesOrderController extends Controller
             $rules['order_photos.*'] = 'file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480'; // 20 MB
         }
         $request->validate($rules);
+
+        \Log::info('Admin SalesOrder@store validation passed');
 
         DB::beginTransaction();
         try {
@@ -205,8 +209,9 @@ class SalesOrderController extends Controller
 
             return redirect()->route('sales-orders.index')->with('success', 'Sales Order created successfully. Previous orders updated and completed if fulfilled.');
         } catch (\Exception $e) {
-            DB::rollback();
-            return back()->with('error', 'Error creating Sales Order: ' . $e->getMessage());
+            DB::rollBack();
+            \Log::error('Admin SalesOrder@store EXCEPTION: ' . $e->getMessage() . ' Trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'Error creating order: ' . $e->getMessage())->withInput();
         }
     }
 
