@@ -17,9 +17,7 @@
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center" style="white-space: nowrap; transform: translateY(-1px);">
                                 <h3 style="color: #083259; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 21px; font-weight: 900; letter-spacing: 0px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
-                                <div style="height: 15px; overflow: hidden; margin-top: 3px;">
-                                    <span id="logoSubtext" style="color: #64748b; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; transition: all 0.4s ease-in-out; transform: translateY(0); opacity: 1;">PREMIUM TRUCK PARTS B2B</span>
-                                </div>
+                                <span style="color: #64748b; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;">PREMIUM TRUCK PARTS B2B</span>
                             </div>
                         </a>
                     </div>
@@ -172,17 +170,23 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var searchInput = document.getElementById('mainSearchInput');
-        var logoSubtext = document.getElementById('logoSubtext');
+        var heroSection = document.querySelector('.b2b-hero-exact');
         
-        if(searchInput && logoSubtext) {
+        if(searchInput && heroSection) {
             searchInput.addEventListener('focus', function() {
-                logoSubtext.style.transform = 'translateY(-15px)';
-                logoSubtext.style.opacity = '0';
+                // Slide away the hero section
+                heroSection.style.transition = 'all 0.5s ease-in-out';
+                heroSection.style.maxHeight = '0';
+                heroSection.style.padding = '0';
+                heroSection.style.opacity = '0';
+                heroSection.style.overflow = 'hidden';
             });
             searchInput.addEventListener('blur', function() {
                 if(this.value.trim() === '') {
-                    logoSubtext.style.transform = 'translateY(0)';
-                    logoSubtext.style.opacity = '1';
+                    // Bring it back if search is empty and unfocused
+                    heroSection.style.maxHeight = '1000px'; // large enough to fit content
+                    heroSection.style.padding = '100px 0';
+                    heroSection.style.opacity = '1';
                 }
             });
         }

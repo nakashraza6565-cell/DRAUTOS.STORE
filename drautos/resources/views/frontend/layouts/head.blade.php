@@ -4,7 +4,7 @@
 <!-- Title Tag  -->
 <title>@yield('title')</title>
 <!-- Favicon -->
-<link rel="icon" type="image/x-icon" href="/favicon.ico?v={{ time() }}">
+<link rel="icon" type="image/png" href="/favicon.png?v={{ time() }}">
 <!-- Web Font -->
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
