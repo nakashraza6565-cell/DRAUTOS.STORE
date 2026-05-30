@@ -719,6 +719,11 @@ Route::group(['prefix' => '/user', 'middleware' => ['user']], function () {
     Route::get('/sales-order/{id}', [HomeController::class, 'salesOrderShow'])->name('user.sales-order.show');
     Route::get('/order/show/{id}', [HomeController::class, 'orderShow'])->name('user.order.show');
     Route::delete('/order/delete/{id}', [HomeController::class, 'userOrderDelete'])->name('user.order.delete');
+    
+    // User Sale Order Photos
+    Route::post('/sales-order/{id}/upload-photos', [\App\Http\Controllers\SalesOrderController::class, 'userUploadPhotos'])->name('user.sales-orders.photos.upload');
+    Route::get('/sales-order/{id}/photos/{photoId}', [\App\Http\Controllers\SalesOrderController::class, 'viewPhoto'])->name('user.sales-orders.photos.view');
+
     // Product Review
     Route::get('/user-review', [HomeController::class, 'productReviewIndex'])->name('user.productreview.index');
     Route::delete('/user-review/delete/{id}', [HomeController::class, 'productReviewDelete'])->name('user.productreview.delete');

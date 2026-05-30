@@ -78,18 +78,29 @@
     </div>
     @endforeach
 
-    @if($salesOrder->photos->count() > 0)
+    {{-- Photo Upload & Gallery Section --}}
     <div class="mt-4">
-        <h6 class="font-weight-bold text-gray-800 mb-3 ml-1"><i class="fas fa-camera mr-1"></i> Order Reference Photos</h6>
+        <div class="d-flex justify-content-between align-items-center mb-3 ml-1">
+            <h6 class="font-weight-bold text-gray-800 mb-0"><i class="fas fa-camera mr-1"></i> Order Reference Photos</h6>
+            <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('customer_photo_input').click()">
+                <i class="fas fa-upload mr-1"></i> Upload Evidence
+            </button>
+            <form id="customer-photo-upload-form" action="{{ route('user.sales-orders.photos.upload', $salesOrder->id) }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                @csrf
+                <input type="file" id="customer_photo_input" name="order_photos[]" multiple accept="image/*,.pdf" onchange="document.getElementById('customer-photo-upload-form').submit()">
+            </form>
+        </div>
+
+        @if($salesOrder->photos->count() > 0)
         <div class="row px-1">
             @foreach($salesOrder->photos as $photo)
             <div class="col-6 col-md-4 px-2 mb-3">
-                <a href="{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" target="_blank" class="card shadow-sm border-0 rounded-lg overflow-hidden text-decoration-none">
+                <a href="{{ route('user.sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" target="_blank" class="card shadow-sm border-0 rounded-lg overflow-hidden text-decoration-none">
                     <div style="height: 120px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                         @if(str_contains($photo->mime_type ?? '', 'pdf'))
                             <i class="fas fa-file-pdf fa-3x text-danger"></i>
                         @else
-                            <img src="{{ route('sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Order Photo">
+                            <img src="{{ route('user.sales-orders.photos.view', [$salesOrder->id, $photo->id]) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Order Photo">
                         @endif
                     </div>
                     <div class="card-footer bg-white py-2 px-2 border-0 text-center">
@@ -100,8 +111,12 @@
             </div>
             @endforeach
         </div>
+        @else
+        <div class="p-4 bg-light rounded-lg text-center">
+            <p class="text-muted small mb-0">No photos attached. You can upload photos as evidence or reference for this order.</p>
+        </div>
+        @endif
     </div>
-    @endif
 
     @if($salesOrder->note)
     <div class="mt-4 p-3 bg-light rounded-lg">

@@ -482,6 +482,50 @@ class SalesOrderController extends Controller
     }
 
     /**
+     * Upload photos to an existing sale order (Customer Portal).
+     */
+    public function userUploadPhotos(Request $request, $id)
+    {
+        $salesOrder = SalesOrder::findOrFail($id);
+
+        if ($salesOrder->user_id !== auth()->id()) {
+            if ($request->ajax()) return response()->json(['status' => 'error', 'message' => 'Access denied.'], 403);
+            return back()->with('error', 'Access denied.');
+        }
+
+        $request->validate([
+            'order_photos'   => 'required|array|min:1|max:10',
+            'order_photos.*' => 'required|file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480',
+        ]);
+
+        $existing = $salesOrder->photos()->count();
+        $incoming = count($request->file('order_photos'));
+        if ($existing + $incoming > 10) {
+            $msg = "Cannot upload {$incoming} photo(s). Order already has {$existing} and limit is 10.";
+            if ($request->ajax()) return response()->json(['status' => 'error', 'message' => $msg], 422);
+            return back()->with('error', $msg);
+        }
+
+        $this->storePhotos($request->file('order_photos'), $salesOrder->id);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Photos uploaded successfully.',
+                'photos'  => $salesOrder->fresh()->photos()->get()->map(fn($p) => [
+                    'id'            => $p->id,
+                    'url'           => route('user.sales-orders.photos.view', [$salesOrder->id, $p->id]),
+                    'original_name' => $p->original_name,
+                    'human_size'    => $p->human_file_size,
+                    'uploaded_at'   => $p->created_at->format('d M Y')
+                ]),
+            ]);
+        }
+
+        return back()->with('success', 'Photos uploaded successfully.');
+    }
+
+    /**
      * Delete a single photo from a sale order.
      */
     public function deletePhoto($id, $photoId)
