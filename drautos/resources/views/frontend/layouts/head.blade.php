@@ -127,5 +127,31 @@
         box-shadow: 0 15px 30px rgba(15, 23, 42, 0.1);
         border-color: var(--primary);
     }
+
+    /* Slicknav Mobile Menu Overrides for Navy/Gold Theme */
+    .slicknav_menu {
+        background: #083259 !important;
+    }
+    .slicknav_nav {
+        background: #062038 !important;
+    }
+    .slicknav_nav a {
+        color: #ffffff !important;
+    }
+    .slicknav_nav a:hover {
+        background: #facc15 !important;
+        color: #083259 !important;
+    }
+    .slicknav_btn {
+        background: #facc15 !important;
+    }
+    .slicknav_menu .slicknav_icon-bar {
+        background-color: #083259 !important;
+    }
+    .slicknav_brand {
+        color: #ffffff !important;
+        font-weight: 700;
+        font-family: 'Montserrat', sans-serif;
+    }
 </style>
 @stack('styles')

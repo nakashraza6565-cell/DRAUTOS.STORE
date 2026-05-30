@@ -750,8 +750,8 @@
         
         // Create Gradient for line chart
         var gradientFill = ctxSales.createLinearGradient(0, 0, 0, 400);
-        gradientFill.addColorStop(0, "rgba(99, 102, 241, 0.4)");
-        gradientFill.addColorStop(1, "rgba(99, 102, 241, 0.05)");
+        gradientFill.addColorStop(0, "rgba(8, 50, 89, 0.4)");
+        gradientFill.addColorStop(1, "rgba(8, 50, 89, 0.05)");
 
         new Chart(ctxSales, {
             type: 'line',
@@ -761,12 +761,12 @@
                     label: "Revenue",
                     lineTension: 0.3,
                     backgroundColor: gradientFill,
-                    borderColor: "#6366f1",
+                    borderColor: "#083259",
                     pointRadius: 4,
                     pointBackgroundColor: "#fff",
-                    pointBorderColor: "#6366f1",
+                    pointBorderColor: "#083259",
                     pointHoverRadius: 6,
-                    pointHoverBackgroundColor: "#6366f1",
+                    pointHoverBackgroundColor: "#083259",
                     pointHoverBorderColor: "#fff",
                     pointBorderWidth: 2,
                     data: {!! $order_amounts !!},
@@ -815,18 +815,18 @@
                 datasets: [
                     {
                         label: "Money In",
-                        backgroundColor: "#10b981",
-                        hoverBackgroundColor: "#059669",
-                        borderColor: "#10b981",
+                        backgroundColor: "#facc15",
+                        hoverBackgroundColor: "#d97706",
+                        borderColor: "#facc15",
                         data: {!! $money_in !!},
                         barPercentage: 0.6,
                         categoryPercentage: 0.5
                     },
                     {
                         label: "Money Out",
-                        backgroundColor: "#ef4444",
-                        hoverBackgroundColor: "#dc2626",
-                        borderColor: "#ef4444",
+                        backgroundColor: "#083259",
+                        hoverBackgroundColor: "#0e4a7a",
+                        borderColor: "#083259",
                         data: {!! $money_out !!},
                         barPercentage: 0.6,
                         categoryPercentage: 0.5
@@ -871,12 +871,12 @@
         var ctxIncomingSales = document.getElementById("incomingVsSalesChart").getContext('2d');
         
         var gradientIncoming = ctxIncomingSales.createLinearGradient(0, 0, 0, 400);
-        gradientIncoming.addColorStop(0, "rgba(79, 70, 229, 0.4)");
-        gradientIncoming.addColorStop(1, "rgba(79, 70, 229, 0.05)");
+        gradientIncoming.addColorStop(0, "rgba(163, 177, 198, 0.4)");
+        gradientIncoming.addColorStop(1, "rgba(163, 177, 198, 0.05)");
 
         var gradientSales = ctxIncomingSales.createLinearGradient(0, 0, 0, 400);
-        gradientSales.addColorStop(0, "rgba(16, 185, 129, 0.4)");
-        gradientSales.addColorStop(1, "rgba(16, 185, 129, 0.05)");
+        gradientSales.addColorStop(0, "rgba(250, 204, 21, 0.4)");
+        gradientSales.addColorStop(1, "rgba(250, 204, 21, 0.05)");
 
         new Chart(ctxIncomingSales, {
             type: 'line',
@@ -887,12 +887,12 @@
                         label: "Incoming Goods Amount",
                         lineTension: 0.3,
                         backgroundColor: gradientIncoming,
-                        borderColor: "#4f46e5",
+                        borderColor: "#a3b1c6",
                         pointRadius: 4,
                         pointBackgroundColor: "#fff",
-                        pointBorderColor: "#4f46e5",
+                        pointBorderColor: "#a3b1c6",
                         pointHoverRadius: 6,
-                        pointHoverBackgroundColor: "#4f46e5",
+                        pointHoverBackgroundColor: "#a3b1c6",
                         pointHoverBorderColor: "#fff",
                         pointBorderWidth: 2,
                         data: {!! $incoming_amounts !!},
@@ -901,12 +901,12 @@
                         label: "Customer Sales Amount",
                         lineTension: 0.3,
                         backgroundColor: gradientSales,
-                        borderColor: "#10b981",
+                        borderColor: "#facc15",
                         pointRadius: 4,
                         pointBackgroundColor: "#fff",
-                        pointBorderColor: "#10b981",
+                        pointBorderColor: "#facc15",
                         pointHoverRadius: 6,
-                        pointHoverBackgroundColor: "#10b981",
+                        pointHoverBackgroundColor: "#facc15",
                         pointHoverBorderColor: "#fff",
                         pointBorderWidth: 2,
                         data: {!! $order_amounts !!},

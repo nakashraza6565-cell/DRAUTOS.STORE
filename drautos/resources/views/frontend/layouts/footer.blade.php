@@ -103,15 +103,16 @@
         top: 0; right: 0;
         width: 380px; max-width: 95vw;
         height: 100vh;
-        background: #ffffff;
+        background: #083259;
+        color: #ffffff;
         z-index: 9999;
         transform: translateX(100%);
         transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         display: flex; flex-direction: column;
-        box-shadow: -8px 0 40px rgba(15,23,42,0.15);
+        box-shadow: -8px 0 40px rgba(0,0,0,0.5);
     ">
         <!-- Pane Header -->
-        <div style="background: var(--primary); color: #fff; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+        <div style="background: rgba(0,0,0,0.2); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
             <div class="d-flex align-items-center">
                 <i class="ti-shopping-cart mr-2" style="font-size: 20px;"></i>
                 <div>
@@ -125,8 +126,8 @@
         </div>
 
         <!-- Pane Body (scrollable) -->
-        <div id="cart-pane-body" style="flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc;">
-            <div class="text-center py-5 text-muted">
+        <div id="cart-pane-body" style="flex: 1; overflow-y: auto; padding: 16px; background: #062038;">
+            <div class="text-center py-5" style="color: #cbd5e1;">
                 <i class="ti-shopping-cart fa-3x mb-3" style="font-size: 48px; display:block;"></i>
                 <p style="font-weight: 600;">Your cart is empty.</p>
                 <a href="{{ route('product-grids') }}" onclick="closeCartPane()" class="btn btn-sm" style="background: var(--primary); color: #fff; border-radius: 4px; font-weight: 600;">Browse Parts</a>
@@ -134,13 +135,13 @@
         </div>
 
         <!-- Pane Footer -->
-        <div id="cart-pane-footer" style="background: #fff; border-top: 2px solid var(--border-color); padding: 16px 20px; flex-shrink: 0;">
+        <div id="cart-pane-footer" style="background: #083259; border-top: 1px solid rgba(255,255,255,0.1); padding: 16px 20px; flex-shrink: 0;">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <span style="font-weight: 700; color: var(--text-main); font-size: 14px;">Total</span>
-                <span id="cart-pane-total" style="font-weight: 900; font-size: 1.3rem; color: var(--primary);">Rs. 0.00</span>
+                <span style="font-weight: 700; color: #cbd5e1; font-size: 14px;">Total</span>
+                <span id="cart-pane-total" style="font-weight: 900; font-size: 1.3rem; color: #facc15;">Rs. 0.00</span>
             </div>
             <div class="d-flex" style="gap: 10px;">
-                <a href="{{ route('cart') }}" onclick="closeCartPane()" style="flex: 1; text-align:center; background: var(--bg-soft); color: var(--primary); border: 2px solid var(--primary); padding: 10px; border-radius: 4px; font-weight: 700; font-size: 13px; text-decoration: none; transition: all 0.2s;">
+                <a href="{{ route('cart') }}" onclick="closeCartPane()" style="flex: 1; text-align:center; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 4px; font-weight: 700; font-size: 13px; text-decoration: none; transition: all 0.2s;">
                     <i class="fa fa-shopping-cart mr-1"></i> View Cart
                 </a>
                 <a href="{{ route('checkout') }}" onclick="closeCartPane()" style="flex: 1; text-align:center; background: var(--accent); color: #000; border: none; padding: 10px; border-radius: 4px; font-weight: 800; font-size: 13px; text-decoration: none; transition: all 0.2s;">
@@ -158,9 +159,11 @@
     <style>
         #cart-pane::-webkit-scrollbar { width: 5px; }
         #cart-pane-body::-webkit-scrollbar { width: 5px; }
-        #cart-pane-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-        .cart-item-row { background: #fff; border-radius: 8px; border: 1px solid var(--border-color); padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
-        .cart-item-row img { width: 55px; height: 55px; object-fit: contain; border-radius: 4px; background: #f8f9fa; border: 1px solid #eee; }
+        #cart-pane-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        .cart-item-row { background: rgba(255,255,255,0.05); color: #fff; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 12px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+        .cart-item-row h6, .cart-item-row a { color: #fff !important; }
+        .cart-item-row img { width: 55px; height: 55px; object-fit: contain; border-radius: 4px; background: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        .cart-item-row .price { color: #facc15; font-weight: 700; }
     </style>
 
     <script>

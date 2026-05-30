@@ -21,7 +21,7 @@
     <!-- Outstanding Balance Window -->
     <div class="row">
         <div class="col-12 mb-4">
-            <div class="card border-0" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 20px; overflow: hidden;">
+            <div class="card border-0" style="background: linear-gradient(135deg, #083259 0%, #062038 100%); border-radius: 20px; overflow: hidden;">
                 <div class="card-body text-white">
                     <div class="d-flex align-items-center mb-4 cursor-pointer" onclick="window.location.href='{{ route('user.ledger') }}'">
                         <div class="stat-icon bg-white text-primary mr-3">
@@ -55,7 +55,7 @@
                             @endforelse
                         </div>
                         <div class="text-center mt-3">
-                            <a href="{{ route('user.ledger.pdf') }}" class="btn btn-primary btn-sm rounded-pill px-3 font-weight-700" style="font-size: 10px; background: #3b82f6; border: none; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);">
+                            <a href="{{ route('user.ledger.pdf') }}" class="btn btn-primary btn-sm rounded-pill px-3 font-weight-700" style="font-size: 10px; background: #facc15; color: #083259; border: none; box-shadow: 0 4px 10px rgba(250, 204, 21, 0.3);">
                                 <i class="fas fa-file-pdf mr-1"></i> DOWNLOAD PDF STATEMENT
                             </a>
                         </div>
@@ -70,21 +70,21 @@
         <h6 class="font-weight-700 text-uppercase small text-muted mb-3">Quick Actions</h6>
         <div class="row no-gutters" style="gap:12px;">
             <div class="col">
-                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-plus-circle text-primary mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-primary">New Order</span>
+                <a href="{{route('user.online-order')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm" style="border: 1px solid rgba(8,50,89,0.1) !important;">
+                    <i class="fas fa-plus-circle mb-2 fa-lg" style="color: #083259;"></i>
+                    <span class="small font-weight-700" style="color: #083259;">New Order</span>
                 </a>
             </div>
             <div class="col">
-                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-list-ul text-warning mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-warning">History</span>
+                <a href="{{route('user.order.index')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm" style="border: 1px solid rgba(8,50,89,0.1) !important;">
+                    <i class="fas fa-list-ul mb-2 fa-lg" style="color: #facc15;"></i>
+                    <span class="small font-weight-700" style="color: #083259;">History</span>
                 </a>
             </div>
             <div class="col">
-                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm">
-                    <i class="fas fa-cog text-info mb-2 fa-lg"></i>
-                    <span class="small font-weight-700 text-info">Settings</span>
+                <a href="{{route('user.setting')}}" class="card h-100 text-center text-decoration-none py-3 border-0 shadow-sm" style="border: 1px solid rgba(8,50,89,0.1) !important;">
+                    <i class="fas fa-cog mb-2 fa-lg" style="color: #a3b1c6;"></i>
+                    <span class="small font-weight-700" style="color: #083259;">Settings</span>
                 </a>
             </div>
         </div>
@@ -195,14 +195,14 @@
                 datasets: [{
                     label: "Balance",
                     lineTension: 0.3,
-                    backgroundColor: "rgba(59, 130, 246, 0.05)",
-                    borderColor: "rgba(59, 130, 246, 1)",
+                    backgroundColor: "rgba(8, 50, 89, 0.05)",
+                    borderColor: "rgba(8, 50, 89, 1)",
                     pointRadius: 3,
-                    pointBackgroundColor: "rgba(59, 130, 246, 1)",
-                    pointBorderColor: "rgba(59, 130, 246, 1)",
+                    pointBackgroundColor: "rgba(8, 50, 89, 1)",
+                    pointBorderColor: "rgba(8, 50, 89, 1)",
                     pointHoverRadius: 3,
-                    pointHoverBackgroundColor: "rgba(59, 130, 246, 1)",
-                    pointHoverBorderColor: "rgba(59, 130, 246, 1)",
+                    pointHoverBackgroundColor: "rgba(8, 50, 89, 1)",
+                    pointHoverBorderColor: "rgba(8, 50, 89, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
                     data: {!! json_encode($balanceHistory) !!},
