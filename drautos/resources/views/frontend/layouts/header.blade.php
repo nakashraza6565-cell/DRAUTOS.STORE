@@ -7,12 +7,9 @@
                 <div class="col-lg-4 col-md-4 col-12">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
-                            <!-- Intertwined DR Logo Graphic -->
-                            <div style="position: relative; width: 60px; height: 50px; margin-right: 10px;">
-                                <!-- The Navy D -->
-                                <span style="position: absolute; left: 0; top: 0; font-size: 52px; font-weight: 900; font-family: 'Arial Black', Impact, sans-serif; color: #0f172a; line-height: 1;">D</span>
-                                <!-- The Silver R with white stroke cutout effect -->
-                                <span style="position: absolute; left: 24px; top: 4px; font-size: 48px; font-weight: 900; font-family: 'Arial Black', Impact, sans-serif; color: #94a3b8; line-height: 1; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff;">R</span>
+                            <!-- Intertwined DR Custom Graphic -->
+                            <div style="width: 55px; height: 55px; margin-right: 15px;">
+                                <img src="{{asset('frontend/images/dr_logo.png')}}" alt="DR Logo" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;">
                             </div>
                             <!-- Logo Text -->
                             <div class="d-flex flex-column justify-content-center">
