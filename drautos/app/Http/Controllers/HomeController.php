@@ -813,4 +813,69 @@ class HomeController extends Controller
             'order_id' => $order->id
         ]);
     }
+
+    public function storePhotoOrder(Request $request)
+    {
+        $request->validate([
+            'order_photos'   => 'required|array|min:1|max:10',
+            'order_photos.*' => 'required|file|mimes:jpeg,jpg,png,webp,heic,pdf|max:20480',
+        ]);
+
+        $user = auth()->user();
+
+        \DB::beginTransaction();
+        try {
+            $salesOrder = \App\Models\SalesOrder::create([
+                'order_number' => 'SO-' . strtoupper(\Illuminate\Support\Str::random(8)),
+                'user_id'      => $user->id,
+                'staff_id'     => null,
+                'total_amount' => 0,
+                'note'         => 'Order created via photo upload from customer portal.',
+                'status'       => 'photo_pending',
+            ]);
+
+            $dir = 'sale-order-photos/' . $salesOrder->id;
+
+            foreach ($request->file('order_photos') as $file) {
+                if (!$file->isValid()) continue;
+
+                $ext      = $file->getClientOriginalExtension();
+                $filename = \Illuminate\Support\Str::uuid() . '.' . $ext;
+                $path     = $dir . '/' . $filename;
+
+                \Illuminate\Support\Facades\Storage::put($path, file_get_contents($file));
+
+                \App\Models\SalesOrderPhoto::create([
+                    'sales_order_id' => $salesOrder->id,
+                    'filename'       => $filename,
+                    'original_name'  => $file->getClientOriginalName(),
+                    'disk_path'      => $path,
+                    'uploaded_by'    => $user->id,
+                    'file_size'      => $file->getSize(),
+                    'mime_type'      => $file->getMimeType(),
+                ]);
+            }
+
+            \DB::commit();
+
+            // Notify Admins
+            try {
+                $admins = User::where('role', 'admin')->get();
+                $details = [
+                    'title' => '📸 New Photo-Only Sales Order by ' . $user->name,
+                    'actionURL' => route('sales-orders.show', $salesOrder->id),
+                    'fas' => 'fa-camera'
+                ];
+                Notification::send($admins, new StatusNotification($details));
+            } catch (\Exception $e) {
+                \Log::error('Failed to notify admins of photo order: ' . $e->getMessage());
+            }
+
+            return redirect()->back()->with('success', 'Photo order created successfully! It is now visible in your Bookings.');
+
+        } catch (\Exception $e) {
+            \DB::rollback();
+            return redirect()->back()->with('error', 'Error creating photo order: ' . $e->getMessage());
+        }
+    }
 }

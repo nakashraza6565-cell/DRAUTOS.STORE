@@ -5,9 +5,18 @@
     <!-- Header Section -->
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h3 class="h4 font-weight-bold text-gray-800 mb-0">My Orders</h3>
-        <a href="{{route('user.online-order')}}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-            <i class="fas fa-plus mr-1"></i> New Order
-        </a>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            <button class="btn btn-outline-primary btn-sm rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0;" onclick="document.getElementById('new_photo_order_input').click()" title="Create Order from Photo">
+                <i class="fas fa-camera"></i>
+            </button>
+            <form id="new-photo-order-form" action="{{ route('user.online-order.photo-store') }}" method="POST" enctype="multipart/form-data" style="display:none;">
+                @csrf
+                <input type="file" id="new_photo_order_input" name="order_photos[]" multiple accept="image/*,.pdf" onchange="if(this.files.length > 0) { document.getElementById('new-photo-order-form').submit(); }">
+            </form>
+            <a href="{{route('user.online-order')}}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
+                <i class="fas fa-plus mr-1"></i> New Order
+            </a>
+        </div>
     </div>
 
     @include('user.layouts.notification')
