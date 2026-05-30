@@ -120,41 +120,42 @@ class SalesOrderController extends Controller
 
             $allMergedOrderNumbers = [];
             if ($hasItems) {
-                SalesOrderItem::create([
-                    'sales_order_id' => $salesOrder->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'status' => 'pending'
-                ]);
+                foreach ($request->items as $item) {
+                    SalesOrderItem::create([
+                        'sales_order_id' => $salesOrder->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'status' => 'pending'
+                    ]);
 
-                // Update Price Memory for Customer
-                \App\Models\CustomerProductPrice::updateOrCreate(
-                    ['customer_id' => $request->user_id, 'product_id' => $item['product_id']],
-                    ['last_sold_price' => $item['price']]
-                );
+                    // Update Price Memory for Customer
+                    \App\Models\CustomerProductPrice::updateOrCreate(
+                        ['customer_id' => $request->user_id, 'product_id' => $item['product_id']],
+                        ['last_sold_price' => $item['price']]
+                    );
 
-                // Collect order numbers for consolidated items
-                $itemMergedOrders = SalesOrder::where('user_id', $request->user_id)
-                    ->whereIn('status', ['pending', 'partially_delivered'])
-                    ->where('id', '!=', $salesOrder->id)
-                    ->whereHas('items', function($q) use ($item) {
-                        $q->where('product_id', $item['product_id'])->where('status', 'pending');
-                    })
-                    ->pluck('order_number')
-                    ->toArray();
-                
-                $allMergedOrderNumbers = array_merge($allMergedOrderNumbers, $itemMergedOrders);
+                    // Collect order numbers for consolidated items
+                    $itemMergedOrders = SalesOrder::where('user_id', $request->user_id)
+                        ->whereIn('status', ['pending', 'partially_delivered'])
+                        ->where('id', '!=', $salesOrder->id)
+                        ->whereHas('items', function($q) use ($item) {
+                            $q->where('product_id', $item['product_id'])->where('status', 'pending');
+                        })
+                        ->pluck('order_number')
+                        ->toArray();
+                    
+                    $allMergedOrderNumbers = array_merge($allMergedOrderNumbers, $itemMergedOrders);
 
-                // Mark previous pending items for this product as "merged"
-                SalesOrderItem::where('product_id', $item['product_id'])
-                    ->whereHas('salesOrder', function($q) use ($request, $salesOrder) {
-                        $q->where('user_id', $request->user_id)
-                          ->whereIn('status', ['pending', 'partially_delivered'])
-                          ->where('id', '!=', $salesOrder->id);
-                    })
-                    ->update(['status' => 'merged']);
-            }
+                    // Mark previous pending items for this product as "merged"
+                    SalesOrderItem::where('product_id', $item['product_id'])
+                        ->whereHas('salesOrder', function($q) use ($request, $salesOrder) {
+                            $q->where('user_id', $request->user_id)
+                              ->whereIn('status', ['pending', 'partially_delivered'])
+                              ->where('id', '!=', $salesOrder->id);
+                        })
+                        ->update(['status' => 'merged']);
+                }
             } // end if ($hasItems)
 
             // Update new order note with consolidated references once
