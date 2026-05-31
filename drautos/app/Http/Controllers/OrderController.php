@@ -504,12 +504,18 @@ class OrderController extends Controller
             if($request->status == 'delivered') $logMsg = 'Marked order #' . $order->order_number . ' as DELIVERED';
             \App\Models\ActivityLog::log('sale', 'Order Updated', auth()->user()->name . ' ' . $logMsg, route('order.show', $order->id));
 
+            if ($request->ajax()) {
+                return response()->json(['status' => true, 'message' => 'Successfully updated order']);
+            }
             request()->session()->flash('success','Successfully updated order');
         }
         else{
+            if ($request->ajax()) {
+                return response()->json(['status' => false, 'message' => 'Error while updating order']);
+            }
             request()->session()->flash('error','Error while updating order');
         }
-        return redirect()->route('order.index');
+        return redirect()->back();
     }
 
     /**

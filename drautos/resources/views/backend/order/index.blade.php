@@ -123,7 +123,7 @@
                             <form action="{{route('order.update', $order->id)}}" method="POST" class="status-update-form">
                                 @csrf
                                 @method('PATCH')
-                                <select name="status" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="
+                                <select name="status" class="form-control form-control-sm font-weight-bold status-select-ajax" style="
                                     background: {{ $order->status=='new' ? '#4e73df' : ($order->status=='process' ? '#f6c23e' : ($order->status=='delivered' ? '#1cc88a' : '#e74a3b')) }};
                                     color: #fff;
                                     border: none;
@@ -216,6 +216,39 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+
+        // AJAX Status Update
+        $('.status-select-ajax').change(function(e) {
+            e.preventDefault();
+            var selectElement = $(this);
+            var form = selectElement.closest('form');
+            var url = form.attr('action');
+            var status = selectElement.val();
+            
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if(response.status) {
+                        // Update color
+                        var color = '#e74a3b';
+                        if (status === 'new') color = '#4e73df';
+                        if (status === 'process') color = '#f6c23e';
+                        if (status === 'delivered') color = '#1cc88a';
+                        selectElement.css('background', color);
+                        
+                        swal("Success", response.message, "success");
+                    } else {
+                        swal("Error", response.message, "error");
+                    }
+                },
+                error: function() {
+                    swal("Error", "Server error while updating status", "error");
+                }
+            });
+        });
+
           $('.dltBtn').click(function(e){
             var form=$(this).closest('form');
               var dataID=$(this).data('id');
