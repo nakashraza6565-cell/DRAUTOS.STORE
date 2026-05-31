@@ -22,6 +22,7 @@ class WhatsAppCampaignController extends Controller
         $selectedCity = $request->get('city');
         $visitDate = $request->get('visit_date', date('Y-m-d'));
         $salesman = $request->get('salesman', '');
+        $campaignType = $request->get('campaign_type', 'payment');
 
         if ($selectedCity) {
             $customers = User::where('role', 'user')
@@ -29,6 +30,6 @@ class WhatsAppCampaignController extends Controller
                              ->get();
         }
 
-        return view('backend.marketing.whatsapp_campaign', compact('cities', 'customers', 'selectedCity', 'visitDate', 'salesman'));
+        return view('backend.marketing.whatsapp_campaign', compact('cities', 'customers', 'selectedCity', 'visitDate', 'salesman', 'campaignType'));
     }
 }

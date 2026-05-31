@@ -17,7 +17,7 @@
         <div class="card-body">
             <form action="{{ route('whatsapp.campaign') }}" method="GET">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label>Target City</label>
                         <select name="city" class="form-control" required>
                             <option value="">-- Select City --</option>
@@ -26,13 +26,20 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label>Visit Date</label>
                         <input type="date" name="visit_date" class="form-control" value="{{ $visitDate }}" required>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label>Salesman Name</label>
                         <input type="text" name="salesman" class="form-control" placeholder="e.g. Ali Raza" value="{{ $salesman }}" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Campaign Purpose</label>
+                        <select name="campaign_type" class="form-control" required>
+                            <option value="payment" {{ (isset($campaignType) && $campaignType == 'payment') ? 'selected' : '' }}>Payment Collection</option>
+                            <option value="order" {{ (isset($campaignType) && $campaignType == 'order') ? 'selected' : '' }}>Order Generation</option>
+                        </select>
                     </div>
                 </div>
                 <div class="row mt-2">
@@ -131,7 +138,8 @@
 <div id="campaignConfig" 
     data-salesman="{{ $salesman }}" 
     data-city="{{ $selectedCity }}" 
-    data-date="{{ $visitDate }}">
+    data-date="{{ $visitDate }}"
+    data-campaign-type="{{ $campaignType ?? 'payment' }}">
 </div>
 
 @endsection
@@ -235,10 +243,14 @@
 
             if (lang === 'en') {
                 const engDate = formatEngDate(config.date);
-                if (hasDues) {
-                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a polite notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nAccording to our ledgers, your current outstanding balance is *Rs. ${balance}*. We kindly request you to prepare the payment and clear these dues during the visit.\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                if (config.campaignType === 'order') {
+                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nPlease prepare your list of items or new orders so we can process and deliver them promptly.\n\nLooking forward to serving you!\n\nRegards,\nDanyal Autos Management`;
                 } else {
-                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a friendly notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nLet's meet for a cup of tea and discuss how we can grow our business together!\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                    if (hasDues) {
+                        msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a polite notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nAccording to our ledgers, your current outstanding balance is *Rs. ${balance}*. We kindly request you to prepare the payment and clear these dues during the visit.\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                    } else {
+                        msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a friendly notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nLet's meet for a cup of tea and discuss how we can grow our business together!\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                    }
                 }
             } else {
                 // Proper Urdu Script with Transliteration
@@ -247,10 +259,14 @@
                 const urduCity = toUrdu(config.city);
                 const urduSalesman = config.salesman; // Kept in English to avoid transliteration errors
                 
-                if (hasDues) {
-                    msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nہمارے کھاتوں کے مطابق آپ کا بقایا بیلنس *Rs. ${balance}* ہے۔ براہ کرم دورے کے دوران واجبات کی ادائیگی کو یقینی بنائیں۔\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                if (config.campaignType === 'order') {
+                    msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nبراہ کرم اپنے مطلوبہ آئٹمز یا نئے آرڈر کی لسٹ تیار رکھیں تاکہ ہم اسے بروقت پروسیس کر سکیں۔\n\nہمیں آپ کی خدمت کا موقع دینے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
                 } else {
-                    msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nآئیں مل کر چائے پر گپ شپ کرتے ہیں اور اپنا بزنس بڑھانے پر بات کرتے ہیں!\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                    if (hasDues) {
+                        msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nہمارے کھاتوں کے مطابق آپ کا بقایا بیلنس *Rs. ${balance}* ہے۔ براہ کرم دورے کے دوران واجبات کی ادائیگی کو یقینی بنائیں۔\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                    } else {
+                        msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nآئیں مل کر چائے پر گپ شپ کرتے ہیں اور اپنا بزنس بڑھانے پر بات کرتے ہیں!\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                    }
                 }
             }
 
