@@ -112,7 +112,7 @@
                 <!-- Search Bar -->
                 <div class="col-lg-7 col-md-7 col-12">
                     <div class="w-100" style="position: relative;">
-                        <form method="POST" action="{{route('product.search')}}" class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden; margin: 0;">
+                        <form method="GET" action="{{route('product.search')}}" class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden; margin: 0;">
                             @csrf
                             <input name="search" placeholder="Search by Part No., OEM, VIN..." autocomplete="off" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);" required>
                             <button type="submit" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">

@@ -197,7 +197,7 @@
                                     <div class="col-lg-4 col-md-6 col-12">
                                         <div class="single-product">
                                             <div class="product-img">
-                                                <a href="{{route('add-to-cart',$product->slug)}}">
+                                                <a href="{{route('product-detail',$product->slug)}}">
                                                     @php
                                                         $photo=explode(',',$product->photo);
                                                         $imageUrl = !empty($photo[0]) ? $photo[0] : asset('backend/img/thumbnail-default.jpg');
@@ -223,7 +223,7 @@
                                                 </div>
                                             </div>
                                             <div class="product-content">
-                                                <h3><a href="{{route('add-to-cart',$product->slug)}}">{{$product->title}}</a></h3>
+                                                <h3><a href="{{route('product-detail',$product->slug)}}">{{$product->title}}</a></h3>
                                                 @auth
                                                 @php
                                                     $after_discount=($product->price-($product->price*$product->discount)/100);
