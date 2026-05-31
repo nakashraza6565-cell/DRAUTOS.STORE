@@ -153,6 +153,10 @@
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-file-invoice-dollar" style="color: #facc15;"></i></div>
               <span class="launcher-label">Ledger</span>
           </a>
+          <a href="{{route('whatsapp.campaign')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fab fa-whatsapp" style="color: #facc15;"></i></div>
+              <span class="launcher-label">WA Campaign</span>
+          </a>
       </div>
 
       <div style="height: 100px;"></div>
