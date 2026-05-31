@@ -128,17 +128,32 @@
                     </div>
                     <div class="col-lg-9 col-md-8 col-12">
                         @if(isset($vehicle_brand))
-                            <div class="mb-4" style="background: var(--bg-soft); border-radius: 8px; padding: 20px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                                <div>
-                                    <h4 style="margin: 0; color: var(--primary); font-weight: 800; font-family: 'Arial Black', Impact, sans-serif; text-transform: uppercase;">{{$vehicle_brand}} Parts & Models</h4>
-                                    <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px;">Browse all available products for {{$vehicle_brand}}</p>
+                            <div class="mb-4" style="background: var(--bg-soft); border-radius: 8px; padding: 20px; border-left: 5px solid var(--primary); display: flex; flex-direction: column; gap: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                                    <div>
+                                        <h4 style="margin: 0; color: var(--primary); font-weight: 800; font-family: 'Arial Black', Impact, sans-serif; text-transform: uppercase;">{{$vehicle_brand}} Parts & Models</h4>
+                                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px;">Browse all available products for {{$vehicle_brand}}</p>
+                                    </div>
+                                    
+                                    <form action="{{route('shop.vehicle.brand')}}" method="GET" style="display: flex; gap: 10px; max-width: 400px; width: 100%;">
+                                        <input type="hidden" name="vehicle_brand" value="{{$vehicle_brand}}">
+                                        <input type="text" name="search" placeholder="Search {{$vehicle_brand}} products..." value="{{request('search')}}" style="flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                                        <button type="submit" style="background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.3s;"><i class="fa fa-search"></i></button>
+                                    </form>
                                 </div>
                                 
-                                <form action="{{route('shop.vehicle.brand')}}" method="GET" style="display: flex; gap: 10px; max-width: 400px; width: 100%;">
-                                    <input type="hidden" name="vehicle_brand" value="{{$vehicle_brand}}">
-                                    <input type="text" name="search" placeholder="Search {{$vehicle_brand}} models..." value="{{request('search')}}" style="flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
-                                    <button type="submit" style="background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.3s;"><i class="fa fa-search"></i></button>
-                                </form>
+                                @if(isset($vehicle_models) && count($vehicle_models) > 0)
+                                <div style="margin-top: 10px;">
+                                    <span style="font-size: 13px; font-weight: 600; margin-right: 10px; color: var(--text-muted);">Available Models:</span>
+                                    <div class="d-flex flex-wrap" style="gap: 8px; margin-top: 5px;">
+                                        @foreach($vehicle_models as $vmodel)
+                                            <a href="{{route('shop.vehicle.brand')}}?vehicle_brand={{urlencode($vehicle_brand)}}&search={{urlencode($vmodel)}}" style="background: {{ request('search') == $vmodel ? 'var(--primary)' : '#fff' }}; color: {{ request('search') == $vmodel ? '#fff' : 'var(--primary)' }}; border: 1px solid var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                                                {{$vmodel}}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                         @endif
                         <div class="row">
@@ -185,9 +200,10 @@
                                                 <a href="{{route('add-to-cart',$product->slug)}}">
                                                     @php
                                                         $photo=explode(',',$product->photo);
+                                                        $imageUrl = !empty($photo[0]) ? $photo[0] : asset('backend/img/thumbnail-default.jpg');
                                                     @endphp
-                                                    <img class="default-img" src="{{$photo[0]}}" alt="{{$photo[0]}}">
-                                                    <img class="hover-img" src="{{$photo[0]}}" alt="{{$photo[0]}}">
+                                                    <img class="default-img" src="{{$imageUrl}}" alt="{{$product->title}}" style="min-height: 250px; object-fit: contain; width: 100%; background: #fff; padding: 10px;">
+                                                    <img class="hover-img" src="{{$imageUrl}}" alt="{{$product->title}}" style="min-height: 250px; object-fit: contain; width: 100%; background: #fff; padding: 10px;">
                                                     @if($product->discount)
                                                                 <span class="price-dec">{{$product->discount}} % Off</span>
                                                     @endif

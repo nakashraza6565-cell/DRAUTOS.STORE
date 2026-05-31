@@ -361,6 +361,15 @@ class FrontendController extends Controller
 
         $query = Product::where('status', 'active')->where('model', 'LIKE', '%' . $brand . '%');
 
+        // Get distinct models for this brand so user can click them
+        $vehicle_models = Product::where('status', 'active')
+                            ->where('model', 'LIKE', '%' . $brand . '%')
+                            ->whereNotNull('model')
+                            ->where('model', '!=', '')
+                            ->select('model')
+                            ->distinct()
+                            ->pluck('model');
+
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -368,14 +377,15 @@ class FrontendController extends Controller
                   ->orWhere('slug', 'like', '%'.$search.'%')
                   ->orWhere('description', 'like', '%'.$search.'%')
                   ->orWhere('summary', 'like', '%'.$search.'%')
-                  ->orWhere('sku', 'like', '%'.$search.'%');
+                  ->orWhere('sku', 'like', '%'.$search.'%')
+                  ->orWhere('model', 'like', '%'.$search.'%');
             });
         }
 
         $products = $query->orderBy('id', 'DESC')->paginate(20);
         $recent_products = Product::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
 
-        return view('frontend.pages.product-grids')->with('products', $products)->with('recent_products', $recent_products)->with('vehicle_brand', $brand);
+        return view('frontend.pages.product-grids')->with('products', $products)->with('recent_products', $recent_products)->with('vehicle_brand', $brand)->with('vehicle_models', $vehicle_models);
     }
 
     public function productBrand(Request $request){
