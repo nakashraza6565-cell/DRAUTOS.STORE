@@ -400,19 +400,20 @@
         <div class="d-flex justify-content-center align-items-center flex-wrap" style="gap: 15px; margin-top: 20px;">
             @php
                 $brands = [
-                    ['name' => 'HINO', 'color' => '#E60012'], // Hino red
-                    ['name' => 'ISUZU', 'color' => '#ED1C24'], // Isuzu red
-                    ['name' => 'NISSAN', 'color' => '#C3002F'], // Nissan red
-                    ['name' => 'BEDFORD', 'color' => '#0033A0'], // Bedford blue
-                    ['name' => 'MAZDA', 'color' => '#101010'], // Mazda dark/silver
-                    ['name' => 'DAEWOO', 'color' => '#00539F'], // Daewoo blue
-                    ['name' => 'FAW', 'color' => '#004A99']  // FAW blue
+                    ['name' => 'HINO', 'icon' => 'fa-truck'],
+                    ['name' => 'ISUZU', 'icon' => 'fa-truck'],
+                    ['name' => 'NISSAN', 'icon' => 'fa-car'],
+                    ['name' => 'BEDFORD', 'icon' => 'fa-truck'],
+                    ['name' => 'MAZDA', 'icon' => 'fa-car'],
+                    ['name' => 'DAEWOO', 'icon' => 'fa-bus'],
+                    ['name' => 'FAW', 'icon' => 'fa-truck']
                 ];
             @endphp
             
             @foreach($brands as $brand)
-                <a href="{{route('shop.vehicle.brand')}}?vehicle_brand={{$brand['name']}}" class="text-decoration-none vehicle-brand-card" style="flex: 1; min-width: 120px; max-width: 150px; background: #ffffff; border: 2px solid var(--border-color); border-radius: 8px; text-align: center; padding: 20px 10px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 90px; text-decoration: none !important;">
-                    <span style="color: {{$brand['color']}}; font-weight: 900; font-size: 18px; letter-spacing: 1px; font-family: 'Arial Black', Impact, sans-serif; text-transform: uppercase;">{{$brand['name']}}</span>
+                <a href="{{route('shop.vehicle.brand')}}?vehicle_brand={{$brand['name']}}" class="text-decoration-none vehicle-brand-card" style="flex: 1; min-width: 120px; max-width: 150px; background: #083259; border: 2px solid #FACC15; border-radius: 12px; text-align: center; padding: 20px 10px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(250, 204, 21, 0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 110px; text-decoration: none !important;">
+                    <i class="fa {{$brand['icon']}} brand-icon" style="color: #FACC15; font-size: 28px; margin-bottom: 10px; transition: all 0.3s;"></i>
+                    <span style="color: #FACC15; font-weight: 900; font-size: 16px; letter-spacing: 1px; font-family: 'Inter', sans-serif; text-transform: uppercase;">{{$brand['name']}}</span>
                 </a>
             @endforeach
         </div>
@@ -420,9 +421,12 @@
 </section>
 <style>
     .vehicle-brand-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        border-color: var(--primary) !important;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 25px rgba(250, 204, 21, 0.4) !important;
+        background: #0a4072 !important;
+    }
+    .vehicle-brand-card:hover .brand-icon {
+        transform: scale(1.15);
     }
 </style>
 
