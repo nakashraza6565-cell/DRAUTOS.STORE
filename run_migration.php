@@ -8,7 +8,7 @@ $descriptorspec = array(
    2 => array("pipe", "w")
 );
 
-$process = proc_open('cd drautos && php artisan migrate --force 2>&1', $descriptorspec, $pipes);
+$process = proc_open('cd drautos && php artisan migrate --path=database/migrations/2026_05_31_230239_create_delivery_receipts_table.php --force 2>&1', $descriptorspec, $pipes);
 
 if (is_resource($process)) {
     fclose($pipes[0]);
