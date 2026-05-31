@@ -9,7 +9,7 @@
 <style>
     /* Dark Vibe Core */
     body, html {
-        background-color: #020b16 !important;
+        background-color: transparent !important;
         color: #ffffff;
         overflow-x: hidden;
     }
