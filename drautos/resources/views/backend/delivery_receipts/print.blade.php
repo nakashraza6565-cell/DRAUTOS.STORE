@@ -42,7 +42,7 @@
         }
     </style>
 </head>
-<body onload="window.print(); setTimeout(() => window.history.back(), 1000);">
+<body dir="rtl">
 
     <div class="text-center">
         <div class="header-title">دانیال آٹوز</div>
@@ -66,7 +66,7 @@
     <!-- PROMINENT COURIER -->
     <div class="row text-center" style="display: block; margin-bottom: 15px;">
         <div class="prominent-label" style="text-align: center;">کوریئر / اڈا:</div>
-        <div class="prominent-value" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px;">{{$receipt->courier_company ?? 'N/A'}}</div>
+        <div class="prominent-value" id="val-courier" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px;">{{$receipt->courier_company ?? 'N/A'}}</div>
     </div>
 
     <div class="row">
@@ -79,20 +79,20 @@
     <!-- PROMINENT RECEIVER AND CITY -->
     <div class="row text-center" style="display: block; margin-bottom: 10px;">
         <div class="prominent-label" style="text-align: center;">وصول کنندہ (نام):</div>
-        <div class="prominent-value" style="text-align: center;">{{$receipt->receiver_name}}</div>
+        <div class="prominent-value" id="val-receiver" style="text-align: center;">{{$receipt->receiver_name}}</div>
     </div>
 
     @if($receipt->address)
     <div class="row">
         <div class="label">پتہ:</div>
-        <div class="value text-bold" style="font-size: 22px;">{{$receipt->address}}</div>
+        <div class="value text-bold" id="val-address" style="font-size: 22px;">{{$receipt->address}}</div>
     </div>
     @endif
     
     @if($receipt->city)
     <div class="row text-center" style="display: block; margin-top: 15px; margin-bottom: 15px;">
         <div class="prominent-label" style="text-align: center;">شہر:</div>
-        <div class="prominent-value" style="text-align: center; border: 2px solid #000; padding: 5px;">{{$receipt->city}}</div>
+        <div class="prominent-value" id="val-city" style="text-align: center; border: 2px solid #000; padding: 5px;">{{$receipt->city}}</div>
     </div>
     @endif
 
@@ -118,5 +118,37 @@
         <span style="font-family: sans-serif; font-size: 14px;">Powered by DRAUTOS</span>
     </div>
 
+    <script>
+        // Check if text contains mostly English characters
+        function isEnglish(text) {
+            return /[a-zA-Z]/.test(text);
+        }
+
+        async function translateToUrdu(text, elementId) {
+            if (!text || text.trim() === '' || !isEnglish(text)) return;
+            try {
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                const translatedText = data[0].map(item => item[0]).join('');
+                document.getElementById(elementId).innerText = translatedText;
+            } catch (e) {
+                console.error('Translation error:', e);
+            }
+        }
+
+        window.onload = async function() {
+            // Auto translate fields if they are in English
+            await Promise.all([
+                translateToUrdu("{{$receipt->receiver_name}}", "val-receiver"),
+                translateToUrdu("{{$receipt->city}}", "val-city"),
+                translateToUrdu("{{$receipt->address}}", "val-address"),
+                translateToUrdu("{{$receipt->courier_company}}", "val-courier")
+            ]);
+            
+            // Print and go back
+            window.print();
+            setTimeout(() => window.history.back(), 1000);
+        };
+    </script>
 </body>
 </html>
