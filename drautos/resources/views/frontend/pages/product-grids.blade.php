@@ -127,6 +127,20 @@
                         </div>
                     </div>
                     <div class="col-lg-9 col-md-8 col-12">
+                        @if(isset($vehicle_brand))
+                            <div class="mb-4" style="background: var(--bg-soft); border-radius: 8px; padding: 20px; border-left: 5px solid var(--primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <div>
+                                    <h4 style="margin: 0; color: var(--primary); font-weight: 800; font-family: 'Arial Black', Impact, sans-serif; text-transform: uppercase;">{{$vehicle_brand}} Parts & Models</h4>
+                                    <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px;">Browse all available products for {{$vehicle_brand}}</p>
+                                </div>
+                                
+                                <form action="{{route('shop.vehicle.brand')}}" method="GET" style="display: flex; gap: 10px; max-width: 400px; width: 100%;">
+                                    <input type="hidden" name="vehicle_brand" value="{{$vehicle_brand}}">
+                                    <input type="text" name="search" placeholder="Search {{$vehicle_brand}} models..." value="{{request('search')}}" style="flex: 1; padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                                    <button type="submit" style="background: var(--primary); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.3s;"><i class="fa fa-search"></i></button>
+                                </form>
+                            </div>
+                        @endif
                         <div class="row">
                             <div class="col-12">
                                 <!-- Shop Top -->

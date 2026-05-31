@@ -353,6 +353,31 @@ class FrontendController extends Controller
         ]);
     }
 
+    public function shopByVehicleBrand(Request $request) {
+        $brand = $request->input('vehicle_brand');
+        if (empty($brand)) {
+            return redirect()->route('home');
+        }
+
+        $query = Product::where('status', 'active')->where('model', 'LIKE', '%' . $brand . '%');
+
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                  ->orWhere('slug', 'like', '%'.$search.'%')
+                  ->orWhere('description', 'like', '%'.$search.'%')
+                  ->orWhere('summary', 'like', '%'.$search.'%')
+                  ->orWhere('sku', 'like', '%'.$search.'%');
+            });
+        }
+
+        $products = $query->orderBy('id', 'DESC')->paginate(20);
+        $recent_products = Product::where('status', 'active')->orderBy('id', 'DESC')->limit(3)->get();
+
+        return view('frontend.pages.product-grids')->with('products', $products)->with('recent_products', $recent_products)->with('vehicle_brand', $brand);
+    }
+
     public function productBrand(Request $request){
         $products=Brand::getProductByBrand($request->slug);
         $recent_products=Product::where('status','active')->orderBy('id','DESC')->limit(3)->get();
