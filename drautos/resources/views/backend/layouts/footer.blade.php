@@ -562,6 +562,11 @@
                         var subHref = $(this).attr('href');
                         var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
                         var subKey = subText + '|' + subHref;
+                        
+                        if (subText === 'Stock Inventory') {
+                            itemsHtml += '<div class="dropdown-divider mb-1 mt-1" style="border-top: 1px solid #e2e8f0;"></div>';
+                        }
+                        
                         if (subText && !added[subKey]) {
                             itemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
                             added[subKey] = true;
