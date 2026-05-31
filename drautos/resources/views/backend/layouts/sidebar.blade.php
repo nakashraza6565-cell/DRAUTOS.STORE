@@ -385,6 +385,7 @@
             </a>
             <a class="collapse-item" href="{{route('settings')}}">General Settings</a>
             <a class="collapse-item" href="{{route('admin.whatsapp-settings')}}">WhatsApp Settings</a>
+            <a class="collapse-item" href="{{route('whatsapp.campaign')}}">WhatsApp Campaigns</a>
             <a class="collapse-item" href="{{route('whatsapp.test')}}">WhatsApp Test Tool</a>
           </div>
         </div>

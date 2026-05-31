@@ -427,6 +427,9 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('whatsapp-settings', [AdminController::class, 'whatsappSettings'])->name('admin.whatsapp-settings');
     Route::post('whatsapp-settings', [AdminController::class, 'whatsappSettingsUpdate'])->name('admin.whatsapp-settings.update');
 
+    // Marketing Campaigns
+    Route::get('/marketing/whatsapp-route-campaign', 'WhatsAppCampaignController@index')->name('whatsapp.campaign');
+
     // Notification
     Route::get('/notification/{id}', [NotificationController::class, 'show'])->name('admin.notification');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('all.notification');
