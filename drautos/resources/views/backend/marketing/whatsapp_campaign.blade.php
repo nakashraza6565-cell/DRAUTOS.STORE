@@ -162,6 +162,65 @@
     $(document).ready(function() {
         const config = $('#campaignConfig').data();
 
+        // Date Formatter
+        function formatUrduDate(dateStr) {
+            if(!dateStr) return '';
+            const parts = dateStr.split('-');
+            if(parts.length !== 3) return dateStr;
+            const year = parts[0];
+            const month = parseInt(parts[1], 10);
+            const day = parts[2];
+            const urduMonths = ["", "جنوری", "فروری", "مارچ", "اپریل", "مئی", "جون", "جولائی", "اگست", "ستمبر", "اکتوبر", "نومبر", "دسمبر"];
+            return `${day} ${urduMonths[month]}, ${year}`;
+        }
+
+        function formatEngDate(dateStr) {
+            if(!dateStr) return '';
+            const parts = dateStr.split('-');
+            if(parts.length !== 3) return dateStr;
+            const year = parts[0];
+            const month = parseInt(parts[1], 10);
+            const day = parts[2];
+            const engMonths = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            return `${day} ${engMonths[month]}, ${year}`;
+        }
+
+        // Basic English to Urdu Transliterator for phonetic mapping
+        function toUrdu(str) {
+            if(!str) return '';
+            const cityMap = {
+                'lahore': 'لاہور', 'karachi': 'کراچی', 'islamabad': 'اسلام آباد', 'rawalpindi': 'راولپنڈی',
+                'faisalabad': 'فیصل آباد', 'multan': 'ملتان', 'peshawar': 'پشاور', 'quetta': 'کوئٹہ',
+                'gujranwala': 'گوجرانوالہ', 'sialkot': 'سیالکوٹ', 'hyderabad': 'حیدرآباد', 'sargodha': 'سرگودھا'
+            };
+            if (cityMap[str.toLowerCase()]) return cityMap[str.toLowerCase()];
+
+            let result = str.toLowerCase();
+            const exactNames = {
+                'ali': 'علی', 'ahmed': 'احمد', 'muhammad': 'محمد', 'khan': 'خان', 'raza': 'رضا',
+                'usman': 'عثمان', 'umar': 'عمر', 'hassan': 'حسن', 'hussain': 'حسین', 'fatima': 'فاطمہ',
+                'awais': 'اویس', 'bilal': 'بلال', 'hamza': 'حمزہ', 'saad': 'سعد', 'abdullah': 'عبداللہ'
+            };
+            
+            let words = result.split(' ');
+            for(let i=0; i<words.length; i++) {
+                if(exactNames[words[i]]) {
+                    words[i] = exactNames[words[i]];
+                } else {
+                    words[i] = words[i]
+                       .replace(/sh/g, 'ش').replace(/ch/g, 'چ').replace(/kh/g, 'خ').replace(/gh/g, 'غ')
+                       .replace(/ee/g, 'ی').replace(/oo/g, 'و').replace(/a/g, 'ا').replace(/b/g, 'ب')
+                       .replace(/c/g, 'ک').replace(/d/g, 'د').replace(/e/g, 'ی').replace(/f/g, 'ف')
+                       .replace(/g/g, 'گ').replace(/h/g, 'ہ').replace(/i/g, 'ا').replace(/j/g, 'ج')
+                       .replace(/k/g, 'ک').replace(/l/g, 'ل').replace(/m/g, 'م').replace(/n/g, 'ن')
+                       .replace(/o/g, 'و').replace(/p/g, 'پ').replace(/q/g, 'ق').replace(/r/g, 'ر')
+                       .replace(/s/g, 'س').replace(/t/g, 'ت').replace(/u/g, 'ا').replace(/v/g, 'و')
+                       .replace(/w/g, 'و').replace(/x/g, 'کس').replace(/y/g, 'ی').replace(/z/g, 'ز');
+                }
+            }
+            return words.join(' ');
+        }
+
         $('.send-wa-btn').on('click', function(e) {
             e.preventDefault();
             
@@ -175,17 +234,23 @@
             let msg = '';
 
             if (lang === 'en') {
+                const engDate = formatEngDate(config.date);
                 if (hasDues) {
-                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a polite notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on ${config.date}.\n\nAccording to our ledgers, your current outstanding balance is Rs. ${balance}. We kindly request you to prepare the payment and clear these dues during the visit.\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a polite notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nAccording to our ledgers, your current outstanding balance is *Rs. ${balance}*. We kindly request you to prepare the payment and clear these dues during the visit.\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
                 } else {
-                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a friendly notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on ${config.date}.\n\nLet's meet for a cup of tea and discuss how we can grow our business together!\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
+                    msg = `Assalam-o-Alaikum ${name},\n\nWe hope you are doing well.\nThis is a friendly notification from Danyal Autos that our representative, ${config.salesman}, will be visiting ${config.city} on *${engDate}*.\n\nLet's meet for a cup of tea and discuss how we can grow our business together!\n\nThank you for your continued trust and business!\n\nRegards,\nDanyal Autos Management`;
                 }
             } else {
-                // Proper Urdu Script
+                // Proper Urdu Script with Transliteration
+                const urduDate = formatUrduDate(config.date);
+                const urduName = toUrdu(name);
+                const urduCity = toUrdu(config.city);
+                const urduSalesman = toUrdu(config.salesman);
+                
                 if (hasDues) {
-                    msg = `السلام علیکم ${name}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${config.salesman}، ${config.date} کو ${config.city} کا دورہ کر رہے ہیں۔\n\nہمارے کھاتوں کے مطابق آپ کا بقایا بیلنس Rs. ${balance} ہے۔ براہ کرم دورے کے دوران واجبات کی ادائیگی کو یقینی بنائیں۔\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                    msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nہمارے کھاتوں کے مطابق آپ کا بقایا بیلنس *Rs. ${balance}* ہے۔ براہ کرم دورے کے دوران واجبات کی ادائیگی کو یقینی بنائیں۔\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
                 } else {
-                    msg = `السلام علیکم ${name}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${config.salesman}، ${config.date} کو ${config.city} کا دورہ کر رہے ہیں۔\n\nآئیں مل کر چائے پر گپ شپ کرتے ہیں اور اپنا بزنس بڑھانے پر بات کرتے ہیں!\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
+                    msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nآئیں مل کر چائے پر گپ شپ کرتے ہیں اور اپنا بزنس بڑھانے پر بات کرتے ہیں!\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
                 }
             }
 
