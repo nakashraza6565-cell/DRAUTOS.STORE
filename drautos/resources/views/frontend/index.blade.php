@@ -20,7 +20,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        z-index: 0;
+        z-index: -1;
         pointer-events: none;
         background: radial-gradient(circle at center, #083259 0%, #020b16 100%);
     }
