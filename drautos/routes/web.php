@@ -889,3 +889,4 @@ Route::get('/ping-recent-activity', function() {
 
     return "Pinged! Activity: '{$latest->action}' -> '{$latest->description}'. Response: " . $response->body();
 });
+Route::get('/shop-by-brand', [App\Http\Controllers\FrontendController::class, 'shopByVehicleBrand'])->name('shop.vehicle.brand');
