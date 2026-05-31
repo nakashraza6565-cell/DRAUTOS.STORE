@@ -1,32 +1,26 @@
 <?php
-require 'drautos/vendor/autoload.php';
-$app = require_once 'drautos/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
+header('Content-Type: text/plain; charset=utf-8');
+echo "=== SERVER DB MIGRATE ===\n\n";
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
+$descriptorspec = array(
+   0 => array("pipe", "r"),
+   1 => array("pipe", "w"),
+   2 => array("pipe", "w")
+);
 
-try {
-    if (!Schema::hasTable('sale_order_photos')) {
-        Schema::create('sale_order_photos', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('sales_order_id');
-            $table->string('filename');
-            $table->string('original_name');
-            $table->string('disk_path');
-            $table->unsignedBigInteger('uploaded_by')->nullable();
-            $table->unsignedBigInteger('file_size')->nullable();
-            $table->string('mime_type')->nullable();
-            $table->timestamps();
+$process = proc_open('cd drautos && php artisan migrate --force 2>&1', $descriptorspec, $pipes);
 
-            $table->foreign('sales_order_id')->references('id')->on('sales_orders')->onDelete('cascade');
-        });
-        echo "Table sale_order_photos created successfully!";
-    } else {
-        echo "Table sale_order_photos already exists.";
-    }
-} catch (\Exception $e) {
-    echo "Error: " . $e->getMessage();
+if (is_resource($process)) {
+    fclose($pipes[0]);
+    $output = stream_get_contents($pipes[1]);
+    fclose($pipes[1]);
+    $error = stream_get_contents($pipes[2]);
+    fclose($pipes[2]);
+    $returnValue = proc_close($process);
+    
+    echo "Return Value: $returnValue\n";
+    echo "Output:\n$output\n";
+    echo "Stderr:\n$error\n";
+} else {
+    echo "proc_open failed!\n";
 }

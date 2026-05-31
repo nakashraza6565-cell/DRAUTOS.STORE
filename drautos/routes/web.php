@@ -590,6 +590,12 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
 
     Route::group(['middleware' => ['role:admin']], function () {
         Route::resource('expenses', 'ExpenseController');
+        
+        // Delivery Receipts (Bilty)
+        Route::get('delivery-receipts/get-customer/{id}', 'DeliveryReceiptController@getCustomer')->name('delivery-receipts.get-customer');
+        Route::get('delivery-receipts/{id}/print', 'DeliveryReceiptController@print')->name('delivery-receipts.print');
+        Route::resource('delivery-receipts', 'DeliveryReceiptController');
+
         Route::resource('attendance', 'AttendanceController');
         Route::get('attendance/show/{id}', 'AttendanceController@show')->name('attendance.show');
         Route::get('attendance/export/{id}', 'AttendanceController@exportCSV')->name('attendance.export');

@@ -287,6 +287,19 @@
         Danyal Autos Enterprise
     </div>
 
+    {{-- Delivery Receipts (Bilty) --}}
+    <li class="nav-item">
+        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#biltyCollapse" aria-expanded="true" aria-controls="biltyCollapse">
+          <i class="fas fa-receipt mr-2"></i>
+          <span>Delivery (Bilty)</span>
+        </a>
+        <div id="biltyCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
+            <a class="collapse-item" href="{{route('delivery-receipts.index')}}">All Receipts</a>
+          </div>
+        </div>
+    </li>
+
     @can('view-banner')
     {{-- Marketing --}}
     <li class="nav-item">
