@@ -256,7 +256,7 @@
                 // Proper Urdu Script with Transliteration
                 const urduDate = formatUrduDate(config.date);
                 const urduName = name; // Kept in English as requested
-                const urduCity = toUrdu(config.city);
+                const urduCity = config.city; // Kept in English as requested
                 const urduSalesman = config.salesman; // Kept in English to avoid transliteration errors
                 
                 if (config.campaignType === 'order') {
