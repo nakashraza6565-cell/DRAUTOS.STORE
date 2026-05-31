@@ -96,7 +96,8 @@ class Helper
             if ($user_id == "") $user_id = auth()->user()->id;
             return Cart::where('user_id', $user_id)->where('order_id', null)->sum('quantity');
         } else {
-            return 0;
+            $cart = session()->get('cart', []);
+            return collect($cart)->sum('quantity');
         }
     }
     // relationship cart with product
@@ -111,7 +112,21 @@ class Helper
             if ($user_id == "") $user_id = auth()->user()->id;
             return Cart::with('product')->where('user_id', $user_id)->where('order_id', null)->get();
         } else {
-            return 0;
+            $sessionCart = session()->get('cart', []);
+            $carts = collect();
+            foreach ($sessionCart as $key => $item) {
+                $cart = new Cart();
+                $cart->id = $key; // fake id matches product_id for session carts
+                $cart->product_id = $item['product_id'];
+                $cart->quantity = $item['quantity'];
+                $cart->price = $item['price'];
+                $cart->amount = $item['amount'];
+                // Load product relationship manually
+                $product = \App\Models\Product::find($item['product_id']);
+                $cart->setRelation('product', $product);
+                $carts->push($cart);
+            }
+            return $carts;
         }
     }
     // Total amount cart
@@ -121,7 +136,8 @@ class Helper
             if ($user_id == "") $user_id = auth()->user()->id;
             return Cart::where('user_id', $user_id)->where('order_id', null)->sum('amount');
         } else {
-            return 0;
+            $cart = session()->get('cart', []);
+            return collect($cart)->sum('amount');
         }
     }
     // Wishlist Count

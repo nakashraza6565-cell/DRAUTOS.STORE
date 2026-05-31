@@ -389,21 +389,7 @@
     </div>
 </section>
 
-<!-- AJAX Live Search Results Section -->
-<section id="ajax-search-results-section" style="display: none; opacity: 0; max-height: 0; overflow: hidden; background: #f8fafc; border-bottom: 1px solid var(--border-color); transition: all 0.5s ease-in-out;">
-    <div class="container py-4">
-        <div class="d-flex align-items-center justify-content-between mb-4" style="border-bottom: 2px solid var(--primary); padding-bottom: 12px;">
-            <div>
-                <h5 style="color: var(--primary); font-weight: 800; margin: 0;"><i class="fa fa-search mr-2"></i>Search Results</h5>
-                <small class="text-muted">Showing results for: <strong id="ajax-results-query"></strong> &mdash; <span id="ajax-results-count"></span></small>
-            </div>
-            <button onclick="clearSearch()" style="background: none; border: 1px solid #ccc; border-radius: 4px; padding: 4px 14px; font-size: 12px; color: var(--text-muted); cursor: pointer;"><i class="fa fa-times mr-1"></i>Clear</button>
-        </div>
-        <div class="row" id="ajax-results-grid">
-            <!-- Products injected here by AJAX -->
-        </div>
-    </div>
-</section>
+
 
 <!-- Shop By Vehicle Type Section -->
 <section class="section py-4" style="background: #ffffff; border-bottom: 1px solid var(--border-color);">
@@ -411,12 +397,21 @@
         <div class="text-center mb-4">
             <h2 style="color: var(--primary); font-weight: 900; font-size: clamp(1.5rem, 3vw, 1.8rem);">Shop by Vehicle Type</h2>
         </div>
-        <!-- Placeholders for the categories (matching the dark block below the hero in the image) -->
         <div class="d-flex justify-content-center align-items-center flex-wrap" style="gap: 5px;">
-            <div style="background: #0d1e30; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Problems</div>
-            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Output</div>
-            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Terminal</div>
-            <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Ports</div>
+            @if(isset($category_lists) && count($category_lists) > 0)
+                @foreach($category_lists->take(4) as $index => $cat)
+                    <a href="{{route('product-grids')}}?category={{$cat->slug}}" class="text-decoration-none" style="flex: 1; min-width: 150px;">
+                        <div style="background: {{$index == 0 ? '#0d1e30' : 'var(--primary-light)'}}; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; text-transform: uppercase; transition: all 0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#000';" onmouseout="this.style.background='{{$index == 0 ? '#0d1e30' : 'var(--primary-light)'}}'; this.style.color='#fff';">
+                            {{$cat->title}}
+                        </div>
+                    </a>
+                @endforeach
+            @else
+                <div style="background: #0d1e30; color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Engine Parts</div>
+                <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Suspension</div>
+                <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Electrical</div>
+                <div style="background: var(--primary-light); color: #fff; padding: 15px 30px; font-weight: 600; border-radius: 4px; text-align: center; flex: 1; min-width: 150px;">Body Parts</div>
+            @endif
         </div>
     </div>
 </section>

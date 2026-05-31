@@ -112,12 +112,13 @@
                 <!-- Search Bar -->
                 <div class="col-lg-7 col-md-7 col-12">
                     <div class="w-100" style="position: relative;">
-                        <div class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden;">
-                            <input id="mainSearchInput" name="search" placeholder="Search by Part No., OEM, VIN..." autocomplete="off" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);">
-                            <button type="button" id="mainSearchBtn" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
+                        <form method="POST" action="{{route('product.search')}}" class="d-flex w-100" style="height: 40px; border-radius: 4px; overflow: hidden; margin: 0;">
+                            @csrf
+                            <input name="search" placeholder="Search by Part No., OEM, VIN..." autocomplete="off" type="text" class="px-3" style="flex-grow: 1; border: none; outline: none; font-size: 14px; color: var(--text-main);" required>
+                            <button type="submit" style="width: 50px; border: none; background: var(--accent); color: #000; font-size: 18px; cursor: pointer; transition: background 0.2s;">
                                 <i class="ti-search"></i>
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -176,108 +177,3 @@
         color: var(--border-color);
     }
 </style>
-
-<script>
-    var searchTimeout = null;
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var searchInput = document.getElementById('mainSearchInput');
-        var searchBtn = document.getElementById('mainSearchBtn');
-
-        if (!searchInput) return;
-
-        function runSearch(query) {
-            var heroSection = document.querySelector('.b2b-hero-exact');
-            var resultsSection = document.getElementById('ajax-search-results-section');
-            var resultsGrid = document.getElementById('ajax-results-grid');
-            var resultsCount = document.getElementById('ajax-results-count');
-            var resultsQuery = document.getElementById('ajax-results-query');
-
-            if (!resultsSection) return;
-
-            if (!query || query.length < 2) {
-                // Hide results, show hero
-                resultsSection.style.maxHeight = '0';
-                resultsSection.style.opacity = '0';
-                resultsSection.style.overflow = 'hidden';
-                setTimeout(function() { resultsSection.style.display = 'none'; }, 400);
-                if (heroSection) {
-                    heroSection.style.transition = 'all 0.5s ease-in-out';
-                    heroSection.style.maxHeight = '1000px';
-                    heroSection.style.minHeight = '';
-                    heroSection.style.opacity = '1';
-                    heroSection.style.paddingTop = '';
-                    heroSection.style.paddingBottom = '';
-                    heroSection.style.overflow = '';
-                }
-                return;
-            }
-
-            // Slide hero away — must override min-height so it can fully collapse
-            if (heroSection) {
-                heroSection.style.transition = 'all 0.5s ease-in-out';
-                heroSection.style.overflow = 'hidden';
-                heroSection.style.minHeight = '0';  // override the CSS min-height: 600px
-                heroSection.style.maxHeight = '0';
-                heroSection.style.opacity = '0';
-                heroSection.style.paddingTop = '0';
-                heroSection.style.paddingBottom = '0';
-            }
-
-            // Show results loading
-            if (resultsGrid) resultsGrid.innerHTML = '<div class="col-12 text-center py-5"><i class="fa fa-spinner fa-spin fa-2x" style="color:var(--primary);"></i><p class="mt-3 text-muted">Searching...</p></div>';
-            if (resultsQuery) resultsQuery.textContent = query;
-            resultsSection.style.display = 'block';
-            resultsSection.style.overflow = 'hidden';
-            setTimeout(function() {
-                resultsSection.style.transition = 'all 0.5s ease-in-out';
-                resultsSection.style.maxHeight = '5000px';
-                resultsSection.style.opacity = '1';
-            }, 10);
-
-            // AJAX search
-            var csrf = document.querySelector('meta[name="csrf-token"]');
-            var csrfToken = csrf ? csrf.getAttribute('content') : '';
-
-            fetch('/ajax-product-search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ search: query })
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (resultsGrid) {
-                    if (data.count === 0) {
-                        resultsGrid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="fa fa-search fa-3x mb-3"></i><p class="font-weight-bold">No parts found for "' + query + '"</p><a href="/product-grids" class="btn btn-sm" style="background:var(--primary);color:#fff;border-radius:4px;">Browse All Parts</a></div>';
-                    } else {
-                        resultsGrid.innerHTML = data.html;
-                        if (resultsCount) resultsCount.textContent = data.count + ' part(s) found';
-                    }
-                }
-            })
-            .catch(function() {
-                if (resultsGrid) resultsGrid.innerHTML = '<div class="col-12 text-center py-3 text-muted">Search error. <a href="/product-grids">Browse all parts</a></div>';
-            });
-        }
-
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            var q = this.value.trim();
-            searchTimeout = setTimeout(function() { runSearch(q); }, 350);
-        });
-
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                clearTimeout(searchTimeout);
-                runSearch(this.value.trim());
-            }
-        });
-
-        if (searchBtn) {
-            searchBtn.addEventListener('click', function() {
-                clearTimeout(searchTimeout);
-                runSearch(searchInput.value.trim());
-            });
-        }
-    });
-</script>

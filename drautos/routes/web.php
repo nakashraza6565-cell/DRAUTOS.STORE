@@ -276,12 +276,12 @@ Route::get('/product-sub-cat/{slug}/{sub_slug}', [FrontendController::class, 'pr
 Route::get('/product-brand/{slug}', [FrontendController::class, 'productBrand'])->name('product-brand');
 Route::get('/api/category/{id}/products', [FrontendController::class, 'getCategoryProductsAjax'])->name('api.category.products');
 // Cart section
-Route::get('/add-to-cart/{slug}', [CartController::class, 'addToCart'])->name('add-to-cart')->middleware('user');
-Route::post('/add-to-cart', [CartController::class, 'singleAddToCart'])->name('single-add-to-cart')->middleware('user');
+Route::get('/add-to-cart/{slug}', [CartController::class, 'addToCart'])->name('add-to-cart');
+Route::post('/add-to-cart', [CartController::class, 'singleAddToCart'])->name('single-add-to-cart');
 
 // AJAX Frontend Routes
-Route::post('/ajax-add-to-cart', [CartController::class, 'ajaxAddToCart'])->name('ajax-add-to-cart')->middleware('user');
-Route::get('/ajax-get-cart', [CartController::class, 'ajaxGetCart'])->name('ajax-get-cart')->middleware('user');
+Route::post('/ajax-add-to-cart', [CartController::class, 'ajaxAddToCart'])->name('ajax-add-to-cart');
+Route::get('/ajax-get-cart', [CartController::class, 'ajaxGetCart'])->name('ajax-get-cart');
 Route::post('/ajax-product-search', [FrontendController::class, 'ajaxSearch'])->name('ajax-product-search');
 Route::get('cart-delete/{id}', [CartController::class, 'cartDelete'])->name('cart-delete');
 Route::get('cart-clear', [CartController::class, 'cartClear'])->name('cart.clear');

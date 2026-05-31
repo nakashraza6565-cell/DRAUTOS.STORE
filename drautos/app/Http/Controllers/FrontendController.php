@@ -506,6 +506,29 @@ class FrontendController extends Controller
 
         if(Auth::attempt([$field => $data['email'], 'password' => $data['password'], 'status' => 'active'])){
             Session::put('user', $data['email']);
+
+            // Merge guest session cart into DB cart
+            $sessionCart = session()->get('cart', []);
+            if (!empty($sessionCart)) {
+                foreach ($sessionCart as $item) {
+                    $already_cart = Cart::where('user_id', auth()->user()->id)->where('order_id', null)->where('product_id', $item['product_id'])->first();
+                    if($already_cart) {
+                        $already_cart->quantity += $item['quantity'];
+                        $already_cart->amount += $item['amount'];
+                        $already_cart->save();
+                    } else {
+                        $cart = new Cart;
+                        $cart->user_id = auth()->user()->id;
+                        $cart->product_id = $item['product_id'];
+                        $cart->price = $item['price'];
+                        $cart->quantity = $item['quantity'];
+                        $cart->amount = $item['amount'];
+                        $cart->save();
+                    }
+                }
+                session()->forget('cart');
+            }
+
             request()->session()->flash('success','Successfully login');
             return redirect()->route('home');
         }
