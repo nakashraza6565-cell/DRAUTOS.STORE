@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ur" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Bilty - {{$receipt->receipt_number}}</title>
+    <title>بلٹی - {{$receipt->receipt_number}}</title>
     <style>
         @page { margin: 0; }
         body {
             margin: 0;
             padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
+            font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Nafees Regular', Arial, sans-serif;
+            font-size: 20px;
             color: #000;
             background: #fff;
-            width: 80mm; /* standard thermal receipt width */
+            width: 80mm;
             margin: 0 auto;
         }
         .text-center { text-align: center; }
@@ -20,17 +20,23 @@
         .mt-2 { margin-top: 10px; }
         .mb-2 { margin-bottom: 10px; }
         .divider {
-            border-bottom: 1px dashed #000;
-            margin: 10px 0;
+            border-bottom: 2px dashed #000;
+            margin: 15px 0;
         }
         .row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            align-items: center;
         }
-        .row .label { font-weight: bold; width: 40%; }
-        .row .value { width: 60%; text-align: right; word-wrap: break-word; }
-        .header-title { font-size: 18px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .row .label { font-weight: bold; width: 35%; text-align: right; }
+        .row .value { width: 65%; text-align: left; word-wrap: break-word; }
+        
+        /* Prominent Classes */
+        .prominent-label { font-size: 24px; font-weight: 900; }
+        .prominent-value { font-size: 26px; font-weight: 900; }
+        
+        .header-title { font-size: 32px; font-weight: 900; margin-bottom: 5px; }
         @media print {
             body { padding: 0; }
         }
@@ -39,73 +45,77 @@
 <body onload="window.print(); setTimeout(() => window.history.back(), 1000);">
 
     <div class="text-center">
-        <div class="header-title">Danyal Autos</div>
-        <div>(Lahore)</div>
-        <div class="mt-2 text-bold">DELIVERY RECEIPT</div>
+        <div class="header-title">دانیال آٹوز</div>
+        <div style="font-size: 22px;">(لاہور)</div>
+        <div class="mt-2 text-bold" style="font-size: 26px; border: 2px solid #000; padding: 5px; border-radius: 8px; display: inline-block;">بلٹی / رسید</div>
     </div>
 
     <div class="divider"></div>
 
     <div class="row">
-        <div class="label">Receipt No:</div>
-        <div class="value">{{$receipt->receipt_number}}</div>
+        <div class="label">رسید نمبر:</div>
+        <div class="value" style="font-family: sans-serif;">{{$receipt->receipt_number}}</div>
     </div>
     <div class="row">
-        <div class="label">Date:</div>
-        <div class="value">{{$receipt->date}}</div>
-    </div>
-    <div class="row">
-        <div class="label">Courier:</div>
-        <div class="value">{{$receipt->courier_company ?? 'N/A'}}</div>
+        <div class="label">تاریخ:</div>
+        <div class="value" style="font-family: sans-serif;">{{$receipt->date}}</div>
     </div>
 
     <div class="divider"></div>
 
+    <!-- PROMINENT COURIER -->
+    <div class="row text-center" style="display: block; margin-bottom: 15px;">
+        <div class="prominent-label" style="text-align: center;">کوریئر / اڈا:</div>
+        <div class="prominent-value" style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px;">{{$receipt->courier_company ?? 'N/A'}}</div>
+    </div>
+
     <div class="row">
-        <div class="label">Sender:</div>
-        <div class="value">{{$receipt->sender_name}}</div>
+        <div class="label">بھیجنے والا:</div>
+        <div class="value text-bold">دانیال آٹوز (لاہور)</div>
     </div>
     
     <div class="divider"></div>
 
-    <div class="row">
-        <div class="label">Receiver:</div>
-        <div class="value text-bold" style="font-size:16px;">{{$receipt->receiver_name}}</div>
+    <!-- PROMINENT RECEIVER AND CITY -->
+    <div class="row text-center" style="display: block; margin-bottom: 10px;">
+        <div class="prominent-label" style="text-align: center;">وصول کنندہ (نام):</div>
+        <div class="prominent-value" style="text-align: center;">{{$receipt->receiver_name}}</div>
     </div>
+
     @if($receipt->address)
     <div class="row">
-        <div class="label">Address:</div>
-        <div class="value">{{$receipt->address}}</div>
+        <div class="label">پتہ:</div>
+        <div class="value text-bold" style="font-size: 22px;">{{$receipt->address}}</div>
     </div>
     @endif
-    @if($receipt->city)
-    <div class="row">
-        <div class="label">City:</div>
-        <div class="value text-bold" style="font-size:16px;">{{$receipt->city}}</div>
-    </div>
-    @endif
-
-    <div class="divider"></div>
-
-    <div class="row">
-        <div class="label">Cartons:</div>
-        <div class="value">{{$receipt->no_of_cartons}}</div>
-    </div>
-    <div class="row">
-        <div class="label">Bags:</div>
-        <div class="value">{{$receipt->no_of_bags}}</div>
-    </div>
-    <div class="divider"></div>
-    <div class="row" style="font-size: 16px;">
-        <div class="label">Total Parcels:</div>
-        <div class="value text-bold">{{$receipt->total_parcels}}</div>
-    </div>
-
-    <div class="divider"></div>
     
-    <div class="text-center mt-2" style="font-size: 12px;">
-        *** Thank You ***<br>
-        Powered by DRAUTOS
+    @if($receipt->city)
+    <div class="row text-center" style="display: block; margin-top: 15px; margin-bottom: 15px;">
+        <div class="prominent-label" style="text-align: center;">شہر:</div>
+        <div class="prominent-value" style="text-align: center; border: 2px solid #000; padding: 5px;">{{$receipt->city}}</div>
+    </div>
+    @endif
+
+    <div class="divider"></div>
+
+    <div class="row">
+        <div class="label">کارٹن:</div>
+        <div class="value text-bold" style="font-family: sans-serif; font-size: 24px;">{{$receipt->no_of_cartons}}</div>
+    </div>
+    <div class="row">
+        <div class="label">بورے / تھیلے:</div>
+        <div class="value text-bold" style="font-family: sans-serif; font-size: 24px;">{{$receipt->no_of_bags}}</div>
+    </div>
+    
+    <!-- PROMINENT TOTAL PARCELS -->
+    <div class="row" style="margin-top: 15px; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 10px 0;">
+        <div class="prominent-label" style="width: 50%;">کل پارسل (نگ):</div>
+        <div class="prominent-value" style="width: 50%; font-family: sans-serif; font-size: 34px;">{{$receipt->total_parcels}}</div>
+    </div>
+    
+    <div class="text-center mt-2" style="font-size: 16px; margin-top: 20px;">
+        *** شکریہ ***<br>
+        <span style="font-family: sans-serif; font-size: 14px;">Powered by DRAUTOS</span>
     </div>
 
 </body>
