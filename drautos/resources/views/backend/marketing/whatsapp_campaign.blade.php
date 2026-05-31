@@ -243,9 +243,9 @@
             } else {
                 // Proper Urdu Script with Transliteration
                 const urduDate = formatUrduDate(config.date);
-                const urduName = toUrdu(name);
+                const urduName = name; // Kept in English as requested
                 const urduCity = toUrdu(config.city);
-                const urduSalesman = toUrdu(config.salesman);
+                const urduSalesman = config.salesman; // Kept in English to avoid transliteration errors
                 
                 if (hasDues) {
                     msg = `السلام علیکم ${urduName}،\n\nامید ہے آپ خیریت سے ہوں گے۔\nیہ دانیال آٹوز کی جانب سے آپ کو مطلع کیا جا رہا ہے کہ ہمارے نمائندے، ${urduSalesman}، *${urduDate}* کو ${urduCity} کا دورہ کر رہے ہیں۔\n\nہمارے کھاتوں کے مطابق آپ کا بقایا بیلنس *Rs. ${balance}* ہے۔ براہ کرم دورے کے دوران واجبات کی ادائیگی کو یقینی بنائیں۔\n\nدانیال آٹوز کے ساتھ کاروبار کرنے کا شکریہ!\n\nوالسلام،\nدانیال آٹوز مینجمنٹ`;
