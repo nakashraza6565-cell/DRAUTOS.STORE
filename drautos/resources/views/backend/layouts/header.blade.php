@@ -25,11 +25,7 @@
 
     <!-- Top navigation links (desktop) -->
     <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
-        @can('view-dashboard')
-        <li class="nav-item">
-            <a class="nav-link px-2 top-nav-link" href="{{route('admin.activity-logs')}}" style="font-size:12px; font-weight:600; color:#475569;">Activity Log</a>
-        </li>
-        @endcan
+        <!-- Shifted Activity Log to sidebar Content Dropdown -->
     </ul>
 
     <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center mr-3" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">

@@ -22,11 +22,6 @@
         <i class="fas fa-fw fa-house-chimney-window mr-2"></i>
         <span>Dashboard</span></a>
     </li>
-    <li class="nav-item {{Request::is('admin/activity-logs') ? 'active' : ''}}">
-      <a class="nav-link d-flex align-items-center py-2" href="{{route('admin.activity-logs')}}">
-        <i class="fas fa-fw fa-newspaper mr-2"></i>
-        <span>Full Activity Log</span></a>
-    </li>
     @endcan
 
     <!-- Divider -->
@@ -46,20 +41,26 @@
     </li>
     @endcan
 
-    @can('view-banner')
-    <li class="nav-item">
-      <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-        <i class="fas fa-scroll mr-2"></i>
-        <span>Banners</span>
+    @canany(['view-dashboard', 'view-banner'])
+    <!-- Content Dropdown -->
+    <li class="nav-item {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') ? 'active' : '' }}">
+      <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#collapseContent" aria-expanded="true" aria-controls="collapseContent">
+        <i class="fas fa-folder-open mr-2"></i>
+        <span>Content</span>
       </a>
-      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+      <div id="collapseContent" class="collapse {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') ? 'show' : '' }}" aria-labelledby="headingContent" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-          <a class="collapse-item" href="{{route('banner.index')}}">Active Banners</a>
-          <a class="collapse-item" href="{{route('banner.create')}}">Create New</a>
+          @can('view-dashboard')
+          <a class="collapse-item {{ Request::is('admin/activity-logs*') ? 'active' : '' }}" href="{{route('admin.activity-logs')}}">Activity Log</a>
+          @endcan
+          @can('view-banner')
+          <a class="collapse-item {{ Request::is('admin/banner') ? 'active' : '' }}" href="{{route('banner.index')}}">Active Banners</a>
+          <a class="collapse-item {{ Request::is('admin/banner/create') ? 'active' : '' }}" href="{{route('banner.create')}}">Create Banner</a>
+          @endcan
         </div>
       </div>
     </li>
-    @endcan
+    @endcanany
 
     <!-- Section: Sales & POS -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
