@@ -506,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let msgContent = '';
         
         if (msg.file_type === 'audio' && msg.file_path) {
-            msgContent += `<audio controls src="${msg.file_path}" style="height: 35px; width: 100%; max-width: 200px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
+            msgContent += `<audio controls src="${msg.file_path}" style="height: 40px; width: 220px; min-width: 220px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
         }
         
         if (msg.message) {
