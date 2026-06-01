@@ -500,28 +500,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         let shouldScroll = isScrollAtBottom();
                         let playedSound = false;
                     
-                    data.messages.forEach(msg => {
-                        let isNewMsg = msg.id > lastMessageId;
-                        if (isNewMsg) lastMessageId = msg.id;
-                        
-                        renderMessage(msg);
-                        
-                        // Handle unread badges and sounds for incoming NEW messages only
-                        if (isNewMsg && !isInitialLoad && msg.user_id !== currentUserId) {
-                            if (!isOpen) {
-                                unreadCount++;
-                                unreadBadge.style.display = 'flex';
-                                unreadBadge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                        data.messages.forEach(msg => {
+                            let isNewMsg = msg.id > lastMessageId;
+                            if (isNewMsg) lastMessageId = msg.id;
+                            
+                            renderMessage(msg);
+                            
+                            // Handle unread badges and sounds for incoming NEW messages only
+                            if (isNewMsg && !isInitialLoad && msg.user_id !== currentUserId) {
+                                if (!isOpen) {
+                                    unreadCount++;
+                                    unreadBadge.style.display = 'flex';
+                                    unreadBadge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                                }
+                                if (!playedSound) {
+                                    playNotificationSound();
+                                    playedSound = true; // only ping once per batch
+                                }
                             }
-                            if (!playedSound) {
-                                playNotificationSound();
-                                playedSound = true; // only ping once per batch
-                            }
-                        }
-                    });
+                        });
 
-                    if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
-                        scrollToBottom();
+                        if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
+                            scrollToBottom();
+                        }
                     }
                     
                     isInitialLoad = false;
