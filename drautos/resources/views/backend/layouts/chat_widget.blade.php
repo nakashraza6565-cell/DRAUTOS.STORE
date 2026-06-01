@@ -370,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
+    let recordingMimeType = '';
 
     micBtn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -377,13 +378,18 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
+                
+                recordingMimeType = mediaRecorder.mimeType || 'audio/webm';
+                
                 mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
                 };
                 mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: recordingMimeType });
                     audioChunks = [];
-                    sendVoiceNote(audioBlob);
+                    sendVoiceNote(audioBlob, recordingMimeType);
                 };
                 mediaRecorder.start();
                 isRecording = true;
@@ -466,9 +472,18 @@ document.addEventListener('DOMContentLoaded', function() {
         sendData(formData);
     }
 
-    function sendVoiceNote(blob) {
+    function sendVoiceNote(blob, mimeType) {
         let formData = new FormData();
-        formData.append('audio', blob, 'voicenote.webm');
+        let ext = 'webm';
+        if (mimeType) {
+            if (mimeType.includes('mp4')) ext = 'mp4';
+            else if (mimeType.includes('ogg')) ext = 'ogg';
+            else if (mimeType.includes('wav')) ext = 'wav';
+            else if (mimeType.includes('mpeg')) ext = 'mp3';
+            else if (mimeType.includes('aac')) ext = 'aac';
+        }
+        
+        formData.append('audio', blob, 'voicenote.' + ext);
         sendData(formData);
     }
 

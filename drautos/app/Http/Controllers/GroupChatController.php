@@ -38,7 +38,7 @@ class GroupChatController extends Controller
     {
         $request->validate([
             'message' => 'nullable|string',
-            'audio' => 'nullable|file|mimes:webm,mp3,wav,ogg|max:5120' // 5MB max
+            'audio' => 'nullable|file|max:10240' // 10MB max, accept any file to avoid MIME issues from different browsers
         ]);
 
         if (!$request->message && !$request->hasFile('audio')) {
@@ -50,9 +50,22 @@ class GroupChatController extends Controller
 
         if ($request->hasFile('audio')) {
             $file = $request->file('audio');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            // Store in public/storage/chat_audio
-            $file->move(public_path('storage/chat_audio'), $filename);
+            
+            // Ensure directory exists
+            $dir = public_path('storage/chat_audio');
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
+            }
+            
+            $ext = $file->getClientOriginalExtension() ?: 'webm';
+            if (!in_array($ext, ['webm', 'mp3', 'wav', 'ogg', 'mp4', 'm4a', 'aac'])) {
+                $ext = 'webm'; // Fallback
+            }
+            
+            $filename = time() . '_' . uniqid() . '.' . $ext;
+            
+            // Move file
+            $file->move($dir, $filename);
             $filePath = '/storage/chat_audio/' . $filename;
             $fileType = 'audio';
         }
