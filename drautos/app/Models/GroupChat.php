@@ -10,7 +10,7 @@ class GroupChat extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'message'];
+    protected $fillable = ['user_id', 'message', 'file_path', 'file_type'];
 
     public function user()
     {

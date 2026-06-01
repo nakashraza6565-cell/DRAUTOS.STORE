@@ -37,12 +37,31 @@ class GroupChatController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'message' => 'required|string'
+            'message' => 'nullable|string',
+            'audio' => 'nullable|file|mimes:webm,mp3,wav,ogg|max:5120' // 5MB max
         ]);
+
+        if (!$request->message && !$request->hasFile('audio')) {
+            return response()->json(['status' => 'error', 'message' => 'Cannot send empty message.']);
+        }
+
+        $filePath = null;
+        $fileType = null;
+
+        if ($request->hasFile('audio')) {
+            $file = $request->file('audio');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            // Store in public/storage/chat_audio
+            $file->move(public_path('storage/chat_audio'), $filename);
+            $filePath = '/storage/chat_audio/' . $filename;
+            $fileType = 'audio';
+        }
 
         $chat = GroupChat::create([
             'user_id' => Auth::id(),
-            'message' => $request->message
+            'message' => $request->message,
+            'file_path' => $filePath,
+            'file_type' => $fileType
         ]);
 
         $chat->load('user:id,name,photo,role');

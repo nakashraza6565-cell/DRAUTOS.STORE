@@ -23,10 +23,14 @@
         align-items: center;
         justify-content: center;
         font-size: 24px;
-        cursor: pointer;
+        cursor: grab;
         box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         transition: transform 0.2s;
         position: relative;
+    }
+
+    #chat-widget-toggle:active {
+        cursor: grabbing;
     }
 
     #chat-widget-toggle:hover {
@@ -73,6 +77,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: grab;
+    }
+    
+    #chat-header:active {
+        cursor: grabbing;
     }
 
     #chat-messages {
@@ -160,6 +169,30 @@
         border: 2px dashed var(--chat-accent);
         background: #fefce8;
     }
+    
+    #chat-mic-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 8px;
+        transition: color 0.2s;
+        height: 40px;
+    }
+
+    #chat-mic-btn:hover { color: var(--chat-primary); }
+    
+    #chat-mic-btn.recording {
+        color: #ef4444;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
 
     #chat-send-btn {
         background: var(--chat-primary);
@@ -191,6 +224,7 @@
         </div>
         <div id="chat-input-area">
             <textarea id="chat-input" placeholder="Type a message or drop a link..."></textarea>
+            <button id="chat-mic-btn" title="Hold/Click to Record Voice Note"><i class="fas fa-microphone"></i></button>
             <button id="chat-send-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
@@ -203,12 +237,15 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('chat-widget-container');
     const toggleBtn = document.getElementById('chat-widget-toggle');
     const closeBtn = document.getElementById('chat-close-btn');
+    const chatHeader = document.getElementById('chat-header');
     const chatWindow = document.getElementById('chat-widget-window');
     const messageContainer = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('chat-send-btn');
+    const micBtn = document.getElementById('chat-mic-btn');
     const unreadBadge = document.getElementById('chat-unread-badge');
 
     let isOpen = false;
@@ -216,8 +253,103 @@ document.addEventListener('DOMContentLoaded', function() {
     let unreadCount = 0;
     const currentUserId = {{ Auth::id() ?? 0 }};
 
-    // Toggle window
-    toggleBtn.addEventListener('click', () => {
+    // --- Audio Notification Synthesizer ---
+    function playNotificationSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+            oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.5);
+        } catch(e) {
+            console.log("Audio API not supported");
+        }
+    }
+
+    // --- Drag and Drop Widget Container ---
+    let isDragging = false;
+    let hasDragged = false;
+    let dragStartX, dragStartY, initialX, initialY;
+
+    function startDrag(e) {
+        if(e.target === closeBtn) return; // Don't drag if clicking close
+        isDragging = true;
+        hasDragged = false;
+        
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        const rect = container.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+        dragStartX = clientX;
+        dragStartY = clientY;
+
+        // Switch to left/top positioning relative to viewport
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+        container.style.left = initialX + 'px';
+        container.style.top = initialY + 'px';
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchmove', drag, {passive: false});
+        document.addEventListener('touchend', stopDrag);
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        hasDragged = true;
+        e.preventDefault(); // prevent scroll while dragging
+
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        const dx = clientX - dragStartX;
+        const dy = clientY - dragStartY;
+
+        // Boundary checks to keep widget on screen
+        let newX = initialX + dx;
+        let newY = initialY + dy;
+        
+        const maxX = window.innerWidth - container.offsetWidth;
+        const maxY = window.innerHeight - container.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+
+        container.style.left = newX + 'px';
+        container.style.top = newY + 'px';
+    }
+
+    function stopDrag() {
+        isDragging = false;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('touchend', stopDrag);
+    }
+
+    // Bind drag to toggle button and chat header
+    toggleBtn.addEventListener('mousedown', startDrag);
+    toggleBtn.addEventListener('touchstart', startDrag, {passive: false});
+    chatHeader.addEventListener('mousedown', startDrag);
+    chatHeader.addEventListener('touchstart', startDrag, {passive: false});
+
+    // Toggle window (only if it wasn't a drag)
+    toggleBtn.addEventListener('click', (e) => {
+        if (hasDragged) return; 
         isOpen = !isOpen;
         chatWindow.style.display = isOpen ? 'flex' : 'none';
         if (isOpen) {
@@ -234,42 +366,86 @@ document.addEventListener('DOMContentLoaded', function() {
         chatWindow.style.display = 'none';
     });
 
-    // Auto resize textarea
+    // --- Voice Recording Logic ---
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    micBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    audioChunks = [];
+                    sendVoiceNote(audioBlob);
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+                chatInput.placeholder = "Recording voice note... Click mic to stop.";
+                chatInput.disabled = true;
+            } catch (err) {
+                console.error(err);
+                alert('Microphone access denied or not available.');
+            }
+        } else {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            micBtn.classList.remove('recording');
+            chatInput.placeholder = "Type a message or drop a link...";
+            chatInput.disabled = false;
+            chatInput.focus();
+        }
+    });
+
+    // --- Chat Logic ---
     chatInput.addEventListener('input', function() {
         this.style.height = '40px';
         this.style.height = (this.scrollHeight) + 'px';
     });
 
-    // Send on Enter (Shift+Enter for new line)
     chatInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            sendTextMessage();
         }
     });
 
-    sendBtn.addEventListener('click', sendMessage);
+    sendBtn.addEventListener('click', sendTextMessage);
 
-    // Fetch Messages Polling
     function fetchMessages() {
         fetch(`{{ route('admin.chat.fetch') }}?last_id=${lastMessageId}`)
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success' && data.messages.length > 0) {
                     let shouldScroll = isScrollAtBottom();
+                    let playedSound = false;
                     
                     data.messages.forEach(msg => {
                         if (msg.id > lastMessageId) lastMessageId = msg.id;
                         renderMessage(msg);
                         
-                        if (!isOpen && msg.user_id !== currentUserId) {
-                            unreadCount++;
-                            unreadBadge.style.display = 'flex';
-                            unreadBadge.innerText = unreadCount;
+                        // Handle unread badges and sounds for incoming messages
+                        if (msg.user_id !== currentUserId) {
+                            if (!isOpen) {
+                                unreadCount++;
+                                unreadBadge.style.display = 'flex';
+                                unreadBadge.innerText = unreadCount;
+                            }
+                            if (!playedSound) {
+                                playNotificationSound();
+                                playedSound = true; // only ping once per batch
+                            }
                         }
                     });
 
-                    // Only force scroll if we were already at bottom or if we sent it
                     if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
                         scrollToBottom();
                     }
@@ -278,20 +454,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(err => console.error('Chat poll error', err));
     }
 
-    function sendMessage() {
+    function sendTextMessage() {
         const text = chatInput.value.trim();
         if(!text) return;
 
         chatInput.value = '';
         chatInput.style.height = '40px';
 
+        let formData = new FormData();
+        formData.append('message', text);
+        sendData(formData);
+    }
+
+    function sendVoiceNote(blob) {
+        let formData = new FormData();
+        formData.append('audio', blob, 'voicenote.webm');
+        sendData(formData);
+    }
+
+    function sendData(formData) {
         fetch(`{{ route('admin.chat.send') }}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ message: text })
+            body: formData
         })
         .then(res => res.json())
         .then(data => {
@@ -301,12 +488,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderMessage(data.message);
                     scrollToBottom();
                 }
+            } else {
+                alert(data.message || 'Error sending message');
             }
-        });
+        }).catch(err => console.error('Send error', err));
     }
 
     function renderMessage(msg) {
-        // Prevent duplicates
         if(document.getElementById('msg-'+msg.id)) return;
 
         const isSelf = msg.user_id === currentUserId;
@@ -315,13 +503,20 @@ document.addEventListener('DOMContentLoaded', function() {
         div.id = 'msg-'+msg.id;
         
         let userName = msg.user ? msg.user.name : 'Unknown';
+        let msgContent = '';
         
-        // Autolink URLs
-        let formattedMsg = msg.message.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        if (msg.file_type === 'audio' && msg.file_path) {
+            msgContent += `<audio controls src="${msg.file_path}" style="height: 35px; width: 100%; max-width: 200px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
+        }
+        
+        if (msg.message) {
+            let formattedMsg = msg.message.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+            msgContent += formattedMsg.replace(/\n/g, '<br>');
+        }
 
         div.innerHTML = `
             <div class="sender-name">${userName}</div>
-            <div class="msg-content">${formattedMsg.replace(/\n/g, '<br>')}</div>
+            <div class="msg-content">${msgContent}</div>
         `;
         
         messageContainer.appendChild(div);
@@ -335,9 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     }
 
-    // --- Drag and Drop Magic ---
-    
-    // Allow dropping on the whole window
+    // --- Drag and Drop Links Logic ---
     chatWindow.addEventListener('dragover', (e) => {
         e.preventDefault();
         chatInput.classList.add('drag-over');
@@ -361,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Start polling every 4 seconds
+    // Initial load and polling
     fetchMessages();
     setInterval(fetchMessages, 4000);
 });
