@@ -42,19 +42,6 @@ Route::get('.well-known/assetlinks.json', function () {
 Route::get('/fix-db', function () {
     try {
         $migrations = [
-            '2026_05_12_000001_create_financial_accounts_table.php',
-            '2026_05_12_000002_create_account_transactions_table.php',
-            '2026_05_12_000003_add_financial_account_id_to_ledgers.php',
-            '2026_05_12_000004_add_opening_balance_to_financial_accounts.php',
-            '2026_05_12_000005_add_financial_account_id_to_cash_registers.php',
-            '2026_05_12_000006_add_financial_account_id_to_expenses.php',
-            '2026_05_16_150700_create_production_factors_table.php',
-            '2026_05_17_150700_alter_manufacturing_bill_components_foreign_key.php',
-            '2026_05_17_160700_add_ingredient_type_to_manufacturing_bill_components_table.php',
-            '2026_05_17_170700_add_overhead_details_to_manufacturing_bills_table.php',
-            '2026_05_17_180700_alter_status_in_manufacturing_bills_table.php',
-            '2026_05_17_190700_add_subcontractor_id_to_manufacturing_bills_table.php',
-            '2026_05_30_120000_create_sale_order_photos_table.php',
             '2026_06_01_134737_add_business_name_to_users_table.php',
         ];
 
