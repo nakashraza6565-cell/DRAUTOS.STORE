@@ -92,7 +92,7 @@
           </thead>
           <tbody>
             @foreach($orders as $order)  
-                <tr>
+                <tr draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '{{ route('order.show', $order->id) }}');" style="cursor: grab;">
                     <td data-title="S.N.">{{$loop->iteration}}</td>
                     <td data-title="Customer">
                         <div class="font-weight-bold">

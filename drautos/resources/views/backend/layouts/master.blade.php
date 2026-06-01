@@ -182,5 +182,6 @@
           }
       });
   </script>
+  @include('backend.layouts.chat_widget')
 </body>
 </html>

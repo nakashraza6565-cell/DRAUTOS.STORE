@@ -50,7 +50,7 @@
                     </thead>
                     <tbody>
                         @forelse($customers as $customer)
-                            <tr>
+                            <tr draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '{{ route('admin.customer-ledger.show', $customer->id) }}');" style="cursor: grab;">
                                 <td data-title="Customer Name">{{$customer->name}}</td>
                                 <td data-title="Phone">{{$customer->phone}}</td>
                                 <td data-title="City">{{$customer->city ?? 'N/A'}}</td>

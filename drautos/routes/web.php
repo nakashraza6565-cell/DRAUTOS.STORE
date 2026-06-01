@@ -42,7 +42,7 @@ Route::get('.well-known/assetlinks.json', function () {
 Route::get('/fix-db', function () {
     try {
         $migrations = [
-            '2026_06_01_134737_add_business_name_to_users_table.php',
+            '2026_06_01_145119_create_group_chats_table.php',
         ];
 
         foreach ($migrations as $file) {
@@ -181,6 +181,9 @@ Route::get('/test-gemini-key', function () {
 Route::post('/admin/ai-chat', [\App\Http\Controllers\AIChatController::class, 'chat'])
     ->name('admin.ai-chat')
     ->middleware(['auth', 'admin']);
+
+Route::get('/admin/chat/fetch', [\App\Http\Controllers\GroupChatController::class, 'fetchMessages'])->name('admin.chat.fetch')->middleware(['auth']);
+Route::post('/admin/chat/send', [\App\Http\Controllers\GroupChatController::class, 'sendMessage'])->name('admin.chat.send')->middleware(['auth']);
 
 use App\Http\Controllers\CashRegisterController;
 use App\Http\Controllers\CustomerLedgerController;
