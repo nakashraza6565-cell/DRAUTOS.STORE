@@ -127,22 +127,36 @@
         async function translateToUrdu(text, elementId) {
             if (!text || text.trim() === '' || !isEnglish(text)) return;
             try {
-                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
+                // Use a stable Chrome extension client ID which has higher rate limits
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=dict-chrome-ex&sl=en&tl=ur&dt=t&q=${encodeURIComponent(text)}`);
                 const data = await response.json();
                 const translatedText = data[0].map(item => item[0]).join('');
-                document.getElementById(elementId).innerText = translatedText;
+                let el = document.getElementById(elementId);
+                if (el) el.innerText = translatedText;
             } catch (e) {
-                console.error('Translation error:', e);
+                console.error('Google Translation error, trying fallback:', e);
+                try {
+                    // Fallback to MyMemory API if Google rate-limits us
+                    const response2 = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ur`);
+                    const data2 = await response2.json();
+                    if (data2 && data2.responseData && data2.responseData.translatedText) {
+                        let el = document.getElementById(elementId);
+                        if (el) el.innerText = data2.responseData.translatedText;
+                    }
+                } catch(err2) {
+                    console.error('Fallback translation also failed.', err2);
+                }
             }
         }
 
         window.onload = async function() {
-            // Auto translate fields if they are in English
+            // Auto translate fields if they are in English. 
+            // Use @json() to safely encode quotes and newlines, preventing Javascript syntax errors.
             await Promise.all([
-                translateToUrdu("{{$receipt->receiver_name}}", "val-receiver"),
-                translateToUrdu("{{$receipt->city}}", "val-city"),
-                translateToUrdu("{{$receipt->address}}", "val-address"),
-                translateToUrdu("{{$receipt->courier_company}}", "val-courier")
+                translateToUrdu(@json($receipt->receiver_name), "val-receiver"),
+                translateToUrdu(@json($receipt->city), "val-city"),
+                translateToUrdu(@json($receipt->address), "val-address"),
+                translateToUrdu(@json($receipt->courier_company), "val-courier")
             ]);
             
             // Print and go back
