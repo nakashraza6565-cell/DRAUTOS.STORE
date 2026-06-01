@@ -55,6 +55,7 @@ Route::get('/fix-db', function () {
             '2026_05_17_180700_alter_status_in_manufacturing_bills_table.php',
             '2026_05_17_190700_add_subcontractor_id_to_manufacturing_bills_table.php',
             '2026_05_30_120000_create_sale_order_photos_table.php',
+            '2026_06_01_134737_add_business_name_to_users_table.php',
         ];
 
         foreach ($migrations as $file) {
