@@ -585,10 +585,11 @@ class FrontendController extends Controller
     }
     public function registerSubmit(Request $request){
         $this->validate($request,[
-            'name'     => 'string|required|min:2',
-            'phone'    => 'required|string|min:10|unique:users,phone',
-            'email'    => 'nullable|string|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'name'          => 'string|required|min:2',
+            'business_name' => 'string|nullable',
+            'phone'         => 'required|string|min:10|unique:users,phone',
+            'email'         => 'nullable|string|email|unique:users,email',
+            'password'      => 'required|min:6|confirmed',
         ]);
         $data = $request->all();
 
@@ -596,10 +597,11 @@ class FrontendController extends Controller
         $email = !empty($data['email']) ? $data['email'] : ($data['phone'] . '@pending.local');
 
         $user = User::create([
-            'name'     => $data['name'],
-            'phone'    => $data['phone'],
-            'email'    => $email,
-            'password' => Hash::make($data['password']),
+            'name'          => $data['name'],
+            'business_name' => $data['business_name'] ?? null,
+            'phone'         => $data['phone'],
+            'email'         => $email,
+            'password'      => Hash::make($data['password']),
             'status'   => 'pending',  // Awaiting admin approval
         ]);
 

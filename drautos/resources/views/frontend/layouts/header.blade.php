@@ -3,8 +3,8 @@
     <div class="middle-inner py-3" style="background: #ffffff;">
         <div class="container">
             <div class="row align-items-center justify-content-between flex-nowrap">
-                <!-- Logo -->
-                <div class="col-auto">
+                <!-- Logo & Register -->
+                <div class="col-auto d-flex align-items-center" style="gap: 20px;">
                     <div class="logo m-0">
                         <a href="{{route('home')}}" class="d-flex align-items-center" style="text-decoration: none;">
                             <!-- Intertwined DR Graphic (Revue Font Native SVG Paths) -->
@@ -19,6 +19,12 @@
                                 <h3 style="color: #083259; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 21px; font-weight: 900; letter-spacing: 0px; margin: 0; line-height: 1;">DANYAL AUTOS</h3>
                                 <span style="color: #64748b; font-family: 'Montserrat', 'Inter', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px;">PREMIUM TRUCK PARTS B2B</span>
                             </div>
+                        </a>
+                    </div>
+                    <!-- Register Button Beside Logo -->
+                    <div class="d-none d-lg-block">
+                        <a href="{{route('register')}}" class="font-weight-bold d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; text-decoration: none; box-shadow: 0 4px 10px rgba(8, 50, 89, 0.2); transition: all 0.3s ease;">
+                            <i class="ti-user mr-2"></i> Register Corporate Account
                         </a>
                     </div>
                 </div>
