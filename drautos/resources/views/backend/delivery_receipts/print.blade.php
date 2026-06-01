@@ -151,12 +151,12 @@
 
         window.onload = async function() {
             // Auto translate fields if they are in English. 
-            // Use @json() to safely encode quotes and newlines, preventing Javascript syntax errors.
+            // Use json_encode to safely encode quotes and newlines, preventing Javascript syntax errors.
             await Promise.all([
-                translateToUrdu(@json($receipt->receiver_name), "val-receiver"),
-                translateToUrdu(@json($receipt->city), "val-city"),
-                translateToUrdu(@json($receipt->address), "val-address"),
-                translateToUrdu(@json($receipt->courier_company), "val-courier")
+                translateToUrdu({!! json_encode($receipt->receiver_name) !!}, "val-receiver"),
+                translateToUrdu({!! json_encode($receipt->city) !!}, "val-city"),
+                translateToUrdu({!! json_encode($receipt->address) !!}, "val-address"),
+                translateToUrdu({!! json_encode($receipt->courier_company) !!}, "val-courier")
             ]);
             
             // Print and go back
