@@ -211,6 +211,50 @@
     #chat-send-btn:hover {
         background: #0e4a7a;
     }
+
+    /* Custom Tooltip */
+    .seen-by-tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .seen-by-tooltip .tooltip-text {
+        visibility: hidden;
+        width: max-content;
+        max-width: 200px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%; 
+        right: 0;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 10px;
+        font-weight: normal;
+        pointer-events: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .seen-by-tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        right: 5px;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+    
+    .seen-by-tooltip:hover .tooltip-text, .seen-by-tooltip.active .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
 </style>
 
 <div id="chat-widget-container">
@@ -523,6 +567,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
                             scrollToBottom();
                         }
+                        
+                        // Update tooltips immediately for newly rendered messages
+                        updateSeenByTooltips();
                     }
                     
                     isInitialLoad = false;
@@ -533,9 +580,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateSeenByTooltips() {
         const infoIcons = document.querySelectorAll('.chat-msg-info');
-        infoIcons.forEach(icon => {
-            const msgId = parseInt(icon.getAttribute('data-msg-id'));
-            const senderId = parseInt(icon.getAttribute('data-sender-id'));
+        infoIcons.forEach(iconContainer => {
+            const msgId = parseInt(iconContainer.getAttribute('data-msg-id'));
+            const senderId = parseInt(iconContainer.getAttribute('data-sender-id'));
             
             // Find who has seen this message (excluding the sender)
             let seenByNames = [];
@@ -545,14 +592,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            const tooltipText = iconContainer.querySelector('.tooltip-text');
             if (seenByNames.length > 0) {
-                icon.style.display = 'inline-block';
-                icon.title = "Seen by: " + seenByNames.join(', ');
+                iconContainer.style.display = 'inline-block';
+                if(tooltipText) {
+                    tooltipText.innerText = "Seen by: " + seenByNames.join(', ');
+                }
             } else {
-                icon.style.display = 'none';
+                iconContainer.style.display = 'none';
             }
         });
     }
+
+    // Toggle tooltips on click for mobile/touch
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.seen-by-tooltip')) {
+            const tooltip = e.target.closest('.seen-by-tooltip');
+            tooltip.classList.toggle('active');
+            setTimeout(() => tooltip.classList.remove('active'), 3000);
+        } else {
+            document.querySelectorAll('.seen-by-tooltip.active').forEach(t => t.classList.remove('active'));
+        }
+    });
 
     function sendTextMessage() {
         const text = chatInput.value.trim();
@@ -617,7 +678,12 @@ document.addEventListener('DOMContentLoaded', function() {
             msgContent += formattedMsg.replace(/\n/g, '<br>');
         }
         
-        let infoIcon = `<i class="fas fa-check-double chat-msg-info" data-msg-id="${msg.id}" data-sender-id="${msg.user_id}" style="font-size: 10px; color: #3b82f6; cursor: help; margin-top: 4px; display: none;"></i>`;
+        let infoIcon = `
+            <div class="seen-by-tooltip chat-msg-info" data-msg-id="${msg.id}" data-sender-id="${msg.user_id}" style="display: none; cursor: pointer;">
+                <i class="fas fa-check-double" style="font-size: 10px; color: #3b82f6; margin-top: 4px;"></i>
+                <span class="tooltip-text"></span>
+            </div>
+        `;
 
         let msgDiv = document.createElement('div');
         msgDiv.className = `chat-msg ${msg.user_id === currentUserId ? 'self' : 'other'}`;
