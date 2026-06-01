@@ -51,8 +51,8 @@ class GroupChatController extends Controller
         if ($request->hasFile('audio')) {
             $file = $request->file('audio');
             
-            // Ensure directory exists
-            $dir = public_path('storage/chat_audio');
+            // Ensure directory exists in the actual web root (not Laravel's public folder)
+            $dir = base_path('../storage/chat_audio');
             if (!file_exists($dir)) {
                 mkdir($dir, 0777, true);
             }
