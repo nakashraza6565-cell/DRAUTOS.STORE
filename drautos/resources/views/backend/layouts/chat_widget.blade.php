@@ -102,19 +102,19 @@
         line-height: 1.4;
         position: relative;
         word-wrap: break-word;
+        background: #fff;
+        color: #1e293b;
+        border: 1px solid var(--chat-accent); /* sleek golden outline */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     .chat-msg.self {
         align-self: flex-end;
-        background: var(--chat-primary);
-        color: #fff;
         border-bottom-right-radius: 2px;
     }
 
     .chat-msg.other {
         align-self: flex-start;
-        background: #e2e8f0;
-        color: #1e293b;
         border-bottom-left-radius: 2px;
     }
 
@@ -130,14 +130,11 @@
     }
 
     .chat-msg a {
-        color: var(--chat-accent);
+        color: var(--chat-primary);
         text-decoration: underline;
         font-weight: bold;
     }
-    
-    .chat-msg.other a {
-        color: var(--chat-primary);
-    }
+
 
     #chat-input-area {
         padding: 12px;
@@ -670,7 +667,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let msgContent = '';
         
         if (msg.file_type === 'audio' && msg.file_path) {
-            msgContent += `<audio controls src="${msg.file_path}" style="height: 40px; width: 220px; min-width: 220px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
+            // Add cache buster to prevent browser from caching a 0-byte file immediately after upload
+            let audioSrc = msg.file_path + '?v=' + Date.now();
+            msgContent += `<audio controls src="${audioSrc}" style="height: 40px; width: 220px; min-width: 220px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
         }
         
         if (msg.message) {
