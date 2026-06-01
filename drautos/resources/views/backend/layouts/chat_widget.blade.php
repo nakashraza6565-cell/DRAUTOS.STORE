@@ -108,6 +108,15 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
+    .chat-audio-player {
+        width: 100%;
+        min-width: 180px;
+        max-width: 220px;
+        height: 35px;
+        outline: none;
+        border-radius: 20px;
+    }
+
     .chat-msg.self {
         align-self: flex-end;
         border-bottom-right-radius: 2px;
@@ -669,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (msg.file_type === 'audio' && msg.file_path) {
             // Add cache buster to prevent browser from caching a 0-byte file immediately after upload
             let audioSrc = msg.file_path + '?v=' + Date.now();
-            msgContent += `<audio controls src="${audioSrc}" style="height: 40px; width: 220px; min-width: 220px; margin-bottom: ${msg.message ? '5px' : '0'};"></audio><br>`;
+            msgContent += `<audio controls preload="auto" src="${audioSrc}" class="chat-audio-player" style="margin-bottom: ${msg.message ? '5px' : '0'};" oncanplay="this.style.opacity=1" onerror="setTimeout(()=>this.load(), 1000)"></audio><br>`;
         }
         
         if (msg.message) {
