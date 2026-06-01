@@ -42,7 +42,10 @@ Route::get('.well-known/assetlinks.json', function () {
 Route::get('/fix-db', function () {
     try {
         $migrations = [
-            '2026_06_01_154249_add_file_path_to_group_chats_table.php',
+            '2026_05_31_000000_create_group_chats_table.php',
+            '2026_06_01_000000_add_file_path_to_group_chats_table.php',
+            '2026_06_01_000001_add_file_type_to_group_chats_table.php',
+            '2026_06_01_165400_add_chat_tracking_to_users_table.php'
         ];
 
         foreach ($migrations as $file) {

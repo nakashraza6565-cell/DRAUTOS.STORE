@@ -216,8 +216,16 @@
 <div id="chat-widget-container">
     <div id="chat-widget-window">
         <div id="chat-header">
-            <span><i class="fas fa-users mr-2"></i> Team Chat</span>
-            <i class="fas fa-times" id="chat-close-btn" style="cursor: pointer;"></i>
+            <div style="display: flex; align-items: center;">
+                <span><i class="fas fa-users mr-2"></i> Team Chat</span>
+                <div id="team-status-dropdown" style="position: relative; margin-left: 10px;">
+                    <i class="fas fa-chevron-down" id="team-dropdown-btn" style="cursor: pointer; font-size: 12px; padding: 5px;" title="View Online Status"></i>
+                    <div id="team-dropdown-menu" style="display: none; position: absolute; top: 25px; left: 0; background: white; color: #333; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 220px; padding: 10px; z-index: 1000; font-size: 12px; font-weight: normal; cursor: default;">
+                        <!-- Team status list populates here -->
+                    </div>
+                </div>
+            </div>
+            <i class="fas fa-times" id="chat-close-btn" style="cursor: pointer; padding: 5px;"></i>
         </div>
         <div id="chat-messages">
             <!-- Messages load here -->
@@ -252,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastMessageId = 0;
     let unreadCount = 0;
     let isInitialLoad = true;
+    let teamData = [];
     const currentUserId = {{ Auth::id() ?? 0 }};
 
     // --- Audio Notification Synthesizer ---
@@ -359,13 +368,59 @@ document.addEventListener('DOMContentLoaded', function() {
             unreadBadge.innerText = '0';
             scrollToBottom();
             chatInput.focus();
+            fetchMessages(); // Immediately sync read status and team data
         }
     });
 
     closeBtn.addEventListener('click', () => {
         isOpen = false;
         chatWindow.style.display = 'none';
+        fetchMessages(); // Send closed status immediately
     });
+
+    // --- Team Dropdown Logic ---
+    const teamDropdownBtn = document.getElementById('team-dropdown-btn');
+    const teamDropdownMenu = document.getElementById('team-dropdown-menu');
+
+    teamDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent drag start
+        teamDropdownMenu.style.display = teamDropdownMenu.style.display === 'none' ? 'block' : 'none';
+        renderTeamDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#team-status-dropdown')) {
+            teamDropdownMenu.style.display = 'none';
+        }
+    });
+    
+    teamDropdownMenu.addEventListener('mousedown', e => e.stopPropagation());
+    teamDropdownMenu.addEventListener('touchstart', e => e.stopPropagation());
+
+    function renderTeamDropdown() {
+        if (teamData.length === 0) {
+            teamDropdownMenu.innerHTML = '<div style="text-align:center; padding: 5px; color: #888;">Loading...</div>';
+            return;
+        }
+        
+        let html = '<div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Team Status</div>';
+        
+        teamData.forEach(member => {
+            const dotColor = member.is_online ? '#22c55e' : '#cbd5e1';
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${dotColor}; margin-right: 8px;"></div>
+                        <span>${member.name}</span>
+                    </div>
+                    <span style="color: #64748b; font-size: 10px;">${member.last_active_str}</span>
+                </div>
+            `;
+        });
+        
+        teamDropdownMenu.innerHTML = html;
+    }
 
     // --- Voice Recording Logic ---
     let mediaRecorder;
@@ -428,12 +483,22 @@ document.addEventListener('DOMContentLoaded', function() {
     sendBtn.addEventListener('click', sendTextMessage);
 
     function fetchMessages() {
-        fetch(`{{ route('admin.chat.fetch') }}?last_id=${lastMessageId}`)
+        fetch(`{{ route('admin.chat.fetch') }}?last_id=${lastMessageId}&is_open=${isOpen ? '1' : '0'}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success' && data.messages.length > 0) {
-                    let shouldScroll = isScrollAtBottom();
-                    let playedSound = false;
+                if(data.status === 'success') {
+                    // Update team data
+                    if (data.team) {
+                        teamData = data.team;
+                        if (teamDropdownMenu.style.display === 'block') {
+                            renderTeamDropdown();
+                        }
+                        updateSeenByTooltips();
+                    }
+
+                    if (data.messages && data.messages.length > 0) {
+                        let shouldScroll = isScrollAtBottom();
+                        let playedSound = false;
                     
                     data.messages.forEach(msg => {
                         let isNewMsg = msg.id > lastMessageId;
@@ -463,6 +528,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(err => console.error('Chat poll error', err));
+    }
+
+    function updateSeenByTooltips() {
+        const infoIcons = document.querySelectorAll('.chat-msg-info');
+        infoIcons.forEach(icon => {
+            const msgId = parseInt(icon.getAttribute('data-msg-id'));
+            const senderId = parseInt(icon.getAttribute('data-sender-id'));
+            
+            // Find who has seen this message (excluding the sender)
+            let seenByNames = [];
+            teamData.forEach(member => {
+                if (member.id !== senderId && member.last_read_message_id >= msgId) {
+                    seenByNames.push(member.name);
+                }
+            });
+            
+            if (seenByNames.length > 0) {
+                icon.style.display = 'inline-block';
+                icon.title = "Seen by: " + seenByNames.join(', ');
+            } else {
+                icon.style.display = 'none';
+            }
+        });
     }
 
     function sendTextMessage() {
@@ -517,12 +605,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderMessage(msg) {
         if(document.getElementById('msg-'+msg.id)) return;
 
-        const isSelf = msg.user_id === currentUserId;
-        const div = document.createElement('div');
-        div.className = `chat-msg ${isSelf ? 'self' : 'other'}`;
-        div.id = 'msg-'+msg.id;
-        
-        let userName = msg.user ? msg.user.name : 'Unknown';
         let msgContent = '';
         
         if (msg.file_type === 'audio' && msg.file_path) {
@@ -533,13 +615,18 @@ document.addEventListener('DOMContentLoaded', function() {
             let formattedMsg = msg.message.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
             msgContent += formattedMsg.replace(/\n/g, '<br>');
         }
-
-        div.innerHTML = `
-            <div class="sender-name">${userName}</div>
-            <div class="msg-content">${msgContent}</div>
-        `;
         
-        messageContainer.appendChild(div);
+        let infoIcon = `<i class="fas fa-check-double chat-msg-info" data-msg-id="${msg.id}" data-sender-id="${msg.user_id}" style="font-size: 10px; color: #3b82f6; cursor: help; margin-top: 4px; display: none;"></i>`;
+
+        let msgDiv = document.createElement('div');
+        msgDiv.className = `chat-msg ${msg.user_id === currentUserId ? 'self' : 'other'}`;
+        msgDiv.id = 'msg-'+msg.id;
+        msgDiv.innerHTML = `
+            <div class="sender-name">${msg.user ? msg.user.name : 'Unknown'} <span style="opacity:0.5; font-weight:normal; font-size:9px;">${msg.time_str}</span></div>
+            <div class="msg-content">${msgContent}</div>
+            <div style="text-align: right; line-height: 1;">${infoIcon}</div>
+        `;
+        messageContainer.appendChild(msgDiv);
     }
 
     function isScrollAtBottom() {

@@ -11,7 +11,21 @@ class GroupChatController extends Controller
     public function fetchMessages(Request $request)
     {
         $last_id = $request->input('last_id', 0);
-        
+        $isOpen = $request->input('is_open', '0') === '1';
+
+        // Update user activity and read receipts
+        $user = Auth::user();
+        if ($user) {
+            $user->last_active_at = now();
+            if ($isOpen) {
+                $maxId = GroupChat::max('id') ?? 0;
+                if ($maxId > $user->last_read_message_id) {
+                    $user->last_read_message_id = $maxId;
+                }
+            }
+            $user->save();
+        }
+
         $messages = GroupChat::with('user:id,name,photo,role')
             ->where('id', '>', $last_id)
             ->orderBy('id', 'asc')
@@ -27,10 +41,25 @@ class GroupChatController extends Controller
                 ->reverse()
                 ->values();
         }
+        
+        $team = \App\User::whereIn('role', ['admin', 'staff'])
+            ->get(['id', 'name', 'last_active_at', 'last_read_message_id'])
+            ->map(function($member) {
+                if ($member->last_active_at) {
+                    $diffMins = $member->last_active_at->diffInMinutes(now());
+                    $member->is_online = $diffMins <= 2;
+                    $member->last_active_str = $member->is_online ? 'Online' : $member->last_active_at->diffForHumans();
+                } else {
+                    $member->is_online = false;
+                    $member->last_active_str = 'Never';
+                }
+                return $member;
+            });
 
         return response()->json([
             'status' => 'success',
-            'messages' => $messages
+            'messages' => $messages,
+            'team' => $team
         ]);
     }
 
