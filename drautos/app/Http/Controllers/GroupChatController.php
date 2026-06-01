@@ -46,9 +46,10 @@ class GroupChatController extends Controller
             ->get(['id', 'name', 'last_active_at', 'last_read_message_id'])
             ->map(function($member) {
                 if ($member->last_active_at) {
-                    $diffMins = $member->last_active_at->diffInMinutes(now());
+                    $lastActive = \Carbon\Carbon::parse($member->last_active_at);
+                    $diffMins = $lastActive->diffInMinutes(now());
                     $member->is_online = $diffMins <= 2;
-                    $member->last_active_str = $member->is_online ? 'Online' : $member->last_active_at->diffForHumans();
+                    $member->last_active_str = $member->is_online ? 'Online' : $lastActive->diffForHumans();
                 } else {
                     $member->is_online = false;
                     $member->last_active_str = 'Never';
