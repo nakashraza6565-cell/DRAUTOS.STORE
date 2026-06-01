@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let isOpen = false;
     let lastMessageId = 0;
     let unreadCount = 0;
+    let isInitialLoad = true;
     const currentUserId = {{ Auth::id() ?? 0 }};
 
     // --- Audio Notification Synthesizer ---
@@ -435,15 +436,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     let playedSound = false;
                     
                     data.messages.forEach(msg => {
-                        if (msg.id > lastMessageId) lastMessageId = msg.id;
+                        let isNewMsg = msg.id > lastMessageId;
+                        if (isNewMsg) lastMessageId = msg.id;
+                        
                         renderMessage(msg);
                         
-                        // Handle unread badges and sounds for incoming messages
-                        if (msg.user_id !== currentUserId) {
+                        // Handle unread badges and sounds for incoming NEW messages only
+                        if (isNewMsg && !isInitialLoad && msg.user_id !== currentUserId) {
                             if (!isOpen) {
                                 unreadCount++;
                                 unreadBadge.style.display = 'flex';
-                                unreadBadge.innerText = unreadCount;
+                                unreadBadge.innerText = unreadCount > 99 ? '99+' : unreadCount;
                             }
                             if (!playedSound) {
                                 playNotificationSound();
@@ -455,6 +458,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
                         scrollToBottom();
                     }
+                    
+                    isInitialLoad = false;
                 }
             })
             .catch(err => console.error('Chat poll error', err));
