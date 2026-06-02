@@ -56,24 +56,6 @@ class AdminController extends Controller
         // System Analytics
         $category_count = \App\Models\Category::countActiveCategory();
         $product_count = \App\Models\Product::countActiveProduct();
-        $order_count = \App\Models\Order::countActiveOrder();
-
-        // Sales Analytics
-        $today_sales = \App\Models\Order::whereDate('created_at', Carbon::today())->where('status', 'delivered')->sum('total_amount');
-        $yesterday_sales = \App\Models\Order::whereDate('created_at', Carbon::yesterday())->where('status', 'delivered')->sum('total_amount');
-
-        // Best Sellers
-        $best_sellers = \App\Models\Cart::with('product')
-            ->whereNotNull('order_id')
-            ->select('product_id', \DB::raw('SUM(quantity) as total_qty'))
-            ->groupBy('product_id')
-            ->orderBy('total_qty', 'DESC')
-            ->limit(5)
-            ->get();
-
-        // Recent Customers
-        $recent_customers = User::where('role', 'user')->orderBy('id', 'DESC')->limit(5)->get();
-
         // New Analytics for Dashboard
         $staff_count = User::whereIn('role', ['admin', 'manager', 'staff'])->count();
         $supplier_count = \App\Models\Supplier::where('status', 'active')->count();
