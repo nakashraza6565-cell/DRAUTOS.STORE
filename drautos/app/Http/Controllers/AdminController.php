@@ -62,10 +62,13 @@ class AdminController extends Controller
         $today_sales = \App\Models\Order::whereDate('created_at', \Carbon\Carbon::today())->where('status', 'delivered')->sum('total_amount');
         $yesterday_sales = \App\Models\Order::whereDate('created_at', \Carbon\Carbon::yesterday())->where('status', 'delivered')->sum('total_amount');
 
+        // Determine date range for Top Customers (Default 30 days instead of 7)
+        $topCustStart = $request->input('start_date') ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() : \Carbon\Carbon::today()->subDays(30)->startOfDay();
+
         // Top 5 Customers by Revenue
         $top_revenue_customers = \App\Models\Order::with('user')
             ->select('user_id', 'first_name', 'last_name', \DB::raw('SUM(total_amount) as total_revenue'))
-            ->where('created_at', '>=', $start)
+            ->where('created_at', '>=', $topCustStart)
             ->where('created_at', '<=', $end->copy()->endOfDay())
             ->groupBy('user_id', 'first_name', 'last_name')
             ->orderBy('total_revenue', 'DESC')
@@ -75,7 +78,7 @@ class AdminController extends Controller
         // Top 5 Customers by Orders
         $top_order_customers = \App\Models\Order::with('user')
             ->select('user_id', 'first_name', 'last_name', \DB::raw('COUNT(*) as total_orders'))
-            ->where('created_at', '>=', $start)
+            ->where('created_at', '>=', $topCustStart)
             ->where('created_at', '<=', $end->copy()->endOfDay())
             ->groupBy('user_id', 'first_name', 'last_name')
             ->orderBy('total_orders', 'DESC')

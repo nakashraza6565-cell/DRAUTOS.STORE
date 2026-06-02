@@ -288,7 +288,7 @@
                         <div class="icon-box bg-success-light mr-3"><i class="fas fa-crown text-success"></i></div>
                         Top 5 Customers (Revenue)
                         <span class="small text-muted ml-2">
-                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 7 Days @endif)
+                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 30 Days @endif)
                         </span>
                     </h5>
                 </div>
@@ -308,7 +308,7 @@
                         <div class="icon-box bg-primary-light mr-3"><i class="fas fa-shopping-bag text-primary"></i></div>
                         Top 5 Customers (Order Volume)
                         <span class="small text-muted ml-2">
-                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 7 Days @endif)
+                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 30 Days @endif)
                         </span>
                     </h5>
                 </div>
