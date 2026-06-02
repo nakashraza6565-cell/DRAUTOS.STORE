@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Incoming Goods - {{ $inventoryIncoming->reference_number }}</title>
     <style>
+        * { box-sizing: border-box; }
+        html, body, div, span, table, th, td, p, a, strong, b, .item-name, .item-details { font-weight: 900 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
         @page {
             size: 80mm auto;
             margin: 0;
