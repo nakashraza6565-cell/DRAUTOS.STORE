@@ -264,6 +264,25 @@ class AdminController extends Controller
         $order_counts = json_encode($order_counts);
         $raw_dates = json_encode($raw_dates);
         $users = json_encode($array);
+                $topRevNames = [];
+        $topRevAmounts = [];
+        foreach ($top_revenue_customers as $c) {
+            $topRevNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
+            $topRevAmounts[] = (float)$c->total_revenue;
+        }
+
+        $topOrdNames = [];
+        $topOrdCounts = [];
+        foreach ($top_order_customers as $c) {
+            $topOrdNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
+            $topOrdCounts[] = (int)$c->total_orders;
+        }
+
+        $topRevNamesJson = json_encode($topRevNames);
+        $topRevAmountsJson = json_encode($topRevAmounts);
+        $topOrdNamesJson = json_encode($topOrdNames);
+        $topOrdCountsJson = json_encode($topOrdCounts);
+
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         $recent_expense_titles = \App\Models\Expense::select('title')
             ->groupBy('title')
@@ -276,7 +295,7 @@ class AdminController extends Controller
 
             return view('backend.index', compact(
                 'users', 'category_count', 'product_count', 'order_count', 'today_sales',
-                'yesterday_sales', 'best_sellers', 'recent_customers', 'staff_count',
+                'yesterday_sales', 'top_revenue_customers', 'top_order_customers', 'recent_customers', 'staff_count',
                 'supplier_count', 'total_stock_value', 'active_register', 'today_tasks',
                 'new_products', 'order_labels', 'order_counts', 'order_amounts',
                 'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
@@ -284,7 +303,7 @@ class AdminController extends Controller
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
                 'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
                 'incoming_amounts', 'total_money_in_7d', 'total_money_out_7d',
-                'total_incoming_amount', 'total_sales_amount', 'raw_dates'
+                'total_incoming_amount', 'total_sales_amount', 'raw_dates', 'topRevNamesJson', 'topRevAmountsJson', 'topOrdNamesJson', 'topOrdCountsJson'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -471,6 +490,25 @@ class AdminController extends Controller
         // Get unique cities for search dropdown
         $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city')->sort();
         $units = \App\Models\Unit::orderBy('name')->get();
+                $topRevNames = [];
+        $topRevAmounts = [];
+        foreach ($top_revenue_customers as $c) {
+            $topRevNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
+            $topRevAmounts[] = (float)$c->total_revenue;
+        }
+
+        $topOrdNames = [];
+        $topOrdCounts = [];
+        foreach ($top_order_customers as $c) {
+            $topOrdNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
+            $topOrdCounts[] = (int)$c->total_orders;
+        }
+
+        $topRevNamesJson = json_encode($topRevNames);
+        $topRevAmountsJson = json_encode($topRevAmounts);
+        $topOrdNamesJson = json_encode($topOrdNames);
+        $topOrdCountsJson = json_encode($topOrdCounts);
+
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
         $walkInUser = User::where('email', 'walkin@pos.local')->first();
