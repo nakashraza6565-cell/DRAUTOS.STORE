@@ -478,7 +478,19 @@
                             (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 7 Days @endif)
                         </span>
                     </h5>
-                    <div class="small text-muted font-weight-bold">Daily Amount Comparison</div>
+                    <div class="text-right">
+                        <div class="small text-muted font-weight-bold mb-1">Daily Amount Comparison</div>
+                        <div class="d-flex align-items-center" style="gap: 10px; justify-content: flex-end;">
+                            <div style="background: rgba(163, 177, 198, 0.1); border-radius: 8px; padding: 4px 10px; border: 1px solid rgba(163, 177, 198, 0.3);">
+                                <span style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">&#9679; Incoming Goods</span>
+                                <div style="font-size: 13px; font-weight: 800; color: #475569;">Rs. {{ number_format($total_incoming_amount) }}</div>
+                            </div>
+                            <div style="background: rgba(250, 204, 21, 0.1); border-radius: 8px; padding: 4px 10px; border: 1px solid rgba(250, 204, 21, 0.3);">
+                                <span style="font-size: 10px; color: #d97706; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">&#9675; Customer Sales</span>
+                                <div style="font-size: 13px; font-weight: 800; color: #b45309;">Rs. {{ number_format($total_sales_amount) }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="panel-body p-4">
                     <div class="chart-area" style="height: 300px;">
@@ -615,6 +627,26 @@
                     <button type="submit" class="btn btn-primary rounded-pill px-4 shadow">SAVE & PRINT</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Details Modal -->
+<div class="modal fade" id="chartDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="chartDetailsModalTitle"><i class="fas fa-chart-pie mr-2"></i> Date Details</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-4" id="chartDetailsModalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Fetching breakdown...</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -868,6 +900,20 @@ document.addEventListener('DOMContentLoaded', function() {
         Chart.defaults.global.defaultFontFamily = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.global.defaultFontColor = '#64748b';
 
+        var rawDates = {!! $raw_dates !!};
+        
+        function openChartDetails(date, chartType) {
+            $('#chartDetailsModalTitle').html('<i class="fas fa-search-dollar mr-2"></i> Details for ' + date);
+            $('#chartDetailsModalBody').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div><p class="mt-2 text-muted">Fetching breakdown...</p></div>');
+            $('#chartDetailsModal').modal('show');
+            
+            $.get('{{ route("admin.chart.details") }}', { date: date, type: chartType }, function(data) {
+                $('#chartDetailsModalBody').html(data);
+            }).fail(function() {
+                $('#chartDetailsModalBody').html('<div class="alert alert-danger">Failed to load details.</div>');
+            });
+        }
+
         // Sales Line/Bar Chart (Hybrid)
         var ctxSales = document.getElementById("salesTrendsChart").getContext('2d');
         
@@ -924,6 +970,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         label: function(tooltipItem, chart) {
                             return 'Revenue: Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
                         }
+                    }
+                },
+                onClick: function(evt, activeElements) {
+                    if (activeElements.length > 0) {
+                        var index = activeElements[0]._index;
+                        openChartDetails(rawDates[index], 'incoming_sales');
                     }
                 }
             }
@@ -985,6 +1037,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             var label = chart.datasets[tooltipItem.datasetIndex].label || '';
                             return label + ': Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
                         }
+                    }
+                },
+                onClick: function(evt, activeElements) {
+                    if (activeElements.length > 0) {
+                        var index = activeElements[0]._index;
+                        openChartDetails(rawDates[index], 'cash_flow');
                     }
                 }
             }
@@ -1066,6 +1124,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             var label = chart.datasets[tooltipItem.datasetIndex].label || '';
                             return label + ': Rs. ' + Number(tooltipItem.yLabel).toLocaleString();
                         }
+                    }
+                },
+                onClick: function(evt, activeElements) {
+                    if (activeElements.length > 0) {
+                        var index = activeElements[0]._index;
+                        openChartDetails(rawDates[index], 'incoming_sales');
                     }
                 }
             }

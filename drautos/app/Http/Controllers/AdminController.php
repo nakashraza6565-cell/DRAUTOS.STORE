@@ -148,8 +148,10 @@ class AdminController extends Controller
         $order_labels = [];
         $order_counts = [];
         $order_amounts = [];
+        $raw_dates = [];
         for ($i = $diffDays; $i >= 0; $i--) {
             $date = $end->copy()->subDays($i)->format('Y-m-d');
+            $raw_dates[] = $date;
             $label = $diffDays > 7 ? $end->copy()->subDays($i)->format('M d') : $end->copy()->subDays($i)->format('D');
             $order_labels[] = $label;
 
@@ -252,12 +254,15 @@ class AdminController extends Controller
 
         $total_money_in_7d  = array_sum($money_in);
         $total_money_out_7d = array_sum($money_out);
+        $total_incoming_amount = array_sum($incoming_amounts);
+        $total_sales_amount = array_sum($order_amounts);
         $money_in  = json_encode($money_in);
         $money_out = json_encode($money_out);
         $incoming_amounts = json_encode($incoming_amounts);
         $order_labels = json_encode($order_labels);
         $order_amounts = json_encode($order_amounts);
         $order_counts = json_encode($order_counts);
+        $raw_dates = json_encode($raw_dates);
         $users = json_encode($array);
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         $recent_expense_titles = \App\Models\Expense::select('title')
@@ -278,7 +283,8 @@ class AdminController extends Controller
                 'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
                 'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
-                'incoming_amounts', 'total_money_in_7d', 'total_money_out_7d'
+                'incoming_amounts', 'total_money_in_7d', 'total_money_out_7d',
+                'total_incoming_amount', 'total_sales_amount', 'raw_dates'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -286,6 +292,37 @@ class AdminController extends Controller
         }
     }
 
+        public function chartDetails(\Illuminate\Http\Request $request)
+    {
+        $date = $request->date;
+        $type = $request->type;
+        
+        if ($type == 'cash_flow') {
+            $inTransactions = \App\Models\AccountTransaction::with('account')
+                ->whereDate('transaction_date', $date)
+                ->where('type', 'in')
+                ->get();
+                
+            $outTransactions = \App\Models\AccountTransaction::with('account')
+                ->whereDate('transaction_date', $date)
+                ->where('type', 'out')
+                ->get();
+                
+            return view('backend.partials.chart_details', compact('inTransactions', 'outTransactions', 'date', 'type'));
+        } elseif ($type == 'incoming_sales') {
+            $incoming = \App\Models\InventoryIncoming::with(['supplier', 'items'])
+                ->whereDate('received_date', $date)
+                ->get();
+                
+            $sales = \App\Models\Order::with('user')
+                ->whereDate('created_at', $date)
+                ->get();
+                
+            return view('backend.partials.chart_details', compact('incoming', 'sales', 'date', 'type'));
+        }
+        
+        return "Invalid chart type.";
+    }
     public function whatsappSettings()
     {
         return view('backend.whatsapp.settings');

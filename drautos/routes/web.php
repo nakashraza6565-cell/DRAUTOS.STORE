@@ -332,6 +332,7 @@ Route::get('payment/success', [PayPalController::class, 'success'])->name('payme
 
 Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin');
+    Route::get('/dashboard/chart-details', [AdminController::class, 'chartDetails'])->name('admin.chart.details');
     Route::get('/activity-logs', 'ActivityController@index')->name('admin.activity-logs');
 
     // Debug & Fix Routes (Secure)
