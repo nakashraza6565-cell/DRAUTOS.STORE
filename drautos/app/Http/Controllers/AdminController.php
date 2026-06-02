@@ -26,11 +26,25 @@ class AdminController extends Controller
         $this->whatsapp = $whatsapp;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
+            $startDate = $request->input('start_date', Carbon::today()->subDays(6)->format('Y-m-d'));
+            $endDate = $request->input('end_date', Carbon::today()->format('Y-m-d'));
+            
+            $start = Carbon::parse($startDate);
+            $end = Carbon::parse($endDate);
+            
+            $diffDays = $end->diffInDays($start);
+            if ($diffDays > 31) { // Cap at 31 days max for charts
+                $start = $end->copy()->subDays(31);
+                $diffDays = 31;
+                $startDate = $start->format('Y-m-d');
+            }
+
         $data = User::select(\DB::raw("COUNT(*) as count"), \DB::raw("DAYNAME(created_at) as day_name"), \DB::raw("DAY(created_at) as day"))
-            ->where('created_at', '>', Carbon::today()->subDay(6))
+            ->where('created_at', '>=', $start)
+            ->where('created_at', '<=', $end->copy()->endOfDay())
             ->groupBy('day_name', 'day')
             ->orderBy('day')
             ->get();
@@ -77,13 +91,14 @@ class AdminController extends Controller
         // New Products
         $new_products = \App\Models\Product::orderBy('id', 'DESC')->limit(5)->get();
 
-        // Order Stats (Last 7 Days)
+        // Order Stats (Last N Days)
         $order_stats = \App\Models\Order::select(
             \DB::raw('DATE(created_at) as date'),
             \DB::raw('COUNT(*) as count'),
             \DB::raw('SUM(total_amount) as amount')
         )
-            ->where('created_at', '>=', Carbon::today()->subDays(6))
+            ->where('created_at', '>=', $start)
+            ->where('created_at', '<=', $end->copy()->endOfDay())
             ->groupBy('date')
             ->get();
         // 1. One-time Migration: Fix Walk-in Customer Conflict
@@ -133,9 +148,9 @@ class AdminController extends Controller
         $order_labels = [];
         $order_counts = [];
         $order_amounts = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i)->format('Y-m-d');
-            $label = Carbon::today()->subDays($i)->format('D');
+        for ($i = $diffDays; $i >= 0; $i--) {
+            $date = $end->copy()->subDays($i)->format('Y-m-d');
+            $label = $diffDays > 7 ? $end->copy()->subDays($i)->format('M d') : $end->copy()->subDays($i)->format('D');
             $order_labels[] = $label;
 
             $stat = $order_stats->firstWhere('date', $date);
@@ -204,17 +219,18 @@ class AdminController extends Controller
         // Get AI Summary Headlines
         $ai_headlines = class_exists('\App\Services\AIService') ? \App\Services\AIService::summarizeActivities($activity_logs) : null;
 
-        // Cash Flow Analytics (Last 7 Days)
+        // Cash Flow Analytics (Last N Days)
         $money_in = [];
         $money_out = [];
         $incoming_amounts = [];
 
         $incoming_goods = \App\Models\InventoryIncoming::with('items')
-            ->where('received_date', '>=', Carbon::today()->subDays(6))
+            ->where('received_date', '>=', $start)
+            ->where('received_date', '<=', $end->copy()->endOfDay())
             ->get();
 
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i)->format('Y-m-d');
+        for ($i = $diffDays; $i >= 0; $i--) {
+            $date = $end->copy()->subDays($i)->format('Y-m-d');
             $in = \App\Models\AccountTransaction::whereDate('transaction_date', $date)
                 ->where('type', 'in')
                 ->sum('amount');

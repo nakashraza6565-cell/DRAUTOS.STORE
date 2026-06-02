@@ -286,7 +286,10 @@
                 <div class="panel-header d-flex justify-content-between align-items-center">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
                         <div class="icon-box bg-info-light mr-3"><i class="fas fa-chart-line text-info"></i></div>
-                        Sales Performance (Last 7 Days)
+                        Sales Performance
+                        <span class="small text-muted ml-2">
+                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 7 Days @endif)
+                        </span>
                     </h5>
                 </div>
                 <div class="panel-body p-4">
@@ -426,7 +429,22 @@
                         Money In vs Money Out (Cash Flow)
                     </h5>
                     <div class="text-right">
-                        <div class="small text-muted font-weight-bold mb-1">Last 7 Days Analysis</div>
+                        <div class="small text-muted font-weight-bold mb-1">
+                            @if(request('start_date') && request('end_date'))
+                                {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') }}
+                            @else
+                                Last 7 Days Analysis
+                            @endif
+                        </div>
+                        <form action="{{ route('admin') }}" method="GET" class="d-flex align-items-center mb-2 justify-content-end" style="gap: 5px;">
+                            <input type="date" name="start_date" value="{{ request('start_date', \Carbon\Carbon::today()->subDays(6)->format('Y-m-d')) }}" class="form-control form-control-sm" style="width: auto; height: 26px; padding: 2px 6px; font-size: 11px;">
+                            <span class="small text-muted">to</span>
+                            <input type="date" name="end_date" value="{{ request('end_date', \Carbon\Carbon::today()->format('Y-m-d')) }}" class="form-control form-control-sm" style="width: auto; height: 26px; padding: 2px 6px; font-size: 11px;">
+                            <button type="submit" class="btn btn-sm btn-primary" style="height: 26px; padding: 2px 8px; font-size: 11px;">Filter</button>
+                            @if(request('start_date'))
+                                <a href="{{ route('admin') }}" class="btn btn-sm btn-light" style="height: 26px; padding: 2px 8px; font-size: 11px;"><i class="fas fa-times"></i></a>
+                            @endif
+                        </form>
                         <div class="d-flex align-items-center" style="gap: 10px; justify-content: flex-end;">
                             <div style="background: rgba(16,185,129,0.1); border-radius: 8px; padding: 4px 10px; border: 1px solid rgba(16,185,129,0.3);">
                                 <span style="font-size: 10px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">&#9650; Money In</span>
@@ -455,7 +473,10 @@
                 <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
                         <div class="icon-box bg-info-light mr-3"><i class="fas fa-boxes-packing text-info"></i></div>
-                        Incoming Goods vs Customer Sales (Last 7 Days)
+                        Incoming Goods vs Customer Sales
+                        <span class="small text-muted ml-2">
+                            (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 7 Days @endif)
+                        </span>
                     </h5>
                     <div class="small text-muted font-weight-bold">Daily Amount Comparison</div>
                 </div>
