@@ -3,7 +3,7 @@
 <head>
     <title>Purchase Order #{{ $purchaseOrder->po_number }}</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; font-weight: 900 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @page { margin: 0; }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;

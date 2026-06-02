@@ -3,7 +3,7 @@
 <head>
     <title>Purchase Return #{{ $return->return_number }}</title>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; font-weight: 900 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         @page { margin: 0; }
         @font-face {
             font-family: 'Revue';
