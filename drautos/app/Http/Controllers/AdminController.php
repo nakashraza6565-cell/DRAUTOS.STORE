@@ -75,12 +75,14 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
-        // Top 5 Customers by Orders
-        $top_order_customers = \App\Models\Order::with('user')
-            ->select('user_id', 'first_name', 'last_name', \DB::raw('COUNT(*) as total_orders'))
-            ->where('created_at', '>=', $topCustStart)
-            ->where('created_at', '<=', $end->copy()->endOfDay())
-            ->groupBy('user_id', 'first_name', 'last_name')
+        // Top 5 Customers by Recovery (Money Received)
+        $top_order_customers = \App\Models\CustomerLedger::with('user')
+            ->select('user_id', \DB::raw('SUM(amount) as total_orders'))
+            ->where('type', 'credit')
+            ->where('transaction_date', '>=', $topCustStart)
+            ->where('transaction_date', '<=', $end->copy()->endOfDay())
+            ->whereNotNull('user_id')
+            ->groupBy('user_id')
             ->orderBy('total_orders', 'DESC')
             ->limit(5)
             ->get();
@@ -288,8 +290,8 @@ class AdminController extends Controller
         $topOrdNames = [];
         $topOrdCounts = [];
         foreach ($top_order_customers as $c) {
-            $topOrdNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
-            $topOrdCounts[] = (int)$c->total_orders;
+            $topOrdNames[] = $c->user ? $c->user->name : 'Walk-in / Unknown';
+            $topOrdCounts[] = (float)$c->total_orders;
         }
 
         $topRevNamesJson = json_encode($topRevNames);

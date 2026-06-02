@@ -305,8 +305,8 @@
             <div class="premium-panel shadow-sm h-100">
                 <div class="panel-header bg-light-soft">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
-                        <div class="icon-box bg-primary-light mr-3"><i class="fas fa-shopping-bag text-primary"></i></div>
-                        Top 5 Customers (Order Volume)
+                        <div class="icon-box bg-primary-light mr-3"><i class="fas fa-hand-holding-usd text-primary"></i></div>
+                        Top 5 Customers (Recovery Amount)
                         <span class="small text-muted ml-2">
                             (@if(request('start_date')) {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d') }} @else Last 30 Days @endif)
                         </span>
@@ -951,7 +951,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Top 5 Customers by Order Count (Doughnut Chart)
+        // Top 5 Customers by Recovery (Doughnut/Pie Chart)
         var ctxOrd = document.getElementById("topOrdersChart").getContext('2d');
         new Chart(ctxOrd, {
             type: 'doughnut',
@@ -975,6 +975,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     yPadding: 15,
                     displayColors: false,
                     caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            var datasetLabel = chart.labels[tooltipItem.index] || '';
+                            var value = chart.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+                            return datasetLabel + ': Rs ' + Number(value).toLocaleString();
+                        }
+                    }
                 },
                 legend: {
                     display: true,
