@@ -39,6 +39,15 @@ Route::get('.well-known/assetlinks.json', function () {
 });
 
 // (Removed old fix-db route - moved to admin section)
+Route::get('/debug-logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+    if (file_exists($logFile)) {
+        $lines = file($logFile);
+        $last_lines = array_slice($lines, -250);
+        return response()->json($last_lines);
+    }
+    return 'Log file not found.';
+});
 Route::get('/fix-db', function () {
     try {
         $migrations = [
