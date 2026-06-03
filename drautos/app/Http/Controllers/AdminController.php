@@ -296,10 +296,11 @@ class AdminController extends Controller
             $recovered = (float)$c->total_orders; // this is actually total payment received
             
             // Calculate ordered amount for this customer in same date range
-            $orderedAmount = \App\Models\Order::where('user_id', $c->user_id)
-                ->where('created_at', '>=', $topCustStart)
-                ->where('created_at', '<=', $end->copy()->endOfDay())
-                ->sum('total_amount');
+            $orderedAmount = \App\Models\CustomerLedger::where('user_id', $c->user_id)
+                ->where('type', 'debit')
+                ->where('transaction_date', '>=', $topCustStart)
+                ->where('transaction_date', '<=', $end->copy()->endOfDay())
+                ->sum('amount');
             
             $ordered = (float)$orderedAmount;
             
