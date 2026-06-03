@@ -13,13 +13,13 @@
                                 @php
                                     $refName = '';
                                     $refLink = '#';
-                                    if ($t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
+                                    if ($t->reference_type === 'CustomerLedger' || $t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
                                         $model = \App\Models\CustomerLedger::find($t->reference_id);
                                         if ($model && $model->user) {
                                             $refName = $model->user->name;
                                             $refLink = route('customer_ledger.index', $model->user->id);
                                         }
-                                    } elseif ($t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
+                                    } elseif ($t->reference_type === 'SupplierLedger' || $t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
                                         $model = \App\Models\SupplierLedger::find($t->reference_id);
                                         if ($model && $model->supplier) {
                                             $refName = $model->supplier->name;
@@ -33,8 +33,6 @@
                                             {{ $t->category ?? 'Payment' }} 
                                             @if($refName)
                                                 <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
-                                            @else
-                                                <small class="text-danger ml-1">RAW REF: {{ $t->reference_type }}</small>
                                             @endif
                                         </div>
                                         <small class="text-muted">
@@ -72,13 +70,13 @@
                                 @php
                                     $refName = '';
                                     $refLink = '#';
-                                    if ($t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
+                                    if ($t->reference_type === 'CustomerLedger' || $t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
                                         $model = \App\Models\CustomerLedger::find($t->reference_id);
                                         if ($model && $model->user) {
                                             $refName = $model->user->name;
                                             $refLink = route('customer_ledger.index', $model->user->id);
                                         }
-                                    } elseif ($t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
+                                    } elseif ($t->reference_type === 'SupplierLedger' || $t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
                                         $model = \App\Models\SupplierLedger::find($t->reference_id);
                                         if ($model && $model->supplier) {
                                             $refName = $model->supplier->name;
@@ -92,8 +90,6 @@
                                             {{ $t->category ?? 'Payment' }}
                                             @if($refName)
                                                 <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
-                                            @else
-                                                <small class="text-danger ml-1">RAW REF: {{ $t->reference_type }}</small>
                                             @endif
                                         </div>
                                         <small class="text-muted">
