@@ -17,13 +17,13 @@
                                         $model = \App\Models\CustomerLedger::find($t->reference_id);
                                         if ($model && $model->user) {
                                             $refName = $model->user->name;
-                                            $refLink = route('customer_ledger.index', $model->user->id);
+                                            $refLink = route('admin.customer-ledger.show', $model->user->id);
                                         }
                                     } elseif ($t->reference_type === 'SupplierLedger' || $t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
                                         $model = \App\Models\SupplierLedger::find($t->reference_id);
                                         if ($model && $model->supplier) {
                                             $refName = $model->supplier->name;
-                                            $refLink = route('admin.supplier-ledger.index', $model->supplier->id);
+                                            $refLink = route('admin.supplier-ledger.show', $model->supplier->id);
                                         }
                                     }
                                 @endphp
@@ -74,13 +74,13 @@
                                         $model = \App\Models\CustomerLedger::find($t->reference_id);
                                         if ($model && $model->user) {
                                             $refName = $model->user->name;
-                                            $refLink = route('customer_ledger.index', $model->user->id);
+                                            $refLink = route('admin.customer-ledger.show', $model->user->id);
                                         }
                                     } elseif ($t->reference_type === 'SupplierLedger' || $t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
                                         $model = \App\Models\SupplierLedger::find($t->reference_id);
                                         if ($model && $model->supplier) {
                                             $refName = $model->supplier->name;
-                                            $refLink = route('admin.supplier-ledger.index', $model->supplier->id);
+                                            $refLink = route('admin.supplier-ledger.show', $model->supplier->id);
                                         }
                                     }
                                 @endphp
