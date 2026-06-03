@@ -10,10 +10,38 @@
                     @if(count($inTransactions) > 0)
                         <ul class="list-group list-group-flush">
                             @foreach($inTransactions as $t)
+                                @php
+                                    $refName = '';
+                                    $refLink = '#';
+                                    if ($t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
+                                        $model = \App\Models\CustomerLedger::find($t->reference_id);
+                                        if ($model && $model->user) {
+                                            $refName = $model->user->name;
+                                            $refLink = route('customer_ledger.index', $model->user->id);
+                                        }
+                                    } elseif ($t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
+                                        $model = \App\Models\SupplierLedger::find($t->reference_id);
+                                        if ($model && $model->supplier) {
+                                            $refName = $model->supplier->name;
+                                            $refLink = route('admin.supplier-ledger.index', $model->supplier->id);
+                                        }
+                                    }
+                                @endphp
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="font-weight-bold">{{ $t->category ?? 'Payment' }}</div>
-                                        <small class="text-muted">{{ $t->reference_type }} #{{ $t->reference_id }}</small>
+                                        <div class="font-weight-bold">
+                                            {{ $t->category ?? 'Payment' }} 
+                                            @if($refName)
+                                                <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
+                                            @endif
+                                        </div>
+                                        <small class="text-muted">
+                                            @if($refLink !== '#')
+                                                <a href="{{ $refLink }}" class="text-decoration-underline" target="_blank">{{ class_basename($t->reference_type) }} #{{ $t->reference_id }}</a>
+                                            @else
+                                                {{ class_basename($t->reference_type) }} #{{ $t->reference_id }}
+                                            @endif
+                                        </small>
                                     </div>
                                     <span class="badge badge-success badge-pill" style="font-size: 14px;">Rs. {{ number_format($t->amount) }}</span>
                                 </li>
@@ -39,10 +67,38 @@
                     @if(count($outTransactions) > 0)
                         <ul class="list-group list-group-flush">
                             @foreach($outTransactions as $t)
+                                @php
+                                    $refName = '';
+                                    $refLink = '#';
+                                    if ($t->reference_type === 'App\Models\CustomerLedger' || $t->reference_type === 'App\CustomerLedger') {
+                                        $model = \App\Models\CustomerLedger::find($t->reference_id);
+                                        if ($model && $model->user) {
+                                            $refName = $model->user->name;
+                                            $refLink = route('customer_ledger.index', $model->user->id);
+                                        }
+                                    } elseif ($t->reference_type === 'App\Models\SupplierLedger' || $t->reference_type === 'App\SupplierLedger') {
+                                        $model = \App\Models\SupplierLedger::find($t->reference_id);
+                                        if ($model && $model->supplier) {
+                                            $refName = $model->supplier->name;
+                                            $refLink = route('admin.supplier-ledger.index', $model->supplier->id);
+                                        }
+                                    }
+                                @endphp
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
-                                        <div class="font-weight-bold">{{ $t->category ?? 'Payment' }}</div>
-                                        <small class="text-muted">{{ $t->reference_type }} #{{ $t->reference_id }}</small>
+                                        <div class="font-weight-bold">
+                                            {{ $t->category ?? 'Payment' }}
+                                            @if($refName)
+                                                <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
+                                            @endif
+                                        </div>
+                                        <small class="text-muted">
+                                            @if($refLink !== '#')
+                                                <a href="{{ $refLink }}" class="text-decoration-underline" target="_blank">{{ class_basename($t->reference_type) }} #{{ $t->reference_id }}</a>
+                                            @else
+                                                {{ class_basename($t->reference_type) }} #{{ $t->reference_id }}
+                                            @endif
+                                        </small>
                                     </div>
                                     <span class="badge badge-danger badge-pill" style="font-size: 14px;">Rs. {{ number_format($t->amount) }}</span>
                                 </li>
