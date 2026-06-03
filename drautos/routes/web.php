@@ -438,9 +438,10 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/notifications', [NotificationController::class, 'index'])->name('all.notification');
     Route::delete('/notification/{id}', [NotificationController::class, 'delete'])->name('notification.delete');
     // ERP & POS Modules
-    Route::get('/pos', [AdminController::class, 'pos'])->name('admin.pos');
-    Route::post('/pos/order', [AdminController::class, 'storePosOrder'])->name('pos.store-order');
-    Route::get('/pos/thermal/{id}', [AdminController::class, 'thermalPrint'])->name('order.thermal');
+    Route::get('pos', 'AdminController@pos')->name('admin.pos');
+    Route::post('pos/order', 'AdminController@storePosOrder')->name('pos.store-order');
+    Route::get('pos/thermal/{id}', 'AdminController@thermalPrint')->name('order.thermal');
+    Route::get('clean-orphans', 'AdminController@cleanOrphans');
     // Route::get('/order/pdf/{id}', [OrderController::class, 'pdf'])->name('order.pdf');
     Route::get('/pos/search-products', [AdminController::class, 'searchProducts'])->name('pos.search-products');
     Route::get('/pos/last-purchase', [AdminController::class, 'getLastPurchase'])->name('pos.last-purchase');

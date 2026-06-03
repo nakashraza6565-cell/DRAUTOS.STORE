@@ -216,6 +216,14 @@ class SupplierLedgerController extends Controller
         try {
             $transaction = SupplierLedger::findOrFail($id);
             $supplierId = $transaction->supplier_id;
+            
+            // Delete related account transactions
+            \App\Models\AccountTransaction::where(function($query) {
+                $query->where('reference_type', 'SupplierLedger')
+                      ->orWhere('reference_type', 'App\Models\SupplierLedger')
+                      ->orWhere('reference_type', 'App\SupplierLedger');
+            })->where('reference_id', $id)->delete();
+
             $transaction->delete();
             
             // Recalculate balance

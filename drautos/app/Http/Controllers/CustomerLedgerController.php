@@ -183,6 +183,14 @@ class CustomerLedgerController extends Controller
         try {
             $transaction = CustomerLedger::findOrFail($id);
             $userId = $transaction->user_id;
+            
+            // Delete related account transactions
+            \App\Models\AccountTransaction::where(function($query) {
+                $query->where('reference_type', 'CustomerLedger')
+                      ->orWhere('reference_type', 'App\Models\CustomerLedger')
+                      ->orWhere('reference_type', 'App\CustomerLedger');
+            })->where('reference_id', $id)->delete();
+
             $transaction->delete();
             
             // Recalculate balance for this user

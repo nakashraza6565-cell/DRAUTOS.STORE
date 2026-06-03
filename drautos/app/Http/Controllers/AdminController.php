@@ -997,4 +997,25 @@ class AdminController extends Controller
             'max_price' => (float)($prices->max_price ?? 0)
         ]);
     }
+
+    public function cleanOrphans()
+    {
+        $count = 0;
+        $transactions = \App\Models\AccountTransaction::whereIn('reference_type', ['CustomerLedger', 'App\Models\CustomerLedger', 'App\CustomerLedger'])->get();
+        foreach($transactions as $t) {
+            if(!\App\Models\CustomerLedger::find($t->reference_id)) {
+                $t->delete();
+                $count++;
+            }
+        }
+
+        $transactions2 = \App\Models\AccountTransaction::whereIn('reference_type', ['SupplierLedger', 'App\Models\SupplierLedger', 'App\SupplierLedger'])->get();
+        foreach($transactions2 as $t) {
+            if(!\App\Models\SupplierLedger::find($t->reference_id)) {
+                $t->delete();
+                $count++;
+            }
+        }
+        return response()->json(['message' => "Cleanup complete. Deleted $count orphaned transactions."]);
+    }
 }
