@@ -638,6 +638,45 @@
     </div>
 </div>
 
+<!-- Quick Add Calendar Task Modal -->
+<div class="modal fade" id="quickAddCalendarModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-calendar-plus mr-2"></i> Quick Add to Calendar</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <form id="quickAddCalendarForm" action="{{ route('tasks.store') }}" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <input type="hidden" name="all_day" value="1">
+                    <input type="hidden" name="priority" value="medium">
+                    <input type="hidden" name="task_type" value="general">
+                    
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Date <span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" id="quickAddDate" class="form-control border-0 bg-light" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="small font-weight-bold">Task / Reminder Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control border-0 bg-light" placeholder="e.g. Call Customer, Follow up on delivery" required autofocus autocomplete="off">
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <label class="small font-weight-bold">Details (Optional)</label>
+                        <textarea name="description" class="form-control border-0 bg-light" rows="2" placeholder="Any extra details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow">Save to Calendar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Chart Details Modal -->
 <div class="modal fade" id="chartDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -784,13 +823,88 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     .shadow-warning { box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
 
-    /* Calendar Overrides */
-    .fc-theme-standard th { border: none !important; color: #64748b; text-transform: uppercase; font-size: 0.8rem; padding: 10px 0;}
-    .fc-theme-standard td { border-color: #f1f5f9; }
-    .fc-day-today { background-color: rgba(99, 102, 241, 0.05) !important; }
-    .fc-button-primary { background: #6366f1 !important; border: none !important; border-radius: 8px !important; text-transform: capitalize; font-weight: 600;}
-    .fc-toolbar-title { font-weight: 800 !important; color: #1e293b; font-size: 1.2rem !important;}
-    .fc-event { border-radius: 4px; border: none; padding: 2px 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer;}
+    /* Premium Google-Like Calendar Overrides */
+    .fc-theme-standard th { 
+        border: none !important; 
+        color: #64748b; 
+        text-transform: uppercase; 
+        font-size: 0.75rem; 
+        padding: 12px 0;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .fc-theme-standard td { border-color: rgba(226, 232, 240, 0.6); }
+    .fc-day-today { background-color: transparent !important; }
+    .fc-day-today .fc-daygrid-day-number {
+        background-color: #083259;
+        color: white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 4px;
+    }
+    .fc-button-primary { 
+        background: #083259 !important; 
+        border: none !important; 
+        border-radius: 20px !important; 
+        text-transform: capitalize; 
+        font-weight: 600;
+        padding: 0.4rem 1.2rem !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s;
+    }
+    .fc-button-primary:hover {
+        background: #0a2540 !important;
+        transform: translateY(-1px);
+    }
+    .fc-button-active {
+        background: #facc15 !important;
+        color: #083259 !important;
+    }
+    .fc-toolbar-title { 
+        font-weight: 800 !important; 
+        color: #1e293b; 
+        font-size: 1.4rem !important;
+    }
+    .fc-event { 
+        border-radius: 6px; 
+        border: none; 
+        padding: 4px 8px; 
+        font-size: 0.75rem; 
+        font-weight: 600; 
+        cursor: pointer;
+        margin-bottom: 2px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        transition: transform 0.1s;
+    }
+    .fc-event:hover {
+        transform: scale(1.02);
+    }
+    .fc-daygrid-day-frame {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .fc-daygrid-day-frame:hover {
+        background: rgba(248, 250, 252, 0.8);
+    }
+    /* Event Popover Customization */
+    .popover {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .popover-header {
+        background-color: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        font-weight: 700;
+        color: #1e293b;
+    }
     /* Ticker Styles */
     .newspaper-ticker-container {
         background: #1e293b;
@@ -897,8 +1011,66 @@ document.addEventListener('DOMContentLoaded', function() {
             headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
             events: "{{ route('tasks.calendar-events') }}",
             eventColor: '#6366f1',
+            editable: true,
+            eventAllow: function(dropInfo, draggedEvent) {
+                // Only allow dragging of actual Tasks
+                return draggedEvent.extendedProps.isTask;
+            },
+            eventDrop: function(info) {
+                if(!info.event.extendedProps.isTask) {
+                    info.revert();
+                    return;
+                }
+                // AJAX call to update task date
+                $.ajax({
+                    url: '/admin/tasks/' + info.event.id,
+                    type: 'PUT',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        start_date: info.event.startStr,
+                        end_date: info.event.endStr || info.event.startStr
+                    },
+                    success: function(res) {
+                        if(res.success) {
+                            console.log('Task rescheduled');
+                        } else {
+                            info.revert();
+                        }
+                    },
+                    error: function() {
+                        info.revert();
+                        alert('Error rescheduling task.');
+                    }
+                });
+            },
+            dateClick: function(info) {
+                $('#quickAddDate').val(info.dateStr);
+                $('#quickAddCalendarModal').modal('show');
+            },
+            eventDidMount: function(info) {
+                // Add Bootstrap Popover for Google Calendar-like tooltips
+                $(info.el).popover({
+                    title: info.event.title,
+                    placement: 'top',
+                    trigger: 'hover',
+                    html: true,
+                    content: `
+                        <div class="small">
+                            <strong>Details:</strong> ${info.event.extendedProps.description || 'No details'}<br>
+                            <strong>Status:</strong> <span class="badge badge-light border">${info.event.extendedProps.status || 'N/A'}</span><br>
+                            <strong>Assignee:</strong> ${info.event.extendedProps.assignee || 'Unassigned'}
+                        </div>
+                    `,
+                    container: 'body'
+                });
+                
+                // Support custom text colors
+                if (info.event.extendedProps.textColor) {
+                    info.el.style.color = info.event.extendedProps.textColor;
+                }
+            },
             eventClick: function(info) {
-                alert(info.event.title + "\n\n" + (info.event.extendedProps.description || "No details."));
+                info.jsEvent.preventDefault();
             }
         });
         calendar.render();
