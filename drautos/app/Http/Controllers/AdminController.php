@@ -506,24 +506,6 @@ class AdminController extends Controller
         // Get unique cities for search dropdown
         $cities = User::whereNotNull('city')->where('city', '!=', '')->distinct()->pluck('city')->sort();
         $units = \App\Models\Unit::orderBy('name')->get();
-                $topRevNames = [];
-        $topRevAmounts = [];
-        foreach ($top_revenue_customers as $c) {
-            $topRevNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
-            $topRevAmounts[] = (float)$c->total_revenue;
-        }
-
-        $topOrdNames = [];
-        $topOrdCounts = [];
-        foreach ($top_order_customers as $c) {
-            $topOrdNames[] = $c->user ? $c->user->name : ($c->first_name . ' ' . $c->last_name);
-            $topOrdCounts[] = (int)$c->total_orders;
-        }
-
-        $topRevNamesJson = json_encode($topRevNames);
-        $topRevAmountsJson = json_encode($topRevAmounts);
-        $topOrdNamesJson = json_encode($topOrdNames);
-        $topOrdCountsJson = json_encode($topOrdCounts);
 
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         
