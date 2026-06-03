@@ -148,50 +148,26 @@ class TaskController extends Controller
             ];
         }
 
-        // Add Payment Reminders
-        $reminders = \App\Models\PaymentReminder::with('party')
-            ->whereBetween('due_date', [$start, $end])
-            ->whereIn('status', ['pending', 'partially_paid'])
+        // Add Pending Cheques
+        $cheques = \App\Models\Cheque::with('party')
+            ->whereBetween('clearing_date', [$start, $end])
+            ->where('status', 'pending')
             ->get();
 
-        foreach ($reminders as $reminder) {
-            $isReceivable = $reminder->type === 'receivable';
+        foreach ($cheques as $cheque) {
+            $isReceivable = in_array($cheque->type, ['receive', 'received', 'inward', 'receivable']);
             $events[] = [
-                'id' => 'rem_' . $reminder->id,
-                'title' => ($isReceivable ? 'Receive: ' : 'Pay: ') . 'Rs ' . number_format($reminder->remaining_amount),
-                'start' => $reminder->due_date->format('Y-m-d'),
+                'id' => 'chq_' . $cheque->id,
+                'title' => 'Cheque: Rs ' . number_format($cheque->amount),
+                'start' => $cheque->clearing_date->format('Y-m-d'),
                 'allDay' => true,
-                'color' => $isReceivable ? '#10b981' : '#ef4444', // Green for receive, Red for pay
+                'color' => $isReceivable ? '#10b981' : '#ef4444', // Green for receive, Red for issue
                 'extendedProps' => [
-                    'description' => $reminder->notes ?? 'Payment reminder',
+                    'description' => 'Cheque No: ' . $cheque->cheque_number . ' | Bank: ' . $cheque->bank_name,
                     'priority' => 'high',
-                    'status' => $reminder->status,
-                    'task_type' => 'payment_reminder',
-                    'assignee' => $reminder->party->name ?? 'Unknown',
-                    'isTask' => false
-                ],
-            ];
-        }
-
-        // Add Deliveries (Biltys)
-        $deliveries = \App\Models\DeliveryReceipt::with('customer')
-            ->whereBetween('date', [$start, $end])
-            ->get();
-
-        foreach ($deliveries as $del) {
-            $events[] = [
-                'id' => 'del_' . $del->id,
-                'title' => 'Bilty: ' . $del->receiver_name,
-                'start' => $del->date,
-                'allDay' => true,
-                'color' => '#facc15', // Yellow for deliveries
-                'textColor' => '#1e293b', // Dark text for yellow bg
-                'extendedProps' => [
-                    'description' => 'Courier: ' . ($del->courier_company ?? 'N/A') . ' | Parcels: ' . $del->total_parcels,
-                    'priority' => 'medium',
-                    'status' => 'pending',
-                    'task_type' => 'delivery',
-                    'assignee' => 'Logistics',
+                    'status' => $cheque->status,
+                    'task_type' => 'cheque',
+                    'assignee' => $cheque->party->name ?? 'Unknown',
                     'isTask' => false
                 ],
             ];
