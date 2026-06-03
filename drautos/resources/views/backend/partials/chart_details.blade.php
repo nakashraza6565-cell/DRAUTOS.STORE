@@ -33,6 +33,8 @@
                                             {{ $t->category ?? 'Payment' }} 
                                             @if($refName)
                                                 <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
+                                            @else
+                                                <small class="text-danger ml-1">RAW REF: {{ $t->reference_type }}</small>
                                             @endif
                                         </div>
                                         <small class="text-muted">
@@ -90,6 +92,8 @@
                                             {{ $t->category ?? 'Payment' }}
                                             @if($refName)
                                                 <small class="text-danger ml-1 text-uppercase">{{ $refName }}</small>
+                                            @else
+                                                <small class="text-danger ml-1">RAW REF: {{ $t->reference_type }}</small>
                                             @endif
                                         </div>
                                         <small class="text-muted">
