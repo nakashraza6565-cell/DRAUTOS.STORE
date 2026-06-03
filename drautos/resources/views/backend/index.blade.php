@@ -1074,6 +1074,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         calendar.render();
+        
+        window.calendarObj = calendar;
+    });
+
+    // Handle Quick Add Form via AJAX
+    $('#quickAddCalendarForm').on('submit', function(e) {
+        e.preventDefault();
+        var $btn = $(this).find('button[type="submit"]');
+        var originalText = $btn.text();
+        $btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...').prop('disabled', true);
+        
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if(response.success) {
+                    $('#quickAddCalendarModal').modal('hide');
+                    $('#quickAddCalendarForm')[0].reset();
+                    if(window.calendarObj) {
+                        window.calendarObj.refetchEvents();
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added!',
+                        text: 'Task saved to calendar.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            },
+            error: function(xhr) {
+                alert('Failed to save task.');
+            },
+            complete: function() {
+                $btn.html(originalText).prop('disabled', false);
+            }
+        });
+    });
 
         // Chart defaults
         Chart.defaults.global.defaultFontFamily = "'Plus Jakarta Sans', sans-serif";
