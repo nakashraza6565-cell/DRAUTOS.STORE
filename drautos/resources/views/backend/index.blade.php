@@ -313,8 +313,27 @@
                     </h5>
                 </div>
                 <div class="panel-body p-4">
-                    <div class="chart-area" style="height: 350px;">
-                        <canvas id="topOrdersChart"></canvas>
+                    <div class="recovery-stats-container" style="height: 350px; overflow-y: auto; padding-right: 10px;">
+                        @forelse($top_recovery_stats as $stat)
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-end mb-1">
+                                    <span class="font-weight-bold text-gray-800" style="font-size: 15px;">{{ $stat['name'] }}</span>
+                                    <span class="text-{{ $stat['recovery_rate'] >= 100 ? 'success' : ($stat['recovery_rate'] >= 50 ? 'warning' : 'danger') }} font-weight-bolder" style="font-size: 14px;">{{ number_format($stat['recovery_rate'], 1) }}% Recovery</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 10px; border-radius: 5px; background-color: #e2e8f0;">
+                                    <div class="progress-bar bg-{{ $stat['recovery_rate'] >= 100 ? 'success' : ($stat['recovery_rate'] >= 50 ? 'warning' : 'danger') }}" role="progressbar" style="width: {{ min(100, $stat['recovery_rate']) }}%" aria-valuenow="{{ $stat['recovery_rate'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between small text-muted">
+                                    <span>Ordered: <strong>Rs. {{ number_format($stat['ordered_amount']) }}</strong></span>
+                                    <span>Recovered: <strong>Rs. {{ number_format($stat['recovered_amount']) }}</strong></span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-chart-bar fa-2x mb-3 text-gray-300"></i>
+                                <p>No recovery data for this period.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -951,45 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Top 5 Customers by Recovery (Doughnut/Pie Chart)
-        var ctxOrd = document.getElementById("topOrdersChart").getContext('2d');
-        new Chart(ctxOrd, {
-            type: 'doughnut',
-            data: {
-                labels: {!! $topOrdNamesJson !!},
-                datasets: [{
-                    data: {!! $topOrdCountsJson !!},
-                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                tooltips: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                    callbacks: {
-                        label: function(tooltipItem, chart) {
-                            var datasetLabel = chart.labels[tooltipItem.index] || '';
-                            var value = chart.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-                            return datasetLabel + ': Rs ' + Number(value).toLocaleString();
-                        }
-                    }
-                },
-                legend: {
-                    display: true,
-                    position: 'bottom'
-                },
-                cutoutPercentage: 70,
-            }
-        });
+
 // Cash Flow Bar Chart
         var ctxFlow = document.getElementById("cashFlowChart").getContext('2d');
         new Chart(ctxFlow, {

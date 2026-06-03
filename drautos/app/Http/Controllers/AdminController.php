@@ -287,17 +287,31 @@ class AdminController extends Controller
             $topRevAmounts[] = (float)$c->total_revenue;
         }
 
-        $topOrdNames = [];
-        $topOrdCounts = [];
-        foreach ($top_order_customers as $c) {
-            $topOrdNames[] = $c->user ? $c->user->name : 'Walk-in / Unknown';
-            $topOrdCounts[] = (float)$c->total_orders;
-        }
-
         $topRevNamesJson = json_encode($topRevNames);
         $topRevAmountsJson = json_encode($topRevAmounts);
-        $topOrdNamesJson = json_encode($topOrdNames);
-        $topOrdCountsJson = json_encode($topOrdCounts);
+
+        $top_recovery_stats = [];
+        foreach ($top_order_customers as $c) {
+            $name = $c->user ? $c->user->name : 'Walk-in / Unknown';
+            $recovered = (float)$c->total_orders; // this is actually total payment received
+            
+            // Calculate ordered amount for this customer in same date range
+            $orderedAmount = \App\Models\Order::where('user_id', $c->user_id)
+                ->where('created_at', '>=', $topCustStart)
+                ->where('created_at', '<=', $end->copy()->endOfDay())
+                ->sum('total_amount');
+            
+            $ordered = (float)$orderedAmount;
+            
+            $recoveryRate = $ordered > 0 ? ($recovered / $ordered) * 100 : ($recovered > 0 ? 100 : 0);
+
+            $top_recovery_stats[] = [
+                'name' => $name,
+                'recovered_amount' => $recovered,
+                'ordered_amount' => $ordered,
+                'recovery_rate' => $recoveryRate
+            ];
+        }
 
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
         $recent_expense_titles = \App\Models\Expense::select('title')
@@ -319,7 +333,7 @@ class AdminController extends Controller
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
                 'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
                 'incoming_amounts', 'total_money_in_7d', 'total_money_out_7d',
-                'total_incoming_amount', 'total_sales_amount', 'raw_dates', 'topRevNamesJson', 'topRevAmountsJson', 'topOrdNamesJson', 'topOrdCountsJson'
+                'total_incoming_amount', 'total_sales_amount', 'raw_dates', 'topRevNamesJson', 'topRevAmountsJson', 'top_recovery_stats'
             ));
         } catch (\Throwable $e) {
             \Log::error("Dashboard Error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
