@@ -132,7 +132,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <div class="font-weight-bold">Supplier: {{ $in->supplier ? $in->supplier->name : 'N/A' }}</div>
-                                        <small class="text-muted">Batch #{{ $in->batch_number ?? $in->id }} ({{ $in->items->count() }} items)</small>
+                                        <small class="text-muted"><a href="{{ route('inventory-incoming.show', $in->id) }}" target="_blank" class="text-decoration-underline text-muted">Batch #{{ $in->batch_number ?? $in->id }}</a> ({{ $in->items->count() }} items)</small>
                                     </div>
                                     <span class="badge badge-secondary badge-pill" style="font-size: 14px;">Rs. {{ number_format($amount) }}</span>
                                 </li>
@@ -161,7 +161,7 @@
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <div>
                                         <div class="font-weight-bold">{{ $order->user ? $order->user->name : ($order->first_name . ' ' . $order->last_name) }}</div>
-                                        <small class="text-muted">Order #{{ $order->order_number }}</small>
+                                        <small class="text-muted"><a href="{{ route('order.show', $order->id) }}" target="_blank" class="text-decoration-underline text-muted">Order #{{ $order->order_number }}</a></small>
                                     </div>
                                     <span class="badge badge-warning badge-pill" style="font-size: 14px;">Rs. {{ number_format($order->total_amount) }}</span>
                                 </li>
