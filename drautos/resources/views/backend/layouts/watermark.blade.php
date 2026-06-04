@@ -1,7 +1,7 @@
 <style>
 @font-face {
     font-family: 'Revue';
-    src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
+    src: url("{{ asset('revue/reve.ttf') }}") format("truetype");
 }
 .watermark-shared {
     position: fixed; 
@@ -11,7 +11,7 @@
     font-size: 300px; 
     color: #000; 
     opacity: 0.04; 
-    z-index: -1000;
+    z-index: 0;
     font-family: 'Revue', sans-serif; 
     pointer-events: none;
     white-space: nowrap;
@@ -24,7 +24,7 @@
     font-size: 140px; 
     color: #000; 
     opacity: 0.05; 
-    z-index: -1; 
+    z-index: 0; 
     pointer-events: none;
     font-family: 'Revue', sans-serif;
     white-space: nowrap;
