@@ -99,6 +99,8 @@
             body { padding: 0; margin: 0; }
         }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
 <body>
     <div class="header-container text-center">
@@ -177,4 +179,5 @@
     </script>
 </body>
 </html>
+
 

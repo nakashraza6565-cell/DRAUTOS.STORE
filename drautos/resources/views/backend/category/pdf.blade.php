@@ -16,6 +16,8 @@
         .no-items { color: #94a3b8; font-style: italic; font-size: 11px; }
         .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #94a3b8; padding: 10px 0; }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'pdf'])
 </head>
 <body>
     <div class="header">
@@ -70,4 +72,5 @@
     </div>
 </body>
 </html>
+
 

@@ -33,6 +33,8 @@
         .footer { margin-top: 5mm; font-size: 10px; }
         .qr-code { margin: 5mm 0; }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
 <body onload="window.print();">
     <div class="text-center header">
@@ -169,4 +171,5 @@
     </div>
 </body>
 </html>
+
 

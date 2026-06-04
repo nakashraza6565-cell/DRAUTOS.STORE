@@ -146,6 +146,8 @@
             body { padding: 0; margin: 0; }
         }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
 <body>
     @php
@@ -272,4 +274,5 @@
     </script>
 </body>
 </html>
+
 

@@ -107,6 +107,8 @@
             .no-print { display: none; }
         }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
 <body onload="window.print();">
     <!-- RECEIPT 1: PURCHASE ORDER (PERFORMA) -->
@@ -248,4 +250,5 @@
     </div>
 </body>
 </html>
+
 

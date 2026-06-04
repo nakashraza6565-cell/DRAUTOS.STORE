@@ -13,6 +13,8 @@
         .text-right { text-align: right; }
         .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 12px; }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'pdf'])
 </head>
 <body>
     <div class="header">
@@ -54,4 +56,5 @@
     </div>
 </body>
 </html>
+
 

@@ -81,6 +81,8 @@
             padding-top: 10px;
         }
     </style>
+
+@include('backend.layouts.watermark', ['type' => 'pdf'])
 </head>
 <body>
     <div class="header">
@@ -138,4 +140,5 @@
     </div>
 </body>
 </html>
+
 
