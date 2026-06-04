@@ -1,7 +1,7 @@
 <style>
 @font-face {
     font-family: 'Revue';
-    src: url("{{ str_replace('\', '/', public_path('revue/reve.ttf')) }}") format('truetype');
+    src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format('truetype');
 }
 @font-face {
     font-family: 'RevueBrowser';
