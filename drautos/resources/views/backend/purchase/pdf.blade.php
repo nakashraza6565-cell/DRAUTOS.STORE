@@ -30,7 +30,7 @@
     </style>
 </head>
 <body>
-    @include('backend.layouts.watermark')
+    @include('backend.layouts.watermark', ['type' => 'pdf'])
     
     <div class="header clearfix">
         <div style="float: left;">
@@ -121,4 +121,5 @@
     </div>
 </body>
 </html>
+
 

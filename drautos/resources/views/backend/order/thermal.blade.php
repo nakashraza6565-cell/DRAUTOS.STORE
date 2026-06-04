@@ -144,7 +144,7 @@
     @endphp
 
     @foreach($chunks as $pageIndex => $chunk)
-        @include('backend.layouts.watermark')
+        @include('backend.layouts.watermark', ['type' => 'thermal'])
         <div class="header-container text-center">
             <div class="merchant-name">{{ $isUrdu ? 'دنیال آٹوز' : 'DANYAL AUTOS' }}</div>
             <div class="merchant-address">
@@ -310,4 +310,5 @@
     </script>
 </body>
 </html>
+
 

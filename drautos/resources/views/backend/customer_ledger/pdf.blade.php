@@ -28,7 +28,7 @@
 </head>
 <body>
     <div id="ledger-wrapper" style="position: relative; background: #fff; padding: 20px;">
-        @include('backend.layouts.watermark')
+        @include('backend.layouts.watermark', ['type' => 'pdf'])
         <div class="header">
         <div class="company-name">Danyal Autos</div>
         <div>12-BUTT MARKET BADAMI BAGH LAHORE</div>
@@ -99,4 +99,5 @@
     </div>
 </body>
 </html>
+
 

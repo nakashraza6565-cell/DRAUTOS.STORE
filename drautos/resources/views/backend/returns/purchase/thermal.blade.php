@@ -103,7 +103,7 @@
     </style>
 </head>
 <body>
-    @include('backend.layouts.watermark')
+    @include('backend.layouts.watermark', ['type' => 'thermal'])
     <div class="header-container text-center">
         <div class="merchant-name">DANYAL AUTOS</div>
         <div style="font-size: 10px;">PURCHASE RETURN MANAGEMENT</div>
@@ -163,4 +163,5 @@
     </script>
 </body>
 </html>
+
 

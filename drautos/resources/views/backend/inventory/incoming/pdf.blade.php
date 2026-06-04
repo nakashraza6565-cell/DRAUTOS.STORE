@@ -60,7 +60,7 @@
     </style>
 </head>
 <body>
-    @include('backend.layouts.watermark')
+    @include('backend.layouts.watermark', ['type' => 'pdf'])
     
     <table class="header-table">
         <tr>
@@ -167,4 +167,5 @@
     </div>
 </body>
 </html>
+
 

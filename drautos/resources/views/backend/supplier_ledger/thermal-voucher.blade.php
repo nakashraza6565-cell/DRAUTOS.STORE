@@ -104,7 +104,7 @@
         $settings = \App\Models\Settings::first();
     @endphp
 
-    @include('backend.layouts.watermark')
+    @include('backend.layouts.watermark', ['type' => 'thermal'])
 
     <div class="header-container text-center">
         <div class="merchant-name">{!! strip_tags(str_replace('&nbsp;', ' ', $settings->short_des ?? 'Danyal Autos')) !!}</div>
@@ -200,4 +200,5 @@
 
 </body>
 </html>
+
 

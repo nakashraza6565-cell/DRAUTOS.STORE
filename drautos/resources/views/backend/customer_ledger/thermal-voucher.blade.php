@@ -108,7 +108,7 @@
 
 <div id="receipt-content" style="background: #fff; padding-bottom: 10px; position: relative;">
 
-    @include('backend.layouts.watermark')
+    @include('backend.layouts.watermark', ['type' => 'thermal'])
 
     <div class="header-container text-center">
         <div class="merchant-name">{!! strip_tags(str_replace('&nbsp;', ' ', $settings->short_des ?? 'Danyal Autos')) !!}</div>
@@ -217,4 +217,5 @@
     </script>
 </body>
 </html>
+
 
