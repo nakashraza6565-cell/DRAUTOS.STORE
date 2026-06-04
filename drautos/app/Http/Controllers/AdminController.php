@@ -1010,12 +1010,19 @@ class AdminController extends Controller
             ->select(\DB::raw('MIN(price) as min_price'), \DB::raw('MAX(price) as max_price'))
             ->first();
 
+        $totalQty = $sales->sum('qty');
+        $totalAmount = $sales->sum(function($sale) {
+            return $sale['qty'] * $sale['price'];
+        });
+
         return response()->json([
             'success' => true,
             'history' => $sales,
             'min_price' => (float)($prices->min_price ?? 0),
             'max_price' => (float)($prices->max_price ?? 0),
-            'show_all' => $showAll
+            'show_all' => $showAll,
+            'total_qty' => $totalQty,
+            'total_amount' => $totalAmount
         ]);
     }
 

@@ -289,6 +289,15 @@
                                                 </tr>
                                             `).join('') : '<tr><td colspan="3" class="text-center py-3 text-muted">No sales history found</td></tr>'}
                                         </tbody>
+                                        ${res.history.length > 0 ? `
+                                        <tfoot style="position: sticky; bottom: 0; background: #f8fafc; box-shadow: 0 -1px 0 #e2e8f0;">
+                                            <tr>
+                                                <td class="font-weight-bold text-dark text-right" style="padding: 10px 8px;">Total:</td>
+                                                <td class="text-center font-weight-bold text-primary" style="padding: 10px 8px;">${res.total_qty}</td>
+                                                <td class="text-right font-weight-bold text-primary" style="padding: 10px 8px;">Rs. ${res.total_amount.toLocaleString()}</td>
+                                            </tr>
+                                        </tfoot>
+                                        ` : ''}
                                     </table>
                                 </div>
                             </div>
