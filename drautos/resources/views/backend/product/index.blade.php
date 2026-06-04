@@ -48,7 +48,7 @@
                             <div class="font-weight-bold editable-title mr-2" data-id="{{$product->id}}" style="cursor: pointer;" title="Click to edit title">{{$product->title}}</div>
                             <button type="button" class="btn btn-info btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" 
                                 style="width: 22px; height: 22px; padding: 0; font-size: 10px;" 
-                                onclick="showProductHistory({{$product->id}}, 'product')" title="Selling History">
+                                onclick="showProductHistory({{$product->id}}, 'product', true)" title="All Selling History">
                                 <i class="fas fa-info text-white"></i>
                             </button>
                         </div>
@@ -248,16 +248,18 @@
         ]
       });
 
-    function showProductHistory(pid, type) {
+    function showProductHistory(pid, type, showAll = false) {
+        let titleText = showAll ? 'All Sales History' : 'Selling History';
         Swal.fire({
-            title: '<i class="fas fa-info-circle mr-2 text-info"></i> Selling History',
+            title: '<i class="fas fa-info-circle mr-2 text-info"></i> ' + titleText,
             html: '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-muted"></i></div>',
             showConfirmButton: false,
             showCloseButton: true,
             width: '450px',
             didOpen: () => {
-                $.get("{{ route('admin.product-selling-history') }}", { product_id: pid, item_type: type }, function(res) {
+                $.get("{{ route('admin.product-selling-history') }}", { product_id: pid, item_type: type, all: showAll ? 1 : 0 }, function(res) {
                     if (res.success) {
+                        let labelText = res.show_all ? 'All Sales History' : 'Last 5 Sales';
                         let historyHtml = `
                             <div class="text-left px-1" style="font-family: 'Inter', sans-serif;">
                                 <div class="alert alert-light border mb-3 p-2 d-flex justify-content-between align-items-center" style="border-radius: 10px; background: #f8fafc;">
@@ -265,11 +267,11 @@
                                     <div class="font-weight-bold text-primary">Rs. ${res.min_price.toLocaleString()} - Rs. ${res.max_price.toLocaleString()}</div>
                                 </div>
                                 
-                                <label class="small font-weight-bold text-uppercase text-muted mb-2">Last 5 Sales</label>
-                                <div class="table-responsive">
+                                <label class="small font-weight-bold text-uppercase text-muted mb-2">${labelText}</label>
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto; border-bottom: 1px solid #e2e8f0;">
                                     <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
-                                        <thead>
-                                            <tr class="border-bottom">
+                                        <thead style="position: sticky; top: 0; background: white; z-index: 1; box-shadow: 0 1px 0 #e2e8f0;">
+                                            <tr>
                                                 <th style="color: #64748b;">Customer</th>
                                                 <th class="text-center" style="color: #64748b;">Qty</th>
                                                 <th class="text-right" style="color: #64748b;">Price</th>

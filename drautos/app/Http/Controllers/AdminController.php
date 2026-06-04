@@ -963,11 +963,12 @@ class AdminController extends Controller
     {
         $productId = $request->get('product_id');
         $itemType = $request->get('item_type') ?? 'product';
+        $showAll = $request->has('all') && $request->get('all') == '1';
 
         if (!$productId) return response()->json(['success' => false]);
 
-        // Fetch last 5 sales with customer info
-        $sales = \App\Models\Cart::with(['order.user'])
+        // Fetch sales with customer info
+        $query = \App\Models\Cart::with(['order.user'])
             ->whereHas('order', function($q) {
                 // Exclude cancelled orders
                 $q->where('status', '!=', 'cancel');
@@ -979,9 +980,13 @@ class AdminController extends Controller
             ->when($itemType == 'bundle', function($q) use ($productId) {
                 $q->where('bundle_id', $productId);
             })
-            ->orderBy('id', 'DESC')
-            ->limit(5)
-            ->get()
+            ->orderBy('id', 'DESC');
+
+        if (!$showAll) {
+            $query->limit(5);
+        }
+
+        $sales = $query->get()
             ->map(function($cart) {
                 return [
                     'customer' => $cart->order->user->name ?? 'Walk-in Customer',
@@ -1009,7 +1014,8 @@ class AdminController extends Controller
             'success' => true,
             'history' => $sales,
             'min_price' => (float)($prices->min_price ?? 0),
-            'max_price' => (float)($prices->max_price ?? 0)
+            'max_price' => (float)($prices->max_price ?? 0),
+            'show_all' => $showAll
         ]);
     }
 
