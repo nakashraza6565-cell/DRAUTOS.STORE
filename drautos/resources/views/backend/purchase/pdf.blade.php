@@ -11,7 +11,7 @@
             font-weight: normal; font-style: normal;
         }
         body { font-family: 'DejaVu Sans', sans-serif; margin: 0; padding: 0; color: #2D3748; font-size: 11px; }
-        .watermark { position: fixed; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 400px; color: #4b312c; opacity: 0.12; z-index: -1000; font-family: 'Revue', sans-serif; text-transform: uppercase; }
+        
         .header { padding-bottom: 20px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
         .company-name { font-size: 24px; font-weight: bold; color: #4b312c; text-transform: uppercase; }
         .company-details { font-size: 10px; color: #718096; }
@@ -30,7 +30,7 @@
     </style>
 </head>
 <body>
-    <div class="watermark">DR</div>
+    @include('backend.layouts.watermark')
     
     <div class="header clearfix">
         <div style="float: left;">
@@ -121,3 +121,4 @@
     </div>
 </body>
 </html>
+

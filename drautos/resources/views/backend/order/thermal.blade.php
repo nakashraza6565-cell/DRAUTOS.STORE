@@ -13,10 +13,7 @@
         html, body, div, span, table, th, td, p, a, strong, b, .item-name, .item-details { font-weight: 900 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; -webkit-text-stroke: 0.5px #000 !important; text-shadow: 0.5px 0.5px 0px #000 !important; font-family: {{ request('lang') === 'ur' ? "'Noto Nastaliq Urdu', 'Arial Unicode MS'" : "'Arial', 'Helvetica', sans-serif" }} !important; }
 
         @page { margin: 0; }
-        @font-face {
-            font-family: 'Revue';
-            src: url('/revue/reve.ttf?v=1.1') format("truetype");
-        }
+        
         body {
             font-family: {{ request('lang') === 'ur' ? "'Noto Nastaliq Urdu', 'Arial Unicode MS'" : "'Helvetica', 'Arial'" }}, sans-serif;
             direction: {{ request('lang') === 'ur' ? 'rtl' : 'ltr' }};
@@ -41,19 +38,7 @@
             padding-bottom: 10px;
             overflow: hidden;
         }
-        .watermark-bg {
-            position: absolute;
-            top: 45%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Revue', sans-serif;
-            font-size: 140px;
-            color: #000;
-            opacity: 0.22;
-            z-index: -1;
-            white-space: nowrap;
-            pointer-events: none;
-        }
+        
         .merchant-name {
             font-size: {{ request('lang') === 'ur' ? '22px' : '24px' }};
             font-weight: 900;
@@ -159,7 +144,7 @@
     @endphp
 
     @foreach($chunks as $pageIndex => $chunk)
-        <div class="watermark-bg">DR</div>
+        @include('backend.layouts.watermark')
         <div class="header-container text-center">
             <div class="merchant-name">{{ $isUrdu ? 'دنیال آٹوز' : 'DANYAL AUTOS' }}</div>
             <div class="merchant-address">
@@ -325,3 +310,4 @@
     </script>
 </body>
 </html>
+

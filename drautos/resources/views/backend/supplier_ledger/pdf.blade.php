@@ -23,25 +23,12 @@
             font-weight: normal;
             font-style: normal;
         }
-        .watermark {
-            position: fixed;
-            top: 30%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 400px;
-            color: #2c3e50;
-            opacity: 0.15;
-            z-index: -1000;
-            font-family: 'Revue', sans-serif;
-            text-transform: uppercase;
-            pointer-events: none;
-            white-space: nowrap;
-        }
+        
     </style>
 </head>
 <body>
     <div id="ledger-wrapper" style="position: relative; background: #fff; padding: 20px;">
-        <div class="watermark">DR</div>
+        @include('backend.layouts.watermark')
         <div class="header">
         <div class="company-name">Danyal Autos</div>
         <div>12-BUTT MARKET BADAMI BAGH LAHORE</div>
@@ -101,3 +88,4 @@
     </div>
 </body>
 </html>
+

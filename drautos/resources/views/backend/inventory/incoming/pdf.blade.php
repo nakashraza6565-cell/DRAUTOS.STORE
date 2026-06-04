@@ -56,15 +56,11 @@
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
         }
-        .watermark {
-            position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 300px; color: #000; opacity: 0.04; z-index: -1000;
-            font-family: 'Revue', sans-serif; pointer-events: none;
-        }
+        
     </style>
 </head>
 <body>
-    <div class="watermark">DR</div>
+    @include('backend.layouts.watermark')
     
     <table class="header-table">
         <tr>
@@ -171,3 +167,4 @@
     </div>
 </body>
 </html>
+

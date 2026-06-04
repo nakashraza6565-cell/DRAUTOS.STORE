@@ -7,10 +7,7 @@
         html, body, div, span, table, th, td, p, a, strong, b, .item-name, .item-details { color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-family: {{ request('lang') === 'ur' ? "'Noto Nastaliq Urdu', 'Arial Unicode MS'" : "'Arial', 'Helvetica', sans-serif" }} !important; }
 
         @page { margin: 0; }
-        @font-face {
-            font-family: 'Revue';
-            src: url('/revue/reve.ttf?v=1.1') format("truetype");
-        }
+        
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             width: 80mm;
@@ -32,19 +29,7 @@
             padding-bottom: 10px;
             overflow: hidden;
         }
-        .watermark-bg {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Revue', sans-serif;
-            font-size: 150px;
-            color: #000;
-            opacity: 0.22;
-            z-index: -1;
-            white-space: nowrap;
-            pointer-events: none;
-        }
+        
         .merchant-name {
             font-size: 24px;
             font-weight: 900;
@@ -123,7 +108,7 @@
 
 <div id="receipt-content" style="background: #fff; padding-bottom: 10px; position: relative;">
 
-    <div class="watermark-bg">DR</div>
+    @include('backend.layouts.watermark')
 
     <div class="header-container text-center">
         <div class="merchant-name">{!! strip_tags(str_replace('&nbsp;', ' ', $settings->short_des ?? 'Danyal Autos')) !!}</div>
@@ -232,3 +217,4 @@
     </script>
 </body>
 </html>
+
