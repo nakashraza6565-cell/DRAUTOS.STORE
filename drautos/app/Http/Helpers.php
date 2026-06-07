@@ -271,48 +271,33 @@ class Helper
 
         $nonConnecting = ['ا', 'آ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'و', 'ے', 'ء', ' '];
         
-        // Split by non-Arabic blocks so English/Numbers remain LTR
-        $blocks = preg_split('/([a-zA-Z0-9\.\-\/\:]+)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
-        
-        // Reverse array of blocks to make overall string RTL
-        $blocks = array_reverse($blocks);
-        
+        $len = mb_strlen($text, 'UTF-8');
         $out = '';
-        foreach ($blocks as $block) {
-            if (preg_match('/[a-zA-Z0-9\.\-\/\:]/', $block)) {
-                $out .= $block;
+        for ($i = 0; $i < $len; $i++) {
+            $char = mb_substr($text, $i, 1, 'UTF-8');
+            if (!isset($chars[$char])) {
+                $out .= $char;
+                continue;
+            }
+
+            $prevChar = $i > 0 ? mb_substr($text, $i - 1, 1, 'UTF-8') : null;
+            $nextChar = $i < $len - 1 ? mb_substr($text, $i + 1, 1, 'UTF-8') : null;
+
+            $connectsRight = $prevChar && isset($chars[$prevChar]) && !in_array($prevChar, $nonConnecting);
+            $connectsLeft = $nextChar && isset($chars[$nextChar]);
+
+            if (in_array($char, $nonConnecting)) {
+                $connectsLeft = false;
+            }
+
+            if ($connectsRight && $connectsLeft) {
+                $out .= $chars[$char][2]; // Middle
+            } elseif ($connectsRight) {
+                $out .= $chars[$char][1]; // End
+            } elseif ($connectsLeft) {
+                $out .= $chars[$char][3]; // Beginning
             } else {
-                // Shape and reverse the Arabic block
-                $len = mb_strlen($block, 'UTF-8');
-                $shapedBlock = '';
-                for ($i = 0; $i < $len; $i++) {
-                    $char = mb_substr($block, $i, 1, 'UTF-8');
-                    if (!isset($chars[$char])) {
-                        $shapedBlock = $char . $shapedBlock;
-                        continue;
-                    }
-
-                    $prevChar = $i > 0 ? mb_substr($block, $i - 1, 1, 'UTF-8') : null;
-                    $nextChar = $i < $len - 1 ? mb_substr($block, $i + 1, 1, 'UTF-8') : null;
-
-                    $connectsRight = $prevChar && isset($chars[$prevChar]) && !in_array($prevChar, $nonConnecting);
-                    $connectsLeft = $nextChar && isset($chars[$nextChar]);
-
-                    if (in_array($char, $nonConnecting)) {
-                        $connectsLeft = false;
-                    }
-
-                    if ($connectsRight && $connectsLeft) {
-                        $shapedBlock = $chars[$char][2] . $shapedBlock; // Middle
-                    } elseif ($connectsRight) {
-                        $shapedBlock = $chars[$char][1] . $shapedBlock; // End
-                    } elseif ($connectsLeft) {
-                        $shapedBlock = $chars[$char][3] . $shapedBlock; // Beginning
-                    } else {
-                        $shapedBlock = $chars[$char][0] . $shapedBlock; // Isolated
-                    }
-                }
-                $out .= $shapedBlock;
+                $out .= $chars[$char][0]; // Isolated
             }
         }
         
