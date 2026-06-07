@@ -582,7 +582,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route('delivery-receipts.store') }}" method="POST">
+            <form action="{{ route('delivery-receipts.store') }}" method="POST" target="_blank" onsubmit="var f = this; setTimeout(function(){ $('#quickBiltyModal').modal('hide'); f.reset(); }, 500);">
                 @csrf
                 <div class="modal-body px-4 pt-3">
                     <div class="row">
