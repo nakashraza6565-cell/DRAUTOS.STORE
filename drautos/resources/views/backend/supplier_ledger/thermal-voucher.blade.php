@@ -26,7 +26,7 @@
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .bold { font-weight: 900; }
+        .bold { font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; }
         
         .header-container {
             position: relative;
@@ -38,7 +38,7 @@
         
         .merchant-name {
             font-size: 24px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-transform: uppercase;
             margin-bottom: 2px;
             padding-top: 15px;
@@ -75,7 +75,7 @@
 
         .amount-display {
             font-size: 24px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-align: center;
             margin: 20px 0;
             border: 2px solid #000;

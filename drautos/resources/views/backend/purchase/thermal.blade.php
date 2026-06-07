@@ -24,7 +24,7 @@
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .bold { font-weight: 900; }
+        .bold { font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; }
         
         .header-container {
             position: relative;
@@ -35,7 +35,7 @@
         }
         .merchant-name {
             font-size: 22px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-transform: uppercase;
             margin-bottom: 2px;
         }
@@ -79,7 +79,7 @@
         .item-name {
             font-size: 13px;
             display: block;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
         }
         .item-details {
             font-size: 10px;
@@ -90,7 +90,7 @@
             margin-top: 15px;
             font-size: 13px;
             text-align: center;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             border-top: 2px solid #000;
             padding-top: 10px;
         }
@@ -184,7 +184,7 @@
 
     <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
         <div style="text-align: center; width: 50%;">
-            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: 900; font-size: 12px; text-transform: uppercase;">
+            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; font-size: 12px; text-transform: uppercase;">
                 SIGNATURE
             </div>
         </div>
@@ -244,7 +244,7 @@
 
     <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
         <div style="text-align: center; width: 50%;">
-            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: 900; font-size: 12px; text-transform: uppercase;">
+            <div style="border-top: 2px solid #000; padding-top: 5px; font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; font-size: 12px; text-transform: uppercase;">
                 SIGNATURE
             </div>
         </div>

@@ -28,7 +28,7 @@
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .bold { font-weight: 900; }
+        .bold { font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; }
         
         .header-container {
             position: relative;
@@ -38,7 +38,7 @@
         }
         .merchant-name {
             font-size: 20px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-transform: uppercase;
         }
         .merchant-address {
@@ -87,7 +87,7 @@
         }
         .final-balance {
             font-size: 18px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-align: center;
         }
 
@@ -95,7 +95,7 @@
             margin-top: 15px;
             font-size: 11px;
             text-align: center;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             border-top: 1px solid #000;
             padding-top: 5px;
         }

@@ -26,7 +26,7 @@
         }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .bold { font-weight: 900; }
+        .bold { font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; }
         
         .header-container {
             position: relative;
@@ -38,7 +38,7 @@
         
         .merchant-name {
             font-size: 24px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-transform: uppercase;
             margin-bottom: 2px;
             padding-top: 15px;
@@ -88,7 +88,7 @@
         .item-name {
             font-size: 13px;
             display: block;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
         }
 
         .grand-total-row {
@@ -97,7 +97,7 @@
             border-top: 2px solid #000;
             border-bottom: 2px solid #000;
             font-size: 18px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             display: flex;
             justify-content: space-between;
         }
@@ -157,7 +157,7 @@
         <span>Rs.{{ number_format($return->total_return_amount, 0) }}</span>
     </div>
 
-    <div class="text-center" style="margin-top: 20px; font-size: 14px; font-weight: 900; border-top: 1px solid #000; padding-top: 10px;">
+    <div class="text-center" style="margin-top: 20px; font-size: 14px; font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; border-top: 1px solid #000; padding-top: 10px;">
         OFFICIAL PURCHASE RETURN
     </div>
 

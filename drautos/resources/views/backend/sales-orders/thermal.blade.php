@@ -37,7 +37,7 @@
         }
         .text-center { text-align: center; }
         .text-right  { text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; }
-        .bold { font-weight: 900; }
+        .bold { font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; }
 
         .header-container {
             position: relative;
@@ -60,7 +60,7 @@
         }
         .merchant-name {
             font-size: {{ request('lang') === 'ur' ? '22px' : '24px' }};
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             text-transform: {{ request('lang') === 'ur' ? 'none' : 'uppercase' }};
             margin-bottom: 2px;
             padding-top: 15px;
@@ -106,7 +106,7 @@
         .item-name {
             font-size: {{ request('lang') === 'ur' ? '15px' : '13px' }};
             display: block;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
         }
         .item-details {
             font-size: {{ request('lang') === 'ur' ? '11px' : '10px' }};
@@ -129,14 +129,14 @@
             border-top: 2px solid #000;
             border-bottom: 2px solid #000;
             font-size: 20px;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
         }
 
         .footer-note {
             margin-top: 15px;
             font-size: 14px;
             text-align: center;
-            font-weight: 900;
+            font-weight: {{ request('lang') === 'ur' ? '700' : '900' }};
             border-top: 2px solid #000;
             padding-top: 10px;
         }
@@ -205,7 +205,7 @@
             </div>
             @endif
             <div class="separator"></div>
-            <div style="text-align:center; font-size:{{ $isUrdu ? '13px' : '11px' }}; font-weight:900; letter-spacing:{{ $isUrdu ? '0' : '2px' }}; padding: 3px 0; background:#000; color:#fff;">
+            <div style="text-align:center; font-size:{{ $isUrdu ? '13px' : '11px' }}; font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; letter-spacing:{{ $isUrdu ? '0' : '2px' }}; padding: 3px 0; background:#000; color:#fff;">
                 {{ $isUrdu ? '⏳ صرف زیر التواء اشیاء' : '⏳ PENDING ITEMS ONLY' }}
             </div>
         </div>
@@ -250,7 +250,7 @@
 
         @if($pageIndex == $totalChunks - 1)
             <div class="separator"></div>
-            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:900; padding: 8px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight: {{ request('lang') === 'ur' ? '700' : '900' }}; padding: 8px 0;">
                 <span>{{ $isUrdu ? 'کل زیر التواء اشیاء:' : 'TOTAL PENDING ITEMS' }}</span>
                 <span>{{ $pendingItems->count() }} {{ $isUrdu ? 'اقسام' : 'varieties' }}</span>
             </div>
