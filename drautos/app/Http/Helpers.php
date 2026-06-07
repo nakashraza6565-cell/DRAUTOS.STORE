@@ -206,72 +206,117 @@ class Helper
     {
         if (empty($text)) return $text;
 
-        // Essential Urdu character map for dompdf reshaping
-        // This maps isolated characters to their Glyphs (Initial, Medial, Final, Isolated)
-        // Since we can't bundle a full library, we'll use a simplified logic for common characters
-        
-        $chars = [
-            // [Isolated, End, Middle, Beginning] 
-            'ا' => ['\u0627', '\uFE8E', '\u0627', '\uFE8E'],
-            'ب' => ['\u0628', '\uFE90', '\uFE92', '\uFE91'],
-            'پ' => ['\u067E', '\uFB57', '\uFB59', '\uFB58'],
-            'ت' => ['\u062A', '\uFE96', '\uFE98', '\uFE97'],
-            'ٹ' => ['\u0672', '\uFB67', '\uFB69', '\uFB68'],
-            'ث' => ['\u062B', '\uFE9A', '\uFE9C', '\uFE9B'],
-            'ج' => ['\u062C', '\uFE9E', '\uFEA0', '\uFE9F'],
-            'چ' => ['\u0686', '\uFB7B', '\uFB7D', '\uFB7C'],
-            'ح' => ['\u062D', '\uFEA2', '\uFEA4', '\uFEA3'],
-            'خ' => ['\u062E', '\uFEA6', '\uFEA8', '\uFEA7'],
-            'د' => ['\u062F', '\uFEAA', '\u062F', '\uFEAA'],
-            'ڈ' => ['\u0688', '\uFB89', '\u0688', '\uFB89'],
-            'ذ' => ['\u0630', '\uFEAC', '\u0630', '\uFEAC'],
-            'ر' => ['\u0631', '\uFEAE', '\u0631', '\uFEAE'],
-            'ڑ' => ['\u0691', '\uFB8D', '\u0691', '\uFB8D'],
-            'ز' => ['\u0632', '\uFEB0', '\u0632', '\uFEB0'],
-            'ژ' => ['\u0633', '\uFEB2', '\u0633', '\uFEB2'],
-            'س' => ['\u0633', '\uFEB6', '\uFEB8', '\uFEB7'],
-            'ش' => ['\u0634', '\uFEBA', '\uFEBC', '\uFEBB'],
-            'ص' => ['\u0635', '\uFEBE', '\uFEC0', '\uFEBF'],
-            'ض' => ['\u0636', '\uFEC2', '\uFEC4', '\uFEC3'],
-            'ط' => ['\u0637', '\uFEC6', '\uFEC8', '\uFEC7'],
-            'ظ' => ['\u0638', '\uFECA', '\uFECC', '\uFECB'],
-            'ع' => ['\u0639', '\uFECE', '\uFED0', '\uFECF'],
-            'غ' => ['\u063A', '\uFED2', '\uFED4', '\uFED3'],
-            'ف' => ['\u0641', '\uFED6', '\uFED8', '\uFED7'],
-            'ق' => ['\u0642', '\uFEDA', '\uFEDC', '\uFEDB'],
-            'ک' => ['\u06A9', '\uFB8F', '\uFB91', '\uFB90'],
-            'گ' => ['\u06AF', '\uFB93', '\uFB95', '\uFB94'],
-            'ل' => ['\u0644', '\uFEE0', '\uFEE2', '\uFEE1'],
-            'م' => ['\u0645', '\uFEE4', '\uFEE6', '\uFEE5'],
-            'ن' => ['\u0646', '\uFEE8', '\uFEEA', '\uFEE9'],
-            'ں' => ['\u06BA', '\uFB9F', '\u06BA', '\u06BA'],
-            'و' => ['\u0648', '\uFEEE', '\u0648', '\uFEEE'],
-            'ہ' => ['\u0647', '\uFEF0', '\uFEF2', '\uFEF1'],
-            'ھ' => ['\u06BE', '\uFBAB', '\uFBAD', '\uFBAC'],
-            'ء' => ['\u0621', '\u0621', '\u0621', '\u0621'],
-            'ی' => ['\u06CC', '\uFEE0', '\uFEE2', '\uFEE1'],
-            'ے' => ['\u06D2', '\uFBAF', '\u06D2', '\uFBAF'],
-            ' ' => [' ', ' ', ' ', ' '],
-        ];
-
-        // This is a complex task. For a quick and perfect fix for the USER'S SPECIFIC FOOTER:
-        // We'll use a pre-shaped version of his string if it matches, 
-        // OR we'll use a very basic character joining logic.
-        
-        // Actually, many Laravel developers use the 'I18N_Arabic' or similar.
-        // Let's try to provide a "Shaped" version of his specific strings 
-        // because manual reshaping in 50 lines of code is prone to bugs.
-        
         $footers = [
             "سیلزمین یا سپلائی میں کے ساتھ ذاتي لين دين کي کمپني ذمہ دار نا ہو گي بغير بل کے کسي بهي سیلزمین کو وصولي نا دیں اور مال لیتے وقت تسلی کر لیں" => "ﺳﯿﻠﺰﻣﯿﻦ ﯾﺎ ﺳﭙﻼﺋﯽ ﻣﯿﮟ ﮐﮯ ﺳﺎﺗھ ذاﺗﯽ ﻟﯿﻦ دﯾﻦ ﮐﯽ ﮐﻤﭙﻨﯽ ذﻣہ دار ﻧﺎ ﮨﻮ ﮔﯽ ﺑﻐﯿﺮ ﺑﻞ ﮐﮯ ﮐﺴﯽ ﺑھﯽ ﺳﯿﻠﺰﻣﯿﻦ ﮐﻮ وﺻﻮﻟﯽ ﻧﺎ دﯾﮟ اور ﻣﺎل ﻟﯿﺘﮯ وﻗﺖ ﺗﺴﻠﯽ ﮐﺮ ﻟﯿﮟ",
             "ہم نے حلال میں ہی برکت رکھی ہے - جو وعدہ پورا کرے، وہی کامیاب ہے" => "ﮨﻢ ﻧﮯ ﺣﻼل ﻣﯿﮟ ﮨﯽ ﺑﺮﮐﺖ رﮐﮭﯽ ﮨﮯ - ﺟﻮ وﻋﺪہ ﭘﻮرا ﮐﺮے، وﮨﯽ ﮐﺎﻣﯿﺎب ﮨﮯ"
         ];
-
         if (isset($footers[$text])) {
             return $footers[$text];
         }
 
-        return $text;
+        $chars = [
+            // Base => [Isolated, End, Middle, Beginning]
+            'ا' => ["\u{0627}", "\u{FE8E}", "\u{FE8E}", "\u{0627}"],
+            'آ' => ["\u{0622}", "\u{FE82}", "\u{FE82}", "\u{0622}"],
+            'ب' => ["\u{0628}", "\u{FE90}", "\u{FE92}", "\u{FE91}"],
+            'پ' => ["\u{067E}", "\u{FB57}", "\u{FB59}", "\u{FB58}"],
+            'ت' => ["\u{062A}", "\u{FE96}", "\u{FE98}", "\u{FE97}"],
+            'ٹ' => ["\u{0679}", "\u{FB67}", "\u{FB69}", "\u{FB68}"],
+            'ث' => ["\u{062B}", "\u{FE9A}", "\u{FE9C}", "\u{FE9B}"],
+            'ج' => ["\u{062C}", "\u{FE9E}", "\u{FEA0}", "\u{FE9F}"],
+            'چ' => ["\u{0686}", "\u{FB7B}", "\u{FB7D}", "\u{FB7C}"],
+            'ح' => ["\u{062D}", "\u{FEA2}", "\u{FEA4}", "\u{FEA3}"],
+            'خ' => ["\u{062E}", "\u{FEA6}", "\u{FEA8}", "\u{FEA7}"],
+            'د' => ["\u{062F}", "\u{FEAA}", "\u{FEAA}", "\u{062F}"],
+            'ڈ' => ["\u{0688}", "\u{FB89}", "\u{FB89}", "\u{0688}"],
+            'ذ' => ["\u{0630}", "\u{FEAC}", "\u{FEAC}", "\u{0630}"],
+            'ر' => ["\u{0631}", "\u{FEAE}", "\u{FEAE}", "\u{0631}"],
+            'ڑ' => ["\u{0691}", "\u{FB8D}", "\u{FB8D}", "\u{0691}"],
+            'ز' => ["\u{0632}", "\u{FEB0}", "\u{FEB0}", "\u{0632}"],
+            'ژ' => ["\u{0698}", "\u{FB8B}", "\u{FB8B}", "\u{0698}"],
+            'س' => ["\u{0633}", "\u{FEB6}", "\u{FEB8}", "\u{FEB7}"],
+            'ش' => ["\u{0634}", "\u{FEBA}", "\u{FEBC}", "\u{FEBB}"],
+            'ص' => ["\u{0635}", "\u{FEBE}", "\u{FEC0}", "\u{FEBF}"],
+            'ض' => ["\u{0636}", "\u{FEC2}", "\u{FEC4}", "\u{FEC3}"],
+            'ط' => ["\u{0637}", "\u{FEC6}", "\u{FEC8}", "\u{FEC7}"],
+            'ظ' => ["\u{0638}", "\u{FECA}", "\u{FECC}", "\u{FECB}"],
+            'ع' => ["\u{0639}", "\u{FECE}", "\u{FED0}", "\u{FECF}"],
+            'غ' => ["\u{063A}", "\u{FED2}", "\u{FED4}", "\u{FED3}"],
+            'ف' => ["\u{0641}", "\u{FED6}", "\u{FED8}", "\u{FED7}"],
+            'ق' => ["\u{0642}", "\u{FEDA}", "\u{FEDC}", "\u{FEDB}"],
+            'ک' => ["\u{06A9}", "\u{FB8F}", "\u{FB91}", "\u{FB90}"],
+            'گ' => ["\u{06AF}", "\u{FB93}", "\u{FB95}", "\u{FB94}"],
+            'ل' => ["\u{0644}", "\u{FEE0}", "\u{FEE2}", "\u{FEE1}"],
+            'م' => ["\u{0645}", "\u{FEE4}", "\u{FEE6}", "\u{FEE5}"],
+            'ن' => ["\u{0646}", "\u{FEE8}", "\u{FEEA}", "\u{FEE9}"],
+            'ں' => ["\u{06BA}", "\u{FB9F}", "\u{FB9F}", "\u{06BA}"],
+            'و' => ["\u{0648}", "\u{FEEE}", "\u{FEEE}", "\u{0648}"],
+            'ہ' => ["\u{06C1}", "\u{FBA7}", "\u{FBA9}", "\u{FBA8}"],
+            'ھ' => ["\u{06BE}", "\u{FBAB}", "\u{FBAD}", "\u{FBAC}"],
+            'ء' => ["\u{0621}", "\u{FE80}", "\u{FE80}", "\u{0621}"],
+            'ی' => ["\u{06CC}", "\u{FBFE}", "\u{FC00}", "\u{FBFF}"],
+            'ے' => ["\u{06D2}", "\u{FBAF}", "\u{FBAF}", "\u{06D2}"],
+            'ئ' => ["\u{0626}", "\u{FE8A}", "\u{FE8C}", "\u{FE8B}"],
+            '0' => ["\u{06F0}", "\u{06F0}", "\u{06F0}", "\u{06F0}"],
+            '1' => ["\u{06F1}", "\u{06F1}", "\u{06F1}", "\u{06F1}"],
+            '2' => ["\u{06F2}", "\u{06F2}", "\u{06F2}", "\u{06F2}"],
+            '3' => ["\u{06F3}", "\u{06F3}", "\u{06F3}", "\u{06F3}"],
+            '4' => ["\u{06F4}", "\u{06F4}", "\u{06F4}", "\u{06F4}"],
+            '5' => ["\u{06F5}", "\u{06F5}", "\u{06F5}", "\u{06F5}"],
+            '6' => ["\u{06F6}", "\u{06F6}", "\u{06F6}", "\u{06F6}"],
+            '7' => ["\u{06F7}", "\u{06F7}", "\u{06F7}", "\u{06F7}"],
+            '8' => ["\u{06F8}", "\u{06F8}", "\u{06F8}", "\u{06F8}"],
+            '9' => ["\u{06F9}", "\u{06F9}", "\u{06F9}", "\u{06F9}"],
+        ];
+
+        $nonConnecting = ['ا', 'آ', 'د', 'ڈ', 'ذ', 'ر', 'ڑ', 'ز', 'ژ', 'و', 'ے', 'ء', ' '];
+        
+        // Split by non-Arabic blocks so English/Numbers remain LTR
+        $blocks = preg_split('/([a-zA-Z0-9\.\-\/\:]+)/', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        
+        // Reverse array of blocks to make overall string RTL
+        $blocks = array_reverse($blocks);
+        
+        $out = '';
+        foreach ($blocks as $block) {
+            if (preg_match('/[a-zA-Z0-9\.\-\/\:]/', $block)) {
+                $out .= $block;
+            } else {
+                // Shape and reverse the Arabic block
+                $len = mb_strlen($block, 'UTF-8');
+                $shapedBlock = '';
+                for ($i = 0; $i < $len; $i++) {
+                    $char = mb_substr($block, $i, 1, 'UTF-8');
+                    if (!isset($chars[$char])) {
+                        $shapedBlock = $char . $shapedBlock;
+                        continue;
+                    }
+
+                    $prevChar = $i > 0 ? mb_substr($block, $i - 1, 1, 'UTF-8') : null;
+                    $nextChar = $i < $len - 1 ? mb_substr($block, $i + 1, 1, 'UTF-8') : null;
+
+                    $connectsRight = $prevChar && isset($chars[$prevChar]) && !in_array($prevChar, $nonConnecting);
+                    $connectsLeft = $nextChar && isset($chars[$nextChar]);
+
+                    if (in_array($char, $nonConnecting)) {
+                        $connectsLeft = false;
+                    }
+
+                    if ($connectsRight && $connectsLeft) {
+                        $shapedBlock = $chars[$char][2] . $shapedBlock; // Middle
+                    } elseif ($connectsRight) {
+                        $shapedBlock = $chars[$char][1] . $shapedBlock; // End
+                    } elseif ($connectsLeft) {
+                        $shapedBlock = $chars[$char][3] . $shapedBlock; // Beginning
+                    } else {
+                        $shapedBlock = $chars[$char][0] . $shapedBlock; // Isolated
+                    }
+                }
+                $out .= $shapedBlock;
+            }
+        }
+        
+        return $out;
     }
 
     /**
