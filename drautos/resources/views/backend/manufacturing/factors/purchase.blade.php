@@ -364,23 +364,23 @@
                 success: function(response) {
                     btn.prop('disabled', false).text('Save Material');
                     if(response.status == 'success') {
-                        // Create option elements for dropdowns
                         let optionText = response.factor.name + ' (' + response.factor.unit + ')';
                         let factorId = response.factor.id;
                         let factorUnit = response.factor.unit;
                         let factorCost = response.factor.cost_price ?? 0;
                         
-                        // Form option
-                        let newOption = $('<option>', {
-                            value: factorId,
-                            text: optionText
-                        }).attr('data-unit', factorUnit).attr('data-cost', factorCost);
+                        // Append option to all existing dropdowns safely
+                        $('.factor-select').each(function() {
+                            let opt = $('<option></option>').val(factorId).text(optionText)
+                                        .attr('data-unit', factorUnit).attr('data-cost', factorCost);
+                            $(this).append(opt);
+                        });
                         
-                        // Append to all current selects and select it in the active/focused select row if possible,
-                        // or just append to all .factor-select dropdowns
-                        $('.factor-select').append(newOption.clone()).trigger('change');
+                        // Select it in the very last row automatically for great UX
+                        let lastSelect = $('#itemsTable tbody tr:last .factor-select');
+                        lastSelect.val(factorId).trigger('change');
                         
-                        // Also append to the rowTemplate for future added rows
+                        // Also append to the hidden rowTemplate for future added rows
                         let templateHtml = $('#rowTemplate').html();
                         let updatedTemplate = templateHtml.replace('</select>', '<option value="'+factorId+'" data-unit="'+factorUnit+'" data-cost="'+factorCost+'">'+optionText+'</option></select>');
                         $('#rowTemplate').html(updatedTemplate);
@@ -389,7 +389,8 @@
                         form[0].reset();
                         $('#quickAddMaterialModal').modal('hide');
                         
-                        alert('Raw Material added successfully!');
+                        // Toast instead of alert for better UX
+                        alert('Raw Material added and selected successfully!');
                     } else {
                         alert(response.message || 'Error adding material');
                     }

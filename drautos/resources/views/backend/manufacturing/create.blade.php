@@ -388,21 +388,29 @@
                 data: form.serialize() + "&_token={{csrf_token()}}",
                 success: function(response) {
                     if(response.status == 'success') {
-                        let newOption = new Option(response.factor.name + ' (Stock: ' + response.factor.stock_quantity + ' ' + response.factor.unit + ')', 'factor_' + response.factor.id, true, true);
+                        let newOptionText = response.factor.name + ' (Stock: ' + response.factor.stock_quantity + ' ' + response.factor.unit + ')';
+                        let optVal = 'factor_' + response.factor.id;
                         
-                        // Append to factors-group in all component selects
-                        $('.component-select .factors-group').append(newOption).trigger('change');
+                        // Append option to all existing dropdowns safely
+                        $('.component-select').each(function() {
+                            let opt = $('<option></option>').val(optVal).text(newOptionText);
+                            $(this).find('.factors-group').append(opt);
+                        });
+                        
+                        // Select it in the very last row automatically
+                        let lastSelect = $('#components_body tr:last .component-select');
+                        lastSelect.val(optVal).trigger('change');
                         
                         // Also append to the hidden template so future rows get it
                         let templateHtml = $('#component_row_template').html();
-                        let updatedTemplate = templateHtml.replace('</optgroup>', '<option value="factor_'+response.factor.id+'">'+response.factor.name+' (Stock: '+response.factor.stock_quantity+' ' + response.factor.unit + ')</option></optgroup>');
+                        let updatedTemplate = templateHtml.replace('</optgroup>', '<option value="'+optVal+'">'+newOptionText+'</option></optgroup>');
                         $('#component_row_template').html(updatedTemplate);
                         
                         $('#quickAddMaterialModal').modal('hide');
                         form[0].reset();
                         
                         // Optional: Show simple alert or toast
-                        alert('Material added successfully!');
+                        alert('Material added and selected successfully!');
                     } else {
                         alert(response.message || 'Error adding material');
                     }
