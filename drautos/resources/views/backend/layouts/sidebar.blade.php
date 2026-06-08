@@ -193,17 +193,7 @@
     </li>
     @endcan
 
-    @can('view-die')
-    {{-- Die Management --}}
-    <li class="nav-item">
-        <a class="nav-link py-2" href="{{route('die-management.index')}}">
-            <i class="fas fa-gears mr-2"></i>
-            <span>Die Management</span>
-        </a>
-    </li>
-    @endcan
-
-    @can('view-manufacturing')
+    @canany(['view-die', 'view-manufacturing'])
     <!-- Manufacturing (BOM) -->
     <li class="nav-item">
         <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#manufacturingCollapse" aria-expanded="true" aria-controls="manufacturingCollapse">
@@ -212,15 +202,18 @@
         </a>
         <div id="manufacturingCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
+            @can('view-die')
+            <a class="collapse-item" href="{{route('die-management.index')}}">Die Management</a>
+            @endcan
+            @can('view-manufacturing')
             <a class="collapse-item" href="{{route('manufacturing.production-factors.index')}}">Raw Materials & Labor</a>
             <a class="collapse-item" href="{{route('manufacturing.index')}}">Bill of Materials</a>
             <a class="collapse-item" href="{{route('manufacturing.create')}}">Create New BOM</a>
-            <a class="collapse-item" href="{{route('manufacturing.production.index')}}">Production Log</a>
-            <a class="collapse-item" href="{{route('manufacturing.production.create')}}">Record Production</a>
+            @endcan
           </div>
         </div>
     </li>
-    @endcan
+    @endcanany
 
     <!-- Section: Financial Management -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">

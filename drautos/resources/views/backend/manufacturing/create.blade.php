@@ -45,6 +45,7 @@
                 <button type="button" class="btn btn-sm btn-info shadow-sm" data-toggle="modal" data-target="#quickAddMaterialModal"><i class="fas fa-plus fa-sm text-white-50"></i> Add New Material</button>
             </div>
             
+            <div class="table-responsive">
             <table class="table table-bordered" id="components_table">
                 <thead>
                     <tr>
@@ -86,6 +87,7 @@
                     </tr>
                 </tfoot>
             </table>
+            </div>
 
             <hr>
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -93,6 +95,7 @@
                 <button type="button" class="btn btn-sm btn-info shadow-sm" id="add_custom_overhead_type_btn"><i class="fas fa-plus fa-sm text-white-50"></i> Add Custom Overhead Type</button>
             </div>
             
+            <div class="table-responsive">
             <table class="table table-bordered" id="overheads_table">
                 <thead>
                     <tr>
@@ -130,18 +133,19 @@
                             <input type="number" step="0.01" name="overheads[0][cost]" class="form-control total-cost-input" placeholder="Total Cost" value="0" required>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-danger btn-sm remove-overhead-row" disabled><i class="fas fa-trash"></i></button>
+                            <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td colspan="5">
-                            <button type="button" class="btn btn-success btn-sm" id="add_overhead"><i class="fas fa-plus"></i> Add Overhead</button>
+                            <button type="button" class="btn btn-success btn-sm" id="add_overhead"><i class="fas fa-plus"></i> Add Overhead Row</button>
                         </td>
                     </tr>
                 </tfoot>
             </table>
+            </div>
 
             <div class="form-group">
                 <label>Notes</label>

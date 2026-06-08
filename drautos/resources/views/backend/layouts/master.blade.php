@@ -97,7 +97,7 @@
           @endcan
       </div>
 
-      <div class="launcher-section-title" style="color: #facc15;">Manufacturing & HR</div>
+      <div class="launcher-section-title" style="color: #facc15;">Manufacturing</div>
       <div class="launcher-grid">
           <a href="{{route('manufacturing.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-industry" style="color: #facc15;"></i></div>
