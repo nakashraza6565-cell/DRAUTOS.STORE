@@ -32,7 +32,7 @@
                   <td class="font-weight-bold text-success">Rs. {{number_format($invoice->total_amount, 2)}}</td>
                   <td>{{ Str::limit($invoice->notes, 30) }}</td>
                   <td>
-                      <a href="{{route('production-factors.invoice.show', $invoice->id)}}" class="btn btn-info btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="View Details" data-placement="bottom"><i class="fas fa-eye"></i></a>
+                      <a href="{{route('manufacturing.production-factors.invoice.show', $invoice->id)}}" class="btn btn-info btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="View Details" data-placement="bottom"><i class="fas fa-eye"></i></a>
                   </td>
               </tr>
             @endforeach

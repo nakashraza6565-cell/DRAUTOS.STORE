@@ -207,7 +207,7 @@
             @endcan
             @can('view-manufacturing')
             <a class="collapse-item" href="{{route('manufacturing.production-factors.index')}}">Raw Materials & Labor</a>
-            <a class="collapse-item" href="{{route('production-factors.invoices')}}">Raw Material Invoices</a>
+            <a class="collapse-item" href="{{route('manufacturing.production-factors.invoices')}}">Raw Material Invoices</a>
             <a class="collapse-item" href="{{route('manufacturing.index')}}">Bill of Materials</a>
             <a class="collapse-item" href="{{route('manufacturing.create')}}">Create New BOM</a>
             @endcan

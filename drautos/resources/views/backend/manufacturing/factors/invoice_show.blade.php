@@ -5,7 +5,7 @@
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
       <h6 class="m-0 font-weight-bold text-primary">Invoice Details: {{$invoice->invoice_number}}</h6>
       <div>
-          <a href="{{route('production-factors.invoices')}}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back to Invoices</a>
+          <a href="{{route('manufacturing.production-factors.invoices')}}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back to Invoices</a>
           <button onclick="window.print()" class="btn btn-primary btn-sm ml-2"><i class="fas fa-print"></i> Print Invoice</button>
       </div>
     </div>
