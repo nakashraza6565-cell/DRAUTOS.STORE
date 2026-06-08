@@ -274,25 +274,58 @@ async function shareInvoice(e, lang) {
 
     // STEP 2: Share immediately if already generated for this lang
     if (window.invoiceImageBlob) {
+        const langLabel = lang === 'ur' ? '_Urdu' : '';
+        const fileName = 'Invoice_{{$order->order_number}}' + langLabel + '.png';
+        let phone = "{{$order->phone ?? ''}}";
+        phone = phone.replace(/[^0-9]/g, '');
+
+        if (phone && navigator.clipboard && window.ClipboardItem) {
+            try {
+                // Try copying to clipboard
+                const item = new ClipboardItem({ 'image/png': window.invoiceImageBlob });
+                await navigator.clipboard.write([item]);
+                
+                // Format phone for WhatsApp
+                if(phone.startsWith('03')) { phone = '92' + phone.substring(1); }
+                
+                alert("Receipt copied to clipboard! Opening WhatsApp...\n\nJust long-press and 'Paste' the image in the chat.");
+                
+                const text = encodeURIComponent("Here is your receipt from Danyal Autos.");
+                window.location.href = `whatsapp://send?phone=${phone}&text=${text}`;
+                
+                resetShareBtn();
+                return;
+            } catch (err) {
+                console.log("Clipboard copy failed, falling back to native share:", err);
+                fallbackNativeShare(fileName);
+            }
+        } else {
+            fallbackNativeShare(fileName);
+        }
+        return;
+    }
+
+    function resetShareBtn() {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-warning');
+        btn.classList.add('btn-success');
+    }
+
+    async function fallbackNativeShare(fileName) {
         if (navigator.share) {
             try {
-                const langLabel = lang === 'ur' ? '_Urdu' : '';
                 await navigator.share({
-                    files: [new File([window.invoiceImageBlob], 'Invoice_{{$order->order_number}}' + langLabel + '.png', { type: 'image/png' })]
+                    files: [new File([window.invoiceImageBlob], fileName, { type: 'image/png' })]
                 });
-                btn.innerHTML = originalHTML;
-                btn.classList.remove('btn-warning');
-                btn.classList.add('btn-success');
             } catch (err) {
                 if (err.name !== 'AbortError') {
-                    alert('Native Share Failed: ' + err.name + ' - ' + err.message);
-                    btn.innerHTML = originalHTML;
+                    alert('Native Share Failed: ' + err.message);
                 }
             }
         } else {
             alert('navigator.share is not supported on this browser/device.');
         }
-        return;
+        resetShareBtn();
     }
 
     // STEP 1: Generate the Image Blob
