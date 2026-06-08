@@ -54,8 +54,8 @@
                 <select class="form-control select2" id="customer-select">
                     <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
                     @foreach($customers as $customer)
-                    <option value="{{$customer->id}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
-                        {{$customer->name}} ({{$customer->phone}}) | Bal: Rs. {{number_format($customer->current_balance ?? 0, 2)}}
+                    <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
+                        {{$customer->name}}
                     </option>
                     @endforeach
                 </select>
@@ -1256,10 +1256,39 @@
             });
         });
 
+        function formatCustomer(state) {
+            if (!state.id) return state.text;
+            var $el = $(state.element);
+            
+            if (state.id == '1') {
+                return $(`<span style="font-size: 13px; font-weight: 600;"><i class="fas fa-walking text-primary mr-1"></i> Walk-in Customer</span>`);
+            }
+
+            var name = $el.data('name') || state.text;
+            var phone = $el.data('phone') || '';
+            var balance = parseFloat($el.data('balance')) || 0;
+            var balClass = balance > 0 ? 'badge-success' : (balance < 0 ? 'badge-danger' : 'badge-secondary');
+            var balText = 'Rs. ' + Math.abs(balance).toLocaleString('en-US', {minimumFractionDigits: 0});
+
+            return $(`
+                <div class="d-flex align-items-center justify-content-between w-100" style="font-size: 13px;">
+                    <div class="text-truncate" style="max-width: 45%; font-weight: 600;">
+                        ${name}
+                    </div>
+                    <div class="d-flex align-items-center" style="gap: 6px; padding-right: 5px;">
+                        <span class="text-muted d-none d-sm-inline" style="font-size: 11px;"><i class="fas fa-phone-alt mr-1"></i>${phone}</span>
+                        <span class="badge ${balClass}" style="font-size: 11px; padding: 4px 6px;">Bal: ${balText}</span>
+                    </div>
+                </div>
+            `);
+        }
+
         $('#customer-select').select2({
             placeholder: "Select Customer",
             allowClear: false,
-            dropdownParent: $('body') // Ensure it's appended to body for correct z-index handling
+            dropdownParent: $('body'), // Ensure it's appended to body for correct z-index handling
+            templateResult: formatCustomer,
+            templateSelection: formatCustomer
         });
 
         fetchProducts();
