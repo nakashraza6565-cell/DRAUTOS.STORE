@@ -347,6 +347,99 @@
             return isNaN(qty) || qty <= 0 ? 1 : qty;
         }
 
+        let lastBatchQty = getBatchQty();
+
+        $('#product_id').on('change', function() {
+            let productId = $(this).val();
+            if (!productId) return;
+
+            // Optional visual feedback
+            $('#product_id').closest('.form-group').append('<small id="bom-loading" class="text-info ml-2"><i class="fas fa-spinner fa-spin"></i> Checking for previous BOM...</small>');
+
+            $.ajax({
+                url: '/manufacturing/api/previous-bom/' + productId,
+                type: 'GET',
+                success: function(response) {
+                    $('#bom-loading').remove();
+                    if (response.status === 'success' && response.bom) {
+                        let bom = response.bom;
+                        
+                        // 1. Set Batch Qty
+                        $('#batch_quantity').val(bom.batch_quantity);
+                        lastBatchQty = parseFloat(bom.batch_quantity) || 1;
+
+                        // 2. Clear components & overheads
+                        $('#components_body').empty();
+                        $('#overheads_body').empty();
+                        rowIndex = 1;
+                        overheadIndex = 1;
+
+                        // 3. Load Components
+                        if (bom.components && bom.components.length > 0) {
+                            bom.components.forEach(function(comp) {
+                                let template = $('#component_row_template').html();
+                                let newRow = template.replace(/INDEX/g, rowIndex++);
+                                $('#components_body').append(newRow);
+                                
+                                let tr = $('#components_body tr').last();
+                                
+                                // Set product_id
+                                let prefix = comp.ingredient_type === 'App\\Models\\ProductionFactor' ? 'factor_' : 'product_';
+                                tr.find('.component-select').val(prefix + comp.component_product_id);
+                                
+                                // Set quantity
+                                tr.find('input[name$="[quantity]"]').val(comp.quantity_required);
+                                
+                                // Re-init select2
+                                tr.find('.select2-new').select2({ theme: 'bootstrap4', width: '100%' }).removeClass('select2-new').addClass('select2');
+                            });
+                        } else {
+                            $('#add_component').trigger('click');
+                        }
+
+                        // 4. Load Overheads
+                        if (bom.overhead_details && bom.overhead_details.length > 0) {
+                            bom.overhead_details.forEach(function(ov) {
+                                let template = $('#overhead_row_template').html();
+                                let newRow = template.replace(/INDEX/g, overheadIndex++);
+                                $('#overheads_body').append(newRow);
+                                
+                                let tr = $('#overheads_body tr').last();
+                                
+                                // Ensure custom type exists in dropdown
+                                let exists = false;
+                                tr.find('select[name$="[type]"] option').each(function() {
+                                    if ($(this).val() === ov.type) exists = true;
+                                });
+                                if (!exists && ov.type) {
+                                    let typeName = ov.type.charAt(0).toUpperCase() + ov.type.slice(1);
+                                    let optionHtml = '<option value="' + ov.type + '">' + typeName + '</option>';
+                                    $('select[name^="overheads"]').append(optionHtml);
+                                    let templateHtml = $('#overhead_row_template').html();
+                                    $('#overhead_row_template').html(templateHtml.replace('</select>', optionHtml + '</select>'));
+                                }
+
+                                tr.find('select[name$="[type]"]').val(ov.type);
+                                if (ov.subcontractor_id) {
+                                    tr.find('select[name$="[subcontractor_id]"]').val(ov.subcontractor_id);
+                                }
+                                
+                                tr.find('.per-piece-cost-input').val(ov.per_piece_cost);
+                                tr.find('.total-cost-input').val(ov.cost);
+                                
+                                tr.find('.select2-new').select2({ theme: 'bootstrap4', width: '100%' }).removeClass('select2-new').addClass('select2');
+                            });
+                        } else {
+                            $('#add_overhead').trigger('click');
+                        }
+                    }
+                },
+                error: function() {
+                    $('#bom-loading').remove();
+                }
+            });
+        });
+
         // On Per Piece Cost change
         $(document).on('input change', '.per-piece-cost-input', function() {
             let row = $(this).closest('tr');
@@ -365,14 +458,30 @@
             row.find('.per-piece-cost-input').val(perPieceVal.toFixed(4));
         });
 
-        // On Batch Quantity change, recalculate all total costs keeping per-piece cost constant
+        // On Batch Quantity change, recalculate raw materials proportionally and update overhead totals
         $('#batch_quantity').on('input change', function() {
-            let qty = getBatchQty();
+            let currentBatchQty = getBatchQty();
+            if (currentBatchQty === lastBatchQty || currentBatchQty <= 0) return;
+            
+            let ratio = currentBatchQty / lastBatchQty;
+            
+            // Scale components proportionally
+            $('#components_body tr').each(function() {
+                let qtyInput = $(this).find('input[name$="[quantity]"]');
+                let currentQty = parseFloat(qtyInput.val()) || 0;
+                if(currentQty > 0) {
+                    qtyInput.val((currentQty * ratio).toFixed(2));
+                }
+            });
+
+            // Update overheads total costs based on constant per-piece cost
             $('#overheads_body tr').each(function() {
                 let perPieceVal = parseFloat($(this).find('.per-piece-cost-input').val()) || 0;
-                let totalVal = perPieceVal * qty;
+                let totalVal = perPieceVal * currentBatchQty;
                 $(this).find('.total-cost-input').val(totalVal.toFixed(2));
             });
+            
+            lastBatchQty = currentBatchQty;
         });
 
         // Quick Add Material Form Submission

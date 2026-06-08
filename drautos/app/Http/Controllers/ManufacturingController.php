@@ -679,4 +679,16 @@ class ManufacturingController extends Controller
             return redirect()->back()->with('error', 'Production Failed: ' . $e->getMessage())->withInput();
         }
     }
+
+    /**
+     * Fetch the most recent BOM for a specific product via AJAX.
+     */
+    public function getPreviousBom($product_id)
+    {
+        $bom = ManufacturingBill::with(['components'])->where('product_id', $product_id)->latest()->first();
+        if ($bom) {
+            return response()->json(['status' => 'success', 'bom' => $bom]);
+        }
+        return response()->json(['status' => 'error', 'message' => 'No previous BOM found.']);
+    }
 }

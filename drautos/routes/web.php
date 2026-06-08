@@ -557,6 +557,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::put('/{id}', 'ManufacturingController@update')->name('update');
         Route::delete('/{id}', 'ManufacturingController@destroy')->name('destroy');
         Route::get('/{id}/clone', 'ManufacturingController@cloneRecipe')->name('clone');
+        Route::get('/api/previous-bom/{product_id}', 'ManufacturingController@getPreviousBom')->name('api.previous-bom');
 
         // Factors of Production
         Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');
