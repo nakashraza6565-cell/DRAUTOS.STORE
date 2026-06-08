@@ -99,22 +99,26 @@
 
       <div class="launcher-section-title" style="color: #facc15;">Manufacturing</div>
       <div class="launcher-grid">
+          @can('view-die')
+          <a href="{{route('die-management.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-gears" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Die Management</span>
+          </a>
+          @endcan
+          @can('view-manufacturing')
+          <a href="{{route('manufacturing.production-factors.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-cubes" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Raw Materials</span>
+          </a>
           <a href="{{route('manufacturing.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-industry" style="color: #facc15;"></i></div>
-              <span class="launcher-label">Manufacturing</span>
+              <span class="launcher-label">BOM List</span>
           </a>
-          <a href="{{route('attendance.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-user-clock" style="color: #facc15;"></i></div>
-              <span class="launcher-label">Attendance</span>
+          <a href="{{route('manufacturing.create')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-plus" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Create BOM</span>
           </a>
-          <a href="{{route('commissions.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-percent" style="color: #facc15;"></i></div>
-              <span class="launcher-label">Commissions</span>
-          </a>
-          <a href="{{route('tasks.index')}}" class="launcher-item">
-              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-calendar-check" style="color: #facc15;"></i></div>
-              <span class="launcher-label">Tasks</span>
-          </a>
+          @endcan
       </div>
 
       <div class="launcher-section-title" style="color: #facc15;">Reports & System</div>
