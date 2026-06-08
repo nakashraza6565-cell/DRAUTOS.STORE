@@ -563,6 +563,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::post('production-factors/quick-store', 'ProductionFactorController@quickStore')->name('production-factors.quick-store');
         Route::get('production-factors/purchase', 'ProductionFactorController@purchaseForm')->name('production-factors.purchase.create');
         Route::post('production-factors/purchase', 'ProductionFactorController@purchaseStore')->name('production-factors.purchase.store');
+        Route::get('production-factors/invoices', 'ProductionFactorController@invoices')->name('production-factors.invoices');
+        Route::get('production-factors/invoices/{id}', 'ProductionFactorController@invoiceShow')->name('production-factors.invoice.show');
         Route::resource('production-factors', 'ProductionFactorController');
 
         // Production

@@ -90,6 +90,15 @@ class ProductionFactorController extends Controller
             $grandTotal = 0;
             $descriptionParts = [];
 
+            $purchase = \App\Models\RawMaterialPurchase::create([
+                'invoice_number' => 'TMP-' . time(),
+                'supplier_id' => $request->supplier_id,
+                'purchase_date' => $request->date,
+                'total_amount' => 0,
+                'notes' => $request->notes ?? null
+            ]);
+            $purchase->invoice_number = 'RMP-' . date('Ymd', strtotime($request->date)) . '-' . str_pad($purchase->id, 4, '0', STR_PAD_LEFT);
+
             foreach ($request->items as $item) {
                 $factor = ProductionFactor::findOrFail($item['factor_id']);
                 
@@ -99,11 +108,22 @@ class ProductionFactorController extends Controller
                     $factor->save();
                 }
 
+                \App\Models\RawMaterialPurchaseItem::create([
+                    'purchase_id' => $purchase->id,
+                    'factor_id' => $factor->id,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['total_cost'] / $item['quantity'],
+                    'total' => $item['total_cost'],
+                ]);
+
                 $grandTotal += $item['total_cost'];
                 $descriptionParts[] = $item['quantity'] . ' ' . ($factor->unit ?? 'pcs') . ' of ' . $factor->name;
             }
 
-            $description = "Purchased: " . implode(', ', $descriptionParts);
+            $purchase->total_amount = $grandTotal;
+            $purchase->save();
+
+            $description = "Purchased (Invoice: {$purchase->invoice_number}): " . implode(', ', $descriptionParts);
 
             // Update Supplier Ledger (Debit because we owe them)
             \App\Models\SupplierLedger::record(
@@ -129,6 +149,18 @@ class ProductionFactorController extends Controller
     {
         $factor = ProductionFactor::findOrFail($id);
         return view('backend.manufacturing.factors.edit', compact('factor'));
+    }
+
+    public function invoices()
+    {
+        $invoices = \App\Models\RawMaterialPurchase::with('supplier')->orderBy('purchase_date', 'DESC')->orderBy('id', 'DESC')->paginate(20);
+        return view('backend.manufacturing.factors.invoices', compact('invoices'));
+    }
+
+    public function invoiceShow($id)
+    {
+        $invoice = \App\Models\RawMaterialPurchase::with(['supplier', 'items.factor'])->findOrFail($id);
+        return view('backend.manufacturing.factors.invoice_show', compact('invoice'));
     }
 
     public function update(Request $request, $id)
