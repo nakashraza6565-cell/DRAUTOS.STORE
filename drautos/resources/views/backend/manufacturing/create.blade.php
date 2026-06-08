@@ -357,7 +357,7 @@
             $('#product_id').closest('.form-group').append('<small id="bom-loading" class="text-info ml-2"><i class="fas fa-spinner fa-spin"></i> Checking for previous BOM...</small>');
 
             $.ajax({
-                url: '/manufacturing/api/previous-bom/' + productId,
+                url: '/admin/manufacturing/api/previous-bom/' + productId,
                 type: 'GET',
                 success: function(response) {
                     $('#bom-loading').remove();
