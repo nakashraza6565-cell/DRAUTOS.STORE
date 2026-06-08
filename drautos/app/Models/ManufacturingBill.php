@@ -35,7 +35,12 @@ class ManufacturingBill extends Model
 
     public function subcontractor()
     {
-        return $this->belongsTo(Supplier::class, 'subcontractor_id');
+        return $this->belongsTo(\App\Models\Supplier::class, 'subcontractor_id');
+    }
+
+    public function purchases()
+    {
+        return $this->hasMany(\App\Models\RawMaterialPurchase::class, 'manufacturing_bill_id');
     }
 
     public function creator()

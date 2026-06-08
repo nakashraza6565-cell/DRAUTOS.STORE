@@ -153,6 +153,7 @@ class ManufacturingController extends Controller
             $bom->save();
 
             // Add Components
+            $purchasesBySupplier = [];
             foreach ($request->components as $componentData) {
                 $rawId = $componentData['product_id'];
                 
@@ -163,6 +164,25 @@ class ManufacturingController extends Controller
                     $unit = $factor->unit ?? 'pcs';
                     $ingredientType = 'App\\Models\\ProductionFactor';
                     $componentProductId = $factorId;
+
+                    $purchaseSupplierId = $componentData['purchase_supplier_id'] ?? null;
+                    if ($purchaseSupplierId) {
+                        if (!isset($purchasesBySupplier[$purchaseSupplierId])) {
+                            $purchasesBySupplier[$purchaseSupplierId] = ['total' => 0, 'items' => [], 'descriptions' => []];
+                        }
+                        $purchasesBySupplier[$purchaseSupplierId]['items'][] = [
+                            'factor_id' => $factorId,
+                            'item_name' => null,
+                            'quantity' => $componentData['quantity'],
+                            'unit_price' => $costPerUnit,
+                            'total' => $costPerUnit * $componentData['quantity']
+                        ];
+                        $purchasesBySupplier[$purchaseSupplierId]['total'] += ($costPerUnit * $componentData['quantity']);
+                        $purchasesBySupplier[$purchaseSupplierId]['descriptions'][] = $componentData['quantity'] . ' ' . $unit . ' of ' . $factor->name;
+                        
+                        // Immediately increment stock so the BOM consumption matches it perfectly
+                        $factor->increment('stock_quantity', $componentData['quantity']);
+                    }
                 } else {
                     $productId = (int) str_replace('product_', '', $rawId);
                     $product = Product::find($productId);
@@ -218,7 +238,7 @@ class ManufacturingController extends Controller
 
             }
 
-            // Decoupled Multi-Subcontractor Ledger Hook (Always post immediately regardless of status)
+            // Decoupled Multi-Subcontractor Ledger Hook & Invoicing
             $details = $bom->overhead_details ?? [];
             $recalcSupplierIds = [];
             foreach ($details as $ov) {
@@ -227,13 +247,58 @@ class ManufacturingController extends Controller
                 if ($subId && $costVal > 0) {
                     $recalcSupplierIds[] = (int) $subId;
                     $overheadName = $ov['name'] ?? ucfirst(str_replace('_', ' ', $ov['type'] ?? 'overhead'));
+
+                    if (!isset($purchasesBySupplier[$subId])) {
+                        $purchasesBySupplier[$subId] = ['total' => 0, 'items' => [], 'descriptions' => []];
+                    }
+                    $purchasesBySupplier[$subId]['items'][] = [
+                        'factor_id' => null,
+                        'item_name' => "Subcontract Service: " . $overheadName,
+                        'quantity' => 1,
+                        'unit_price' => $costVal,
+                        'total' => $costVal
+                    ];
+                    $purchasesBySupplier[$subId]['total'] += $costVal;
+                    $purchasesBySupplier[$subId]['descriptions'][] = "Subcontract Service ({$overheadName})";
+                }
+            }
+
+            // Generate Invoices for grouped purchases
+            foreach ($purchasesBySupplier as $suppId => $data) {
+                if ($data['total'] > 0) {
+                    $recalcSupplierIds[] = (int) $suppId;
+                    
+                    $purchase = \App\Models\RawMaterialPurchase::create([
+                        'invoice_number' => 'TMP-' . time() . rand(100, 999),
+                        'supplier_id' => $suppId,
+                        'purchase_date' => now()->toDateString(),
+                        'total_amount' => $data['total'],
+                        'notes' => "Auto-generated from BOM {$bom->bom_number}",
+                        'manufacturing_bill_id' => $bom->id
+                    ]);
+                    $purchase->invoice_number = 'RMP-' . date('Ymd') . '-' . str_pad($purchase->id, 4, '0', STR_PAD_LEFT);
+                    $purchase->save();
+
+                    foreach ($data['items'] as $item) {
+                        \App\Models\RawMaterialPurchaseItem::create([
+                            'purchase_id' => $purchase->id,
+                            'factor_id' => $item['factor_id'],
+                            'item_name' => $item['item_name'],
+                            'quantity' => $item['quantity'],
+                            'unit_price' => $item['unit_price'],
+                            'total' => $item['total']
+                        ]);
+                    }
+
+                    $description = "Purchased (Invoice: {$purchase->invoice_number}): " . implode(', ', $data['descriptions']);
+                    
                     \App\Models\SupplierLedger::record(
-                        $subId,
+                        $suppId,
                         now()->toDateString(),
                         'debit',
                         'purchase',
-                        "Subcontract Service ({$overheadName}) for BOM {$bom->bom_number} (produced {$bom->batch_quantity} units)",
-                        $costVal,
+                        $description,
+                        $data['total'],
                         $bom->id
                     );
                 }

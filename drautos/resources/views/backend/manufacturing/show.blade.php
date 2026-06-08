@@ -97,6 +97,35 @@
             @endif
         </div>
 
+        @if($bom->purchases->count() > 0)
+        <hr>
+        <h5>Generated Purchase Invoices</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm" width="100%">
+                <thead>
+                    <tr class="bg-light">
+                        <th>Invoice Number</th>
+                        <th>Supplier</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($bom->purchases as $purchase)
+                    <tr>
+                        <td>{{$purchase->invoice_number}}</td>
+                        <td>{{$purchase->supplier->name ?? 'N/A'}}</td>
+                        <td class="text-success font-weight-bold">Rs. {{number_format($purchase->total_amount, 2)}}</td>
+                        <td>
+                            <a href="{{route('manufacturing.production-factors.invoice.show', $purchase->id)}}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View Invoice</a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+
         @if($bom->productions->count() > 0)
         <hr>
         <h5>Production History</h5>

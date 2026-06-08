@@ -50,7 +50,8 @@
                 <thead>
                     <tr>
                         <th width="50%">Component (Raw Material)</th>
-                        <th width="30%">Quantity Required</th>
+                        <th width="20%">Quantity Required</th>
+                        <th width="20%">Purchase from Supplier?</th>
                         <th width="10%">Action</th>
                     </tr>
                 </thead>
@@ -75,13 +76,21 @@
                             <input type="number" step="0.01" name="components[0][quantity]" class="form-control" placeholder="Qty" required>
                         </td>
                         <td>
+                            <select name="components[0][purchase_supplier_id]" class="form-control select2">
+                                <option value="">-- No (Use Stock) --</option>
+                                @foreach($suppliers as $supplier)
+                                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
                             <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="3">
+                        <td colspan="4">
                             <button type="button" class="btn btn-success btn-sm" id="add_component"><i class="fas fa-plus"></i> Add Component</button>
                         </td>
                     </tr>
@@ -177,6 +186,14 @@
         </td>
         <td>
             <input type="number" step="0.01" name="components[INDEX][quantity]" class="form-control" placeholder="Qty" required>
+        </td>
+        <td>
+            <select name="components[INDEX][purchase_supplier_id]" class="form-control select2-new">
+                <option value="">-- No (Use Stock) --</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                @endforeach
+            </select>
         </td>
         <td>
             <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>

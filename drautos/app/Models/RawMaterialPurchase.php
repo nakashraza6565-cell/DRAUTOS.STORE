@@ -9,7 +9,12 @@ class RawMaterialPurchase extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['invoice_number', 'supplier_id', 'purchase_date', 'total_amount', 'notes'];
+    protected $fillable = ['invoice_number', 'supplier_id', 'purchase_date', 'total_amount', 'notes', 'manufacturing_bill_id'];
+
+    public function manufacturingBill()
+    {
+        return $this->belongsTo(ManufacturingBill::class, 'manufacturing_bill_id');
+    }
 
     public function supplier()
     {
