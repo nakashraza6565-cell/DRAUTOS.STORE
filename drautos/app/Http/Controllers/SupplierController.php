@@ -228,7 +228,7 @@ class SupplierController extends Controller
                 'phone' => 'nullable|string|max:255',
                 'company_name' => 'nullable|string|max:255',
                 'address' => 'nullable|string|max:255',
-                'status' => 'required|in:active,inactive'
+                'status' => 'nullable|in:active,inactive'
             ]);
 
             $supplier = Supplier::create([
@@ -237,7 +237,7 @@ class SupplierController extends Controller
                 'phone' => $request->phone,
                 'company_name' => $request->company_name,
                 'address' => $request->address,
-                'status' => $request->status,
+                'status' => $request->status ?? 'active',
             ]);
 
             return response()->json(['status' => 'success', 'supplier' => $supplier]);
