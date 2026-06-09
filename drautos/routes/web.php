@@ -345,6 +345,13 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/activity-logs', 'ActivityController@index')->name('admin.activity-logs');
 
     // Debug & Fix Routes (Secure)
+    Route::get('/live-debug-log', function() {
+        $logFile = storage_path('logs/laravel.log');
+        if (!file_exists($logFile)) return 'No log file';
+        $lines = file($logFile);
+        $lastLines = array_slice($lines, -250);
+        return response('<pre>' . htmlspecialchars(implode("", $lastLines)) . '</pre>')->header('Content-Type', 'text/html');
+    });
     Route::get('/force-clear', function () {
         try {
             \Illuminate\Support\Facades\Artisan::call('optimize:clear');
