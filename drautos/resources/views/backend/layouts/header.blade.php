@@ -25,7 +25,24 @@
 
     <!-- Top navigation links (desktop) -->
     <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
-        <!-- Shifted Activity Log to sidebar Content Dropdown -->
+        <!-- HR Dropdown -->
+        @hasrole('admin')
+        <li class="nav-item dropdown mx-1">
+            <a class="nav-link dropdown-toggle font-weight-bold" href="#" id="hrDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #083259;">
+                <i class="fas fa-users mr-1"></i> Human Resources
+            </a>
+            <div class="dropdown-menu shadow-sm border-0 animated--grow-in" aria-labelledby="hrDropdown" style="border-radius: 8px; border-top: 3px solid #083259 !important;">
+                <a class="dropdown-item py-2" href="{{route('staff.index')}}"><i class="fas fa-id-badge mr-2 text-primary"></i> Staff Management</a>
+                <a class="dropdown-item py-2" href="{{route('attendance.index')}}"><i class="fas fa-clock mr-2 text-info"></i> Attendance</a>
+                <a class="dropdown-item py-2" href="{{route('expenses.index')}}"><i class="fas fa-money-bill-wave mr-2 text-danger"></i> Expenses</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item py-2" href="{{route('tasks.index')}}"><i class="fas fa-tasks mr-2 text-success"></i> Tasks List</a>
+                <a class="dropdown-item py-2" href="{{route('tasks.calendar')}}"><i class="fas fa-calendar mr-2 text-warning"></i> Task Calendar</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item py-2" href="{{route('commissions.index')}}"><i class="fas fa-percentage mr-2 text-secondary"></i> Commissions</a>
+            </div>
+        </li>
+        @endhasrole
     </ul>
 
     <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center mr-3" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">

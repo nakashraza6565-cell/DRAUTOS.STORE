@@ -261,21 +261,7 @@
     </li>
     @endcan
 
-    @can('view-task')
- {{-- Tasks & Calendar --}}
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#tasksCollapse" aria-expanded="true" aria-controls="tasksCollapse">
-          <i class="fas fa-calendar-check mr-2"></i>
-          <span>Tasks & Calendar</span>
-        </a>
-        <div id="tasksCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('tasks.index')}}">Task List</a>
-            <a class="collapse-item" href="{{route('tasks.calendar')}}">Calendar View</a>
-          </div>
-        </div>
-    </li>
-    @endcan
+
 
     <!-- Section: Enterprise -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
@@ -313,21 +299,7 @@
     </li>
     @endcan
 
-    {{-- HR --}}
-    @hasrole('admin')
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#hrCollapse" aria-expanded="true" aria-controls="hrCollapse">
-          <i class="fas fa-user-tie mr-2"></i>
-          <span>Human Resources</span>
-        </a>
-        <div id="hrCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('attendance.index')}}">Attendance</a>
-            <!-- <a class="collapse-item" href="{{route('payroll.index')}}">Payroll & Salaries</a> -->
-            <a class="collapse-item" href="{{route('commissions.index')}}">Commissions</a>
-          </div>
-        </div>
-    </li>
+
 
     @can('view-analytics')
     {{-- Analytics --}}
@@ -380,9 +352,7 @@
         </a>
         <div id="adminCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('staff.index')}}">Staff Management</a>
             <a class="collapse-item" href="{{route('roles.index')}}">Roles & Permissions</a>
-            <a class="collapse-item" href="{{route('expenses.index')}}">Expenses</a>
             <a class="collapse-item" href="{{route('users.index')}}">Customers (Users)</a>
             <a class="collapse-item" href="{{route('users.pending')}}" style="color: #e6a817; font-weight: 600;">
                 <i class="fas fa-user-clock fa-sm mr-1"></i> Pending Registrations
