@@ -310,8 +310,6 @@
         </a>
     </li>
     @endcan
-    @endhasrole
-
     <!-- Section: Reports -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
         Business Intelligence
