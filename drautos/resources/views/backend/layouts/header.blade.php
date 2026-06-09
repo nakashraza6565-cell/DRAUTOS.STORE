@@ -27,11 +27,11 @@
     <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
         <!-- HR Dropdown -->
         @hasrole('admin')
-        <li class="nav-item dropdown mx-1" id="hr-nav-item">
-            <a class="nav-link dropdown-toggle font-weight-bold px-1" href="#" id="hrDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">
+        <li class="nav-item dropdown mx-1 top-nav-category" id="hr-nav-item">
+            <a class="nav-link dropdown-toggle font-weight-bold px-1 top-nav-link" href="#" id="hrDropdown" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">
                 <i class="fas fa-users mr-1"></i> HR
             </a>
-            <div class="dropdown-menu shadow-sm border-0 animated--grow-in" aria-labelledby="hrDropdown" style="border-radius: 8px; border-top: 3px solid #083259 !important;">
+            <div class="dropdown-menu shadow-sm border-0 animated--grow-in top-category-menu" aria-labelledby="hrDropdown" style="border-radius: 8px; border-top: 3px solid #083259 !important;">
                 <a class="dropdown-item py-2" href="{{route('staff.index')}}"><i class="fas fa-id-badge mr-2 text-primary"></i> Staff Management</a>
                 <a class="dropdown-item py-2" href="{{route('attendance.index')}}"><i class="fas fa-clock mr-2 text-info"></i> Attendance</a>
                 <a class="dropdown-item py-2" href="{{route('expenses.index')}}"><i class="fas fa-money-bill-wave mr-2 text-danger"></i> Expenses</a>
