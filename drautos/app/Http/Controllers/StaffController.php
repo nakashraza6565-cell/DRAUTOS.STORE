@@ -32,6 +32,8 @@ class StaffController extends Controller
             'status' => 'required|in:active,inactive',
             'phone' => 'nullable|string',
             'base_salary' => 'nullable|numeric',
+            'salary_type' => 'nullable|string|in:daily,weekly,monthly',
+            'daily_wage' => 'nullable|numeric',
             'overtime_rate' => 'nullable|numeric',
         ]);
 
@@ -66,6 +68,8 @@ class StaffController extends Controller
             'status' => 'required|in:active,inactive',
             'phone' => 'nullable|string',
             'base_salary' => 'nullable|numeric',
+            'salary_type' => 'nullable|string|in:daily,weekly,monthly',
+            'daily_wage' => 'nullable|numeric',
             'overtime_rate' => 'nullable|numeric',
         ]);
 

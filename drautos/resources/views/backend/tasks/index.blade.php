@@ -2,63 +2,89 @@
 
 @section('main-content')
 <div class="container-fluid p-0">
-    {{-- TOP METRICS BAR --}}
+    {{-- GAMIFIED KPI DASHBOARD --}}
+    @php
+        $total_active = $stats['pending'] + $stats['in_progress'];
+        $total_all = $total_active + $stats['completed_today'];
+        $completion_rate = $total_all > 0 ? round(($stats['completed_today'] / $total_all) * 100) : 0;
+    @endphp
+    
     <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4 metric-card" data-filter="pending" style="cursor: pointer;">
-            <div class="card border-left-primary shadow h-100 py-2 transition hover-card">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Pending Tasks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list fa-2x text-gray-300"></i>
+        <!-- Circular Progress KPI -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card shadow border-0 h-100 kpi-glass-card">
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                    <h6 class="font-weight-bold text-uppercase text-secondary mb-3"><i class="fas fa-trophy text-warning mr-2"></i>Daily Goal Progress</h6>
+                    <div class="circular-progress position-relative" style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(#1cc88a {{ $completion_rate }}%, #eaecf4 0);">
+                        <div class="inner-circle position-absolute bg-white d-flex align-items-center justify-content-center shadow-sm" style="width: 100px; height: 100px; border-radius: 50%; top: 10px; left: 10px;">
+                            <h3 class="m-0 font-weight-bold text-dark">{{ $completion_rate }}%</h3>
                         </div>
                     </div>
+                    <p class="mt-3 mb-0 small text-muted">You've completed <span class="font-weight-bold text-success">{{ $stats['completed_today'] }}</span> tasks today!</p>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-4 metric-card" data-filter="in_progress" style="cursor: pointer;">
-            <div class="card border-left-info shadow h-100 py-2 transition hover-card">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">In Progress</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['in_progress'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-spinner fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4 metric-card" data-filter="high_priority" style="cursor: pointer;">
-            <div class="card border-left-danger shadow h-100 py-2 transition hover-card">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">High Priority</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['high_priority'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+
+        <!-- Metric Cards -->
+        <div class="col-xl-8 col-md-12 mb-4">
+            <div class="row h-100">
+                <div class="col-md-6 mb-4 metric-card" data-filter="pending" style="cursor: pointer;">
+                    <div class="card border-left-primary shadow h-100 py-2 transition hover-card kpi-glass-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Pending Tasks</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ $stats['pending'] }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-list fa-3x text-primary" style="opacity: 0.2;"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4 metric-card" data-filter="completed_today" style="cursor: pointer;">
-            <div class="card border-left-success shadow h-100 py-2 transition hover-card">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed Today</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed_today'] }}</div>
+                <div class="col-md-6 mb-4 metric-card" data-filter="in_progress" style="cursor: pointer;">
+                    <div class="card border-left-info shadow h-100 py-2 transition hover-card kpi-glass-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">In Progress</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ $stats['in_progress'] }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-spinner fa-3x text-info" style="opacity: 0.2;"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4 mb-md-0 metric-card" data-filter="high_priority" style="cursor: pointer;">
+                    <div class="card border-left-danger shadow h-100 py-2 transition hover-card kpi-glass-card">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">High Priority</div>
+                                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ $stats['high_priority'] }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-fire fa-3x text-danger" style="opacity: 0.2;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 metric-card" data-filter="completed_today" style="cursor: pointer;">
+                    <div class="card border-left-success shadow h-100 py-2 transition hover-card kpi-glass-card bg-success text-white">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-uppercase mb-1">Completed Today</div>
+                                    <div class="h3 mb-0 font-weight-bold">{{ $stats['completed_today'] }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-3x text-white" style="opacity: 0.3;"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -251,6 +277,30 @@
     }
     .sortable-drag {
         transform: rotate(2deg);
+    }
+    /* Modern Gamified UI Styles */
+    .kpi-glass-card {
+        background: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 15px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .kpi-glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1) !important;
+    }
+    .circular-progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        transition: all 1s ease-in-out;
+    }
+    .circular-progress:hover {
+        transform: scale(1.05);
     }
 </style>
 @endpush

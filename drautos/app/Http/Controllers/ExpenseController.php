@@ -47,16 +47,21 @@ class ExpenseController extends Controller
             'financial_account_id' => 'nullable|exists:financial_accounts,id'
         ]);
 
+        $user = auth()->user();
+        $is_admin = $user->hasRole('admin');
+
         $expense = Expense::create([
             'title' => $request->title,
             'amount' => $request->amount,
             'date' => $request->date,
             'description' => $request->description,
             'financial_account_id' => $request->financial_account_id,
-            'user_id' => auth()->id()
+            'user_id' => $user->id,
+            'approval_status' => $is_admin ? 'approved' : 'pending',
+            'approved_by' => $is_admin ? $user->id : null
         ]);
 
-        if ($request->financial_account_id && $request->amount > 0) {
+        if ($is_admin && $request->financial_account_id && $request->amount > 0) {
             \App\Models\AccountTransaction::record(
                 $request->financial_account_id,
                 $request->amount,
@@ -95,5 +100,29 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return back()->with('success', 'Expense deleted');
+    public function approve($id)
+    {
+        $expense = Expense::findOrFail($id);
+        
+        if ($expense->approval_status !== 'approved') {
+            $expense->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id()
+            ]);
+
+            if ($expense->financial_account_id && $expense->amount > 0) {
+                \App\Models\AccountTransaction::record(
+                    $expense->financial_account_id,
+                    $expense->amount,
+                    'out',
+                    'Expense',
+                    $expense->id,
+                    'Expense: ' . $expense->title,
+                    $expense->date
+                );
+            }
+        }
+        
+        return back()->with('success', 'Expense approved successfully.');
     }
 }
