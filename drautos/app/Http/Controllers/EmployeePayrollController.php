@@ -18,7 +18,13 @@ class EmployeePayrollController extends Controller
      */
     public function index()
     {
-        $employees = User::whereIn('role', ['staff', 'admin'])->get();
+        $employees = User::whereIn('role', ['staff', 'admin'])
+            ->withSum('payments as total_paid_all_time', 'amount')
+            ->withSum(['payments as total_paid_this_month' => function($query) {
+                $query->whereMonth('payment_date', now()->month)
+                      ->whereYear('payment_date', now()->year);
+            }], 'amount')
+            ->get();
 
         $stats = [
             'total_paid_this_month' => EmployeePayment::whereMonth('payment_date', now()->month)

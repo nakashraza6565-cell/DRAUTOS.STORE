@@ -85,17 +85,22 @@
                     <thead>
                         <tr>
                             <th>Employee</th>
-                            <th>Email</th>
                             <th>Role</th>
+                            <th>Paid This Month</th>
+                            <th>Total Paid (All Time)</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($employees as $employee)
                         <tr>
-                            <td>{{ $employee->name }}</td>
-                            <td>{{ $employee->email }}</td>
+                            <td>
+                                <strong>{{ $employee->name }}</strong><br>
+                                <small class="text-muted">{{ $employee->email }}</small>
+                            </td>
                             <td><span class="badge badge-info">{{ $employee->role }}</span></td>
+                            <td class="font-weight-bold text-success">PKR {{ number_format($employee->total_paid_this_month ?? 0, 2) }}</td>
+                            <td class="font-weight-bold">PKR {{ number_format($employee->total_paid_all_time ?? 0, 2) }}</td>
                             <td>
                                 <a href="{{ route('payroll.show', $employee->id) }}" class="btn btn-info btn-sm">
                                     <i class="fas fa-eye"></i> View Details
