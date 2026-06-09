@@ -34,8 +34,8 @@
                             <td class="font-weight-bold">{{$account->name}}</td>
                             <td>{{ucfirst($account->type)}}</td>
                             <td>{{$account->account_number ?: 'N/A'}}</td>
-                            <td class="font-weight-bold text-{{$account->current_balance >= 0 ? 'success' : 'danger'}}">
-                                Rs. {{number_format($account->current_balance, 2)}}
+                            <td class="font-weight-bold text-{{($account->current_balance ?? 0) >= 0 ? 'success' : 'danger'}}">
+                                Rs. {{number_format($account->current_balance ?? 0, 2)}}
                             </td>
                             <td>
                                 <span class="badge badge-{{$account->status == 'active' ? 'success' : 'danger'}}">
