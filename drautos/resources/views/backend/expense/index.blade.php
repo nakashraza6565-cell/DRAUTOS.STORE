@@ -16,7 +16,6 @@
               <th>Account</th>
               <th>Description</th>
               <th>Amount</th>
-              <th>Approval Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -35,28 +34,11 @@
                     <td>{{$expense->description}}</td>
                     <td>Rs. {{number_format($expense->amount, 2)}}</td>
                     <td>
-                        @if($expense->approval_status == 'approved')
-                            <span class="badge badge-success">Approved</span>
-                        @elseif($expense->approval_status == 'rejected')
-                            <span class="badge badge-danger">Rejected</span>
-                        @else
-                            <span class="badge badge-warning">Pending</span>
-                        @endif
-                    </td>
-                    <td>
-                        <div class="d-flex">
-                            @if($expense->approval_status == 'pending')
-                                <form method="POST" action="{{route('expenses.approve',[$expense->id])}}" class="mr-1">
-                                    @csrf 
-                                    <button class="btn btn-success btn-sm" style="height:30px; border-radius:50%" title="Approve" data-toggle="tooltip"><i class="fas fa-check"></i></button>
-                                </form>
-                            @endif
-                            <form method="POST" action="{{route('expenses.destroy',[$expense->id])}}">
-                              @csrf 
-                              @method('delete')
-                                  <button class="btn btn-danger btn-sm dltBtn" style="height:30px; width:30px;border-radius:50%" title="Delete" data-toggle="tooltip"><i class="fas fa-trash-alt"></i></button>
-                            </form>
-                        </div>
+                        <form method="POST" action="{{route('expenses.destroy',[$expense->id])}}">
+                          @csrf 
+                          @method('delete')
+                              <button class="btn btn-danger btn-sm dltBtn" style="height:30px; width:30px;border-radius:50%"><i class="fas fa-trash-alt"></i></button>
+                        </form>
                     </td>
                 </tr>  
             @endforeach

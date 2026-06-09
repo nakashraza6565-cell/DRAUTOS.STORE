@@ -483,7 +483,6 @@
                     'Inventory & Assets': 'Inventory',
                     'Financial Management': 'Finance',
                     'Danyal Autos Enterprise': 'Enterprise',
-                    'Human Resources': 'HR',
                     'Business Intelligence': 'Reports',
                     'System Configuration': 'System'
                 };

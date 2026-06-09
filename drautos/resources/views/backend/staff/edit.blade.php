@@ -64,28 +64,10 @@
           </div>
 
           <div class="form-row">
-            <div class="form-group col-md-4">
-                <label for="salary_type" class="col-form-label">Salary Structure</label>
-                <select name="salary_type" id="salary_type" class="form-control">
-                    <option value="monthly" {{(($staff->salary_type=='monthly') ? 'selected' : '')}}>Monthly</option>
-                    <option value="daily" {{(($staff->salary_type=='daily') ? 'selected' : '')}}>Daily Wage</option>
-                    <option value="weekly" {{(($staff->salary_type=='weekly') ? 'selected' : '')}}>Weekly</option>
-                </select>
-                @error('salary_type')
-                <span class="text-danger">{{$message}}</span>
-                @enderror
-            </div>
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-6">
                 <label for="base_salary" class="col-form-label">Base Monthly Salary (Rs.)</label>
                 <input id="base_salary" type="number" step="0.01" name="base_salary" placeholder="Enter base salary" value="{{$staff->base_salary}}" class="form-control">
                 @error('base_salary')
-                <span class="text-danger">{{$message}}</span>
-                @enderror
-            </div>
-            <div class="form-group col-md-4">
-                <label for="daily_wage" class="col-form-label">Daily Wage (Rs.)</label>
-                <input id="daily_wage" type="number" step="0.01" name="daily_wage" placeholder="Enter daily wage" value="{{$staff->daily_wage}}" class="form-control">
-                @error('daily_wage')
                 <span class="text-danger">{{$message}}</span>
                 @enderror
             </div>

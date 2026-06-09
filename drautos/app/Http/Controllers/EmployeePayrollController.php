@@ -18,13 +18,7 @@ class EmployeePayrollController extends Controller
      */
     public function index()
     {
-        $employees = User::whereIn('role', ['staff', 'admin'])
-            ->withSum('payments as total_paid_all_time', 'amount')
-            ->withSum(['payments as total_paid_this_month' => function($query) {
-                $query->whereMonth('payment_date', now()->month)
-                      ->whereYear('payment_date', now()->year);
-            }], 'amount')
-            ->get();
+        $employees = User::whereIn('role', ['staff', 'admin'])->get();
 
         $stats = [
             'total_paid_this_month' => EmployeePayment::whereMonth('payment_date', now()->month)
@@ -45,45 +39,8 @@ class EmployeePayrollController extends Controller
     {
         $employee->load(['payments', 'advances', 'commissions']);
 
-        $currentMonth = now()->month;
-        $currentYear = now()->year;
-        
-        $daysWorked = \App\Models\Attendance::where('user_id', $employee->id)
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->count();
-            
-        $overtimeHours = \App\Models\Attendance::where('user_id', $employee->id)
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->sum('overtime_hours');
-
-        $pending_base = 0;
-        if ($employee->salary_type == 'daily') {
-            $pending_base = $daysWorked * ($employee->daily_wage ?? 0);
-        } else if ($employee->salary_type == 'weekly') {
-            // Assume base_salary is weekly if type is weekly
-            $pending_base = floor($daysWorked / 6) * ($employee->base_salary ?? 0); 
-        } else {
-            $pending_base = $employee->base_salary ?? 0;
-        }
-
-        $pending_overtime = $overtimeHours * ($employee->overtime_rate ?? 0);
-        $total_pending_salary = $pending_base + $pending_overtime;
-
-        $paidThisMonth = $employee->payments()
-            ->whereIn('payment_type', ['salary', 'overtime'])
-            ->whereMonth('payment_date', $currentMonth)
-            ->whereYear('payment_date', $currentYear)
-            ->sum('amount');
-            
-        $net_pending_salary = max(0, $total_pending_salary - $paidThisMonth);
-
         $summary = [
             'total_paid' => $employee->payments->sum('amount'),
-            'days_worked_this_month' => $daysWorked,
-            'overtime_hours_this_month' => $overtimeHours,
-            'net_pending_salary' => $net_pending_salary,
             'total_advances' => $employee->advances->sum('amount'),
             'total_repaid' => $employee->advances->sum('repaid_amount'),
             'pending_advances' => $employee->advances->where('status', '!=', 'fully_repaid')->sum('balance'),

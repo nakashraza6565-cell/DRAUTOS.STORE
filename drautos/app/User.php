@@ -18,7 +18,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name', 'business_name', 'email', 'password','role','photo','status','provider','provider_id','phone','address','city','shipping_address','shipping_city',
-        'courier_company', 'courier_number', 'base_salary', 'salary_type', 'daily_wage', 'overtime_rate', 'customer_type', 'rating'
+        'courier_company', 'courier_number', 'base_salary', 'overtime_rate', 'customer_type', 'rating'
     ];
 
     /**

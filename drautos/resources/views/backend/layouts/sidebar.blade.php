@@ -261,30 +261,8 @@
     </li>
     @endcan
 
-    <!-- Section: Human Resources -->
-    <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
-        Human Resources
-    </div>
-
-    @hasrole('admin')
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#hrCollapse" aria-expanded="true" aria-controls="hrCollapse">
-          <i class="fas fa-user-tie mr-2"></i>
-          <span>Employee Management</span>
-        </a>
-        <div id="hrCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('attendance.index')}}">Attendance</a>
-            <a class="collapse-item" href="{{route('payroll.index')}}">Payroll & Salaries</a>
-            <a class="collapse-item" href="{{route('expenses.index')}}">Expenses</a>
-            <!-- <a class="collapse-item" href="{{route('commissions.index')}}">Commissions</a> -->
-          </div>
-        </div>
-    </li>
-    @endhasrole
-
     @can('view-task')
-    {{-- Tasks & Calendar --}}
+ {{-- Tasks & Calendar --}}
     <li class="nav-item">
         <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#tasksCollapse" aria-expanded="true" aria-controls="tasksCollapse">
           <i class="fas fa-calendar-check mr-2"></i>
@@ -335,7 +313,21 @@
     </li>
     @endcan
 
-    <!-- HR Moved to its own section above -->
+    {{-- HR --}}
+    @hasrole('admin')
+    <li class="nav-item">
+        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#hrCollapse" aria-expanded="true" aria-controls="hrCollapse">
+          <i class="fas fa-user-tie mr-2"></i>
+          <span>Human Resources</span>
+        </a>
+        <div id="hrCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
+            <a class="collapse-item" href="{{route('attendance.index')}}">Attendance</a>
+            <!-- <a class="collapse-item" href="{{route('payroll.index')}}">Payroll & Salaries</a> -->
+            <a class="collapse-item" href="{{route('commissions.index')}}">Commissions</a>
+          </div>
+        </div>
+    </li>
 
     @can('view-analytics')
     {{-- Analytics --}}

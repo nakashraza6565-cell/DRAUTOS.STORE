@@ -597,7 +597,6 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
 
     Route::group(['middleware' => ['role:admin']], function () {
         Route::resource('expenses', 'ExpenseController');
-        Route::post('expenses/{id}/approve', 'ExpenseController@approve')->name('expenses.approve');
         
         // Delivery Receipts (Bilty)
         Route::get('delivery-receipts/get-customer/{id}', 'DeliveryReceiptController@getCustomer')->name('delivery-receipts.get-customer');
