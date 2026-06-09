@@ -465,7 +465,7 @@
                     return;
                 }
 
-                $container.find('.top-nav-category').remove();
+                $container.find('.top-nav-category:not(#hr-nav-item)').remove();
 
                 var added = {};
                 var catIndex = 0;
