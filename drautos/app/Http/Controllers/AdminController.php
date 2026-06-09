@@ -93,7 +93,7 @@ class AdminController extends Controller
         // New Analytics for Dashboard
         $staff_count = User::whereIn('role', ['admin', 'manager', 'staff'])->count();
         $supplier_count = \App\Models\Supplier::where('status', 'active')->count();
-        $total_stock_value = \App\Models\Product::sum(\DB::raw('price * stock')); // Retail value
+        $total_stock_value = (float) \App\Models\Product::sum(\DB::raw('price * stock')); // Retail value
 
         $active_register = \App\Models\CashRegister::where('status', 'open')->latest()->first();
 
@@ -184,18 +184,18 @@ class AdminController extends Controller
             $now = Carbon::now();
 
             // Total In (Sales)
-            $posSales = \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
+            $posSales = (float) \App\Models\CustomerLedger::whereBetween('created_at', [$opened_at, $now])
                         ->where('financial_account_id', $accountId)
                         ->where('type', 'credit')
                         ->where('category', 'payment')
                         ->sum('amount');
 
             // Total Out (Expenses + Supplier Payments)
-            $expenses = \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])
+            $expenses = (float) \App\Models\Expense::whereBetween('created_at', [$opened_at, $now])
                         ->where('financial_account_id', $accountId)
                         ->sum('amount');
 
-            $supplierPayments = \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
+            $supplierPayments = (float) \App\Models\SupplierLedger::whereBetween('created_at', [$opened_at, $now])
                                 ->where('financial_account_id', $accountId)
                                 ->where('type', 'credit')
                                 ->where('category', 'payment')
@@ -225,8 +225,8 @@ class AdminController extends Controller
         $all_staff = User::whereIn('role', ['admin', 'manager', 'staff'])->orderBy('name', 'ASC')->get();
 
         // Financial Totals
-        $total_payables = \App\Models\PaymentReminder::where('type', 'payable')->where('status', '!=', 'completed')->sum('amount');
-        $total_receivables = \App\Models\PaymentReminder::where('type', 'receivable')->where('status', '!=', 'completed')->sum('amount');
+        $total_payables = (float) \App\Models\PaymentReminder::where('type', 'payable')->where('status', '!=', 'completed')->sum('amount');
+        $total_receivables = (float) \App\Models\PaymentReminder::where('type', 'receivable')->where('status', '!=', 'completed')->sum('amount');
 
         // Activity Feed (System Newspaper)
         $activity_logs = \App\Models\ActivityLog::with('user')
