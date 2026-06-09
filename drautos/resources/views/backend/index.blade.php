@@ -260,7 +260,7 @@
                                     <span class="badge {{ $reminder->type == 'receivable' ? 'bg-success-light text-success' : 'bg-danger-light text-danger' }} px-2 py-1" style="border-radius: 6px;">
                                         {{ strtoupper($reminder->type == 'receivable' ? 'To Receive' : 'To Pay') }}
                                     </span>
-                                    <span class="font-weight-bolder text-dark">Rs. {{ number_format($reminder->amount - $reminder->paid_amount) }}</span>
+                                    <span class="font-weight-bolder text-dark">Rs. {{ number_format(($reminder->amount ?? 0) - ($reminder->paid_amount ?? 0)) }}</span>
                                 </div>
                                 <div class="font-weight-bold text-gray-800">{{ $reminder->party->name ?? 'Unknown Party' }}</div>
                                 <div class="small text-muted mt-1 text-truncate"><i class="fas fa-info-circle mr-1"></i> {{ $reminder->notes ?: 'No description' }}</div>
@@ -547,7 +547,7 @@
                             <option value="">-- Select Account --</option>
                             @foreach($accounts as $acc)
                                 <option value="{{ $acc->id }}" {{ $acc->id == ($staffAccId ?? null) ? 'selected' : '' }}>
-                                    {{ $acc->name }} (Bal: Rs. {{ number_format($acc->current_balance) }})
+                                    {{ $acc->name }} (Bal: Rs. {{ number_format($acc->current_balance ?? 0) }})
                                 </option>
                             @endforeach
                         </select>
