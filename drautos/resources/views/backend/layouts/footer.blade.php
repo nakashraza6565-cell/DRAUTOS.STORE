@@ -659,6 +659,16 @@
 
         buildDesktopTopNavCategories();
 
+        // Move HR to the middle of the generated nav items
+        var $hrItem = $('#hr-nav-item');
+        if ($hrItem.length) {
+            var $categories = $('#topNavCategories .top-nav-category');
+            if ($categories.length > 0) {
+                var middleIndex = Math.floor($categories.length / 2);
+                $categories.eq(middleIndex).before($hrItem);
+            }
+        }
+
         // Bulletproof manual click event listener for dynamically-injected categories
         $(document).on('click', '.top-nav-category .top-nav-link', function(e) {
             var $parent = $(this).closest('.top-nav-category');

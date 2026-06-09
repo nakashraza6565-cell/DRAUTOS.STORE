@@ -27,7 +27,7 @@
     <ul class="navbar-nav d-none d-md-flex align-items-center top-nav-categories" id="topNavCategories">
         <!-- HR Dropdown -->
         @hasrole('admin')
-        <li class="nav-item dropdown mx-1">
+        <li class="nav-item dropdown mx-1" id="hr-nav-item">
             <a class="nav-link dropdown-toggle font-weight-bold px-1" href="#" id="hrDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">
                 <i class="fas fa-users mr-1"></i> HR
             </a>
@@ -45,12 +45,14 @@
         @endhasrole
     </ul>
 
-    <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center mr-3" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">
-        <i class="fas fa-sync-alt mr-1" style="font-size:10px;"></i> Clear Cache
-    </a>
-
     <!-- Topbar Navbar (right side) -->
     <ul class="navbar-nav ml-auto align-items-center">
+
+      <li class="nav-item mr-3">
+          <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">
+              <i class="fas fa-sync-alt mr-1" style="font-size:10px;"></i> Clear Cache
+          </a>
+      </li>
 
       <!-- Removed icons per request -->
       
