@@ -28,8 +28,8 @@
         <!-- HR Dropdown -->
         @hasrole('admin')
         <li class="nav-item dropdown mx-1">
-            <a class="nav-link dropdown-toggle font-weight-bold" href="#" id="hrDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #083259;">
-                <i class="fas fa-users mr-1"></i> Human Resources
+            <a class="nav-link dropdown-toggle font-weight-bold px-1" href="#" id="hrDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">
+                <i class="fas fa-users mr-1"></i> HR
             </a>
             <div class="dropdown-menu shadow-sm border-0 animated--grow-in" aria-labelledby="hrDropdown" style="border-radius: 8px; border-top: 3px solid #083259 !important;">
                 <a class="dropdown-item py-2" href="{{route('staff.index')}}"><i class="fas fa-id-badge mr-2 text-primary"></i> Staff Management</a>

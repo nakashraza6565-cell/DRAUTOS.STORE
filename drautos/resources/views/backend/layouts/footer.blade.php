@@ -476,6 +476,21 @@
                 });
             }
 
+            function topNavIcon(heading) {
+                var icons = {
+                    'Main Content': '<i class="fas fa-tachometer-alt mr-1"></i>',
+                    'Point of Sale': '<i class="fas fa-cash-register mr-1"></i>',
+                    'Inventory & Assets': '<i class="fas fa-warehouse mr-1"></i>',
+                    'Financial Management': '<i class="fas fa-wallet mr-1"></i>',
+                    'Danyal Autos Enterprise': '<i class="fas fa-building mr-1"></i>',
+                    'Business Intelligence': '<i class="fas fa-chart-line mr-1"></i>',
+                    'System Configuration': '<i class="fas fa-cogs mr-1"></i>',
+                    'Product': '<i class="fas fa-box-open mr-1"></i>',
+                    'Manufacturing': '<i class="fas fa-industry mr-1"></i>'
+                };
+                return icons[heading] || '';
+            }
+
             function topNavLabel(heading) {
                 var labels = {
                     'Main Content': 'Content',
@@ -515,9 +530,9 @@
                             catIndex++;
                             var productMenuId = 'topNavCat-' + catIndex;
                             $container.append(
-                                '<li class="nav-item dropdown top-nav-category">'
-                                + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + productMenuId + '" role="button" aria-haspopup="true" aria-expanded="false">Product</a>'
-                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + productMenuId + '">'
+                                '<li class="nav-item dropdown top-nav-category mx-1">'
+                                + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + productMenuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + topNavIcon('Product') + ' Product</a>'
+                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + productMenuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
                                 + '<h6 class="dropdown-header">Stock Control</h6>'
                                 + productItemsHtml
                                 + '</div>'
@@ -578,11 +593,12 @@
                     catIndex++;
                     var menuId = 'topNavCat-' + catIndex;
                     var navLabel = esc(topNavLabel(heading));
+                    var navIcon = topNavIcon(heading);
 
                     $container.append(
-                        '<li class="nav-item dropdown top-nav-category">'
-                        + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + menuId + '" role="button" aria-haspopup="true" aria-expanded="false">' + navLabel + '</a>'
-                        + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + menuId + '">'
+                        '<li class="nav-item dropdown top-nav-category mx-1">'
+                        + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + menuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + navIcon + ' ' + navLabel + '</a>'
+                        + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + menuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
                         + '<h6 class="dropdown-header">' + esc(heading) + '</h6>'
                         + itemsHtml
                         + '</div>'
@@ -622,9 +638,9 @@
                             catIndex++;
                             var mfgMenuId = 'topNavCat-' + catIndex;
                             $container.append(
-                                '<li class="nav-item dropdown top-nav-category">'
-                                + '<a class="nav-link dropdown-toggle px-2 top-nav-link" href="#" id="' + mfgMenuId + '" role="button" aria-haspopup="true" aria-expanded="false">Manufacturing</a>'
-                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + mfgMenuId + '">'
+                                '<li class="nav-item dropdown top-nav-category mx-1">'
+                                + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + mfgMenuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + topNavIcon('Manufacturing') + ' Manufacturing</a>'
+                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + mfgMenuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
                                 + '<h6 class="dropdown-header">Manufacturing</h6>'
                                 + mfgHtml
                                 + '</div>'
