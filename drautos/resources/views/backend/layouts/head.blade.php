@@ -890,6 +890,45 @@
                 .so-table-to-cards tr:not(.expanded) td:nth-child(11) {
                     display: none !important;
                 }
+                
+                /* -------------------------------------------
+                   ORDER CUSTOMERS (order-table-to-cards customer-table-to-cards)
+                   Cols: 1:Customer, 2:Location, 3:Type, 4:Balance, 5:Action
+                   ------------------------------------------- */
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(1) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(1) .font-weight-bold {
+                    font-size: 0.8rem;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(1) .small {
+                    font-size: 0.65rem !important;
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(4) { 
+                    flex: 1.5; 
+                    display: flex !important;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    justify-content: center;
+                    line-height: 1.2;
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(4) .font-weight-bold {
+                    font-size: 0.8rem;
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(4) .text-xs {
+                    display: none !important; /* Hide "Last pay" text on single line view to save space */
+                }
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(3),
+                .customer-table-to-cards tr:not(.expanded) td:nth-child(5) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */

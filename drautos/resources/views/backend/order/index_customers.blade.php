@@ -44,7 +44,7 @@
             </form>
 
             <div class="table-responsive" id="ledger-list-container">
-                <table class="table table-bordered table-hover responsive-table-to-cards" width="100%" cellspacing="0">
+                <table class="table table-bordered table-hover order-table-to-cards customer-table-to-cards" width="100%" cellspacing="0">
                     <thead class="bg-gray-100">
                         <tr>
                             <th>Customer Details</th>
