@@ -824,7 +824,7 @@
                    Cols: 1:SN, 2:Customer, 3:City, 4:Staff, 5:Status & Actions
                    ------------------------------------------- */
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(2) { 
-                    flex: 2; 
+                    flex: 1.3; 
                     display: flex !important; 
                     flex-direction: column; 
                     justify-content: center;
@@ -839,12 +839,16 @@
                     font-size: 0.65rem !important;
                 }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) { 
-                    flex: 1; 
+                    flex: 1.7; 
                     display: flex !important;
                     align-items: center;
                     justify-content: flex-end;
+                    gap: 6px;
                 }
-                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .justify-content-end { display: none !important; } /* hide action buttons */
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .act-refund,
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .act-delete { 
+                    display: none !important; 
+                }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form.status-update-form { 
                     margin-bottom: 0 !important; 
                     max-width: 110px !important;
