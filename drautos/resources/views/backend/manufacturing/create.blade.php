@@ -363,35 +363,75 @@
         }
         .expand-row-btn:active { background: #e3e6f0; }
         
-        /* Make collapsed rows look like plain text lists! */
+        /* Ultra-compact single line when collapsed */
         .mobile-block-table tbody tr:not(.expanded) {
             cursor: pointer;
             background: #fdfdfd;
+            flex-wrap: nowrap !important;
+            padding: 10px 12px !important;
+            align-items: center;
         }
         .mobile-block-table tbody tr:not(.expanded):hover {
-            background: #f8f9fc;
+            background: #f1f5f9;
         }
+        .mobile-block-table tbody tr:not(.expanded) td {
+            padding: 0 4px !important;
+            width: auto !important;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Flex ratios for the single line */
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(1) { flex: 2.5; }
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(2) { flex: 1; text-align: center; }
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(4) { flex: 1.5; text-align: right; } /* Overheads total */
+        
+        /* Hide Data Labels completely */
+        .mobile-block-table tbody tr:not(.expanded) td::before {
+            display: none !important;
+        }
+
+        /* Smaller text & disable inputs visually */
         .mobile-block-table tbody tr:not(.expanded) input.form-control,
-        .mobile-block-table tbody tr:not(.expanded) .select2-selection {
+        .mobile-block-table tbody tr:not(.expanded) .select2-selection__rendered {
             border: none !important;
             background: transparent !important;
             box-shadow: none !important;
             pointer-events: none !important;
-            color: #333 !important;
-            padding-left: 0 !important;
+            color: #475569 !important;
+            padding: 0 !important;
             height: auto !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-align: inherit;
         }
-        .mobile-block-table tbody tr:not(.expanded) .select2-selection__rendered {
-            padding-left: 0 !important;
-            color: #333 !important;
-            font-weight: bold;
+        .mobile-block-table tbody tr:not(.expanded) .select2-container .select2-selection--single {
+            border: none !important;
+            background: transparent !important;
         }
         .mobile-block-table tbody tr:not(.expanded) .select2-selection__arrow {
             display: none !important;
         }
-        .mobile-block-table tbody tr:not(.expanded) td[data-label]::before {
-            color: #888;
-            font-size: 0.65rem;
+
+        /* Turn the Expand button into just a chevron */
+        .mobile-block-table tbody tr:not(.expanded) td:last-child {
+            flex: 0 0 auto !important;
+            width: 25px !important;
+            text-align: right !important;
+        }
+        .mobile-block-table tbody tr:not(.expanded) .expand-row-btn {
+            font-size: 0 !important; 
+            background: transparent !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            color: #94a3b8 !important;
+        }
+        .mobile-block-table tbody tr:not(.expanded) .expand-row-btn i {
+            font-size: 1.1rem !important;
         }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
