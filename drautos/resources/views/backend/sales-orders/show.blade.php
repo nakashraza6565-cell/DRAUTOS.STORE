@@ -176,106 +176,94 @@
         <form id="fulfill-form" action="{{route('sales-orders.fulfill', $salesOrder->id)}}" method="POST">
             @csrf
             <!-- Global Select All / Header -->
-            <div class="d-flex justify-content-between align-items-center mb-3 px-2 mt-2">
-                <div class="custom-control custom-checkbox">
-                    <input type="checkbox" class="custom-control-input" id="select-all">
-                    <label class="custom-control-label font-weight-bold text-primary" style="cursor: pointer;" for="select-all">Select All for Fulfillment</label>
-                </div>
-                <div class="font-weight-bold text-dark text-right" style="font-size: 1.1rem;">
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+                <div class="font-weight-bold text-dark text-right ml-auto" style="font-size: 1.1rem;">
                     Total: <span id="grand-total-display" class="text-success">Rs. {{number_format($salesOrder->total_amount, 2)}}</span>
                 </div>
             </div>
 
-            <div id="items-table-container">
-                <div class="row m-0">
-                    @forelse($salesOrder->items as $item)
+            <div id="items-table-container" class="table-responsive">
+                <table class="table table-bordered table-hover order-table-to-cards sale-order-detail-to-cards" width="100%" cellspacing="0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th width="40" class="text-center">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="select-all">
+                                    <label class="custom-control-label" style="cursor: pointer;" for="select-all"></label>
+                                </div>
+                            </th>
+                            <th>Product</th>
+                            <th class="text-center">Ordered</th>
+                            <th class="text-center">Delivered</th>
+                            <th class="text-center">Remaining</th>
+                            <th class="text-center" width="120">Fulfill Qty</th>
+                            <th class="text-center" width="150">Unit Price</th>
+                            <th class="text-right">Total</th>
+                            <th class="text-center" width="50">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($salesOrder->items as $item)
                         @php $remaining = $item->quantity - $item->delivered_quantity; @endphp
-                        <div class="col-12 col-lg-6 col-xl-4 mb-3 px-2">
-                            <div class="card shadow-sm border-0 h-100" style="border-radius: 12px; overflow: hidden; {{ $remaining <= 0 ? 'background-color: #f0fdf4; opacity:0.8;' : 'background-color: #fff; border: 1px solid #e2e8f0 !important;' }}">
-                                <!-- Card Header -->
-                                <div class="d-flex justify-content-between align-items-center p-3 border-bottom {{ $remaining <= 0 ? 'border-success' : 'border-light' }}">
-                                    <div class="d-flex align-items-center" style="gap: 12px; width: calc(100% - 40px);">
-                                        @if($remaining > 0)
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input item-checkbox" name="selected_items[]" value="{{$item->id}}" id="check-{{$item->id}}">
-                                                <label class="custom-control-label" style="cursor: pointer;" for="check-{{$item->id}}"></label>
-                                            </div>
-                                        @else
-                                            <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
-                                        @endif
-                                        <div class="text-truncate">
-                                            <div class="font-weight-bold text-dark text-truncate" style="font-size: 0.95rem;" title="{{$item->product->title ?? 'Deleted Product'}}">{{$item->product->title ?? 'Deleted Product'}}</div>
-                                            <div class="small text-muted text-truncate">
-                                                SKU: {{$item->product->sku ?? 'N/A'}}
-                                                @if($item->product && $item->product->brand)
-                                                    | {{$item->product->brand->title}}
-                                                @endif
-                                            </div>
-                                        </div>
+                        <tr style="{{ $remaining <= 0 ? 'background-color: #f0fdf4; opacity:0.8;' : '' }}">
+                            <td class="align-middle text-center" data-title="Select">
+                                @if($remaining > 0)
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input item-checkbox" name="selected_items[]" value="{{$item->id}}" id="check-{{$item->id}}">
+                                        <label class="custom-control-label" style="cursor: pointer;" for="check-{{$item->id}}"></label>
                                     </div>
-                                    @if($remaining > 0)
-                                        <button type="button" class="btn btn-sm btn-outline-danger shadow-sm flex-shrink-0" 
-                                                style="border-radius: 8px; padding: 4px 8px;"
-                                                onclick="removeItem('{{route('sales-orders.remove-item', [$salesOrder->id, $item->id])}}')"
-                                                title="Remove item">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
+                                @else
+                                    <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
+                                @endif
+                            </td>
+                            <td class="align-middle" data-title="Product">
+                                <div class="font-weight-bold text-dark text-truncate" style="font-size: 0.95rem;" title="{{$item->product->title ?? 'Deleted Product'}}">{{$item->product->title ?? 'Deleted Product'}}</div>
+                                <div class="small text-muted text-truncate">
+                                    SKU: {{$item->product->sku ?? 'N/A'}}
+                                    @if($item->product && $item->product->brand)
+                                        | {{$item->product->brand->title}}
                                     @endif
                                 </div>
-                                
-                                <!-- Card Body -->
-                                <div class="card-body p-3">
-                                    <!-- Quantities row -->
-                                    <div class="d-flex justify-content-between mb-3 text-center bg-light p-2 rounded shadow-sm" style="border: 1px solid #f1f5f9;">
-                                        <div class="flex-fill border-right">
-                                            <div class="small text-muted font-weight-bold text-uppercase" style="font-size: 10px;">Ordered</div>
-                                            <div class="font-weight-bold text-dark">{{$item->quantity}}</div>
-                                        </div>
-                                        <div class="flex-fill border-right">
-                                            <div class="small text-muted font-weight-bold text-uppercase" style="font-size: 10px;">Delivered</div>
-                                            <div class="font-weight-bold text-info">{{$item->delivered_quantity}}</div>
-                                        </div>
-                                        <div class="flex-fill">
-                                            <div class="small text-muted font-weight-bold text-uppercase" style="font-size: 10px;">Remaining</div>
-                                            <div class="font-weight-bold {{ $remaining > 0 ? 'text-danger' : 'text-success' }}">{{$remaining}}</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Inputs row -->
-                                    <div class="row align-items-center mt-2">
-                                        <div class="col-5 pr-1">
-                                            <div class="small text-muted font-weight-bold mb-1" style="font-size: 11px;">Fulfill Qty</div>
-                                            @if($remaining > 0)
-                                                <input type="number" name="deliver[{{$item->id}}]" class="sleek-input deliver-qty text-center w-100" value="{{$remaining}}" min="0" step="any" style="font-size: 13px;">
-                                            @else
-                                                <div class="badge badge-success w-100 py-2 d-flex align-items-center justify-content-center" style="font-size: 12px; height: 32px;"><i class="fas fa-check mr-1"></i> FULFILLED</div>
-                                            @endif
-                                        </div>
-                                        <div class="col-7 pl-1">
-                                            <div class="small text-muted font-weight-bold mb-1" style="font-size: 11px;">Unit Price</div>
-                                            <div class="sleek-input-group w-100">
-                                                <span class="prefix">Rs</span>
-                                                <input type="number" step="0.01" class="text-right item-price-input" data-id="{{$item->id}}" value="{{$item->price}}" style="font-size: 13px;">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Total row -->
-                                    <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                                        <span class="small font-weight-bold text-muted text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Item Total</span>
-                                        <span class="font-weight-bold text-primary" style="font-size: 1.1rem;" id="item-total-{{$item->id}}">Rs. {{number_format($item->price * $item->quantity, 2)}}</span>
-                                    </div>
+                            </td>
+                            <td class="align-middle text-center font-weight-bold text-dark" data-title="Ordered">{{$item->quantity}}</td>
+                            <td class="align-middle text-center font-weight-bold text-info" data-title="Delivered">{{$item->delivered_quantity}}</td>
+                            <td class="align-middle text-center font-weight-bold {{ $remaining > 0 ? 'text-danger' : 'text-success' }}" data-title="Remaining">{{$remaining}}</td>
+                            <td class="align-middle" data-title="Fulfill Qty">
+                                @if($remaining > 0)
+                                    <input type="number" name="deliver[{{$item->id}}]" class="sleek-input deliver-qty text-center w-100" value="{{$remaining}}" min="0" step="any" style="font-size: 13px;">
+                                @else
+                                    <div class="badge badge-success w-100 py-2 d-flex align-items-center justify-content-center" style="font-size: 12px; height: 32px;"><i class="fas fa-check mr-1"></i> FULFILLED</div>
+                                @endif
+                            </td>
+                            <td class="align-middle" data-title="Unit Price">
+                                <div class="sleek-input-group w-100">
+                                    <span class="prefix">Rs</span>
+                                    <input type="number" step="0.01" class="text-right item-price-input" data-id="{{$item->id}}" value="{{$item->price}}" style="font-size: 13px;">
                                 </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-12 text-center py-5 text-muted bg-white rounded border shadow-sm">
-                            <i class="fas fa-box-open fa-3x mb-3 d-block opacity-50"></i>
-                            <h5 class="font-weight-bold">No items in this order yet.</h5>
-                            <p class="small mb-0">Use the "Add Item" form above to build this order.</p>
-                        </div>
-                    @endforelse
-                </div>
+                            </td>
+                            <td class="align-middle text-right font-weight-bold text-primary" data-title="Total" id="item-total-{{$item->id}}">Rs. {{number_format($item->price * $item->quantity, 2)}}</td>
+                            <td class="align-middle text-center" data-title="Action">
+                                @if($remaining > 0)
+                                    <button type="button" class="btn btn-sm btn-outline-danger shadow-sm flex-shrink-0 act-delete" 
+                                            style="border-radius: 8px; padding: 4px 8px;"
+                                            onclick="removeItem('{{route('sales-orders.remove-item', [$salesOrder->id, $item->id])}}')"
+                                            title="Remove item">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted bg-white">
+                                <i class="fas fa-box-open fa-3x mb-3 d-block opacity-50"></i>
+                                <h5 class="font-weight-bold">No items in this order yet.</h5>
+                                <p class="small mb-0">Use the "Add Item" form above to build this order.</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
             @if($salesOrder->status != 'delivered' && $salesOrder->status != 'cancelled')

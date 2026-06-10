@@ -1185,6 +1185,55 @@
                 .price-table-to-cards tr:not(.expanded) td:nth-child(6) {
                     display: none !important;
                 }
+                
+                /* -------------------------------------------
+                   SALE ORDER ITEMS (order-table-to-cards sale-order-detail-to-cards)
+                   Cols: 1:Select, 2:Product, 3:Ordered, 4:Delivered, 5:Remaining, 6:Fulfill Qty, 7:Unit Price, 8:Total, 9:Action
+                   ------------------------------------------- */
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(2)::before {
+                    display: none !important;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(1) {
+                    flex: 0.3;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-start;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(1)::before {
+                    display: none !important;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(5) { 
+                    flex: 1; 
+                    display: flex !important;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(9) { 
+                    flex: 0.5; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(9)::before {
+                    display: none !important;
+                }
+                /* Hide everything else */
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(3),
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(4),
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(6),
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(7),
+                .sale-order-detail-to-cards tr:not(.expanded) td:nth-child(8) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */
