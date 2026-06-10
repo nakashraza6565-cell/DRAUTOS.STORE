@@ -757,6 +757,139 @@
                     border-top: 1px solid #f1f5f9 !important;
                     background: #fff !important;
                 }
+
+                /* =======================================
+                   ORDER & SALES ORDER CARD SYSTEM
+                   ======================================= */
+                .table-responsive:has(.order-table-to-cards) { overflow-x: hidden !important; }
+                .order-table-to-cards { display: block !important; width: 100% !important; border: none !important; margin: 0 !important; }
+                .order-table-to-cards thead { display: none !important; }
+                .order-table-to-cards tbody { display: block !important; width: 100% !important; }
+                .order-table-to-cards tr {
+                    display: flex !important;
+                    flex-direction: row !important;
+                    flex-wrap: nowrap !important;
+                    margin-bottom: 5px !important;
+                    background: #fdfdfd !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                    padding: 10px 12px !important;
+                    overflow: hidden !important;
+                    border: 1px solid #edf2f7 !important;
+                    align-items: center;
+                    cursor: pointer;
+                }
+                .order-table-to-cards tr:hover { background: #f1f5f9 !important; }
+                .order-table-to-cards tr.expanded {
+                    flex-direction: column !important;
+                    flex-wrap: wrap !important;
+                    margin-bottom: 15px !important;
+                    background: #fff !important;
+                    border-radius: 15px !important;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+                    padding: 0 !important;
+                    cursor: default;
+                }
+                .order-table-to-cards td {
+                    display: block !important;
+                    width: 100% !important;
+                    padding: 10px 15px !important;
+                    border: 0 !important;
+                    text-align: left !important;
+                }
+                .order-table-to-cards tr:not(.expanded) td {
+                    padding: 0 4px !important;
+                    width: auto !important;
+                    flex: 1;
+                    min-width: 0 !important;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                /* Hide labels in collapsed view */
+                .order-table-to-cards tr:not(.expanded) td::before,
+                .order-table-to-cards tr:not(.expanded) td::after { display: none !important; }
+                
+                /* Expanded state standard behavior */
+                .order-table-to-cards tr.expanded td[data-title="Customer"],
+                .order-table-to-cards tr.expanded td[data-title="Order #"] {
+                    background: #f8fafc !important;
+                    font-weight: bold !important;
+                    color: #475569 !important;
+                    border-bottom: 1px solid #edf2f7 !important;
+                }
+                
+                /* -------------------------------------------
+                   BILLING / ORDERS (order-table-to-cards billing-table-to-cards)
+                   Cols: 1:SN, 2:Customer, 3:City, 4:Staff, 5:Status & Actions
+                   ------------------------------------------- */
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(2) .font-weight-bold {
+                    font-size: 0.8rem;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(2) .text-muted {
+                    font-size: 0.65rem !important;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .justify-content-end { display: none !important; } /* hide action buttons */
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form { margin-bottom: 0 !important; }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(1),
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(3),
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(4) {
+                    display: none !important;
+                }
+                
+                /* -------------------------------------------
+                   SALES ORDERS (order-table-to-cards so-table-to-cards)
+                   Cols: 1:SN, 2:Pri, 3:Ord#, 4:Cust, 5:City, 6:Staff, 7:Items, 8:Pend, 9:Status, 10:Date, 11:Action
+                   ------------------------------------------- */
+                .so-table-to-cards tr:not(.expanded) td:nth-child(3) { 
+                    flex: 0.8; font-size: 0.75rem !important; font-weight: bold;
+                }
+                .so-table-to-cards tr:not(.expanded) td:nth-child(4) { 
+                    flex: 1.5; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .so-table-to-cards tr:not(.expanded) td:nth-child(4) .font-weight-bold {
+                    font-size: 0.75rem;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                .so-table-to-cards tr:not(.expanded) td:nth-child(4) .text-muted {
+                    font-size: 0.65rem !important;
+                }
+                .so-table-to-cards tr:not(.expanded) td:nth-child(9) { 
+                    flex: 1.2; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                .so-table-to-cards tr:not(.expanded) td:nth-child(1),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(5),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(6),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(7),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(8),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(10),
+                .so-table-to-cards tr:not(.expanded) td:nth-child(11) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */

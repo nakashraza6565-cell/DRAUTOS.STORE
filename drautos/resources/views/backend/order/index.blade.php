@@ -80,7 +80,7 @@
       </form>
       <div class="table-responsive">
         @if(count($orders)>0)
-        <table class="table table-bordered responsive-table-to-cards" id="order-dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered order-table-to-cards billing-table-to-cards" id="order-dataTable" width="100%" cellspacing="0">
           <thead>
             <tr>
               <th>S.N.</th>
