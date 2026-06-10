@@ -598,27 +598,87 @@
                 }
             }
 
-            /* Specialized Ledger Card System */
+            /* Specialized Ledger Card System - Ultra Compact Accordion */
             @media (max-width: 768px) {
                 .ledger-table-to-cards tr {
+                    /* Default state: COLLAPSED single line */
                     display: flex !important;
+                    flex-direction: row !important;
+                    flex-wrap: nowrap !important;
+                    margin-bottom: 5px !important;
+                    background: #fdfdfd !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                    padding: 10px 12px !important;
+                    overflow: hidden !important;
+                    border: 1px solid #edf2f7 !important;
+                    align-items: center;
+                    cursor: pointer;
+                }
+                .ledger-table-to-cards tr:hover {
+                    background: #f1f5f9 !important;
+                }
+                
+                /* When expanded, it goes back to a stacked card */
+                .ledger-table-to-cards tr.expanded {
                     flex-direction: column !important;
+                    flex-wrap: wrap !important;
                     margin-bottom: 15px !important;
                     background: #fff !important;
                     border-radius: 15px !important;
                     box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
                     padding: 0 !important;
-                    overflow: hidden !important;
-                    border: 1px solid #edf2f7 !important;
+                    cursor: default;
                 }
+
                 .ledger-table-to-cards td {
+                    /* Base behavior for expanded / normal */
                     display: block !important;
                     width: 100% !important;
                     padding: 10px 15px !important;
                     border: 0 !important;
                     text-align: left !important;
                 }
-                .ledger-table-to-cards td[data-title="Date"] {
+                
+                /* =======================================
+                   COLLAPSED STATE (Single Line) 
+                   ======================================= */
+                .ledger-table-to-cards tr:not(.expanded) td {
+                    padding: 0 4px !important;
+                    width: auto !important;
+                    flex: 1;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                
+                /* What to show on single line: Date, Category, Balance */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(1) { flex: 1.5; font-size: 0.8rem !important; } /* Date */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(3) { flex: 1; font-size: 0.75rem !important; text-align: center !important; } /* Category */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(6) { flex: 2; font-size: 0.85rem !important; text-align: right !important; font-weight: bold; } /* Balance */
+                
+                /* Hide everything else */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(4),
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(5),
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(7) {
+                    display: none !important;
+                }
+                
+                /* Hide labels in collapsed view */
+                .ledger-table-to-cards tr:not(.expanded) td::before,
+                .ledger-table-to-cards tr:not(.expanded) td::after {
+                    display: none !important;
+                }
+                
+                /* Clean up text in collapsed mode */
+                .ledger-table-to-cards tr:not(.expanded) td[data-title="Date"] { background: transparent !important; border: none !important; color: inherit !important; display: block !important; }
+
+
+                /* =======================================
+                   EXPANDED STATE (Card View) 
+                   ======================================= */
+                .ledger-table-to-cards tr.expanded td[data-title="Date"] {
                     background: #f8fafc !important;
                     font-weight: bold !important;
                     color: #475569 !important;
@@ -627,37 +687,37 @@
                     align-items: center !important;
                     border-bottom: 1px solid #edf2f7 !important;
                 }
-                .ledger-table-to-cards td[data-title="Date"]::after {
+                .ledger-table-to-cards tr.expanded td[data-title="Date"]::after {
                     content: "Balance: " attr(data-balance);
                     font-size: 0.85rem !important;
                     color: #1e293b !important;
                 }
-                .ledger-table-to-cards td[data-title="Date"]::before,
-                .ledger-table-to-cards td[data-title="Balance"] {
-                    display: none !important;
+                .ledger-table-to-cards tr.expanded td[data-title="Date"]::before,
+                .ledger-table-to-cards tr.expanded td[data-title="Balance"] {
+                    display: none !important; /* Hide the dedicated balance row since it's in the header */
                 }
-                .ledger-table-to-cards td[data-title="Description"] {
+                .ledger-table-to-cards tr.expanded td[data-title="Description"] {
                     padding-top: 15px !important;
                     font-size: 0.95rem !important;
                     color: #334155 !important;
                 }
-                .ledger-table-to-cards td[data-title="Description"]::before {
+                .ledger-table-to-cards tr.expanded td[data-title="Description"]::before {
                     display: none !important;
                 }
-                .ledger-table-to-cards td[data-title="Debit (+)"],
-                .ledger-table-to-cards td[data-title="Credit (-)"] {
+                .ledger-table-to-cards tr.expanded td[data-title="Debit (+)"],
+                .ledger-table-to-cards tr.expanded td[data-title="Credit (-)"] {
                     display: inline-block !important;
                     width: 50% !important;
                     float: left !important;
                     padding: 8px 15px !important;
                     font-weight: bold !important;
                 }
-                .ledger-table-to-cards td[data-title="Category"] {
+                .ledger-table-to-cards tr.expanded td[data-title="Category"] {
                     clear: both !important;
                     border-top: 1px dashed #e2e8f0 !important;
                     font-size: 0.75rem !important;
                 }
-                .ledger-table-to-cards td[data-title="Action"] {
+                .ledger-table-to-cards tr.expanded td[data-title="Action"] {
                     border-top: 1px solid #f1f5f9 !important;
                     background: #fff !important;
                 }

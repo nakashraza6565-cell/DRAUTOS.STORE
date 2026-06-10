@@ -184,6 +184,15 @@
           if ($.fn.modal) {
               $.fn.modal.Constructor.prototype._enforceFocus = function() {};
           }
+
+          // Ledger Table Accordion Logic
+          $(document).on('click', '.ledger-table-to-cards tr', function(e) {
+              // Prevent expanding/collapsing if clicking on an interactive element
+              if ($(e.target).closest('button, a, input, select, form').length > 0) return;
+              
+              // Toggle this row
+              $(this).toggleClass('expanded');
+          });
       });
   </script>
   @include('backend.layouts.chat_widget')
