@@ -218,7 +218,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="addTransactionModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionModalTitle">Manual Transaction</h5>
@@ -432,7 +432,7 @@
 @endpush
 <!-- Quick Add Account Modal -->
 <div class="modal fade" id="quickAddAccountModal" tabindex="-1" role="dialog" style="z-index: 1060;">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Quick Add Bank/Wallet</h5>

@@ -201,7 +201,7 @@
 
 <!-- Add Modal -->
 <div class="modal fade" id="addTransactionModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="transactionModalTitle">Manual Supplier Transaction</h5>
@@ -340,7 +340,7 @@
 
 <!-- Select Cheques Modal -->
 <div class="modal fade" id="selectChequesModal" tabindex="-1" role="dialog" style="z-index: 1000000;">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
         <div class="modal-content border-info shadow-lg">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title">Select Customer Cheques to Transfer</h5>
@@ -618,7 +618,7 @@
 @endpush
 <!-- Quick Add Account Modal -->
 <div class="modal fade" id="quickAddAccountModal" tabindex="-1" role="dialog" style="z-index: 1060;">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Quick Add Bank/Wallet</h5>
