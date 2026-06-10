@@ -301,6 +301,37 @@
             transition: all 0.2s;
         }
         .expand-row-btn:active { background: #e3e6f0; }
+
+        /* Make collapsed rows look like plain text lists! */
+        .mobile-block-table tbody tr:not(.expanded) {
+            cursor: pointer;
+            background: #fdfdfd;
+        }
+        .mobile-block-table tbody tr:not(.expanded):hover {
+            background: #f8f9fc;
+        }
+        .mobile-block-table tbody tr:not(.expanded) input.form-control,
+        .mobile-block-table tbody tr:not(.expanded) .select2-selection {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            pointer-events: none !important;
+            color: #333 !important;
+            padding-left: 0 !important;
+            height: auto !important;
+        }
+        .mobile-block-table tbody tr:not(.expanded) .select2-selection__rendered {
+            padding-left: 0 !important;
+            color: #333 !important;
+            font-weight: bold;
+        }
+        .mobile-block-table tbody tr:not(.expanded) .select2-selection__arrow {
+            display: none !important;
+        }
+        .mobile-block-table tbody tr:not(.expanded) td[data-label]::before {
+            color: #888;
+            font-size: 0.65rem;
+        }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -374,10 +405,18 @@
         });
 
         $('#addRowBtn').click(function() {
+            // Auto-collapse existing rows
+            $('#itemsTable tbody tr').removeClass('expanded');
+            $('#itemsTable tbody tr .expand-row-btn').html('<i class="fas fa-chevron-down"></i> Edit Details');
+
             let html = $('#rowTemplate').html().replace(/INDEX/g, rowIdx);
             $('#itemsTable tbody').append(html);
             $('#itemsTable tbody tr:last .factor-select').select2();
             rowIdx++;
+
+            // Auto-expand the newly added row
+            $('#itemsTable tbody tr:last').addClass('expanded');
+            $('#itemsTable tbody tr:last .expand-row-btn').html('<i class="fas fa-chevron-up"></i> Hide Details');
         });
 
         $(document).on('click', '.remove-row', function() {
@@ -386,6 +425,16 @@
                 updateGrandTotal();
             } else {
                 alert('You must have at least one item.');
+            }
+        });
+
+        // Expand first row on load for UX
+        $('#itemsTable tbody tr:first').addClass('expanded').find('.expand-row-btn').html('<i class="fas fa-chevron-up"></i> Hide Details');
+
+        // Click anywhere on a collapsed row to expand it
+        $(document).on('click', '.mobile-block-table tbody tr:not(.expanded)', function(e) {
+            if(!$(e.target).closest('.expand-row-btn').length && !$(e.target).closest('button').length) {
+                $(this).find('.expand-row-btn').click();
             }
         });
 
