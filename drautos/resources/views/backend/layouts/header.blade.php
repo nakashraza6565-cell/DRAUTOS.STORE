@@ -19,8 +19,8 @@
     </a>
 
     <!-- Mobile Menu Trigger (Launcher) -->
-    <button class="mobile-menu-trigger d-md-none border-0 mr-2" id="launcherTrigger" style="width: 40px; height: 40px; border-radius: 10px; background: #f0f4f8; color: #083259;">
-        <i class="fas fa-th-large" style="font-size: 1.1rem;"></i>
+    <button class="mobile-menu-trigger d-md-none border-0 mr-2 shadow-lg" id="launcherTrigger" style="position: fixed !important; top: 50% !important; left: 0 !important; right: auto !important; bottom: auto !important; transform: translateY(-50%) !important; width: 44px; height: 56px; border-radius: 0 12px 12px 0 !important; background: linear-gradient(135deg, #083259, #1a4b7c) !important; color: #facc15 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999999 !important;">
+        <i class="fas fa-th-large" style="font-size: 1.2rem;"></i>
     </button>
 
     <!-- Top navigation links (desktop) -->
