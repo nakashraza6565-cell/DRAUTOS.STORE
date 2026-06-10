@@ -56,7 +56,7 @@
                     </thead>
                     <tbody>
                         @forelse($customers as $customer)
-                            <tr style="cursor: pointer;" onclick="window.location='{{route('order.index')}}?user_id={{$customer->id}}'">
+                            <tr class="customer-row">
                                 <td data-title="Customer">
                                     <div class="font-weight-bold text-dark">{{$customer->name}}</div>
                                     <div class="small text-muted"><i class="fas fa-phone-alt mr-1"></i> {{$customer->phone ?: 'No phone'}}</div>
