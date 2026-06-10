@@ -660,9 +660,9 @@
                 }
                 
                 /* What to show on single line: Date, Description, Balance */
-                .ledger-table-to-cards tr:not(.expanded) td:nth-child(1) { flex: 0.55; font-size: 0.7rem !important; color: #64748b !important; } /* Date */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(1) { flex: 0.8; font-size: 0.7rem !important; color: #64748b !important; } /* Date */
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) { 
-                    flex: 1.8; 
+                    flex: 1.5; 
                     display: flex !important; 
                     flex-direction: column; 
                     justify-content: center;
@@ -670,11 +670,11 @@
                     line-height: 1.2;
                 } /* Description */
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) .font-weight-bold {
-                    font-size: 0.75rem;
+                    font-size: 0.7rem;
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                 }
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) .small {
-                    font-size: 0.65rem !important;
+                    font-size: 0.6rem !important;
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                     color: #64748b !important;
                 }
