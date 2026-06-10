@@ -1096,6 +1096,59 @@
                 .bom-table-to-cards tr:not(.expanded) td:nth-child(6) .act-delete { 
                     display: none !important; 
                 }
+                
+                /* -------------------------------------------
+                   CHEQUE ITEMS (order-table-to-cards cheque-table-to-cards)
+                   Cols: 1:Cheque#, 2:Type, 3:Party, 4:Amount, 5:Date, 6:Clearing, 7:Bank, 8:Status, 9:Action
+                   ------------------------------------------- */
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(3) { 
+                    flex: 1.5; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(3)::before {
+                    display: none !important;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(3) .small {
+                    font-size: 0.65rem !important;
+                    font-weight: normal;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(4) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-start;
+                    font-size: 0.8rem;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(8) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(9) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(1),
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(5),
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(6),
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(7) {
+                    display: none !important;
+                }
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(9) .act-delete,
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(9) .act-cleared,
+                .cheque-table-to-cards tr:not(.expanded) td:nth-child(9) .act-bounced { 
+                    display: none !important; 
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */

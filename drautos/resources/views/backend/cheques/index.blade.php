@@ -75,7 +75,7 @@
             <div class="tab-pane fade show active" id="list-view" role="tabpanel">
                 <div class="table-responsive">
                     @if(count($cheques)>0)
-                    <table class="table table-hover mb-0" id="cheque-table" width="100%" cellspacing="0" style="font-size: 0.9rem;">
+                    <table class="table table-hover mb-0 order-table-to-cards cheque-table-to-cards" id="cheque-table" width="100%" cellspacing="0" style="font-size: 0.9rem;">
                     <thead style="background: #f8fafc; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
                         <tr>
                         <th class="border-0">Cheque #</th>
@@ -92,7 +92,7 @@
                     <tbody>
                         @foreach($cheques as $cheque)   
                             <tr style="border-bottom: 1px solid rgba(0,0,0,0.03);">
-                                <td class="align-middle">
+                                <td class="align-middle" data-title="Cheque #">
                                     <strong>{{$cheque->cheque_number}}</strong>
                                     @if($cheque->status == 'transferred' && $cheque->transferredTo)
                                         <div class="small text-info mt-1">
@@ -100,12 +100,12 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle" data-title="Type">
                                     <span class="badge badge-pill badge-{{ $cheque->type == 'received' ? 'success' : 'danger' }} px-3 py-1">
                                         {{ strtoupper($cheque->type) }}
                                     </span>
                                 </td>
-                                <td class="align-middle font-weight-bold text-gray-700">
+                                <td class="align-middle font-weight-bold text-gray-700" data-title="Party">
                                     <div class="small text-muted">From:</div>
                                     {{$cheque->party->name ?? 'N/A'}}
                                     @if($cheque->status == 'transferred' && $cheque->transferredTo)
@@ -115,11 +115,11 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="align-middle font-weight-bold">Rs. {{number_format($cheque->amount, 2)}}</td>
-                                <td class="align-middle text-gray-500">{{$cheque->cheque_date->format('d M Y')}}</td>
-                                <td class="align-middle font-weight-bold text-primary">{{$cheque->clearing_date->format('d M Y')}}</td>
-                                <td class="align-middle small">{{$cheque->bank_name ?: '-'}}</td>
-                                <td class="align-middle text-center">
+                                <td class="align-middle font-weight-bold" data-title="Amount">Rs. {{number_format($cheque->amount, 2)}}</td>
+                                <td class="align-middle text-gray-500" data-title="Date">{{$cheque->cheque_date->format('d M Y')}}</td>
+                                <td class="align-middle font-weight-bold text-primary" data-title="Clearing">{{$cheque->clearing_date->format('d M Y')}}</td>
+                                <td class="align-middle small" data-title="Bank">{{$cheque->bank_name ?: '-'}}</td>
+                                <td class="align-middle text-center" data-title="Status">
                                     @if($cheque->status == 'pending')
                                         <span class="badge badge-warning" style="border-radius:6px; font-weight: 600;">PENDING</span>
                                     @elseif($cheque->status == 'cleared')
@@ -132,29 +132,29 @@
                                         <span class="badge badge-secondary" style="border-radius:6px; font-weight: 600;">CANCELLED</span>
                                     @endif
                                 </td>
-                                <td class="align-middle text-center">
-                                    <div class="btn-group shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                                        <a href="{{route('cheques.show',$cheque->id)}}" class="btn btn-sm btn-info border-0" title="View Details">
+                                <td class="align-middle text-center" data-title="Action">
+                                    <div class="d-flex flex-nowrap justify-content-end align-items-center" style="gap: 4px;">
+                                        <a href="{{route('cheques.show',$cheque->id)}}" class="btn btn-info btn-sm btn-circle act-view" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if($cheque->status == 'pending')
-                                        <form method="POST" action="{{route('cheques.mark-cleared',$cheque->id)}}" style="display:inline;" onsubmit="return confirm('Mark this cheque as cleared?')">
+                                        <form method="POST" action="{{route('cheques.mark-cleared',$cheque->id)}}" class="act-cleared" style="display:inline; margin:0;" onsubmit="return confirm('Mark this cheque as cleared?')">
                                         @csrf
-                                        <button class="btn btn-sm btn-success border-0" title="Mark Cleared">
+                                        <button class="btn btn-success btn-sm btn-circle" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" title="Mark Cleared">
                                             <i class="fas fa-check"></i>
                                         </button>
                                         </form>
-                                        <form method="POST" action="{{route('cheques.mark-bounced',$cheque->id)}}" style="display:inline;" onsubmit="return confirm('Mark this cheque as bounced?')">
+                                        <form method="POST" action="{{route('cheques.mark-bounced',$cheque->id)}}" class="act-bounced" style="display:inline; margin:0;" onsubmit="return confirm('Mark this cheque as bounced?')">
                                         @csrf
-                                        <button class="btn btn-sm btn-danger border-0" title="Mark Bounced">
+                                        <button class="btn btn-danger btn-sm btn-circle" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" title="Mark Bounced">
                                             <i class="fas fa-times-circle"></i>
                                         </button>
                                         </form>
                                         @endif
-                                        <form method="POST" action="{{route('cheques.destroy',[$cheque->id])}}" style="display:inline;">
+                                        <form method="POST" action="{{route('cheques.destroy',[$cheque->id])}}" class="act-delete" style="display:inline; margin:0;">
                                           @csrf 
                                           @method('delete')
-                                              <button class="btn btn-sm btn-danger border-0 dltBtn" data-id="{{$cheque->id}}" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                              <button class="btn btn-danger btn-sm btn-circle dltBtn" data-id="{{$cheque->id}}" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     </div>
                                 </td>
