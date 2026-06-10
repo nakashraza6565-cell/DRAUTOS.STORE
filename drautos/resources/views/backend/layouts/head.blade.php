@@ -571,6 +571,8 @@
             }
             .premium-panel .panel-header .btn {
                 align-self: flex-start !important;
+            }
+            
             /* DataTables Mobile Polish */
             @media (max-width: 768px) {
                 .dataTables_wrapper .dataTables_length, 
