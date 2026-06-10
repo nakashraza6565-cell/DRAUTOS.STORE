@@ -29,7 +29,7 @@
 
     <!-- Heading -->
     <div class="sidebar-heading px-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
-        Main Content
+        Danyal Autos Enterprise
     </div>
 
     @can('view-media')
@@ -42,13 +42,13 @@
     @endcan
 
     @canany(['view-dashboard', 'view-banner'])
-    <!-- Content Dropdown -->
-    <li class="nav-item {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') ? 'active' : '' }}">
+    <!-- Content & Marketing Dropdown -->
+    <li class="nav-item {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') || Request::is('admin/coupon*') ? 'active' : '' }}">
       <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#collapseContent" aria-expanded="true" aria-controls="collapseContent">
-        <i class="fas fa-folder-open mr-2"></i>
-        <span>Content</span>
+        <i class="fas fa-bullhorn mr-2"></i>
+        <span>Marketing & Content</span>
       </a>
-      <div id="collapseContent" class="collapse {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') ? 'show' : '' }}" aria-labelledby="headingContent" data-parent="#accordionSidebar">
+      <div id="collapseContent" class="collapse {{ Request::is('admin/activity-logs*') || Request::is('admin/banner*') || Request::is('admin/coupon*') ? 'show' : '' }}" aria-labelledby="headingContent" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
           @can('view-dashboard')
           <a class="collapse-item {{ Request::is('admin/activity-logs*') ? 'active' : '' }}" href="{{route('admin.activity-logs')}}">Activity Log</a>
@@ -57,10 +57,36 @@
           <a class="collapse-item {{ Request::is('admin/banner') ? 'active' : '' }}" href="{{route('banner.index')}}">Active Banners</a>
           <a class="collapse-item {{ Request::is('admin/banner/create') ? 'active' : '' }}" href="{{route('banner.create')}}">Create Banner</a>
           @endcan
+          @can('view-coupon')
+          <a class="collapse-item" href="{{route('coupon.index')}}">Coupons</a>
+          @endcan
         </div>
       </div>
     </li>
     @endcanany
+
+    {{-- Delivery Receipts (Bilty) --}}
+    <li class="nav-item">
+        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#biltyCollapse" aria-expanded="true" aria-controls="biltyCollapse">
+          <i class="fas fa-receipt mr-2"></i>
+          <span>Delivery (Bilty)</span>
+        </a>
+        <div id="biltyCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
+            <a class="collapse-item" href="{{route('delivery-receipts.index')}}">All Receipts</a>
+          </div>
+        </div>
+    </li>
+
+    @can('view-analytics')
+    {{-- Analytics --}}
+    <li class="nav-item">
+        <a class="nav-link py-2" href="{{route('global.analytics')}}">
+            <i class="fas fa-chart-pie mr-2"></i>
+            <span>Global Analytics</span>
+        </a>
+    </li>
+    @endcan
 
     <!-- Section: Sales & POS -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
@@ -263,53 +289,7 @@
 
 
 
-    <!-- Section: Enterprise -->
-    <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
-        Danyal Autos Enterprise
-    </div>
 
-    {{-- Delivery Receipts (Bilty) --}}
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#biltyCollapse" aria-expanded="true" aria-controls="biltyCollapse">
-          <i class="fas fa-receipt mr-2"></i>
-          <span>Delivery (Bilty)</span>
-        </a>
-        <div id="biltyCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('delivery-receipts.index')}}">All Receipts</a>
-          </div>
-        </div>
-    </li>
-
-    @can('view-banner')
-    {{-- Marketing --}}
-    <li class="nav-item">
-        <a class="nav-link collapsed py-2" href="#" data-toggle="collapse" data-target="#marketingCollapse" aria-expanded="true" aria-controls="marketingCollapse">
-          <i class="fas fa-bullhorn mr-2"></i>
-          <span>Marketing</span>
-        </a>
-        <div id="marketingCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('banner.index')}}">Banners</a>
-            @can('view-coupon')
-            <a class="collapse-item" href="{{route('coupon.index')}}">Coupons</a>
-            @endcan
-          </div>
-        </div>
-    </li>
-    @endcan
-
-
-
-    @can('view-analytics')
-    {{-- Analytics --}}
-    <li class="nav-item">
-        <a class="nav-link py-2" href="{{route('global.analytics')}}">
-            <i class="fas fa-chart-pie mr-2"></i>
-            <span>Global Analytics</span>
-        </a>
-    </li>
-    @endcan
     <!-- Section: Reports -->
     <div class="sidebar-heading px-4 mt-4 mb-2" style="color: #64748b; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;">
         Business Intelligence
