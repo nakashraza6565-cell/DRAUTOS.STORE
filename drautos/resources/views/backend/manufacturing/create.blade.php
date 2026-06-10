@@ -56,7 +56,7 @@
                 </thead>
                 <tbody id="components_body">
                     <tr>
-                        <td data-label="Component (Raw Material)">
+                        <td data-label="Component (Raw Material)" class="mob-full">
                             <select name="components[0][product_id]" class="form-control select2 component-select" required>
                                 <option value="">Select Ingredient</option>
                                 <optgroup label="Raw Materials & Labor" class="factors-group">
@@ -71,10 +71,10 @@
                                 </optgroup>
                             </select>
                         </td>
-                        <td data-label="Quantity Required">
+                        <td data-label="Quantity Required" class="mob-full">
                             <input type="number" step="0.01" name="components[0][quantity]" class="form-control form-control-sm" placeholder="Qty" required>
                         </td>
-                        <td data-label="Purchase from Supplier?">
+                        <td data-label="Purchase from Supplier?" class="mob-hide">
                             <select name="components[0][purchase_supplier_id]" class="form-control select2">
                                 <option value="">-- No (Use Stock) --</option>
                                 @foreach($suppliers as $supplier)
@@ -82,8 +82,11 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td data-label="Action">
+                        <td data-label="Action" class="mob-hide">
                             <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
+                        </td>
+                        <td class="mob-full p-0 border-0 text-center">
+                            <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
                         </td>
                     </tr>
                 </tbody>
@@ -114,7 +117,7 @@
                 </thead>
                 <tbody id="overheads_body">
                     <tr>
-                        <td data-label="Overhead Type">
+                        <td data-label="Overhead Type" class="mob-full">
                             <select name="overheads[0][type]" class="form-control select2" required>
                                 <option value="">-- Select Overhead Type --</option>
                                 <option value="machining">Machining Cost</option>
@@ -124,7 +127,7 @@
                                 <option value="overhead">Other Overheads</option>
                             </select>
                         </td>
-                        <td data-label="Subcontractor / Supplier">
+                        <td data-label="Subcontractor / Supplier" class="mob-hide">
                             <select name="overheads[0][subcontractor_id]" class="form-control select2">
                                 <option value="">-- No Subcontractor (In-house) --</option>
                                 @foreach($suppliers as $supplier)
@@ -132,14 +135,17 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td data-label="Per Piece Cost (Rs.)">
+                        <td data-label="Per Piece Cost (Rs.)" class="mob-hide">
                             <input type="number" step="0.0001" name="overheads[0][per_piece_cost]" class="form-control form-control-sm per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
                         </td>
-                        <td data-label="Total Cost (Rs.)">
+                        <td data-label="Total Cost (Rs.)" class="mob-full">
                             <input type="number" step="0.01" name="overheads[0][cost]" class="form-control form-control-sm total-cost-input" placeholder="Total Cost" value="0" required>
                         </td>
-                        <td data-label="Action">
+                        <td data-label="Action" class="mob-hide">
                             <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
+                        </td>
+                        <td class="mob-full p-0 border-0 text-center">
+                            <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
                         </td>
                     </tr>
                 </tbody>
@@ -165,7 +171,7 @@
 {{-- Template Row for JS --}}
 <template id="component_row_template">
     <tr>
-        <td data-label="Component (Raw Material)">
+        <td data-label="Component (Raw Material)" class="mob-full">
             <select name="components[INDEX][product_id]" class="form-control select2-new component-select" required>
                 <option value="">Select Ingredient</option>
                 <optgroup label="Raw Materials & Labor" class="factors-group">
@@ -180,10 +186,10 @@
                 </optgroup>
             </select>
         </td>
-        <td data-label="Quantity Required">
+        <td data-label="Quantity Required" class="mob-full">
             <input type="number" step="0.01" name="components[INDEX][quantity]" class="form-control form-control-sm" placeholder="Qty" required>
         </td>
-        <td data-label="Purchase from Supplier?">
+        <td data-label="Purchase from Supplier?" class="mob-hide">
             <select name="components[INDEX][purchase_supplier_id]" class="form-control select2-new">
                 <option value="">-- No (Use Stock) --</option>
                 @foreach($suppliers as $supplier)
@@ -191,8 +197,11 @@
                 @endforeach
             </select>
         </td>
-        <td data-label="Action">
+        <td data-label="Action" class="mob-hide">
             <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
+        </td>
+        <td class="mob-full p-0 border-0 text-center">
+            <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
         </td>
     </tr>
 </template>
@@ -201,7 +210,7 @@
 
 <template id="overhead_row_template">
     <tr>
-        <td data-label="Overhead Type">
+        <td data-label="Overhead Type" class="mob-full">
             <select name="overheads[INDEX][type]" class="form-control select2-new" required>
                 <option value="">-- Select Overhead Type --</option>
                 <option value="machining">Machining Cost</option>
@@ -211,7 +220,7 @@
                 <option value="overhead">Other Overheads</option>
             </select>
         </td>
-        <td data-label="Subcontractor / Supplier">
+        <td data-label="Subcontractor / Supplier" class="mob-hide">
             <select name="overheads[INDEX][subcontractor_id]" class="form-control select2-new">
                 <option value="">-- No Subcontractor (In-house) --</option>
                 @foreach($suppliers as $supplier)
@@ -219,14 +228,17 @@
                 @endforeach
             </select>
         </td>
-        <td data-label="Per Piece Cost (Rs.)">
+        <td data-label="Per Piece Cost (Rs.)" class="mob-hide">
             <input type="number" step="0.0001" name="overheads[INDEX][per_piece_cost]" class="form-control form-control-sm per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
         </td>
-        <td data-label="Total Cost (Rs.)">
+        <td data-label="Total Cost (Rs.)" class="mob-full">
             <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control form-control-sm total-cost-input" placeholder="Total Cost" value="0" required>
         </td>
-        <td data-label="Action">
+        <td data-label="Action" class="mob-hide">
             <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
+        </td>
+        <td class="mob-full p-0 border-0 text-center">
+            <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
         </td>
     </tr>
 </template>
@@ -290,22 +302,23 @@
         box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
     }
 
-    /* Mobile responsive tables */
+    /* Mobile responsive tables - Accordion Style */
     @media (max-width: 768px) {
         .mobile-block-table thead { display: none; }
         .mobile-block-table tbody tr { 
-            display: block; 
+            display: flex;
+            flex-wrap: wrap;
             border: 1px solid #e3e6f0; 
             border-radius: 8px; 
             margin-bottom: 15px; 
             padding: 10px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            position: relative;
         }
         .mobile-block-table tbody td { 
             display: block; 
-            width: 100% !important; 
             border: none !important; 
-            padding: 8px 0 !important; 
+            padding: 4px 2px !important; 
         }
         .mobile-block-table tbody td::before { 
             content: attr(data-label); 
@@ -313,14 +326,44 @@
             display: block; 
             margin-bottom: 5px; 
             color: #4e73df; 
-            font-size: 0.85rem; 
+            font-size: 0.75rem; 
         }
         .mobile-block-table tfoot td { 
             display: block; 
             width: 100%; 
             border: none; 
         }
+        
+        /* Accordion Column Logic */
+        .mob-full { width: 100% !important; }
+        .mob-half { width: 50% !important; }
+        
+        /* Hide secondary columns by default */
+        .mob-hide { 
+            display: none !important; 
+            width: 100% !important; 
+        }
+        /* Show when expanded */
+        tr.expanded .mob-hide { 
+            display: block !important; 
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .expand-row-btn {
+            width: 100%;
+            background: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            color: #4e73df;
+            border-radius: 4px;
+            padding: 6px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .expand-row-btn:active { background: #e3e6f0; }
     }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 @endpush
 
@@ -366,6 +409,17 @@
 
         $(document).on('click', '.remove-overhead-row', function() {
             $(this).closest('tr').remove();
+        });
+
+        // Expand/Collapse Mobile Accordion Row
+        $(document).on('click', '.expand-row-btn', function() {
+            let tr = $(this).closest('tr');
+            tr.toggleClass('expanded');
+            if(tr.hasClass('expanded')) {
+                $(this).html('<i class="fas fa-chevron-up"></i> Hide Details');
+            } else {
+                $(this).html('<i class="fas fa-chevron-down"></i> Edit Details');
+            }
         });
 
         // Add custom overhead type dynamically

@@ -50,7 +50,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td data-label="Raw Material / Factor">
+                            <td data-label="Raw Material / Factor" class="mob-full">
                                 <select name="items[0][factor_id]" class="form-control select2 factor-select" required>
                                     <option value="">-- Select Material --</option>
                                     @foreach($factors as $factor)
@@ -58,20 +58,23 @@
                                     @endforeach
                                 </select>
                             </td>
-                            <td data-label="Quantity">
+                            <td data-label="Quantity" class="mob-half">
                                 <input type="number" step="0.01" name="items[0][quantity]" class="form-control form-control-sm quantity-input" placeholder="Qty" required>
                             </td>
-                            <td data-label="Per Unit Cost">
+                            <td data-label="Per Unit Cost" class="mob-hide">
                                 <input type="number" step="0.01" name="items[0][per_unit_cost]" class="form-control form-control-sm per-unit-cost-input" placeholder="Cost/Unit" required>
                             </td>
-                            <td class="align-middle text-center" data-label="Unit">
+                            <td class="align-middle text-center mob-hide" data-label="Unit">
                                 <span class="unit-display font-weight-bold text-muted">-</span>
                             </td>
-                            <td data-label="Total Cost">
+                            <td data-label="Total Cost" class="mob-half">
                                 <input type="number" step="0.01" name="items[0][total_cost]" class="form-control form-control-sm cost-input" placeholder="Total Cost" required>
                             </td>
-                            <td data-label="Action">
+                            <td data-label="Action" class="mob-hide">
                                 <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
+                            </td>
+                            <td class="mob-full p-0 border-0 text-center">
+                                <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
                             </td>
                         </tr>
                     </tbody>
@@ -98,7 +101,7 @@
 
 <template id="rowTemplate">
     <tr>
-        <td data-label="Raw Material / Factor">
+        <td data-label="Raw Material / Factor" class="mob-full">
             <select name="items[INDEX][factor_id]" class="form-control factor-select" required>
                 <option value="">-- Select Material --</option>
                 @foreach($factors as $factor)
@@ -106,20 +109,23 @@
                 @endforeach
             </select>
         </td>
-        <td data-label="Quantity">
+        <td data-label="Quantity" class="mob-half">
             <input type="number" step="0.01" name="items[INDEX][quantity]" class="form-control form-control-sm quantity-input" placeholder="Qty" required>
         </td>
-        <td data-label="Per Unit Cost">
+        <td data-label="Per Unit Cost" class="mob-hide">
             <input type="number" step="0.01" name="items[INDEX][per_unit_cost]" class="form-control form-control-sm per-unit-cost-input" placeholder="Cost/Unit" required>
         </td>
-        <td class="align-middle text-center" data-label="Unit">
+        <td class="align-middle text-center mob-hide" data-label="Unit">
             <span class="unit-display font-weight-bold text-muted">-</span>
         </td>
-        <td data-label="Total Cost">
+        <td data-label="Total Cost" class="mob-half">
             <input type="number" step="0.01" name="items[INDEX][total_cost]" class="form-control form-control-sm cost-input" placeholder="Total Cost" required>
         </td>
-        <td data-label="Action">
+        <td data-label="Action" class="mob-hide">
             <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
+        </td>
+        <td class="mob-full p-0 border-0 text-center">
+            <button type="button" class="expand-row-btn d-md-none"><i class="fas fa-chevron-down"></i> Edit Details</button>
         </td>
     </tr>
 </template>
@@ -235,22 +241,23 @@
         box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
     }
 
-    /* Mobile responsive tables */
+    /* Mobile responsive tables - Accordion Style */
     @media (max-width: 768px) {
         .mobile-block-table thead { display: none; }
         .mobile-block-table tbody tr { 
-            display: block; 
+            display: flex;
+            flex-wrap: wrap;
             border: 1px solid #e3e6f0; 
             border-radius: 8px; 
             margin-bottom: 15px; 
             padding: 10px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            position: relative;
         }
         .mobile-block-table tbody td { 
             display: block; 
-            width: 100% !important; 
             border: none !important; 
-            padding: 8px 0 !important; 
+            padding: 4px 2px !important; 
         }
         .mobile-block-table tbody td::before { 
             content: attr(data-label); 
@@ -258,14 +265,44 @@
             display: block; 
             margin-bottom: 5px; 
             color: #4e73df; 
-            font-size: 0.85rem; 
+            font-size: 0.75rem; 
         }
         .mobile-block-table tfoot td { 
             display: block; 
             width: 100%; 
             border: none; 
         }
+        
+        /* Accordion Column Logic */
+        .mob-full { width: 100% !important; }
+        .mob-half { width: 50% !important; }
+        
+        /* Hide secondary columns by default */
+        .mob-hide { 
+            display: none !important; 
+            width: 100% !important; 
+        }
+        /* Show when expanded */
+        tr.expanded .mob-hide { 
+            display: block !important; 
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .expand-row-btn {
+            width: 100%;
+            background: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            color: #4e73df;
+            border-radius: 4px;
+            padding: 6px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .expand-row-btn:active { background: #e3e6f0; }
     }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 @endpush
 
@@ -349,6 +386,17 @@
                 updateGrandTotal();
             } else {
                 alert('You must have at least one item.');
+            }
+        });
+
+        // Expand/Collapse Mobile Accordion Row
+        $(document).on('click', '.expand-row-btn', function() {
+            let tr = $(this).closest('tr');
+            tr.toggleClass('expanded');
+            if(tr.hasClass('expanded')) {
+                $(this).html('<i class="fas fa-chevron-up"></i> Hide Details');
+            } else {
+                $(this).html('<i class="fas fa-chevron-down"></i> Edit Details');
             }
         });
 
