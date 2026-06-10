@@ -384,10 +384,28 @@
         }
         
         /* Flex ratios for the single line */
-        .mobile-block-table tbody tr:not(.expanded) td:nth-child(1) { flex: 2.5; }
-        .mobile-block-table tbody tr:not(.expanded) td:nth-child(2) { flex: 1; text-align: center; }
-        .mobile-block-table tbody tr:not(.expanded) td:nth-child(4) { flex: 1.5; text-align: right; } /* Overheads total */
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(1) { flex: 2; }
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(2) { flex: 0.8; text-align: center; }
         
+        /* Show Supplier (3rd column) and Total Cost (4th column) on single line */
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(3).mob-hide { 
+            display: block !important; 
+            flex: 1.5; 
+            text-align: right; 
+            width: auto !important; 
+        }
+        .mobile-block-table tbody tr:not(.expanded) td:nth-child(4).mob-hide { 
+            /* Only show if it's the Total Cost on overheads, otherwise keep hidden if it's action */
+            display: none !important; 
+        }
+        /* Override for Overheads where 4 is Total Cost and it's mob-full, so it's naturally visible */
+        .mobile-block-table #overheads_body tr:not(.expanded) td:nth-child(4) { 
+            display: block !important; 
+            flex: 1.5; 
+            text-align: right; 
+            width: auto !important; 
+        }
+
         /* Hide Data Labels completely */
         .mobile-block-table tbody tr:not(.expanded) td::before {
             display: none !important;
@@ -403,7 +421,7 @@
             color: #475569 !important;
             padding: 0 !important;
             height: auto !important;
-            font-size: 0.85rem !important;
+            font-size: 0.8rem !important;
             font-weight: 700 !important;
             text-align: inherit;
         }
@@ -441,10 +459,21 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    function formatComponentSelection(state) {
+        if (!state.id) { return state.text; }
+        let text = state.text;
+        let idx = text.indexOf(' (Stock:');
+        if(idx !== -1) {
+            return text.substring(0, idx);
+        }
+        return text;
+    }
+
     $(document).ready(function() {
         $('.select2').select2({
             theme: 'bootstrap4',
-            width: '100%'
+            width: '100%',
+            templateSelection: formatComponentSelection
         });
 
         let rowIndex = 1;
@@ -461,7 +490,8 @@
             // Re-initialize select2 for new row
             $('.select2-new').select2({
                 theme: 'bootstrap4',
-                width: '100%'
+                width: '100%',
+                templateSelection: formatComponentSelection
             }).removeClass('select2-new').addClass('select2');
 
             // Auto-expand the newly added row
@@ -486,7 +516,8 @@
             
             $('.select2-new').select2({
                 theme: 'bootstrap4',
-                width: '100%'
+                width: '100%',
+                templateSelection: formatComponentSelection
             }).removeClass('select2-new').addClass('select2');
 
             // Auto-expand the newly added row
