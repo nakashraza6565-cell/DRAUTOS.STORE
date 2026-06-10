@@ -37,8 +37,7 @@
                 <h5 class="mb-0">Items</h5>
                 <button type="button" class="btn btn-sm btn-info shadow-sm" data-toggle="modal" data-target="#quickAddMaterialModal"><i class="fas fa-plus fa-sm text-white-50"></i> Add New Material</button>
             </div>
-            <div class="table-responsive">
-                <table class="table table-bordered" id="itemsTable">
+            <table class="table table-bordered mobile-block-table" id="itemsTable">
                     <thead class="bg-primary text-white">
                         <tr>
                             <th width="30%">Raw Material / Factor</th>
@@ -51,7 +50,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>
+                            <td data-label="Raw Material / Factor">
                                 <select name="items[0][factor_id]" class="form-control select2 factor-select" required>
                                     <option value="">-- Select Material --</option>
                                     @foreach($factors as $factor)
@@ -59,19 +58,19 @@
                                     @endforeach
                                 </select>
                             </td>
-                            <td>
-                                <input type="number" step="0.01" name="items[0][quantity]" class="form-control quantity-input" placeholder="Qty" required>
+                            <td data-label="Quantity">
+                                <input type="number" step="0.01" name="items[0][quantity]" class="form-control form-control-sm quantity-input" placeholder="Qty" required>
                             </td>
-                            <td>
-                                <input type="number" step="0.01" name="items[0][per_unit_cost]" class="form-control per-unit-cost-input" placeholder="Cost/Unit" required>
+                            <td data-label="Per Unit Cost">
+                                <input type="number" step="0.01" name="items[0][per_unit_cost]" class="form-control form-control-sm per-unit-cost-input" placeholder="Cost/Unit" required>
                             </td>
-                            <td class="align-middle text-center">
+                            <td class="align-middle text-center" data-label="Unit">
                                 <span class="unit-display font-weight-bold text-muted">-</span>
                             </td>
-                            <td>
-                                <input type="number" step="0.01" name="items[0][total_cost]" class="form-control cost-input" placeholder="Total Cost" required>
+                            <td data-label="Total Cost">
+                                <input type="number" step="0.01" name="items[0][total_cost]" class="form-control form-control-sm cost-input" placeholder="Total Cost" required>
                             </td>
-                            <td>
+                            <td data-label="Action">
                                 <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
@@ -88,7 +87,6 @@
                         </tr>
                     </tfoot>
                 </table>
-            </div>
 
             <div class="form-group mb-3 text-right">
                 <a href="{{route('manufacturing.production-factors.index')}}" class="btn btn-secondary">Cancel</a>
@@ -100,7 +98,7 @@
 
 <template id="rowTemplate">
     <tr>
-        <td>
+        <td data-label="Raw Material / Factor">
             <select name="items[INDEX][factor_id]" class="form-control factor-select" required>
                 <option value="">-- Select Material --</option>
                 @foreach($factors as $factor)
@@ -108,19 +106,19 @@
                 @endforeach
             </select>
         </td>
-        <td>
-            <input type="number" step="0.01" name="items[INDEX][quantity]" class="form-control quantity-input" placeholder="Qty" required>
+        <td data-label="Quantity">
+            <input type="number" step="0.01" name="items[INDEX][quantity]" class="form-control form-control-sm quantity-input" placeholder="Qty" required>
         </td>
-        <td>
-            <input type="number" step="0.01" name="items[INDEX][per_unit_cost]" class="form-control per-unit-cost-input" placeholder="Cost/Unit" required>
+        <td data-label="Per Unit Cost">
+            <input type="number" step="0.01" name="items[INDEX][per_unit_cost]" class="form-control form-control-sm per-unit-cost-input" placeholder="Cost/Unit" required>
         </td>
-        <td class="align-middle text-center">
+        <td class="align-middle text-center" data-label="Unit">
             <span class="unit-display font-weight-bold text-muted">-</span>
         </td>
-        <td>
-            <input type="number" step="0.01" name="items[INDEX][total_cost]" class="form-control cost-input" placeholder="Total Cost" required>
+        <td data-label="Total Cost">
+            <input type="number" step="0.01" name="items[INDEX][total_cost]" class="form-control form-control-sm cost-input" placeholder="Total Cost" required>
         </td>
-        <td>
+        <td data-label="Action">
             <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
         </td>
     </tr>
@@ -224,6 +222,49 @@
     }
     .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 38px !important;
+    }
+
+    /* Clean inputs */
+    .mobile-block-table input.form-control {
+        border: 1px solid #d1d3e2;
+        border-radius: 4px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .mobile-block-table input.form-control:focus {
+        border-color: #bac8f3;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    /* Mobile responsive tables */
+    @media (max-width: 768px) {
+        .mobile-block-table thead { display: none; }
+        .mobile-block-table tbody tr { 
+            display: block; 
+            border: 1px solid #e3e6f0; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            padding: 10px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .mobile-block-table tbody td { 
+            display: block; 
+            width: 100% !important; 
+            border: none !important; 
+            padding: 8px 0 !important; 
+        }
+        .mobile-block-table tbody td::before { 
+            content: attr(data-label); 
+            font-weight: 700; 
+            display: block; 
+            margin-bottom: 5px; 
+            color: #4e73df; 
+            font-size: 0.85rem; 
+        }
+        .mobile-block-table tfoot td { 
+            display: block; 
+            width: 100%; 
+            border: none; 
+        }
     }
 </style>
 @endpush

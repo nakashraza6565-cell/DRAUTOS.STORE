@@ -11,9 +11,9 @@
       </div>
     </div>
     <div class="card-body">
-      <div class="table-responsive">
+      <div>
         @if(count($factors)>0)
-        <table class="table table-bordered table-hover" id="factor-dataTable" width="100%" cellspacing="0">
+        <table class="table table-bordered table-hover mobile-block-table" id="factor-dataTable" width="100%" cellspacing="0">
           <thead class="bg-primary text-white">
             <tr>
               <th>S.N.</th>
@@ -29,9 +29,9 @@
           <tbody>
             @foreach($factors as $factor)
               <tr>
-                  <td>{{$loop->iteration}}</td>
-                  <td class="font-weight-bold">{{$factor->name}}</td>
-                  <td>
+                  <td data-label="S.N.">{{$loop->iteration}}</td>
+                  <td data-label="Name" class="font-weight-bold">{{$factor->name}}</td>
+                  <td data-label="Type">
                       @if($factor->type == 'material')
                         <span class="badge badge-info">Raw Material</span>
                       @elseif($factor->type == 'labor')
@@ -42,23 +42,23 @@
                         <span class="badge badge-primary">{{ucfirst($factor->type)}}</span>
                       @endif
                   </td>
-                  <td>{{$factor->unit ?? '-'}}</td>
-                  <td>Rs. {{number_format($factor->cost_price, 2)}}</td>
-                  <td>
+                  <td data-label="Unit">{{$factor->unit ?? '-'}}</td>
+                  <td data-label="Default Cost">Rs. {{number_format($factor->cost_price, 2)}}</td>
+                  <td data-label="Stock (Materials)">
                       @if($factor->type == 'material')
                         <span class="badge badge-{{$factor->stock_quantity > 0 ? 'success' : 'danger'}}">{{$factor->stock_quantity}} {{$factor->unit}}</span>
                       @else
                         -
                       @endif
                   </td>
-                  <td>
+                  <td data-label="Status">
                       @if($factor->status=='active')
                           <span class="badge badge-success">Active</span>
                       @else
                           <span class="badge badge-danger">Inactive</span>
                       @endif
                   </td>
-                  <td>
+                  <td data-label="Action">
                       <a href="{{route('manufacturing.production-factors.edit',$factor->id)}}" class="btn btn-primary btn-sm float-left mr-1" style="height:30px; width:30px;border-radius:50%" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
                       <form method="POST" action="{{route('manufacturing.production-factors.destroy',[$factor->id])}}">
                         @csrf
@@ -85,6 +85,39 @@
   <style>
       div.dataTables_wrapper div.dataTables_paginate{
           display: none;
+      }
+      /* Mobile responsive tables */
+      @media (max-width: 768px) {
+          .mobile-block-table thead { display: none; }
+          .mobile-block-table tbody tr { 
+              display: block; 
+              border: 1px solid #e3e6f0; 
+              border-radius: 8px; 
+              margin-bottom: 15px; 
+              padding: 10px; 
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+          }
+          .mobile-block-table tbody td { 
+              display: block; 
+              width: 100% !important; 
+              border: none !important; 
+              padding: 8px 0 !important; 
+          }
+          .mobile-block-table tbody td::before { 
+              content: attr(data-label); 
+              font-weight: 700; 
+              display: block; 
+              margin-bottom: 5px; 
+              color: #4e73df; 
+              font-size: 0.85rem; 
+          }
+          .mobile-block-table tfoot td { 
+              display: block; 
+              width: 100%; 
+              border: none; 
+          }
+          .dataTables_filter { text-align: left !important; margin-bottom: 15px; }
+          .dataTables_length { margin-bottom: 10px; }
       }
   </style>
 @endpush
