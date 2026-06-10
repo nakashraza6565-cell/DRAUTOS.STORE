@@ -989,6 +989,53 @@
                 .overview-table-to-cards tr:not(.expanded) td:nth-child(5) {
                     display: none !important;
                 }
+                
+                /* -------------------------------------------
+                   ORDER DETAIL ITEMS (order-table-to-cards order-detail-to-cards)
+                   Cols: 1:#, 2:Product, 3:Quantity, 4:Unit Price, 5:Total
+                   ------------------------------------------- */
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2.2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(2) .d-flex {
+                    align-items: flex-start !important;
+                    text-align: left !important;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(2) .font-weight-bold {
+                    font-size: 0.8rem;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(2) .text-muted {
+                    font-size: 0.65rem !important;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(3) { 
+                    flex: 0.8; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.85rem !important;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(3)::before {
+                    content: "x " !important;
+                    display: inline-block !important;
+                    margin-right: 2px;
+                    color: #6c757d;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(5) { 
+                    flex: 1.5; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                    font-size: 0.85rem !important;
+                }
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(1),
+                .order-detail-to-cards tr:not(.expanded) td:nth-child(4) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */

@@ -126,7 +126,7 @@
     </div>
     <div class="card-body p-0 p-md-4">
         <div class="table-responsive">
-            <table class="table table-bordered table-hover responsive-table-to-cards" id="order-detail-table" width="100%" cellspacing="0">
+            <table class="table table-bordered table-hover order-table-to-cards order-detail-to-cards" id="order-detail-table" width="100%" cellspacing="0">
                 <thead class="bg-light">
                     <tr>
                         <th width="50">#</th>
