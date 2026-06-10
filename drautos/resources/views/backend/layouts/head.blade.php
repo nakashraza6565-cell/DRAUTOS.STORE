@@ -1432,28 +1432,44 @@
             }
             #launcherTrigger {
                 position: fixed !important;
-                bottom: 120px;
-                right: 20px;
-                left: auto;
-                width: 56px !important;
-                height: 56px !important;
-                border-radius: 50% !important;
-                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
-                color: #fff !important;
+                top: 50% !important;
+                left: 0 !important;
+                right: auto !important;
+                bottom: auto !important;
+                transform: translateY(-50%) !important;
+                width: auto !important;
+                height: auto !important;
+                min-width: 44px !important;
+                border-radius: 0 12px 12px 0 !important;
+                background: linear-gradient(135deg, #083259, #1a4b7c) !important;
+                color: #facc15 !important;
                 display: flex !important;
+                flex-direction: column !important;
                 align-items: center !important;
                 justify-content: center !important;
-                box-shadow: 0 10px 25px rgba(12, 27, 61, 0.35), 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+                box-shadow: 3px 3px 12px rgba(0, 0, 0, 0.2) !important;
                 z-index: 999999 !important;
-                border: 2px solid rgba(255, 255, 255, 0.15) !important;
-                padding: 0 !important;
+                border: none !important;
+                padding: 14px 10px !important;
                 margin: 0 !important;
-                transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-                touch-action: none;
+                transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease !important;
+                gap: 6px;
+            }
+            #launcherTrigger::after {
+                content: "MENU";
+                font-size: 9px;
+                letter-spacing: 0.5px;
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                color: #facc15;
+                font-weight: bold;
+                display: block;
+            }
+            #launcherTrigger i {
+                font-size: 18px !important;
             }
             #launcherTrigger:active {
-                transform: scale(0.9) !important;
-                box-shadow: 0 5px 15px rgba(12, 27, 61, 0.25) !important;
+                transform: translateY(-50%) scale(0.95) !important;
             }
             .mobile-search-trigger {
                 width: 42px;

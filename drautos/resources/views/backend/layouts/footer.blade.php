@@ -883,7 +883,7 @@
         }
 
         // Initialize mobile draggable controllers
-        makeElementDraggable('#launcherTrigger', 'launcher_fab', 120);
+        // makeElementDraggable('#launcherTrigger', 'launcher_fab', 120); // Removed: Now a fixed drawer tab
         makeElementDraggable('#ai-chat-trigger', 'ai_fab', 20);
 
         setTimeout(function(){
