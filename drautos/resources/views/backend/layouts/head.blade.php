@@ -600,7 +600,8 @@
 
             /* Specialized Ledger Card System - Ultra Compact Accordion */
             @media (max-width: 768px) {
-                .ledger-table-to-cards { display: block !important; width: 100% !important; border: none !important; }
+                .table-responsive:has(.ledger-table-to-cards) { overflow-x: hidden !important; }
+                .ledger-table-to-cards { display: block !important; width: 100% !important; border: none !important; margin: 0 !important; }
                 .ledger-table-to-cards thead { display: none !important; }
                 .ledger-table-to-cards tbody { display: block !important; width: 100% !important; }
                 .ledger-table-to-cards tr {
@@ -650,6 +651,7 @@
                     padding: 0 4px !important;
                     width: auto !important;
                     flex: 1;
+                    min-width: 0 !important; /* CRITICAL FOR FLEX ELLIPSIS */
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
