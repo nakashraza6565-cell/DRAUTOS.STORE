@@ -659,13 +659,42 @@
                     text-overflow: ellipsis;
                 }
                 
-                /* What to show on single line: Date, Category, Balance */
-                .ledger-table-to-cards tr:not(.expanded) td:nth-child(1) { flex: 1.5; font-size: 0.8rem !important; } /* Date */
-                .ledger-table-to-cards tr:not(.expanded) td:nth-child(3) { flex: 1; font-size: 0.75rem !important; text-align: center !important; } /* Category */
-                .ledger-table-to-cards tr:not(.expanded) td:nth-child(6) { flex: 2; font-size: 0.85rem !important; text-align: right !important; font-weight: bold; } /* Balance */
+                /* What to show on single line: Date, Description, Balance */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(1) { flex: 0.7; font-size: 0.7rem !important; color: #64748b !important; } /* Date */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                } /* Description */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) .font-weight-bold {
+                    font-size: 0.8rem;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(2) .small {
+                    font-size: 0.65rem !important;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                    color: #64748b !important;
+                }
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(6) { 
+                    flex: 1.8; 
+                    font-size: 0.8rem !important; 
+                    text-align: right !important; 
+                    font-weight: bold; 
+                    display: flex !important;
+                    flex-direction: row;
+                    justify-content: flex-end;
+                    gap: 6px;
+                    align-items: center;
+                } /* Balance */
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(6) .mob-amount {
+                    display: inline-block !important; /* Show amount on mobile */
+                }
                 
                 /* Hide everything else */
-                .ledger-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .ledger-table-to-cards tr:not(.expanded) td:nth-child(3),
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(4),
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(5),
                 .ledger-table-to-cards tr:not(.expanded) td:nth-child(7) {

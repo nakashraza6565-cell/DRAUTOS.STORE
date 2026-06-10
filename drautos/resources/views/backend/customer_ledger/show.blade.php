@@ -118,7 +118,7 @@
                     <tbody>
                         @foreach($ledger as $item)
                             <tr>
-                                <td data-title="Date" data-balance="Rs. {{number_format($item->balance, 2)}}">{{$item->transaction_date->format('Y-m-d')}}</td>
+                                <td data-title="Date" data-balance="Rs. {{number_format($item->balance, 2)}}">{{$item->transaction_date->format('d/m/y')}}</td>
                                 <td data-title="Description">
                                     <div class="font-weight-bold text-primary text-uppercase" style="font-size: 0.85rem;">
                                         @if($item->category == 'order')
@@ -142,9 +142,14 @@
                                     @endif
                                 </td>
                                 <td data-title="Category"><span class="badge badge-light">{{$item->category}}</span></td>
-                                <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
-                                <td data-title="Credit (-)" class="text-right text-success">{{$item->type == 'credit' ? 'Rs. '.number_format($item->amount, 2) : ''}}</td>
-                                <td data-title="Balance" class="text-right font-weight-bold">Rs. {{number_format($item->balance, 2)}}</td>
+                                <td data-title="Debit (+)" class="text-right text-danger">{{$item->type == 'debit' ? 'Rs. '.number_format($item->amount, 0) : ''}}</td>
+                                <td data-title="Credit (-)" class="text-right text-success">{{$item->type == 'credit' ? 'Rs. '.number_format($item->amount, 0) : ''}}</td>
+                                <td data-title="Balance" class="text-right font-weight-bold">
+                                    <span class="mob-amount d-none {{ $item->type == 'debit' ? 'text-danger' : 'text-success' }}" style="font-size: 0.75rem; margin-right: 5px;">
+                                        {{ $item->type == 'debit' ? '+' : '-' }}{{ number_format($item->amount, 0) }}
+                                    </span>
+                                    Rs. {{number_format($item->balance, 0)}}
+                                </td>
                                 <td data-title="Action" class="text-center">
                                     <div class="d-flex justify-content-end" style="gap: 5px;">
                                         @if($item->category == 'order' && $item->reference_id)
