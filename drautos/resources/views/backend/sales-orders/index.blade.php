@@ -209,11 +209,11 @@
                             <small class="text-muted">{{$order->created_at->format('h:i A')}}</small>
                         </td>
                         <td data-title="Actions" class="text-center">
-                            <div class="d-flex justify-content-end justify-content-md-center">
-                                <a href="{{route('sales-orders.show', $order->id)}}" class="btn btn-warning btn-sm mr-1" style="height:32px;width:32px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;" title="View">
+                            <div class="d-flex flex-nowrap justify-content-end justify-content-md-center align-items-center" style="gap: 4px;">
+                                <a href="{{route('sales-orders.show', $order->id)}}" class="btn btn-warning btn-sm" style="height:32px;width:32px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <form method="POST" action="{{route('sales-orders.destroy', [$order->id])}}" class="d-inline">
+                                <form method="POST" action="{{route('sales-orders.destroy', [$order->id])}}" style="display:inline-block; margin:0;">
                                     @csrf
                                     @method('delete')
                                     <button class="btn btn-danger btn-sm dltBtn" data-id="{{$order->id}}" style="height:32px;width:32px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;" title="Delete">

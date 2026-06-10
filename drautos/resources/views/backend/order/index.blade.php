@@ -136,24 +136,24 @@
                                 </select>
                             </form>
                         </div>
-                        <div class="d-flex flex-wrap justify-content-end">
-                            <form method="POST" action="{{route('order.toggle-pin', $order->id)}}" style="display:inline-block">
+                        <div class="d-flex flex-nowrap justify-content-end align-items-center" style="gap: 4px;">
+                            <form method="POST" action="{{route('order.toggle-pin', $order->id)}}" style="display:inline-block; margin:0;">
                                 @csrf
-                                <button type="submit" class="btn btn-{{$order->pinned ? 'info' : 'outline-secondary'}} btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="{{$order->pinned ? 'Unpin' : 'Pin'}}" data-placement="bottom">
+                                <button type="submit" class="btn btn-{{$order->pinned ? 'info' : 'outline-secondary'}} btn-sm" style="height:28px; width:28px;border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" title="{{$order->pinned ? 'Unpin' : 'Pin'}}" data-placement="bottom">
                                     <i class="fas fa-thumbtack"></i>
                                 </button>
                             </form>
-                            <a href="{{route('order.show',$order->id)}}" class="btn btn-warning btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="view" data-placement="bottom"><i class="fas fa-eye"></i></a>
-                            <a href="{{route('returns.sale.create',$order->id)}}" class="btn btn-dark btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="Refund" data-placement="bottom"><i class="fas fa-undo"></i></a>
+                            <a href="{{route('order.show',$order->id)}}" class="btn btn-warning btn-sm" style="height:28px; width:28px;border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" title="view" data-placement="bottom"><i class="fas fa-eye"></i></a>
+                            <a href="{{route('returns.sale.create',$order->id)}}" class="btn btn-dark btn-sm" style="height:28px; width:28px;border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" title="Refund" data-placement="bottom"><i class="fas fa-undo"></i></a>
                             @if($order->status == 'delivered')
-                                <button class="btn btn-secondary btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%;opacity:0.5;cursor:not-allowed; font-size: 11px;" disabled><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary btn-sm" style="height:28px; width:28px;border-radius:50%;opacity:0.5;cursor:not-allowed; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" disabled><i class="fas fa-edit"></i></button>
                             @else
-                                <a href="{{route('order.edit',$order->id)}}" class="btn btn-primary btn-sm mr-1 mb-1" style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
+                                <a href="{{route('order.edit',$order->id)}}" class="btn btn-primary btn-sm" style="height:28px; width:28px;border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" title="edit" data-placement="bottom"><i class="fas fa-edit"></i></a>
                             @endif
-                            <form method="POST" action="{{route('order.destroy',[$order->id])}}">
+                            <form method="POST" action="{{route('order.destroy',[$order->id])}}" style="display:inline-block; margin:0;">
                               @csrf 
                               @method('delete')
-                                  <button class="btn btn-danger btn-sm dltBtn" data-id={{$order->id}} style="height:28px; width:28px;border-radius:50%; font-size: 11px;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                                  <button class="btn btn-danger btn-sm dltBtn" data-id={{$order->id}} style="height:28px; width:28px;border-radius:50%; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" data-toggle="tooltip" data-placement="bottom" title="Delete"><i class="fas fa-trash-alt"></i></button>
                             </form>
                         </div>
                     </td>

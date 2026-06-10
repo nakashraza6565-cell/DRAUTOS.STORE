@@ -845,7 +845,17 @@
                     justify-content: flex-end;
                 }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .justify-content-end { display: none !important; } /* hide action buttons */
-                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form { margin-bottom: 0 !important; }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form.status-update-form { 
+                    margin-bottom: 0 !important; 
+                    max-width: 110px !important;
+                    width: 100% !important;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form.status-update-form select {
+                    height: 26px !important;
+                    font-size: 0.65rem !important;
+                    padding: 0 5px !important;
+                    border-radius: 6px !important;
+                }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(1),
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(3),
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(4) {
