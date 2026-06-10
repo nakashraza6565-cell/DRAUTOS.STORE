@@ -433,23 +433,9 @@
             display: none !important;
         }
 
-        /* Turn the Expand button into just a chevron */
+        /* Hide the Expand button completely in collapsed view, since the whole row is clickable */
         .mobile-block-table tbody tr:not(.expanded) td:last-child {
-            flex: 0 0 auto !important;
-            width: 25px !important;
-            text-align: right !important;
-        }
-        .mobile-block-table tbody tr:not(.expanded) .expand-row-btn {
-            font-size: 0 !important; 
-            background: transparent !important;
-            border: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            color: #94a3b8 !important;
-        }
-        .mobile-block-table tbody tr:not(.expanded) .expand-row-btn i {
-            font-size: 1.1rem !important;
+            display: none !important;
         }
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
