@@ -845,14 +845,23 @@
                     justify-content: flex-end;
                     gap: 6px;
                 }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) > div.d-flex {
+                    order: 1;
+                }
+                .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .btn-sm {
+                    width: 22px !important;
+                    height: 22px !important;
+                    font-size: 9px !important;
+                }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .act-refund,
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) .act-delete { 
                     display: none !important; 
                 }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form.status-update-form { 
                     margin-bottom: 0 !important; 
-                    max-width: 110px !important;
+                    max-width: 100px !important;
                     width: 100% !important;
+                    order: 2;
                 }
                 .billing-table-to-cards tr:not(.expanded) td:nth-child(5) form.status-update-form select {
                     height: 26px !important;
