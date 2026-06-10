@@ -18,6 +18,14 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
+                    <div class="btn-group shadow-sm mr-1" role="group" style="border-radius: 100px; overflow: hidden; border: 1px solid #e2e8f0;">
+                        <button type="button" class="btn btn-sm btn-white view-toggle-btn active" data-view="grid" style="height: 45px; padding: 0 15px; color: #4e73df;">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-white view-toggle-btn" data-view="list" style="height: 45px; padding: 0 15px; color: #94a3b8;">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
                     <button type="button" data-toggle="modal" data-target="#addProductModal" class="btn btn-white btn-sm px-3 shadow-sm border d-flex align-items-center justify-content-center" style="border-radius: 100px; font-weight: 700; color: #475569; height: 45px; min-width: 45px;">
                         <i class="fas fa-plus text-primary mr-md-2"></i> <span class="d-none d-md-inline">NEW ITEM</span>
                     </button>
@@ -602,6 +610,29 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
+    
+    .pos-list-item {
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        border-radius: 8px;
+    }
+    .pos-list-item:hover {
+        border-color: #4e73df !important;
+        transform: translateX(4px);
+        background-color: #f8f9fc;
+    }
+    .view-toggle-btn {
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+    .view-toggle-btn.active {
+        background-color: #f8f9fc;
+        color: #4e73df !important;
+    }
+    .view-toggle-btn:not(.active) {
+        color: #94a3b8 !important;
+    }
+
     /* Explicitly color inactive outline buttons to prevent theme white-out */
     .filter-btn.btn-outline-success {
         color: #2e7d32 !important;
@@ -1436,8 +1467,8 @@
 
         if (val.length > 0) {
             searchTimer = setTimeout(() => {
-                // Fetch for suggestions only, do NOT update grid while typing
-                fetchProducts(val, true, false);
+                // Live update the grid while typing (real-time filtering) AND show suggestions
+                fetchProducts(val, false, true);
             }, 150);
         } else {
             $('#search-suggestions').addClass('d-none');
@@ -1496,6 +1527,20 @@
         fetchProducts();
     });
 
+    $(document).ready(function() {
+        let currentMode = localStorage.getItem('pos_view_mode') || 'grid';
+        $('.view-toggle-btn').removeClass('active');
+        $(`.view-toggle-btn[data-view="${currentMode}"]`).addClass('active');
+
+        $('.view-toggle-btn').click(function() {
+            let mode = $(this).data('view');
+            localStorage.setItem('pos_view_mode', mode);
+            $('.view-toggle-btn').removeClass('active');
+            $(this).addClass('active');
+            renderProducts();
+        });
+    });
+
     function fetchProducts(query = null, triggerSuggestions = false, updateGrid = true) {
         if (query === null) query = $('#product-search').val();
         let cat_id = $('.filter-cat.active').data('id');
@@ -1534,6 +1579,7 @@
     }
 
     function renderProducts() {
+        let viewMode = localStorage.getItem('pos_view_mode') || 'grid';
         let html = '';
         products.forEach(p => {
             let displayPrice = getPriceForCustomer(p);
@@ -1552,35 +1598,68 @@
                 ? '/admin/product-bundles/' + p.id + '/edit'
                 : '/admin/product/' + p.id + '/edit';
 
-            html += `
-                <div class="col-xl-8-grid mb-3 px-2">
-                    <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
-                        <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
-                        <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
-                        <img src="${photoSrc}" class="thumbnail-elite" alt="Product Image" onerror="this.src='{{asset('backend/img/thumbnail-default.jpg')}}'">
-                        
-                        <div class="glass-overlay">
-                            ${itemTypeBadge}
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <div class="elite-title text-truncate" title="${p.title}" style="max-width: 85%; margin-bottom: 0;">${p.title}</div>
-                                <div class="d-flex" style="gap: 4px;">
-                                    <button class="btn btn-sm btn-light shadow-sm" 
-                                        style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
-                                        onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
-                                        <i class="fas fa-edit text-primary"></i>
+            if (viewMode === 'list') {
+                html += `
+                <div class="col-12 mb-2 px-2">
+                    <div class="card pos-list-item shadow-sm cursor-pointer" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                        <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                            <div class="d-flex flex-column" style="max-width: 65%; overflow: hidden;">
+                                <div class="d-flex align-items-center" style="gap: 6px; white-space: nowrap;">
+                                    ${itemTypeBadge}
+                                    <div class="font-weight-bold text-dark text-truncate" style="font-size: 14px;" title="${p.title}">${p.title}</div>
+                                </div>
+                                <div class="text-muted text-truncate" style="font-size: 11px;">
+                                    ${brandName} | ${modelName} ${p.sku ? ' | SKU: ' + p.sku : ''}
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center text-right" style="gap: 15px;">
+                                <div class="d-flex flex-column text-right">
+                                    <div class="font-weight-bold text-success" style="font-size: 15px;">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
+                                    <div class="text-muted" style="font-size: 11px;">Stock: <span class="${p.stock <= 5 ? 'text-danger font-weight-bold' : ''}">${p.stock}</span></div>
+                                </div>
+                                <div class="d-flex flex-column" style="gap: 4px;">
+                                    <button class="btn btn-sm btn-light border shadow-sm" style="width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
+                                        <i class="fas fa-edit text-primary" style="font-size: 10px;"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-info border-0 shadow-sm" style="width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
+                                        <i class="fas fa-info text-white" style="font-size: 10px;"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="elite-meta text-truncate">${brandName} | ${modelName}</div>
                         </div>
-                        <button class="btn btn-info shadow-sm position-absolute" 
-                            style="top: 35px; left: 6px; width: 24px; height: 24px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20; border: 2px solid #fff;" 
-                            onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
-                            <i class="fas fa-info text-white"></i>
-                        </button>
                     </div>
-                </div>
-            `;
+                </div>`;
+            } else {
+                html += `
+                    <div class="col-xl-8-grid mb-3 px-2">
+                        <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                            <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
+                            <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
+                            <img src="${photoSrc}" class="thumbnail-elite" alt="Product Image" onerror="this.src='{{asset('backend/img/thumbnail-default.jpg')}}'">
+                            
+                            <div class="glass-overlay">
+                                ${itemTypeBadge}
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <div class="elite-title text-truncate" title="${p.title}" style="max-width: 85%; margin-bottom: 0;">${p.title}</div>
+                                    <div class="d-flex" style="gap: 4px;">
+                                        <button class="btn btn-sm btn-light shadow-sm" 
+                                            style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
+                                            onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
+                                            <i class="fas fa-edit text-primary"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="elite-meta text-truncate">${brandName} | ${modelName}</div>
+                            </div>
+                            <button class="btn btn-info shadow-sm position-absolute" 
+                                style="top: 35px; left: 6px; width: 24px; height: 24px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 20; border: 2px solid #fff;" 
+                                onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
+                                <i class="fas fa-info text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
         });
         $('#products-grid').html(html || '<div class="col-12 text-center py-5"><h5 class="text-muted">No items match your search</h5></div>');
     }
