@@ -929,6 +929,43 @@
                 .customer-table-to-cards tr:not(.expanded) td:nth-child(5) {
                     display: none !important;
                 }
+                
+                /* -------------------------------------------
+                   ORDERS & BILLING: SELECT CUSTOMER (order-table-to-cards overview-table-to-cards)
+                   Cols: 1:Customer, 2:Orders, 3:Sales Value, 4:Last Order, 5:Action
+                   ------------------------------------------- */
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(1) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(1) .icon-circle {
+                    width: 32px !important;
+                    height: 32px !important;
+                    margin-right: 12px !important;
+                }
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(1) .font-weight-bold {
+                    font-size: 0.8rem;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                }
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(1) .small {
+                    font-size: 0.65rem !important;
+                }
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(3) { 
+                    flex: 1.5; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                    font-size: 0.85rem !important;
+                }
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(2),
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(4),
+                .overview-table-to-cards tr:not(.expanded) td:nth-child(5) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */

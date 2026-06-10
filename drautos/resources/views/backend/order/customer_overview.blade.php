@@ -32,7 +32,7 @@
             </form>
             <div class="table-responsive">
                 @if(count($customersWithOrders) > 0)
-                <table class="table table-hover responsive-table-to-cards" id="customer-orders-table" width="100%" cellspacing="0">
+                <table class="table table-hover order-table-to-cards overview-table-to-cards" id="customer-orders-table" width="100%" cellspacing="0">
                     <thead class="bg-light">
                         <tr>
                             <th>Customer Name</th>
@@ -44,7 +44,7 @@
                     </thead>
                     <tbody>
                         @foreach($customersWithOrders as $customer)
-                            <tr onclick="window.location='{{ route('order.index', ['user_id' => $customer->id]) }}'" style="cursor: pointer;">
+                            <tr>
                                 <td data-title="Customer">
                                     <div class="d-flex align-items-center">
                                         <div class="icon-circle bg-primary text-white mr-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
