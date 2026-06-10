@@ -600,6 +600,9 @@
 
             /* Specialized Ledger Card System - Ultra Compact Accordion */
             @media (max-width: 768px) {
+                .ledger-table-to-cards { display: block !important; width: 100% !important; border: none !important; }
+                .ledger-table-to-cards thead { display: none !important; }
+                .ledger-table-to-cards tbody { display: block !important; width: 100% !important; }
                 .ledger-table-to-cards tr {
                     /* Default state: COLLAPSED single line */
                     display: flex !important;
