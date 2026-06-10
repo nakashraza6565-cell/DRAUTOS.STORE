@@ -61,7 +61,7 @@
 
         <div class="table-responsive">
             @if(count($products) > 0)
-            <table class="table table-bordered table-hover" id="price-list-table" width="100%">
+            <table class="table table-bordered table-hover order-table-to-cards price-table-to-cards" id="price-list-table" width="100%">
                 <thead class="thead-dark">
                     <tr>
                         <th width="40">#</th>
@@ -100,8 +100,8 @@
                 <tbody>
                     @foreach($products as $product)
                     <tr>
-                        <td>{{$loop->iteration}}</td>
-                        <td>
+                        <td data-title="#">{{$loop->iteration}}</td>
+                        <td data-title="Product">
                             <div class="font-weight-bold text-dark">{{$product->title}}</div>
                             <div class="d-flex flex-wrap align-items-center mt-1" style="gap: 4px;">
                                 @if($product->is_featured)
@@ -116,11 +116,11 @@
                                 @endif
                             </div>
                         </td>
-                        <td><small>{{$product->cat_info->title ?? 'N/A'}}</small></td>
-                        <td><small class="text-muted">{{$product->sku ?? '—'}}</small></td>
+                        <td data-title="Category"><small>{{$product->cat_info->title ?? 'N/A'}}</small></td>
+                        <td data-title="SKU"><small class="text-muted">{{$product->sku ?? '—'}}</small></td>
 
                         {{-- Selling Price (switchable) --}}
-                        <td class="price-cell text-center"
+                        <td class="price-cell text-center" data-title="Selling Price"
                             data-id="{{$product->id}}"
                             data-price="{{$product->price ?? ''}}"
                             data-wholesale_price="{{$product->wholesale_price ?? ''}}"
@@ -136,7 +136,7 @@
                         </td>
 
                         {{-- Cost Price --}}
-                        <td class="cost-price-cell text-center"
+                        <td class="cost-price-cell text-center" data-title="Cost Price"
                             data-id="{{$product->id}}"
                             data-purchase_price="{{$product->purchase_price ?? ''}}"
                         >
@@ -149,7 +149,7 @@
                             <small class="text-muted d-block edit-hint" style="font-size:9px;">dbl-click to edit</small>
                         </td>
 
-                        <td class="text-center">
+                        <td class="text-center" data-title="Stock">
                             @if($product->stock > 0)
                                 <span class="badge badge-success">{{$product->stock}}</span>
                             @else

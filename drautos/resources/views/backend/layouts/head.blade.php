@@ -1149,6 +1149,42 @@
                 .cheque-table-to-cards tr:not(.expanded) td:nth-child(9) .act-bounced { 
                     display: none !important; 
                 }
+                
+                /* -------------------------------------------
+                   PRICE LIST ITEMS (order-table-to-cards price-table-to-cards)
+                   Cols: 1:#, 2:Product, 3:Category, 4:SKU, 5:Selling Price, 6:Cost Price, 7:Stock
+                   ------------------------------------------- */
+                .price-table-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                }
+                .price-table-to-cards tr:not(.expanded) td:nth-child(2)::before {
+                    display: none !important;
+                }
+                .price-table-to-cards tr:not(.expanded) td:nth-child(5) { 
+                    flex: 1; 
+                    display: flex !important;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .price-table-to-cards tr:not(.expanded) td:nth-child(7) { 
+                    flex: 0.5; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                /* Hide specific columns in collapsed view */
+                .price-table-to-cards tr:not(.expanded) td:nth-child(1),
+                .price-table-to-cards tr:not(.expanded) td:nth-child(3),
+                .price-table-to-cards tr:not(.expanded) td:nth-child(4),
+                .price-table-to-cards tr:not(.expanded) td:nth-child(6) {
+                    display: none !important;
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */
