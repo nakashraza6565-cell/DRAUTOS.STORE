@@ -45,8 +45,7 @@
                 <button type="button" class="btn btn-sm btn-info shadow-sm" data-toggle="modal" data-target="#quickAddMaterialModal"><i class="fas fa-plus fa-sm text-white-50"></i> Add New Material</button>
             </div>
             
-            <div class="table-responsive">
-            <table class="table table-bordered" id="components_table">
+            <table class="table table-bordered mobile-block-table" id="components_table">
                 <thead>
                     <tr>
                         <th width="50%">Component (Raw Material)</th>
@@ -57,7 +56,7 @@
                 </thead>
                 <tbody id="components_body">
                     <tr>
-                        <td>
+                        <td data-label="Component (Raw Material)">
                             <select name="components[0][product_id]" class="form-control select2 component-select" required>
                                 <option value="">Select Ingredient</option>
                                 <optgroup label="Raw Materials & Labor" class="factors-group">
@@ -72,10 +71,10 @@
                                 </optgroup>
                             </select>
                         </td>
-                        <td>
-                            <input type="number" step="0.01" name="components[0][quantity]" class="form-control" placeholder="Qty" required>
+                        <td data-label="Quantity Required">
+                            <input type="number" step="0.01" name="components[0][quantity]" class="form-control form-control-sm" placeholder="Qty" required>
                         </td>
-                        <td>
+                        <td data-label="Purchase from Supplier?">
                             <select name="components[0][purchase_supplier_id]" class="form-control select2">
                                 <option value="">-- No (Use Stock) --</option>
                                 @foreach($suppliers as $supplier)
@@ -83,7 +82,7 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td>
+                        <td data-label="Action">
                             <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
@@ -96,7 +95,6 @@
                     </tr>
                 </tfoot>
             </table>
-            </div>
 
             <hr>
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -104,8 +102,7 @@
                 <button type="button" class="btn btn-sm btn-info shadow-sm" id="add_custom_overhead_type_btn"><i class="fas fa-plus fa-sm text-white-50"></i> Add Custom Overhead Type</button>
             </div>
             
-            <div class="table-responsive">
-            <table class="table table-bordered" id="overheads_table">
+            <table class="table table-bordered mobile-block-table" id="overheads_table">
                 <thead>
                     <tr>
                         <th width="25%">Overhead Type</th>
@@ -117,7 +114,7 @@
                 </thead>
                 <tbody id="overheads_body">
                     <tr>
-                        <td>
+                        <td data-label="Overhead Type">
                             <select name="overheads[0][type]" class="form-control select2" required>
                                 <option value="">-- Select Overhead Type --</option>
                                 <option value="machining">Machining Cost</option>
@@ -127,7 +124,7 @@
                                 <option value="overhead">Other Overheads</option>
                             </select>
                         </td>
-                        <td>
+                        <td data-label="Subcontractor / Supplier">
                             <select name="overheads[0][subcontractor_id]" class="form-control select2">
                                 <option value="">-- No Subcontractor (In-house) --</option>
                                 @foreach($suppliers as $supplier)
@@ -135,13 +132,13 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td>
-                            <input type="number" step="0.0001" name="overheads[0][per_piece_cost]" class="form-control per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
+                        <td data-label="Per Piece Cost (Rs.)">
+                            <input type="number" step="0.0001" name="overheads[0][per_piece_cost]" class="form-control form-control-sm per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
                         </td>
-                        <td>
-                            <input type="number" step="0.01" name="overheads[0][cost]" class="form-control total-cost-input" placeholder="Total Cost" value="0" required>
+                        <td data-label="Total Cost (Rs.)">
+                            <input type="number" step="0.01" name="overheads[0][cost]" class="form-control form-control-sm total-cost-input" placeholder="Total Cost" value="0" required>
                         </td>
-                        <td>
+                        <td data-label="Action">
                             <button type="button" class="btn btn-danger btn-sm remove-row" disabled><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
@@ -154,7 +151,6 @@
                     </tr>
                 </tfoot>
             </table>
-            </div>
 
             <div class="form-group">
                 <label>Notes</label>
@@ -169,7 +165,7 @@
 {{-- Template Row for JS --}}
 <template id="component_row_template">
     <tr>
-        <td>
+        <td data-label="Component (Raw Material)">
             <select name="components[INDEX][product_id]" class="form-control select2-new component-select" required>
                 <option value="">Select Ingredient</option>
                 <optgroup label="Raw Materials & Labor" class="factors-group">
@@ -184,10 +180,10 @@
                 </optgroup>
             </select>
         </td>
-        <td>
-            <input type="number" step="0.01" name="components[INDEX][quantity]" class="form-control" placeholder="Qty" required>
+        <td data-label="Quantity Required">
+            <input type="number" step="0.01" name="components[INDEX][quantity]" class="form-control form-control-sm" placeholder="Qty" required>
         </td>
-        <td>
+        <td data-label="Purchase from Supplier?">
             <select name="components[INDEX][purchase_supplier_id]" class="form-control select2-new">
                 <option value="">-- No (Use Stock) --</option>
                 @foreach($suppliers as $supplier)
@@ -195,7 +191,7 @@
                 @endforeach
             </select>
         </td>
-        <td>
+        <td data-label="Action">
             <button type="button" class="btn btn-danger btn-sm remove-row"><i class="fas fa-trash"></i></button>
         </td>
     </tr>
@@ -205,7 +201,7 @@
 
 <template id="overhead_row_template">
     <tr>
-        <td>
+        <td data-label="Overhead Type">
             <select name="overheads[INDEX][type]" class="form-control select2-new" required>
                 <option value="">-- Select Overhead Type --</option>
                 <option value="machining">Machining Cost</option>
@@ -215,7 +211,7 @@
                 <option value="overhead">Other Overheads</option>
             </select>
         </td>
-        <td>
+        <td data-label="Subcontractor / Supplier">
             <select name="overheads[INDEX][subcontractor_id]" class="form-control select2-new">
                 <option value="">-- No Subcontractor (In-house) --</option>
                 @foreach($suppliers as $supplier)
@@ -223,13 +219,13 @@
                 @endforeach
             </select>
         </td>
-        <td>
-            <input type="number" step="0.0001" name="overheads[INDEX][per_piece_cost]" class="form-control per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
+        <td data-label="Per Piece Cost (Rs.)">
+            <input type="number" step="0.0001" name="overheads[INDEX][per_piece_cost]" class="form-control form-control-sm per-piece-cost-input" placeholder="Per Pc Cost" value="0" required>
         </td>
-        <td>
-            <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control total-cost-input" placeholder="Total Cost" value="0" required>
+        <td data-label="Total Cost (Rs.)">
+            <input type="number" step="0.01" name="overheads[INDEX][cost]" class="form-control form-control-sm total-cost-input" placeholder="Total Cost" value="0" required>
         </td>
-        <td>
+        <td data-label="Action">
             <button type="button" class="btn btn-danger btn-sm remove-overhead-row"><i class="fas fa-trash"></i></button>
         </td>
     </tr>
@@ -282,6 +278,50 @@
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+<style>
+    /* Clean inputs */
+    .mobile-block-table input.form-control {
+        border: 1px solid #d1d3e2;
+        border-radius: 4px;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .mobile-block-table input.form-control:focus {
+        border-color: #bac8f3;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+
+    /* Mobile responsive tables */
+    @media (max-width: 768px) {
+        .mobile-block-table thead { display: none; }
+        .mobile-block-table tbody tr { 
+            display: block; 
+            border: 1px solid #e3e6f0; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            padding: 10px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+        }
+        .mobile-block-table tbody td { 
+            display: block; 
+            width: 100% !important; 
+            border: none !important; 
+            padding: 8px 0 !important; 
+        }
+        .mobile-block-table tbody td::before { 
+            content: attr(data-label); 
+            font-weight: 700; 
+            display: block; 
+            margin-bottom: 5px; 
+            color: #4e73df; 
+            font-size: 0.85rem; 
+        }
+        .mobile-block-table tfoot td { 
+            display: block; 
+            width: 100%; 
+            border: none; 
+        }
+    }
+</style>
 @endpush
 
 @push('scripts')
