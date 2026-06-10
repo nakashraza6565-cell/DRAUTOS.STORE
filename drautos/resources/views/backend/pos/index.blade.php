@@ -25,6 +25,9 @@
                         <button type="button" class="btn btn-sm btn-white view-toggle-btn" data-view="list" style="height: 45px; padding: 0 15px; color: #94a3b8;">
                             <i class="fas fa-list"></i>
                         </button>
+                        <button type="button" class="btn btn-sm btn-white border-left" id="toggle-multi-select" style="height: 45px; padding: 0 15px; color: #94a3b8;" title="Multi-Select Mode">
+                            <i class="fas fa-check-double"></i>
+                        </button>
                     </div>
                     <button type="button" data-toggle="modal" data-target="#addProductModal" class="btn btn-white btn-sm px-3 shadow-sm border d-flex align-items-center justify-content-center" style="border-radius: 100px; font-weight: 700; color: #475569; height: 45px; min-width: 45px;">
                         <i class="fas fa-plus text-primary mr-md-2"></i> <span class="d-none d-md-inline">NEW ITEM</span>
@@ -102,6 +105,13 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Bulk Action Bar (Floating) -->
+<div id="bulk-action-bar" class="d-none" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; background: #fff; padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 2px solid #4e73df; display: flex; align-items: center; gap: 15px;">
+    <span class="font-weight-bold text-primary" id="bulk-count-text">0 items selected</span>
+    <button class="btn btn-sm btn-success rounded-pill font-weight-bold px-3 shadow" onclick="openBulkModal()"><i class="fas fa-cart-plus mr-1"></i> Add to Cart</button>
+    <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="cancelMultiSelect()">Cancel</button>
 </div>
 
 <!-- Add Customer Modal -->
@@ -550,6 +560,40 @@
         </div>
     </div>
 </div>
+
+<!-- Bulk Add Modal -->
+<div class="modal fade" id="bulkAddModal" tabindex="-1" role="dialog" data-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-boxes mr-2"></i> Bulk Add Items</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center" style="width: 150px;">Quantity</th>
+                                <th class="text-right" style="width: 150px;">Unit Price (Rs)</th>
+                                <th class="text-center" style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulk-add-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-5 font-weight-bold shadow" id="confirm-bulk-add"><i class="fas fa-check-circle mr-2"></i> Confirm Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Hidden Iframe for Printing -->
 <iframe id="print-iframe" style="display:none;"></iframe>
 
@@ -631,6 +675,44 @@
     }
     .view-toggle-btn:not(.active) {
         color: #94a3b8 !important;
+    }
+
+    .selectable-item {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+    .multi-select-mode .product-grid-card, .multi-select-mode .pos-list-item {
+        cursor: pointer !important;
+    }
+    .product-grid-card.selected-for-bulk, .pos-list-item.selected-for-bulk {
+        border: 3px solid #4e73df !important;
+        box-shadow: 0 0 15px rgba(78,115,223,0.4) !important;
+        transform: scale(0.98);
+    }
+    .selected-checkmark {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #fff;
+        color: #1cc88a;
+        border-radius: 50%;
+        font-size: 24px;
+        z-index: 50;
+        display: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .pos-list-item .selected-checkmark {
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
+    }
+    .selected-for-bulk .selected-checkmark {
+        display: block;
+    }
+    #toggle-multi-select.active {
+        background-color: #4e73df;
+        color: #fff !important;
     }
 
     /* Explicitly color inactive outline buttons to prevent theme white-out */
@@ -1539,7 +1621,176 @@
             $(this).addClass('active');
             renderProducts();
         });
+
+        $('#toggle-multi-select').click(function() {
+            toggleMultiSelectMode();
+        });
     });
+
+    let isMultiSelectMode = false;
+    let selectedProducts = [];
+    let pressTimer;
+
+    function toggleMultiSelectMode(forceState = null) {
+        if (forceState !== null) {
+            isMultiSelectMode = forceState;
+        } else {
+            isMultiSelectMode = !isMultiSelectMode;
+        }
+        
+        if (isMultiSelectMode) {
+            $('body').addClass('multi-select-mode');
+            $('#toggle-multi-select').addClass('active');
+            if (selectedProducts.length > 0) {
+                $('#bulk-action-bar').removeClass('d-none');
+            }
+        } else {
+            cancelMultiSelect();
+        }
+    }
+
+    function toggleProductSelection(pid, type) {
+        let index = selectedProducts.findIndex(p => p.id == pid && p.type == type);
+        if (index > -1) {
+            selectedProducts.splice(index, 1);
+            $(`.selectable-item[data-pid="${pid}"][data-ptype="${type}"]`).removeClass('selected-for-bulk');
+        } else {
+            selectedProducts.push({id: pid, type: type});
+            $(`.selectable-item[data-pid="${pid}"][data-ptype="${type}"]`).addClass('selected-for-bulk');
+        }
+        
+        if (selectedProducts.length > 0) {
+            $('#bulk-count-text').text(`${selectedProducts.length} item${selectedProducts.length>1?'s':''} selected`);
+            $('#bulk-action-bar').removeClass('d-none');
+        } else {
+            $('#bulk-action-bar').addClass('d-none');
+        }
+    }
+
+    window.cancelMultiSelect = function() {
+        isMultiSelectMode = false;
+        selectedProducts = [];
+        $('body').removeClass('multi-select-mode');
+        $('#toggle-multi-select').removeClass('active');
+        $('.selectable-item').removeClass('selected-for-bulk');
+        $('#bulk-action-bar').addClass('d-none');
+    };
+
+    window.openBulkModal = function() {
+        if (selectedProducts.length === 0) return;
+        
+        let html = '';
+        selectedProducts.forEach(sel => {
+            let product = products.find(p => p.id == sel.id && p.item_type == sel.type);
+            if (!product) return;
+            let defaultPrice = getPriceForCustomer(product);
+            
+            html += `
+            <tr data-pid="${sel.id}" data-ptype="${sel.type}">
+                <td class="align-middle">
+                    <div class="font-weight-bold text-truncate" style="max-width: 250px;" title="${product.title}">${product.title}</div>
+                    <small class="text-muted">Stock: ${product.stock || 'N/A'}</small>
+                </td>
+                <td class="align-middle">
+                    <input type="number" class="form-control form-control-sm text-center bulk-qty-input font-weight-bold" value="1" min="1" step="1">
+                </td>
+                <td class="align-middle">
+                    <input type="number" class="form-control form-control-sm text-right bulk-price-input text-success font-weight-bold" value="${defaultPrice}" step="0.01">
+                </td>
+                <td class="align-middle text-center">
+                    <button type="button" class="btn btn-sm btn-link text-danger" onclick="removeBulkItem(${sel.id}, '${sel.type}', this)"><i class="fas fa-times"></i></button>
+                </td>
+            </tr>
+            `;
+        });
+        
+        $('#bulk-add-tbody').html(html);
+        $('#bulkAddModal').modal('show');
+    };
+
+    window.removeBulkItem = function(pid, type, btnElement) {
+        let index = selectedProducts.findIndex(p => p.id == pid && p.type == type);
+        if (index > -1) {
+            selectedProducts.splice(index, 1);
+            $(`.selectable-item[data-pid="${pid}"][data-ptype="${type}"]`).removeClass('selected-for-bulk');
+        }
+        $(btnElement).closest('tr').remove();
+        
+        $('#bulk-count-text').text(`${selectedProducts.length} item${selectedProducts.length>1?'s':''} selected`);
+        if (selectedProducts.length === 0) {
+            $('#bulkAddModal').modal('hide');
+            $('#bulk-action-bar').addClass('d-none');
+        }
+    };
+
+    $('#confirm-bulk-add').click(function() {
+        let addedCount = 0;
+        $('#bulk-add-tbody tr').each(function() {
+            let pid = $(this).data('pid');
+            let type = $(this).data('ptype');
+            let qty = parseFloat($(this).find('.bulk-qty-input').val());
+            let price = parseFloat($(this).find('.bulk-price-input').val());
+            
+            if (qty > 0) {
+                let product = products.find(p => p.id == pid && p.item_type == type);
+                if (product) {
+                    let cartId = type + '-' + pid;
+                    let item = cart.find(i => i.unique_id == cartId);
+                    let defaultPrice = getPriceForCustomer(product);
+
+                    if (item) {
+                        item.qty += qty;
+                        item.price = price;
+                        item.original_price = Math.max(price, item.base_price);
+                    } else {
+                        let cartItem = {
+                            unique_id: cartId,
+                            id: product.id,
+                            type: type,
+                            title: product.title,
+                            brand: product.brand ? product.brand.title : '',
+                            model: product.model || '',
+                            base_price: defaultPrice,
+                            original_price: Math.max(price, defaultPrice),
+                            price: price,
+                            qty: qty,
+                            unit: product.unit,
+                            last_purchase: null
+                        };
+                        cart.push(cartItem);
+                        fetchLastPurchase(cartItem);
+                    }
+                    addedCount++;
+                }
+            }
+        });
+        
+        if (addedCount > 0) {
+            renderCart();
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            Toast.fire({
+                icon: 'success',
+                title: `Added ${addedCount} items to cart`
+            });
+        }
+        
+        $('#bulkAddModal').modal('hide');
+        cancelMultiSelect();
+    });
+
+    window.handleProductClick = function(pid, type, event) {
+        if (isMultiSelectMode) {
+            toggleProductSelection(pid, type);
+        } else {
+            addToCart(pid, type, event);
+        }
+    };
 
     function fetchProducts(query = null, triggerSuggestions = false, updateGrid = true) {
         if (query === null) query = $('#product-search').val();
@@ -1598,10 +1849,13 @@
                 ? '/admin/product-bundles/' + p.id + '/edit'
                 : '/admin/product/' + p.id + '/edit';
 
+            let isSelected = selectedProducts.find(s => s.id == p.id && s.type == p.item_type) ? 'selected-for-bulk' : '';
+
             if (viewMode === 'list') {
                 html += `
                 <div class="col-12 mb-2 px-2">
-                    <div class="card pos-list-item shadow-sm cursor-pointer" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                    <div class="card pos-list-item shadow-sm selectable-item cursor-pointer ${isSelected}" data-pid="${p.id}" data-ptype="${p.item_type}" onclick="handleProductClick(${p.id}, '${p.item_type}', event)">
+                        <i class="fas fa-check-circle selected-checkmark"></i>
                         <div class="card-body p-2 d-flex justify-content-between align-items-center">
                             <div class="d-flex flex-column" style="max-width: 65%; overflow: hidden;">
                                 <div class="d-flex align-items-center" style="gap: 6px; white-space: nowrap;">
@@ -1632,7 +1886,8 @@
             } else {
                 html += `
                     <div class="col-xl-8-grid mb-3 px-2">
-                        <div class="card product-grid-card shadow-sm cursor-pointer position-relative" onclick="addToCart(${p.id}, '${p.item_type}', event)">
+                        <div class="card product-grid-card shadow-sm selectable-item cursor-pointer position-relative ${isSelected}" data-pid="${p.id}" data-ptype="${p.item_type}" onclick="handleProductClick(${p.id}, '${p.item_type}', event)">
+                            <i class="fas fa-check-circle selected-checkmark"></i>
                             <div class="price-tag-elite">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
                             <div class="stock-tag-elite ${p.stock <= 5 ? 'text-danger' : ''}">${p.stock}</div>
                             <img src="${photoSrc}" class="thumbnail-elite" alt="Product Image" onerror="this.src='{{asset('backend/img/thumbnail-default.jpg')}}'">
@@ -1662,6 +1917,23 @@
             }
         });
         $('#products-grid').html(html || '<div class="col-12 text-center py-5"><h5 class="text-muted">No items match your search</h5></div>');
+        bindLongPress();
+    }
+
+    function bindLongPress() {
+        $('.selectable-item').off('touchstart mousedown touchend mouseup mouseleave');
+        $('.selectable-item').on('touchstart mousedown', function(e) {
+            let pid = $(this).data('pid');
+            let type = $(this).data('ptype');
+            pressTimer = window.setTimeout(function() {
+                if (!isMultiSelectMode) {
+                    toggleMultiSelectMode(true);
+                }
+                toggleProductSelection(pid, type);
+            }, 500);
+        }).on('touchend mouseup mouseleave', function(e) {
+            clearTimeout(pressTimer);
+        });
     }
 
     function showProductHistory(pid, type) {
