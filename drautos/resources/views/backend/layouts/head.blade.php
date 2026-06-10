@@ -1060,6 +1060,42 @@
                 .order-detail-to-cards tr:not(.expanded) td:nth-child(4) {
                     display: none !important;
                 }
+                
+                /* -------------------------------------------
+                   MANUFACTURING BOM ITEMS (order-table-to-cards bom-table-to-cards)
+                   Cols: 1:BOM#, 2:Product, 3:Batch Qty, 4:Total Cost/Unit, 5:Status, 6:Actions
+                   ------------------------------------------- */
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(2) { 
+                    flex: 2; 
+                    display: flex !important; 
+                    flex-direction: column; 
+                    justify-content: center;
+                    white-space: normal;
+                    line-height: 1.2;
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                }
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(5) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(6) { 
+                    flex: 1; 
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: flex-end;
+                }
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(1),
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(3),
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(4) {
+                    display: none !important;
+                }
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(6) .act-clone,
+                .bom-table-to-cards tr:not(.expanded) td:nth-child(6) .act-delete { 
+                    display: none !important; 
+                }
             }
         
         /* Aggressive Global Notification & Dropdown Z-Index Fix */
