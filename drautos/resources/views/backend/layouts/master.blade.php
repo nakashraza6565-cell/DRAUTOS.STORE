@@ -188,7 +188,8 @@
           // Ledger & Order Table Accordion Logic
           $(document).on('click', '.ledger-table-to-cards tr, .order-table-to-cards tr', function(e) {
               // Prevent expanding/collapsing if clicking on an interactive element
-              if ($(e.target).closest('button, a, input, select, form').length > 0) return;
+              // (Removed 'form' from this list because the entire table might be wrapped in a form)
+              if ($(e.target).closest('button, a, input, select, textarea').length > 0) return;
               
               // Toggle this row
               $(this).toggleClass('expanded');
