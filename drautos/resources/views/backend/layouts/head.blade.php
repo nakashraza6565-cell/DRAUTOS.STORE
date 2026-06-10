@@ -765,7 +765,31 @@
                 .order-table-to-cards { display: block !important; width: 100% !important; border: none !important; margin: 0 !important; }
                 .order-table-to-cards thead { display: none !important; }
                 .order-table-to-cards tbody { display: block !important; width: 100% !important; }
-                .order-table-to-cards tr {
+                .order-table-to-cards tfoot { display: block !important; width: 100% !important; background: #fff !important; }
+                .order-table-to-cards tfoot tr {
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    padding: 8px 12px !important;
+                    background: #fff !important;
+                    border: none !important;
+                    border-bottom: 1px solid #f1f5f9 !important;
+                    margin: 0 !important;
+                    cursor: default !important;
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                }
+                .order-table-to-cards tfoot td {
+                    display: inline-block !important;
+                    width: auto !important;
+                    padding: 0 !important;
+                    border: none !important;
+                    background: transparent !important;
+                    text-align: left !important;
+                }
+                .order-table-to-cards tfoot td:last-child {
+                    text-align: right !important;
+                }
+                .order-table-to-cards tbody tr {
                     display: flex !important;
                     flex-direction: row !important;
                     flex-wrap: nowrap !important;

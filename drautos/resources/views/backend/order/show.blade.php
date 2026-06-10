@@ -154,6 +154,7 @@
                                 </div>
                                 <div class="text-muted small" style="font-size: 0.7rem; opacity: 0.8;">
                                     SKU: {{ $cart->product->sku ?? ($cart->bundle->sku ?? 'N/A') }}
+                                    <span class="d-inline-block d-md-none ml-2 text-dark" style="font-weight: 600;">Rs. {{number_format($cart->price, 2)}}</span>
                                 </div>
                             </div>
                         </td>
