@@ -1853,32 +1853,28 @@
 
             if (viewMode === 'list') {
                 html += `
-                <div class="col-12 mb-2 px-2">
-                    <div class="card pos-list-item shadow-sm selectable-item cursor-pointer ${isSelected}" data-pid="${p.id}" data-ptype="${p.item_type}" onclick="handleProductClick(${p.id}, '${p.item_type}', event)">
+                <div class="col-12 mb-1 px-1">
+                    <div class="card pos-list-item shadow-sm selectable-item cursor-pointer ${isSelected}" data-pid="${p.id}" data-ptype="${p.item_type}" onclick="handleProductClick(${p.id}, '${p.item_type}', event)" style="border-radius: 6px;">
                         <i class="fas fa-check-circle selected-checkmark"></i>
-                        <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                            <div class="d-flex flex-column" style="max-width: 65%; overflow: hidden;">
-                                <div class="d-flex align-items-center" style="gap: 6px; white-space: nowrap;">
-                                    ${itemTypeBadge}
-                                    <div class="font-weight-bold text-dark text-truncate" style="font-size: 14px;" title="${p.title}">${p.title}</div>
-                                </div>
-                                <div class="text-muted text-truncate" style="font-size: 11px;">
-                                    ${brandName} | ${modelName} ${p.sku ? ' | SKU: ' + p.sku : ''}
-                                </div>
+                        <div class="card-body p-2 d-flex align-items-center m-0" style="gap: 8px; overflow: hidden; white-space: nowrap;">
+                            ${itemTypeBadge}
+                            <div class="font-weight-bold text-dark text-truncate" style="font-size: 13px; flex: 2; min-width: 120px;" title="${p.title}">${p.title}</div>
+                            <div class="text-muted text-truncate d-none d-md-block" style="font-size: 11px; flex: 2;">
+                                ${brandName} ${p.sku ? '| ' + p.sku : ''}
                             </div>
-                            <div class="d-flex align-items-center text-right" style="gap: 15px;">
-                                <div class="d-flex flex-column text-right">
-                                    <div class="font-weight-bold text-success" style="font-size: 15px;">Rs. ${Math.round(displayPrice).toLocaleString()}</div>
-                                    <div class="text-muted" style="font-size: 11px;">Stock: <span class="${p.stock <= 5 ? 'text-danger font-weight-bold' : ''}">${p.stock}</span></div>
-                                </div>
-                                <div class="d-flex flex-column" style="gap: 4px;">
-                                    <button class="btn btn-sm btn-light border shadow-sm" style="width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
-                                        <i class="fas fa-edit text-primary" style="font-size: 10px;"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-info border-0 shadow-sm" style="width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
-                                        <i class="fas fa-info text-white" style="font-size: 10px;"></i>
-                                    </button>
-                                </div>
+                            <div class="text-muted text-center" style="font-size: 12px; width: 70px;">
+                                <span class="${p.stock <= 5 ? 'text-danger font-weight-bold' : 'font-weight-bold'}">${p.stock}</span>
+                            </div>
+                            <div class="font-weight-bold text-success text-right" style="font-size: 14px; width: 90px;">
+                                ${Math.round(displayPrice).toLocaleString()}
+                            </div>
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <button class="btn btn-sm btn-light border shadow-sm" style="width: 24px; height: 24px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); openEditModal(${p.id}, '${p.item_type}');" title="Quick Edit">
+                                    <i class="fas fa-edit text-primary" style="font-size: 10px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-info border-0 shadow-sm" style="width: 24px; height: 24px; padding: 0; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); showProductHistory(${p.id}, '${p.item_type}');" title="Selling History">
+                                    <i class="fas fa-info text-white" style="font-size: 10px;"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
