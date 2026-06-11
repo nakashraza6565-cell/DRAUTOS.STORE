@@ -864,6 +864,8 @@ $(document).on('click', '#save-customer-btn', function() {
             error: function(err) {
                 Swal.fire('Error', 'Failed to add customer', 'error');
             }
+        });
+    });
     window.fetchLastPurchase = function(cartItem) {
         let customer_id = $('#customer-select').val();
         if (!customer_id || customer_id == 1) return; // Skip walk-in
