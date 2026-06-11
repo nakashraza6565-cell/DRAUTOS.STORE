@@ -28,7 +28,7 @@
             <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
             @foreach($customers as $customer)
             <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
-                {{$customer->name}}
+                {{$customer->name}} ({{$customer->phone ?? 'N/A'}}) | Bal: Rs. {{ number_format($customer->current_balance ?? 0, 2) }}
             </option>
             @endforeach
         </select>
