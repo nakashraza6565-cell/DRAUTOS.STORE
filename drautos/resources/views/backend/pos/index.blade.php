@@ -51,7 +51,39 @@
     <span class="font-weight-bold text-primary" id="bulk-count-text">0 items selected</span>
     <button class="btn btn-sm btn-success rounded-pill font-weight-bold px-3 shadow" onclick="openBulkModal()"><i class="fas fa-cart-plus mr-1"></i> Add to Cart</button>
     <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="cancelMultiSelect()">Cancel</button>
-</div><!-- Add Product Modal -->
+</div><!-- Bulk Add Modal -->
+<div class="modal fade" id="bulkAddModal" tabindex="-1" role="dialog" style="z-index: 10500;">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-success text-white border-0 py-3">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-cart-plus mr-2"></i>Bulk Add to Cart</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0" style="background: #f8fafc;">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="font-size: 0.95rem;">
+                        <thead style="background: #e2e8f0; border-bottom: 2px solid #cbd5e1;">
+                            <tr>
+                                <th class="font-weight-bold text-dark border-0">Product</th>
+                                <th class="text-center font-weight-bold text-dark border-0" width="120">Qty</th>
+                                <th class="text-right font-weight-bold text-dark border-0" width="150">Price</th>
+                                <th class="text-center font-weight-bold text-dark border-0" width="60"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulk-add-tbody" class="bg-white">
+                            <!-- Items injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-top bg-light py-3">
+                <button type="button" class="btn btn-outline-secondary font-weight-bold rounded-pill px-4" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success font-weight-bold rounded-pill px-5 shadow-sm" id="confirm-bulk-add">Confirm Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

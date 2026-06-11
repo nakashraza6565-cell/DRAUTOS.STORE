@@ -799,6 +799,9 @@
                     }
 
                     shareReceiptPromise.then(() => {
+                        window.posCart = [];
+                        localStorage.removeItem('posCart');
+                        window.saveCart && window.saveCart();
                         if (response.wa_sent) {
                             Swal.fire({
                                 title: 'Success!',
