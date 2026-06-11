@@ -32,10 +32,6 @@
                     <button type="button" data-toggle="modal" data-target="#addProductModal" class="btn btn-white btn-sm px-3 shadow-sm border d-flex align-items-center justify-content-center" style="border-radius: 100px; font-weight: 700; color: #475569; height: 45px; min-width: 45px;">
                         <i class="fas fa-plus text-primary mr-md-2"></i> <span class="d-none d-md-inline">NEW ITEM</span>
                     </button>
-                    <button class="btn btn-primary btn-sm px-3 shadow-primary position-relative d-flex align-items-center justify-content-center" id="toggle-cart" style="border-radius: 100px; font-weight: 700; height: 45px; background-color: #f97316 !important; border-color: #f97316 !important; color: #fff !important; min-width: 45px;">
-                        <i class="fas fa-shopping-basket mr-md-2"></i> <span class="d-none d-md-inline">CART</span>
-                        <span class="badge badge-danger position-absolute" id="cart-badge" style="top: -5px; right: 5px; font-size: 10px; border: 2px solid #fff;">0</span>
-                    </button>
                 </div>
             </div>
 
@@ -44,63 +40,6 @@
                 <!-- Products will be loaded here via AJAX -->
                 <div class="col-12 text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right: Checkout Sidebar (Offcanvas Style) -->
-        <div class="pos-sidebar bg-white border-left d-flex flex-column p-0 h-100 shadow-lg" id="checkout-sidebar">
-            <!-- Sidebar Header -->
-            <div class="p-3 bg-dark text-white d-flex align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold"><i class="fas fa-shopping-basket mr-2"></i> Current Order</h6>
-                <button class="btn btn-sm btn-link text-white p-0" id="close-sidebar"><i class="fas fa-times fa-lg"></i></button>
-            </div>
-
-            <!-- Customer Section -->
-            <div class="p-3 border-bottom" style="background: #f8fafc;">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="small font-weight-bold text-muted">Customer</span>
-                    <button class="btn btn-sm btn-link text-primary p-0" data-toggle="modal" data-target="#addCustomerModal"><i class="fas fa-plus-circle fa-lg"></i></button>
-                </div>
-                <select class="form-control select2" id="customer-select">
-                    <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
-                    @foreach($customers as $customer)
-                    <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
-                        {{$customer->name}}
-                    </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Current Order List -->
-            <div class="flex-grow-1 overflow-auto p-2 custom-scrollbar bg-white" id="cart-items">
-                <!-- Cart items here -->
-                <div class="text-center py-5 text-muted opacity-5">
-                    <i class="fas fa-shopping-cart fa-3x mb-3"></i>
-                    <p class="small">Cart is empty</p>
-                </div>
-            </div>
-
-            <!-- Summary & Actions -->
-            <div class="p-2 bg-white border-top shadow-sm" style="margin-top: auto;">
-                <div class="summary-box px-3 py-2 rounded-lg mb-2" style="background: #f8fafc; border: 1px solid #f1f5f9;">
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 11px;">
-                        <span class="text-muted">Items: <span class="font-weight-bold text-dark" id="items-count">0</span></span>
-                        <span class="text-muted">Sub: <span class="font-weight-bold text-dark" id="subtotal-val">0.00</span></span>
-                        <span class="text-muted">Disc: <span class="font-weight-bold text-danger" id="discount-val">0.00</span></span>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top">
-                        <span class="small font-weight-bold">Payable</span>
-                        <span class="h6 m-0 text-success font-weight-bold" id="total-val">0.00</span>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-center" style="gap: 5px;">
-                    <button class="btn btn-light btn-sm px-3" id="park-order" title="Park Order" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-pause text-muted"></i></button>
-                    <button class="btn btn-light btn-sm px-3" id="clear-cart" title="Clear Cart" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-trash-alt text-danger"></i></button>
-                    <button class="btn btn-success btn-sm flex-grow-1 font-weight-bold shadow-sm animated-pulse" data-toggle="modal" data-target="#paymentModal" style="height: 38px; border-radius: 8px; font-size: 13px;">
-                        <i class="fas fa-check-circle mr-1"></i> CHECKOUT
-                    </button>
                 </div>
             </div>
         </div>
@@ -114,58 +53,8 @@
     <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="cancelMultiSelect()">Cancel</button>
 </div>
 
-<!-- Add Customer Modal -->
-<div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add New Customer</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="add-customer-form">
-                    @csrf
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Customer Type</label>
-                        <select name="customer_type" class="form-control">
-                            <option value="retail">Retail Customer</option>
-                            <option value="wholesale">Wholesale Customer</option>
-                            <option value="salesman">Salesman</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone</label>
-                        <input type="text" name="phone" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>City</label>
-                        <select name="city" id="customer-city-select" class="form-control" style="width: 100%;">
-                            <option value="">Select or Type City</option>
-                            @foreach($cities as $city)
-                            <option value="{{$city}}">{{$city}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Address</label>
-                        <textarea name="address" class="form-control" rows="2"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="save-customer-btn">Save Customer</button>
-            </div>
-        </div>
-    </div>
 </div>
+
 <!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -427,175 +316,7 @@
 
 @include('backend.product.partials.modals')
 
-<!-- Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title font-weight-bold">Select Payment Method</h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="row no-gutters">
-                    <!-- Left Side: Order Summary -->
-                    <div class="col-md-5 bg-light p-4 border-right">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-receipt fa-3x text-muted mb-2"></i>
-                            <h5 class="text-uppercase small font-weight-bold text-muted mb-1">Total Payable</h5>
-                            <h2 class="font-weight-bold text-dark total-payable">Rs. 0.00</h2>
-                        </div>
-
-                        <div class="px-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted small">Total Items</span>
-                                <span class="font-weight-bold" id="modal-items-count">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted small">Ledger Balance</span>
-                                <span class="font-weight-bold text-info" id="modal-ledger-balance">Rs. 0.00</span>
-                            </div>
-                            <hr>
-                            <div class="form-group mb-0" id="due-date-wrapper" style="display: none;">
-                                <label class="small font-weight-bold text-uppercase text-danger">Payment Due Date</label>
-                                <input type="date" class="form-control form-control-sm border-0 shadow-none bg-white" id="payment-due-date" value="{{ date('Y-m-d', strtotime('+7 days')) }}">
-                                <small class="text-muted" style="font-size: 10px;">For partial/credit payments</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Side: Payment Methods -->
-                    <div class="col-md-7 p-4 bg-white">
-                        <label class="font-weight-bold text-uppercase small text-muted mb-2 d-block">Select Payment Method</label>
-
-                        <!-- Filter Bar -->
-                        <div class="d-flex mb-3 align-items-center" style="gap: 6px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
-                            <button type="button" class="btn btn-sm btn-outline-success filter-btn px-3 font-weight-bold" data-filter="cash" style="border-radius: 20px;"><i class="fas fa-money-bill-wave mr-1"></i> Cash</button>
-                            <button type="button" class="btn btn-sm btn-outline-primary filter-btn px-3 font-weight-bold" data-filter="bank" style="border-radius: 20px;"><i class="fas fa-university mr-1"></i> Bank</button>
-                            <button type="button" class="btn btn-sm btn-outline-warning filter-btn px-3 font-weight-bold" data-filter="wallet" style="border-radius: 20px;"><i class="fas fa-mobile-alt mr-1"></i> Wallets</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger filter-btn px-3 font-weight-bold" data-filter="credit" style="border-radius: 20px;"><i class="fas fa-user-clock mr-1"></i> Credit</button>
-                        </div>
-
-                        <div class="row no-gutters mb-4" id="payment-methods-grid">
-                            <!-- Show Active Cash Register as first option if exists -->
-                            @php
-                                $activeReg = \App\Models\CashRegister::where('status', 'open')->where('user_id', auth()->id())->first();
-                                $activeAccountId = $activeReg ? $activeReg->financial_account_id : null;
-                            @endphp
-                            
-                            @foreach($accounts as $acc)
-                                <div class="col-6 p-1 payment-method-item filter-all filter-{{$acc->type}}">
-                                    <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all {{ $acc->id == $activeAccountId ? 'active' : '' }}" 
-                                         data-method="{{ $acc->id }}" 
-                                         data-is-cash="{{ $acc->type == 'cash' ? 'yes' : 'no' }}">
-                                        <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
-                                        <i class="fas fa-{{$acc->type == 'bank' ? 'university' : ($acc->type == 'wallet' ? 'mobile-alt' : 'money-bill-wave')}} fa-lg text-{{$acc->type == 'cash' ? 'success' : ($acc->type == 'wallet' ? 'warning' : 'primary')}} mb-2"></i>
-                                        <div class="small font-weight-bold text-uppercase">{{$acc->name}}</div>
-                                        <div style="font-size: 10px;" class="text-muted">Bal: Rs. {{ number_format($acc->current_balance, 0) }}</div>
-                                    </div>
-                                </div>
-                            @endforeach
-
-                            <div class="col-6 p-1 payment-method-item filter-all filter-credit">
-                                <div class="payment-option p-3 border rounded text-center cursor-pointer position-relative transition-all" data-method="credit">
-                                    <div class="check-mark"><i class="fas fa-check-circle text-success"></i></div>
-                                    <i class="fas fa-user-clock fa-lg text-danger mb-2"></i>
-                                    <div class="small font-weight-bold">CREDIT SALE</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Amount Received & Discount -->
-                        <div id="amount-input-wrapper" style="display: none;" class="animated fadeIn">
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold text-uppercase small text-success">Amount Received</label>
-                                <div class="input-group input-group-lg border rounded overflow-hidden shadow-sm">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white border-0">Rs.</span>
-                                    </div>
-                                    <input type="number" class="form-control border-0 shadow-none font-weight-bold" id="amount-received" placeholder="0.00">
-                                </div>
-                            </div>
-
-                            <div class="form-group mb-0">
-                                <label class="font-weight-bold text-uppercase small text-danger">Order Discount</label>
-                                <div class="input-group input-group-lg border rounded overflow-hidden shadow-sm">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white border-0">Rs.</span>
-                                    </div>
-                                    <input type="number" class="form-control border-0 shadow-none font-weight-bold text-danger" id="order-discount" placeholder="0.00" value="0">
-                                </div>
-                                <small class="text-muted" style="font-size: 11px;">Final discount applied to total payable.</small>
-                                <div id="partial-info" class="mt-2 small text-warning font-weight-bold" style="display:none;">
-                                    <i class="fas fa-exclamation-triangle mr-1"></i> Partial Payment
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0 p-4">
-                <div class="custom-control custom-checkbox mr-auto d-flex flex-column align-items-start" style="gap: 4px; padding-left: 0;">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="print-receipt-toggle">
-                        <label class="custom-control-label font-weight-bold text-success" for="print-receipt-toggle" style="cursor: pointer;">
-                            <i class="fas fa-print mr-1"></i> Print Thermal Receipt
-                        </label>
-                    </div>
-                    <div class="custom-control custom-checkbox mt-1" id="urdu-print-container" style="display: none; padding-left: 1.5rem;">
-                        <input type="checkbox" class="custom-control-input" id="print-receipt-urdu">
-                        <label class="custom-control-label font-weight-bold text-info" for="print-receipt-urdu" style="cursor: pointer;">
-                            <i class="fas fa-language mr-1"></i> Translate to Urdu (اردو)
-                        </label>
-                    </div>
-                    <div class="custom-control custom-checkbox mt-1">
-                        <input type="checkbox" class="custom-control-input" id="share-receipt-toggle" checked>
-                        <label class="custom-control-label font-weight-bold text-primary" for="share-receipt-toggle" style="cursor: pointer;">
-                            <i class="fas fa-share-nodes mr-1"></i> Share Invoice
-                        </label>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success btn-lg px-5 shadow" id="complete-order">SAVE ORDER</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Bulk Add Modal -->
-<div class="modal fade" id="bulkAddModal" tabindex="-1" role="dialog" data-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title font-weight-bold"><i class="fas fa-boxes mr-2"></i> Bulk Add Items</h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>Product</th>
-                                <th class="text-center" style="width: 150px;">Quantity</th>
-                                <th class="text-right" style="width: 150px;">Unit Price (Rs)</th>
-                                <th class="text-center" style="width: 50px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="bulk-add-tbody">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer bg-light border-0">
-                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success px-5 font-weight-bold shadow" id="confirm-bulk-add"><i class="fas fa-check-circle mr-2"></i> Confirm Add to Cart</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Hidden Iframe for Printing -->
-<iframe id="print-iframe" style="display:none;"></iframe>
 
 <style>
     .pos-sidebar {
@@ -2133,7 +1854,7 @@
                     price
                 } = result.value;
                 let cartId = type + '-' + pid;
-                let item = cart.find(i => i.unique_id == cartId);
+                let item = window.posCart.find(i => i.unique_id == cartId);
 
                 if (item) {
                     item.qty += qty;
@@ -2154,10 +1875,10 @@
                         unit: product.unit,
                         last_purchase: null
                     };
-                    cart.push(cartItem);
-                    fetchLastPurchase(cartItem);
+                    window.posCart.push(cartItem);
+                    fetchLastPurchase(cartItem); // from global
                 }
-                renderCart();
+                saveCart(); // from global
 
                 // Success Toast
                 const Toast = Swal.mixin({
@@ -2174,235 +1895,6 @@
             }
         });
     }
-
-    function fetchLastPurchase(cartItem) {
-        let customer_id = $('#customer-select').val();
-        if (!customer_id || customer_id == 1) return; // Skip walk-in
-
-        $.ajax({
-            url: "{{route('pos.last-purchase')}}",
-            data: {
-                customer_id: customer_id,
-                item_type: cartItem.type,
-                item_id: cartItem.id
-            },
-            success: function(res) {
-                if (res.found) {
-                    cartItem.last_purchase = `Bought ${res.quantity} at Rs.${res.price} on ${res.date}`;
-                    renderCart();
-
-                    Swal.fire({
-                        title: 'Purchase History Found!',
-                        html: `<b>Customer previously bought this item.</b><br><br>
-                               Date: <b>${res.date}</b><br>
-                               Quantity: <b>${res.quantity}</b><br>
-                               Price Paid: <b style="color: green;">Rs. ${res.price}</b>`,
-                        icon: 'info',
-                        position: 'top',
-                        toast: true,
-                        showConfirmButton: false,
-                        timer: 5000
-                    });
-                }
-            }
-        });
-    }
-
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        renderCart();
-    }
-
-    window.updatePrice = function(index, val) {
-        let p = parseFloat(val);
-        p = isNaN(p) ? 0 : p;
-        cart[index].price = p;
-
-        // If the new price is higher than the customer's pricing strategy base price,
-        // we override the original_price so there is no negative discount.
-        // If it's lower, we keep the base_price as original so it reflects as a discount.
-        if (p > cart[index].base_price) {
-            cart[index].original_price = p;
-        } else {
-            cart[index].original_price = cart[index].base_price;
-        }
-
-        renderCart();
-    };
-
-    function updateQty(index, val) {
-        cart[index].qty = Math.max(1, parseInt(val));
-        renderCart();
-    }
-
-    function renderCart() {
-        let html = '';
-        let subtotal = 0;
-        let totalDiscount = 0;
-
-        if (cart.length == 0) {
-            $('#cart-items').html('<div class="text-center py-5 text-muted"><i class="fas fa-shopping-basket fa-3x mb-3 opacity-2"></i><p>Current order is empty</p></div>');
-            updateSummary(0, 0, 0);
-            return;
-        }
-
-        cart.forEach((item, index) => {
-            let lineOriginalTotal = item.original_price * item.qty;
-            let lineActualTotal = item.price * item.qty;
-            subtotal += lineOriginalTotal;
-            totalDiscount += (lineOriginalTotal - lineActualTotal);
-
-
-            html += `
-                <div class="cart-item d-flex align-items-center p-2 mb-1 border-bottom" style="background: #fff; min-height: 45px;">
-                    <div class="flex-grow-1 min-width-0">
-                        <div class="d-flex align-items-center flex-wrap overflow-hidden">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="font-weight-bold m-0 text-dark text-truncate" style="font-size: 13px; line-height: 1.1; max-width: 85%;">${item.title}</h6>
-                                <button class="btn btn-sm btn-info p-0 d-flex align-items-center justify-content-center shadow-sm" 
-                                    style="width: 18px; height: 18px; border-radius: 4px; font-size: 10px;" 
-                                    onclick="showProductHistory(${item.id}, '${item.type}')" title="Selling History">
-                                    <i class="fas fa-info-circle text-white" style="font-size: 10px;"></i>
-                                </button>
-                            </div>
-                            ${item.last_purchase ? `<div class="w-100 mt-1 mb-1"><span class="badge badge-soft-info" style="font-size: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 6px; border-radius: 4px;"><i class="fas fa-history mr-1"></i>${item.last_purchase}</span></div>` : ''}
-                        </div>
-                        <div class="d-flex align-items-center mt-1" style="gap: 4px;">
-                            <div class="price-cell-sleek d-flex align-items-center border rounded px-1 bg-light-soft" style="border-color: #e2e8f0 !important; height: 22px;">
-                                <span class="text-muted" style="font-size: 9px; margin-right: 2px;">Rs.</span>
-                                <input type="number" step="0.01" class="border-0 bg-transparent p-0 font-weight-bold text-dark" value="${item.price}" style="width: 52px; font-size: 12px; outline: none; box-shadow: none;" onchange="updatePrice(${index}, this.value)">
-                            </div>
-                            <span class="text-muted small ml-1" style="font-size: 10px; opacity: 0.8;">x ${item.qty} ${item.unit || ''}</span>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center" style="gap: 8px;">
-                        <div class="qty-cell-sleek d-flex align-items-center border rounded bg-light-soft" style="border-color: #e2e8f0 !important; height: 22px; padding: 0 2px;">
-                            <button class="btn btn-link p-0 text-muted" onclick="updateQty(${index}, ${item.qty - 1})" style="width: 16px;"><i class="fas fa-minus fa-xs"></i></button>
-                            <input type="number" class="border-0 bg-transparent text-center font-weight-bold p-0 mx-1 text-dark" value="${item.qty}" style="width: 30px; font-size: 12px; outline: none; box-shadow: none;" onchange="updateQty(${index}, this.value)">
-                            <button class="btn btn-link p-0 text-muted" onclick="updateQty(${index}, ${item.qty + 1})" style="width: 16px;"><i class="fas fa-plus fa-xs"></i></button>
-                        </div>
-                        <div class="text-right" style="min-width: 65px;">
-                            <span class="font-weight-bold text-success" style="font-size: 13.5px;">Rs.${lineActualTotal.toLocaleString()}</span>
-                        </div>
-                        <button class="btn btn-link text-danger p-0 border-0" onclick="removeFromCart(${index})" style="font-size: 14px; opacity: 0.7;">
-                            <i class="fas fa-times-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
-        $('#cart-items').html(html);
-        updateSummary(subtotal, totalDiscount, cart.length);
-    }
-
-    function updateSummary(subtotal, discount, count) {
-        let total = subtotal - discount;
-        $('#items-count').text(count);
-        $('#modal-items-count').text(count); // NEW
-        $('#subtotal-val').text('Rs. ' + subtotal.toFixed(2));
-        $('#discount-val').text('Rs. ' + discount.toFixed(2));
-        $('#total-val').text('Rs. ' + total.toFixed(2));
-        $('.total-payable').text('Rs. ' + total.toFixed(2));
-
-        // Update Toggle Badge
-        if (count > 0) {
-            $('#cart-badge').text(count).show();
-            $('#toggle-cart').addClass('animated-pulse');
-        } else {
-            $('#cart-badge').hide();
-            $('#toggle-cart').removeClass('animated-pulse');
-        }
-    }
-
-    $('.payment-option').on('click', function() {
-        $('.payment-option').removeClass('active');
-        $(this).addClass('active');
-
-        let method = $(this).data('method');
-        
-        // Show/Hide Due Date for Credit Sale
-        if (method === 'credit') {
-            $('#due-date-wrapper').fadeIn();
-            $('#amount-received').val(0).trigger('input');
-        } else {
-            $('#due-date-wrapper').fadeOut();
-            if ($('#amount-received').val() == 0) {
-                $('#amount-received').val('').trigger('input');
-            }
-        }
-
-        // Show amount received input with animation
-        $('#amount-input-wrapper').show();
-        $('#amount-received').focus();
-    });
-
-    $('#amount-received, #order-discount').on('input', function() {
-        // 1. Get original cart total (Subtotal - Line Item Discounts)
-        let subtotal = parseFloat($('#subtotal-val').text().replace('Rs. ', '')) || 0;
-        let lineDiscount = parseFloat($('#discount-val').text().replace('Rs. ', '')) || 0;
-        let originalTotal = subtotal - lineDiscount;
-
-        // 2. Apply Global Discount
-        let globalDiscount = parseFloat($('#order-discount').val()) || 0;
-        let newTotal = originalTotal - globalDiscount;
-
-        // 3. Update Displays
-        $('.total-payable').text('Rs. ' + newTotal.toFixed(2));
-        $('#total-val').text('Rs. ' + newTotal.toFixed(2));
-
-        // 4. Handle Partial Payment Info
-        let received = parseFloat($('#amount-received').val()) || 0;
-        if (received > 0 && received < newTotal) {
-            $('#partial-info').show();
-        } else {
-            $('#partial-info').hide();
-        }
-    });
-
-    $('#save-customer-btn').on('click', function() {
-        let form = $('#add-customer-form');
-        $.ajax({
-            url: "{{route('users.direct-store')}}",
-            type: "POST",
-            data: form.serialize() + "&role=user&status=active&password=password123",
-            dataType: "json",
-            success: function(response) {
-                if (typeof response === 'string') {
-                    try {
-                        response = JSON.parse(response);
-                    } catch (e) {}
-                }
-                let user = response.user || response.data || response;
-                let name = user.name || 'Unknown';
-                let phone = user.phone || 'N/A';
-
-                // Add new option with data-type and data-balance
-                let displayText = name + ' (' + phone + ') | Bal: Rs. 0.00';
-                let newOption = new Option(displayText, user.id, true, true);
-                $(newOption).attr('data-type', user.customer_type || 'retail');
-                $(newOption).attr('data-balance', 0);
-                $('#customer-select').append(newOption).trigger('change');
-                $('#addCustomerModal').modal('hide');
-                form[0].reset();
-                Swal.fire('Success', 'Customer Added', 'success');
-            },
-            error: function(err) {
-                console.log(err);
-                let errorMsg = 'Failed to add customer';
-                if (err.status === 422) {
-                    let errors = err.responseJSON.errors;
-                    errorMsg = Object.values(errors).flat().join('\n');
-                } else if (err.responseJSON && err.responseJSON.message) {
-                    errorMsg = err.responseJSON.message;
-                } else if (err.responseText) {
-                    errorMsg = "Server Error: " + err.responseText.substring(0, 150);
-                } else {
-                    errorMsg = "Server Error " + err.status;
-                }
-                Swal.fire('Error', errorMsg, 'error');
-            }
-        });
-    });
 
     // Save New Product logic
     $('#save-product-btn').on('click', function() {

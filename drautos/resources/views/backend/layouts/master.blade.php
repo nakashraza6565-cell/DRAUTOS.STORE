@@ -196,6 +196,7 @@
           });
       });
   </script>
+  @include('backend.layouts.cart_drawer')
   @include('backend.layouts.chat_widget')
 </body>
 </html>

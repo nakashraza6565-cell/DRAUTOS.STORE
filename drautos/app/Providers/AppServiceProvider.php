@@ -32,5 +32,14 @@ class AppServiceProvider extends ServiceProvider
         } else {
             \URL::forceScheme('http');
         }
+
+        \Illuminate\Support\Facades\View::composer('backend.layouts.cart_drawer', function ($view) {
+            $customers = \App\User::whereIn('role', ['user', 'customer'])->get();
+            $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+            $walkInUser = \App\User::where('email', 'walkin@pos.local')->first();
+            $walkInId = $walkInUser ? $walkInUser->id : 1;
+            
+            $view->with(compact('customers', 'accounts', 'walkInId'));
+        });
     }
 }
