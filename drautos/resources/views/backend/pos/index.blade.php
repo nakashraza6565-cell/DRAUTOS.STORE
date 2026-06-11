@@ -1831,12 +1831,24 @@
 
     function renderProducts() {
         let viewMode = localStorage.getItem('pos_view_mode') || 'grid';
+        let currentQuery = $('#product-search').val().trim();
+        let safeQuery = currentQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        let regex = safeQuery ? new RegExp(`(${safeQuery})`, 'gi') : null;
+
         let html = '';
         products.forEach(p => {
             let displayPrice = getPriceForCustomer(p);
             let itemTypeBadge = p.item_type == 'bundle' ? '<span class="badge badge-warning mb-1" style="font-size:8px; padding:1px 4px;">BUNDLE</span>' : '';
             let brandName = p.brand ? p.brand.title : 'GENERIC';
             let modelName = p.model || 'N/A';
+            
+            let displayTitle = p.title;
+            let displaySku = p.sku ? p.sku : '';
+            
+            if (regex && currentQuery.length > 0) {
+                displayTitle = p.title.replace(regex, '<mark class="bg-warning px-1 rounded text-dark" style="padding: 2px 0;">$1</mark>');
+                if (displaySku) displaySku = displaySku.replace(regex, '<mark class="bg-warning px-1 rounded text-dark" style="padding: 2px 0;">$1</mark>');
+            }
 
             let photoSrc = p.photo ? p.photo.split(',')[0].trim() : '';
             if (!photoSrc) {
@@ -1858,9 +1870,9 @@
                         <i class="fas fa-check-circle selected-checkmark"></i>
                         <div class="card-body p-2 d-flex align-items-center m-0" style="gap: 8px; overflow: hidden; white-space: nowrap;">
                             ${itemTypeBadge}
-                            <div class="font-weight-bold text-dark text-truncate" style="font-size: 13px; flex: 2; min-width: 120px;" title="${p.title}">${p.title}</div>
+                            <div class="font-weight-bold text-dark text-truncate" style="font-size: 13px; flex: 2; min-width: 120px;" title="${p.title}">${displayTitle}</div>
                             <div class="text-muted text-truncate d-none d-md-block" style="font-size: 11px; flex: 2;">
-                                ${brandName} ${p.sku ? '| ' + p.sku : ''}
+                                ${brandName} ${displaySku ? '| ' + displaySku : ''}
                             </div>
                             <div class="text-muted text-center" style="font-size: 12px; width: 70px;">
                                 <span class="${p.stock <= 5 ? 'text-danger font-weight-bold' : 'font-weight-bold'}">${p.stock}</span>
@@ -1891,7 +1903,7 @@
                             <div class="glass-overlay">
                                 ${itemTypeBadge}
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <div class="elite-title text-truncate" title="${p.title}" style="max-width: 85%; margin-bottom: 0;">${p.title}</div>
+                                    <div class="elite-title text-truncate" title="${p.title}" style="max-width: 85%; margin-bottom: 0;">${displayTitle}</div>
                                     <div class="d-flex" style="gap: 4px;">
                                         <button class="btn btn-sm btn-light shadow-sm" 
                                             style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background: rgba(255,255,255,0.9); z-index: 20;" 
