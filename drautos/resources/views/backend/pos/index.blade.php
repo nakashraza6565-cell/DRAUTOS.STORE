@@ -51,9 +51,7 @@
     <span class="font-weight-bold text-primary" id="bulk-count-text">0 items selected</span>
     <button class="btn btn-sm btn-success rounded-pill font-weight-bold px-3 shadow" onclick="openBulkModal()"><i class="fas fa-cart-plus mr-1"></i> Add to Cart</button>
     <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="cancelMultiSelect()">Cancel</button>
-</div>
-
-<!-- Add Product Modal -->
+</div><!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -887,7 +885,7 @@
 @push('scripts')
 <script src="{{asset('frontend/js/select2/js/select2.min.js')}}"></script>
 <script>
-    let cart = [];
+    
     let products = [];
 
     // Sales Order Integration
@@ -922,10 +920,10 @@
                 };
 
                 // Add to cart if not already there (though for SO we usually just push)
-                cart.push(cartItem);
+                window.posCart.push(cartItem);
             });
 
-            renderCart();
+            window.saveCart();
 
             if (soCustomerId) {
                 $('#customer-select').val(soCustomerId).trigger('change');
@@ -1153,8 +1151,8 @@
             fetchProducts();
 
             // Update cart items if customer changes (prices might change)
-            if (cart.length > 0) {
-                cart.forEach(item => {
+            if (window.posCart.length > 0) {
+                window.posCart.forEach(item => {
                     let product = products.find(p => p.id == item.id && p.item_type == item.type);
                     if (product) {
                         let newPrice = getPriceForCustomer(product);
@@ -1168,7 +1166,7 @@
                         fetchLastPurchase(item);
                     }
                 });
-                renderCart();
+                window.saveCart();
             }
         });
 
@@ -1202,7 +1200,7 @@
 
         // Clear Cart
         $('#clear-cart').on('click', function() {
-            if (cart.length == 0) return;
+            if (window.posCart.length == 0) return;
             Swal.fire({
                 title: 'Clear Cart?',
                 text: "This will remove all items from the current order.",
@@ -1214,7 +1212,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     cart = [];
-                    renderCart();
+                    window.saveCart();
                 }
             });
         });
@@ -1487,7 +1485,7 @@
                 let product = products.find(p => p.id == pid && p.item_type == type);
                 if (product) {
                     let cartId = type + '-' + pid;
-                    let item = cart.find(i => i.unique_id == cartId);
+                    let item = window.posCart.find(i => i.unique_id == cartId);
                     let defaultPrice = getPriceForCustomer(product);
 
                     if (item) {
@@ -1509,7 +1507,7 @@
                             unit: product.unit,
                             last_purchase: null
                         };
-                        cart.push(cartItem);
+                        window.posCart.push(cartItem);
                         fetchLastPurchase(cartItem);
                     }
                     addedCount++;
@@ -1518,7 +1516,7 @@
         });
         
         if (addedCount > 0) {
-            renderCart();
+            window.saveCart();
             const Toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
@@ -2058,7 +2056,7 @@
     });
 
     $('#complete-order').on('click', function() {
-        if (cart.length == 0) {
+        if (window.posCart.length == 0) {
             Swal.fire('Error', 'Cart is empty!', 'error');
             return;
         }
@@ -2321,6 +2319,4 @@
         });
     });
 </script>
-</script>
 @endpush
-@endsection

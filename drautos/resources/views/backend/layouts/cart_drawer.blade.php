@@ -1,4 +1,10 @@
 <!-- Global Floating Cart Button -->
+@php
+    $walkInId = $walkInId ?? \App\User::where('name', 'Walk-in Customer')->value('id') ?? 1;
+    $customers = $customers ?? \App\User::where('role', 'user')->where('status', 'active')->orderBy('name', 'ASC')->get();
+    $accounts = $accounts ?? \App\Models\FinancialAccount::where('status', 'active')->orderBy('type', 'ASC')->get();
+    $activeAccountId = $activeAccountId ?? ($accounts->first() ? $accounts->first()->id : null);
+@endphp
 <button id="global-cart-btn" class="btn btn-warning shadow-lg animated-pulse" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1030; border-radius: 50%; width: 60px; height: 60px; display: none; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #fff; cursor: pointer; transition: all 0.3s ease;">
     <i class="fas fa-shopping-basket text-white"></i>
     <span class="badge badge-danger position-absolute" id="global-cart-badge" style="top: -5px; right: -5px; font-size: 13px; border: 2px solid #fff; border-radius: 50%;">0</span>
@@ -399,6 +405,24 @@
                 if (result.isConfirmed) {
                     window.posCart = [];
                     saveCart();
+                }
+            });
+        });
+        // Clear Cart
+        $(document).on('click', '#clear-cart', function() {
+            if (window.posCart.length == 0) return;
+            Swal.fire({
+                title: 'Clear Cart?',
+                text: "This will remove all items from the current order.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Yes, clear it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.posCart = [];
+                    window.saveCart();
                 }
             });
         });
