@@ -225,8 +225,8 @@ class AdminController extends Controller
         $all_staff = User::whereIn('role', ['admin', 'manager', 'staff'])->orderBy('name', 'ASC')->get();
 
         // Financial Totals
-        $total_payables = \App\Models\PaymentReminder::where('type', 'payable')->where('status', '!=', 'completed')->sum('amount');
-        $total_receivables = \App\Models\PaymentReminder::where('type', 'receivable')->where('status', '!=', 'completed')->sum('amount');
+        $total_payables = \App\Models\Supplier::where('current_balance', '>', 0)->sum('current_balance');
+        $total_receivables = \App\User::whereIn('role', ['user', 'customer'])->where('current_balance', '>', 0)->sum('current_balance');
 
         // Activity Feed (System Newspaper)
         $activity_logs = \App\Models\ActivityLog::with('user')
