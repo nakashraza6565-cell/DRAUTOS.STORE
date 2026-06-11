@@ -1,4 +1,4 @@
-@extends('backend.layouts.master')
+﻿@extends('backend.layouts.master')
 @section('title','POS || Danyal Autos')
 @section('main-content')
 <div style="position: relative; z-index: 999999;">
@@ -51,6 +51,8 @@
     <span class="font-weight-bold text-primary" id="bulk-count-text">0 items selected</span>
     <button class="btn btn-sm btn-success rounded-pill font-weight-bold px-3 shadow" onclick="openBulkModal()"><i class="fas fa-cart-plus mr-1"></i> Add to Cart</button>
     <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="cancelMultiSelect()">Cancel</button>
+</div>
+
 </div>
 
 <!-- Add Product Modal -->
@@ -2321,6 +2323,4 @@
         });
     });
 </script>
-</script>
 @endpush
-@endsection
