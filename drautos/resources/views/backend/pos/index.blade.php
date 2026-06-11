@@ -1505,19 +1505,32 @@
     let currentFocus = -1;
 
     $('#product-search').on('keydown', function(e) {
-        let x = $('#search-suggestions div.suggestion-item');
+        let viewMode = localStorage.getItem('pos_view_mode') || 'grid';
+        let x;
+        
+        if (viewMode === 'list') {
+            x = $('#products-grid .pos-list-item');
+            if (e.keyCode == 40 || e.keyCode == 38) {
+                $('#search-suggestions').addClass('d-none'); // Hide suggestions when navigating list
+            }
+        } else {
+            x = $('#search-suggestions div.suggestion-item');
+        }
+
         if (e.keyCode == 40) { // Down
+            e.preventDefault();
             currentFocus++;
             addActive(x);
         } else if (e.keyCode == 38) { // Up
+            e.preventDefault();
             currentFocus--;
             addActive(x);
         } else if (e.keyCode == 13) { // Enter
             e.preventDefault();
-            if (currentFocus > -1) {
-                if (x) x[currentFocus].click();
+            if (currentFocus > -1 && x && x.length > 0) {
+                x[currentFocus].click();
             } else {
-                // Pressing Enter without selecting a specific suggestion now triggers the grid update
+                // Pressing Enter without selecting
                 $('#search-suggestions').addClass('d-none');
                 fetchProducts($(this).val(), false, true);
             }
@@ -1525,20 +1538,40 @@
     });
 
     function addActive(x) {
-        if (!x) return false;
+        if (!x || x.length === 0) return false;
         removeActive(x);
         if (currentFocus >= x.length) currentFocus = 0;
         if (currentFocus < 0) currentFocus = (x.length - 1);
-        $(x[currentFocus]).addClass("active");
+        
+        let el = $(x[currentFocus]);
+        let viewMode = localStorage.getItem('pos_view_mode') || 'grid';
+        
+        if (viewMode === 'list' && el.hasClass('pos-list-item')) {
+            el.addClass("border border-primary bg-light");
+            el.css('transform', 'scale(1.01)');
+            el.css('transition', 'all 0.1s ease-in-out');
+        } else {
+            el.addClass("active");
+        }
+        
         // Scroll into view if needed
         x[currentFocus].scrollIntoView({
-            block: 'nearest'
+            block: 'center',
+            behavior: 'smooth'
         });
     }
 
     function removeActive(x) {
+        if (!x) return;
+        let viewMode = localStorage.getItem('pos_view_mode') || 'grid';
         for (let i = 0; i < x.length; i++) {
-            $(x[i]).removeClass("active");
+            let el = $(x[i]);
+            if (viewMode === 'list' && el.hasClass('pos-list-item')) {
+                el.removeClass("border border-primary bg-light");
+                el.css('transform', 'scale(1)');
+            } else {
+                el.removeClass("active");
+            }
         }
     }
 
