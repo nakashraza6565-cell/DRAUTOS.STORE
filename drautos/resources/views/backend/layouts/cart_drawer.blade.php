@@ -598,6 +598,7 @@
         let order_discount = parseFloat($('#order-discount').val()) || 0;
         let due_date = $('#payment-due-date').val();
 
+        // Prepare data
         let payload = {
             customer_id: customer_id,
             total_amount: total_amount,
@@ -607,7 +608,7 @@
             amount_paid: amount_received,
             due_date: due_date,
             cart: window.posCart,
-            sales_order_id: window.salesOrderId || null,
+            sales_order_id: window.salesOrderId,
             _token: "{{csrf_token()}}"
         };
 
@@ -619,10 +620,7 @@
             data: payload,
             success: function(response) {
                 if (response.status == 'success') {
-                    // Clear the cart on successful checkout
-                    window.posCart = [];
-                    saveCart();
-
+                    // Handle Printing via hidden iframe only if toggled ON
                     if ($('#print-receipt-toggle').is(':checked') && response.thermal_url) {
                         let printUrl = response.thermal_url;
                         if ($('#print-receipt-urdu').is(':checked')) {
@@ -631,13 +629,195 @@
                         $('#print-iframe').attr('src', printUrl);
                     }
 
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
-                        icon: 'success',
-                        timer: 4000
-                    }).then(() => {
-                        location.reload();
+                    // Share Receipt / Image logic
+                    let shareReceiptPromise = Promise.resolve();
+                    if ($('#share-receipt-toggle').is(':checked') && response.invoice_url) {
+                        shareReceiptPromise = new Promise((resolveOuter) => {
+                            Swal.fire({
+                                title: '<i class="fas fa-share-nodes text-primary mr-1"></i> Share Invoice / Image',
+                                html: `
+                                    <div class="p-2 text-center">
+                                        <p class="text-muted small mb-4">Choose your invoice language.<br><b>First Tap:</b> Generates & downloads invoice image.<br><b>Second Tap:</b> Opens share menu!</p>
+                                        <div class="d-flex flex-column" style="gap: 12px;">
+                                            <button id="pos-share-en" class="btn btn-outline-primary btn-block py-3 font-weight-bold d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-file-invoice mr-2"></i> Share in English (EN)
+                                            </button>
+                                            <button id="pos-share-ur" class="btn btn-outline-success btn-block py-3 font-weight-bold text-success d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-language mr-2"></i> Share in Urdu (اردو)
+                                            </button>
+                                        </div>
+                                    </div>
+                                `,
+                                showConfirmButton: false,
+                                showCancelButton: true,
+                                cancelButtonText: 'Close',
+                                cancelButtonColor: '#6c757d',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    let enBlob = null;
+                                    let urBlob = null;
+
+                                    async function handleLanguageTap(lang, $btn) {
+                                        let currentBlob = lang === 'ur' ? urBlob : enBlob;
+
+                                        // SECOND TAP: Open share menu
+                                        if (currentBlob) {
+                                            const filename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            const file = new File([currentBlob], filename, { type: 'image/png' });
+                                            let text = lang === 'ur' ? "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:" : "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
+
+                                            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                                                try {
+                                                    await navigator.share({
+                                                        files: [file],
+                                                        title: 'Danyal Autos Invoice',
+                                                        text: text
+                                                    });
+                                                } catch (err) {
+                                                    if (err.name !== 'AbortError') {
+                                                        console.log('Native Share Failed:', err);
+                                                    }
+                                                }
+                                            } else {
+                                                // Fallback to text url share via WhatsApp
+                                                let shareUrl = response.invoice_url;
+                                                if (lang === 'ur') {
+                                                    shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                                                }
+                                                let customerPhone = $('#customer-select option:selected').data('phone') || '';
+                                                let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
+                                                if (cleanedPhone && !cleanedPhone.startsWith('92')) {
+                                                    if (cleanedPhone.startsWith('0')) {
+                                                        cleanedPhone = '92' + cleanedPhone.substring(1);
+                                                    } else {
+                                                        cleanedPhone = '92' + cleanedPhone;
+                                                    }
+                                                }
+                                                let shareText = encodeURIComponent(text + "\n" + shareUrl);
+                                                let waUrl = cleanedPhone ? `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${shareText}` : `https://api.whatsapp.com/send?text=${shareText}`;
+                                                window.open(waUrl, '_blank');
+                                            }
+                                            return;
+                                        }
+
+                                        // FIRST TAP: Generate standard invoice screenshot & download
+                                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Generating & Downloading...');
+
+                                        try {
+                                            let printUrl = response.invoice_url.replace('/pdf/', '/print/') + '?type=standard';
+                                            if (lang === 'ur') {
+                                                printUrl += '&lang=ur';
+                                            }
+
+                                            const printResponse = await fetch(printUrl);
+                                            let htmlText = await printResponse.text();
+
+                                            // Strip auto-print scripts
+                                            htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                                            htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+
+                                            // Render inside iframe
+                                            const iframe = document.createElement('iframe');
+                                            iframe.style.position = 'fixed';
+                                            iframe.style.right = '-9999px';
+                                            iframe.style.width = '800px';
+                                            iframe.style.height = '2500px';
+                                            document.body.appendChild(iframe);
+
+                                            const iframeDoc = iframe.contentWindow.document;
+                                            iframeDoc.open();
+                                            iframeDoc.write(htmlText);
+                                            iframeDoc.close();
+
+                                            // Wait for assets/fonts to load
+                                            await new Promise(r => setTimeout(r, 1000));
+
+                                            // Auto-resize
+                                            iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+
+                                            // Load html2canvas if needed
+                                            if (typeof html2canvas === 'undefined') {
+                                                await new Promise((resolveScript) => {
+                                                    const script = document.createElement('script');
+                                                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                                                    script.onload = resolveScript;
+                                                    document.head.appendChild(script);
+                                                });
+                                            }
+
+                                            const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
+                                            const canvas = await html2canvas(wrapper, {
+                                                scale: 2,
+                                                useCORS: true,
+                                                backgroundColor: '#ffffff'
+                                            });
+
+                                            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                                            document.body.removeChild(iframe);
+
+                                            // Save blob
+                                            if (lang === 'ur') {
+                                                urBlob = blob;
+                                            } else {
+                                                enBlob = blob;
+                                            }
+
+                                            // Trigger automatic download
+                                            const downloadLink = document.createElement('a');
+                                            downloadLink.href = URL.createObjectURL(blob);
+                                            const downloadFilename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            downloadLink.download = downloadFilename;
+                                            document.body.appendChild(downloadLink);
+                                            downloadLink.click();
+                                            document.body.removeChild(downloadLink);
+
+                                            // Update button UI for the SECOND TAP
+                                            $btn.prop('disabled', false)
+                                                .removeClass('btn-outline-primary btn-outline-success text-success')
+                                                .addClass('btn-warning text-dark')
+                                                .html('<i class="fas fa-share-alt mr-2"></i> Tap to Share ' + (lang === 'ur' ? 'Urdu (اردو)' : 'English (EN)'));
+
+                                        } catch (err) {
+                                            console.error('POS Image share generation failed:', err);
+                                            $btn.prop('disabled', false).html(lang === 'ur' ? '<i class="fas fa-language mr-2"></i> Share in Urdu (اردو)' : '<i class="fas fa-file-invoice mr-2"></i> Share in English (EN)');
+                                            alert('Failed to generate standard printed image screenshot.');
+                                        }
+                                    }
+
+                                    $('#pos-share-en').on('click', function() {
+                                        handleLanguageTap('en', $(this));
+                                    });
+
+                                    $('#pos-share-ur').on('click', function() {
+                                        handleLanguageTap('ur', $(this));
+                                    });
+                                }
+                            }).then(() => {
+                                resolveOuter();
+                            });
+                        });
+                    }
+
+                    shareReceiptPromise.then(() => {
+                        if (response.wa_sent) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
+                                icon: 'success',
+                                timer: 4000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Order Saved',
+                                text: 'Order created' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Sent to Printer' : '') + ', but WhatsApp could not be sent.',
+                                icon: 'warning',
+                                timer: 5000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
                     });
                 } else {
                     Swal.fire('Error', response.message, 'error');
@@ -645,13 +825,22 @@
                 }
             },
             error: function(err) {
-                alert('Something went wrong! Check console.');
+                console.log(err);
+                if (err.status === 422) {
+                    let errors = err.responseJSON.errors;
+                    let msg = '';
+                    $.each(errors, function(key, value) {
+                        msg += value[0] + '\n';
+                    });
+                    alert('Validation Error:\n' + msg);
+                } else {
+                    alert('Something went wrong! Check console.');
+                }
                 $('#complete-order').prop('disabled', false).text('SAVE ORDER');
             }
         });
     });
-
-    $(document).on('click', '#save-customer-btn', function() {
+$(document).on('click', '#save-customer-btn', function() {
         let form = $('#add-customer-form');
         $.ajax({
             url: "{{route('users.direct-store')}}",
