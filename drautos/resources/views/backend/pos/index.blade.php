@@ -1901,11 +1901,13 @@
                 <div class="col-12 mb-1 px-1">
                     <div class="card pos-list-item shadow-sm selectable-item cursor-pointer ${isSelected}" data-pid="${p.id}" data-ptype="${p.item_type}" onclick="handleProductClick(${p.id}, '${p.item_type}', event)" style="border-radius: 6px;">
                         <i class="fas fa-check-circle selected-checkmark"></i>
-                        <div class="card-body p-2 d-flex align-items-center m-0" style="gap: 8px; overflow: hidden; white-space: nowrap;">
+                        <div class="card-body p-2 d-flex align-items-center m-0" style="gap: 8px; overflow: hidden;">
                             ${itemTypeBadge}
-                            <div class="font-weight-bold text-dark text-truncate" style="font-size: 13px; flex: 2; min-width: 120px;" title="${p.title}">${displayTitle}</div>
-                            <div class="text-muted text-truncate d-none d-md-block" style="font-size: 11px; flex: 2;">
-                                ${brandName} ${displaySku ? '| ' + displaySku : ''}
+                            <div class="font-weight-bold text-dark" style="font-size: 13px; flex: 3; min-width: 100px; line-height: 1.3;" title="${p.title}">
+                                ${displayTitle}
+                                <div class="text-muted mt-1" style="font-size: 10px; font-weight: normal;">
+                                    ${brandName} ${displaySku ? '| ' + displaySku : ''}
+                                </div>
                             </div>
                             <div class="text-muted text-center" style="font-size: 12px; width: 70px;">
                                 <span class="${p.stock <= 5 ? 'text-danger font-weight-bold' : 'font-weight-bold'}">${p.stock}</span>
