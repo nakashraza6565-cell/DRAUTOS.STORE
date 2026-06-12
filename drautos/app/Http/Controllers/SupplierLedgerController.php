@@ -11,6 +11,29 @@ class SupplierLedgerController extends Controller
 {
     public function index(Request $request)
     {
+        // Auto-fix missing Raw Material Purchases due to previous update bug
+        $purchases = \App\Models\RawMaterialPurchase::with('items')->get();
+        foreach ($purchases as $purchase) {
+            if ($purchase->manufacturing_bill_id) {
+                $exists = \App\Models\SupplierLedger::where('category', 'purchase')
+                    ->where('reference_id', $purchase->manufacturing_bill_id)
+                    ->where('supplier_id', $purchase->supplier_id)
+                    ->where('amount', $purchase->total_amount)
+                    ->exists();
+                if (!$exists) {
+                    $descriptions = [];
+                    foreach ($purchase->items as $item) {
+                        $descriptions[] = $item->quantity . ' pcs of ' . $item->item_name;
+                    }
+                    $description = 'Purchased (Invoice: ' . $purchase->invoice_number . '): ' . implode(', ', $descriptions);
+                    \App\Models\SupplierLedger::record(
+                        $purchase->supplier_id, $purchase->purchase_date, 'debit', 'purchase',
+                        $description, $purchase->total_amount, $purchase->manufacturing_bill_id
+                    );
+                }
+            }
+        }
+
         $query = Supplier::query();
         
         if ($request->search) {
