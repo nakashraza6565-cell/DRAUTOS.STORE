@@ -159,11 +159,23 @@
                                 </td>
                                 <td data-title="Action" class="text-center">
                                     <div class="d-flex justify-content-end" style="gap: 5px;">
-                                        @if($item->category == 'purchase' && $item->reference_id)
-                                            <a href="{{route('inventory-incoming.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Incoming Goods">
-                                                <i class="fas fa-eye" style="font-size: 12px;"></i>
-                                            </a>
-                                        @endif
+                                          @if($item->category == 'purchase' && $item->reference_id)
+                                              @if(str_starts_with($item->description, 'Purchased (Invoice: RMP'))
+                                                  @php
+                                                      preg_match('/Invoice: (RMP-[^)]+)/', $item->description, $matches);
+                                                      $rmp = isset($matches[1]) ? \App\Models\RawMaterialPurchase::where('invoice_number', $matches[1])->first() : null;
+                                                  @endphp
+                                                  @if($rmp)
+                                                      <a href="{{route('manufacturing.production-factors.invoice.show', $rmp->id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Raw Material Purchase">
+                                                          <i class="fas fa-eye" style="font-size: 12px;"></i>
+                                                      </a>
+                                                  @endif
+                                              @elseif(str_starts_with($item->description, 'Incoming Goods Record #'))
+                                                  <a href="{{route('inventory-incoming.show', $item->reference_id)}}" target="_blank" class="btn btn-info btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="View Incoming Goods">
+                                                      <i class="fas fa-eye" style="font-size: 12px;"></i>
+                                                  </a>
+                                              @endif
+                                          @endif
                                         @if(in_array($item->category, ['payment', 'return', 'manual', 'purchase']))
                                             <a href="{{route('admin.supplier-ledger.transaction-voucher', $item->id)}}" target="_blank" class="btn btn-warning btn-sm rounded-circle" style="height:32px; width:32px; display: flex; align-items: center; justify-content: center;" title="Print Receipt">
                                                 <i class="fas fa-receipt" style="font-size: 12px;"></i>
