@@ -67,6 +67,45 @@ class SupplierLedgerController extends Controller
 
     public function show(Supplier $supplier, Request $request)
     {
+        // Auto-fix missing Raw Material Purchases due to previous update bug
+        $purchases = \App\Models\RawMaterialPurchase::with('items')->where('supplier_id', $supplier->id)->get();
+        foreach ($purchases as $purchase) {
+            if ($purchase->manufacturing_bill_id) {
+                // Remove duplicate standalone Subcontract Service ledger if it is already inside this RMP
+                $hasSubcontractItem = false;
+                foreach ($purchase->items as $item) {
+                    if (str_starts_with($item->item_name, 'Subcontract Service')) {
+                        $hasSubcontractItem = true;
+                        break;
+                    }
+                }
+                if ($hasSubcontractItem) {
+                    \App\Models\SupplierLedger::where('category', 'purchase')
+                        ->where('reference_id', $purchase->manufacturing_bill_id)
+                        ->where('supplier_id', $purchase->supplier_id)
+                        ->where('description', 'LIKE', 'Subcontract Service%')
+                        ->delete();
+                }
+
+                $exists = \App\Models\SupplierLedger::where('category', 'purchase')
+                    ->where('reference_id', $purchase->manufacturing_bill_id)
+                    ->where('supplier_id', $purchase->supplier_id)
+                    ->where('amount', $purchase->total_amount)
+                    ->exists();
+                if (!$exists) {
+                    $descriptions = [];
+                    foreach ($purchase->items as $item) {
+                        $descriptions[] = $item->quantity . ' pcs of ' . $item->item_name;
+                    }
+                    $description = 'Purchased (Invoice: ' . $purchase->invoice_number . '): ' . implode(', ', $descriptions);
+                    \App\Models\SupplierLedger::record(
+                        $purchase->supplier_id, $purchase->purchase_date, 'debit', 'purchase',
+                        $description, $purchase->total_amount, $purchase->manufacturing_bill_id
+                    );
+                }
+            }
+        }
+
         $query = SupplierLedger::where('supplier_id', $supplier->id);
 
         if ($request->date_from) {
