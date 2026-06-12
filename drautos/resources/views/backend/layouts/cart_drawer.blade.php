@@ -5,9 +5,10 @@
     $accounts = $accounts ?? \App\Models\FinancialAccount::where('status', 'active')->orderBy('type', 'ASC')->get();
     $activeAccountId = $activeAccountId ?? ($accounts->first() ? $accounts->first()->id : null);
 @endphp
-<button id="global-cart-btn" class="btn btn-warning shadow-lg animated-pulse" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1030; border-radius: 50%; width: 60px; height: 60px; display: none; align-items: center; justify-content: center; font-size: 24px; border: 3px solid #fff; cursor: pointer; transition: all 0.3s ease;">
-    <i class="fas fa-shopping-basket text-white"></i>
-    <span class="badge badge-danger position-absolute" id="global-cart-badge" style="top: -5px; right: -5px; font-size: 13px; border: 2px solid #fff; border-radius: 50%;">0</span>
+<button id="global-cart-btn" class="shadow-lg" style="position: fixed !important; top: 50% !important; right: 0 !important; left: auto !important; bottom: auto !important; transform: translateY(-50%) !important; width: 44px; height: 80px; border-radius: 12px 0 0 12px !important; background: #facc15 !important; color: #083259 !important; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999999 !important; cursor: pointer; border: none; transition: all 0.3s ease;">
+    <span class="badge badge-danger position-absolute shadow-sm" id="global-cart-badge" style="top: -6px; left: -6px; font-size: 11px; border: 2px solid #fff; border-radius: 50%; padding: 4px 6px;">0</span>
+    <i class="fas fa-shopping-basket mb-1" style="font-size: 15px;"></i>
+    <span style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-size: 11px; font-weight: 800; letter-spacing: 1px;">CART</span>
 </button>
 
 <!-- Right: Checkout Sidebar (Offcanvas Style) -->
@@ -274,9 +275,7 @@
         display: block;
     }
     
-    #global-cart-btn:hover {
-        transform: translateY(-50%) scale(1.1);
-    }
+    
 
     .animated-pulse {
         animation: pulse 2s infinite;
@@ -318,61 +317,7 @@
 <script>
     window.posCart = JSON.parse(localStorage.getItem('posCart')) || [];
     
-    // Drag functionality for global cart button
-    let isDragging = false;
-    let startY = 0;
-    let originalTop = 0;
-    const btn = document.getElementById('global-cart-btn');
-
-    btn.addEventListener('mousedown', dragStart);
-    btn.addEventListener('touchstart', dragStart, {passive: false});
-
-    function dragStart(e) {
-        if(e.type === 'touchstart') {
-            startY = e.touches[0].clientY;
-        } else {
-            startY = e.clientY;
-        }
-        const rect = btn.getBoundingClientRect();
-        originalTop = rect.top + (rect.height / 2); // get center
-        
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('touchmove', drag, {passive: false});
-        document.addEventListener('mouseup', dragEnd);
-        document.addEventListener('touchend', dragEnd);
-    }
-
-    function drag(e) {
-        e.preventDefault(); // Prevent scrolling on touch
-        isDragging = true;
-        let y = 0;
-        if(e.type === 'touchmove') {
-            y = e.touches[0].clientY;
-        } else {
-            y = e.clientY;
-        }
-        let dy = y - startY;
-        let newTop = originalTop + dy;
-        
-        // Boundaries
-        if(newTop < 40) newTop = 40;
-        if(newTop > window.innerHeight - 40) newTop = window.innerHeight - 40;
-        
-        btn.style.top = newTop + 'px';
-        btn.style.transform = 'translateY(-50%)'; // maintain center
-    }
-
-    function dragEnd(e) {
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('touchmove', drag);
-        document.removeEventListener('mouseup', dragEnd);
-        document.removeEventListener('touchend', dragEnd);
-        
-        // Small timeout to prevent click event if it was a drag
-        setTimeout(() => {
-            isDragging = false;
-        }, 50);
-    }
+    
 
     $(document).ready(function() {
         if($('#customer-select').length) {
@@ -382,7 +327,7 @@
         renderCart();
 
         $('#global-cart-btn, #toggle-cart').on('click', function(e) {
-            if(isDragging) return;
+            
             $('#checkout-sidebar').addClass('active');
             $('#pos-overlay').addClass('active');
         });
