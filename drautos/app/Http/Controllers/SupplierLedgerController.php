@@ -247,7 +247,7 @@ class SupplierLedgerController extends Controller
         $transaction = SupplierLedger::with('supplier')->findOrFail($id);
         
         $incoming = null;
-        if ($transaction->category === 'purchase' && $transaction->reference_id) {
+        if ($transaction->category === 'purchase' && $transaction->reference_id && str_starts_with($transaction->description, 'Incoming Goods Record #')) {
             $incoming = \App\Models\InventoryIncoming::with(['items.product', 'receiver'])->find($transaction->reference_id);
         }
         
