@@ -526,9 +526,10 @@ class ManufacturingController extends Controller
             // Decoupled Multi-Subcontractor Ledger Hook (Always post/update ledger immediately regardless of status)
             $recalcSupplierIds = [];
 
-            // 1. Find and delete all old ledger entries for this BOM
+            // 1. Find and delete all old ledger entries for this BOM (ONLY Subcontract Service entries)
             $oldLedgers = \App\Models\SupplierLedger::where('reference_id', $bom->id)
                 ->where('category', 'purchase')
+                ->where('description', 'LIKE', 'Subcontract Service%')
                 ->get();
             foreach ($oldLedgers as $ol) {
                 $recalcSupplierIds[] = $ol->supplier_id;
