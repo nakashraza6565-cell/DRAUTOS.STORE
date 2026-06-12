@@ -88,6 +88,9 @@ class SupplierLedgerController extends Controller
             }
         }
 
+        // Recalculate balances after any auto-fixes
+        \App\Models\SupplierLedger::updateBalance($supplier->id);
+
         $query = SupplierLedger::where('supplier_id', $supplier->id);
 
         if ($request->date_from) {
