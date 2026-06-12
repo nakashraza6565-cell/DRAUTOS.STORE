@@ -15,21 +15,12 @@ class SupplierLedgerController extends Controller
         $purchases = \App\Models\RawMaterialPurchase::with('items')->get();
         foreach ($purchases as $purchase) {
             if ($purchase->manufacturing_bill_id) {
-                // Remove duplicate standalone Subcontract Service ledger if it is already inside this RMP
-                $hasSubcontractItem = false;
-                foreach ($purchase->items as $item) {
-                    if (str_starts_with($item->item_name, 'Subcontract Service')) {
-                        $hasSubcontractItem = true;
-                        break;
-                    }
-                }
-                if ($hasSubcontractItem) {
-                    \App\Models\SupplierLedger::where('category', 'purchase')
-                        ->where('reference_id', $purchase->manufacturing_bill_id)
-                        ->where('supplier_id', $purchase->supplier_id)
-                        ->where('description', 'LIKE', 'Subcontract Service%')
-                        ->delete();
-                }
+                // Remove duplicate standalone Subcontract Service ledger if an RMP already exists for this exact supplier & BOM
+                \App\Models\SupplierLedger::where('category', 'purchase')
+                    ->where('reference_id', $purchase->manufacturing_bill_id)
+                    ->where('supplier_id', $purchase->supplier_id)
+                    ->where('description', 'LIKE', 'Subcontract Service%')
+                    ->delete();
 
                 $exists = \App\Models\SupplierLedger::where('category', 'purchase')
                     ->where('reference_id', $purchase->manufacturing_bill_id)
@@ -71,21 +62,12 @@ class SupplierLedgerController extends Controller
         $purchases = \App\Models\RawMaterialPurchase::with('items')->where('supplier_id', $supplier->id)->get();
         foreach ($purchases as $purchase) {
             if ($purchase->manufacturing_bill_id) {
-                // Remove duplicate standalone Subcontract Service ledger if it is already inside this RMP
-                $hasSubcontractItem = false;
-                foreach ($purchase->items as $item) {
-                    if (str_starts_with($item->item_name, 'Subcontract Service')) {
-                        $hasSubcontractItem = true;
-                        break;
-                    }
-                }
-                if ($hasSubcontractItem) {
-                    \App\Models\SupplierLedger::where('category', 'purchase')
-                        ->where('reference_id', $purchase->manufacturing_bill_id)
-                        ->where('supplier_id', $purchase->supplier_id)
-                        ->where('description', 'LIKE', 'Subcontract Service%')
-                        ->delete();
-                }
+                // Remove duplicate standalone Subcontract Service ledger if an RMP already exists for this exact supplier & BOM
+                \App\Models\SupplierLedger::where('category', 'purchase')
+                    ->where('reference_id', $purchase->manufacturing_bill_id)
+                    ->where('supplier_id', $purchase->supplier_id)
+                    ->where('description', 'LIKE', 'Subcontract Service%')
+                    ->delete();
 
                 $exists = \App\Models\SupplierLedger::where('category', 'purchase')
                     ->where('reference_id', $purchase->manufacturing_bill_id)

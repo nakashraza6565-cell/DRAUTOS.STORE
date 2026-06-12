@@ -9,7 +9,7 @@ class RawMaterialPurchaseItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['purchase_id', 'factor_id', 'quantity', 'unit_price', 'total'];
+    protected $fillable = ['purchase_id', 'factor_id', 'item_name', 'quantity', 'unit_price', 'total'];
 
     public function purchase()
     {
