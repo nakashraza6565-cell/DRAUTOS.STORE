@@ -70,19 +70,30 @@
                         <div class="h5 mb-3 font-weight-bold text-success grand-total-display">PKR {{ number_format($inventoryIncoming->items->sum('total_cost'), 2) }}</div>
                         
                         @if($inventoryIncoming->status == 'pending')
-                        <form method="POST" action="{{ route('inventory-incoming.verify', $inventoryIncoming->id) }}">
-                            @csrf
-                            <button class="btn btn-primary btn-block shadow-sm">
-                                <i class="fas fa-check-circle mr-1"></i> Verify Batch
-                            </button>
-                        </form>
-                        @elseif($inventoryIncoming->status == 'verified')
-                        <form method="POST" action="{{ route('inventory-incoming.complete', $inventoryIncoming->id) }}">
-                            @csrf
-                            <button class="btn btn-success btn-block shadow-sm">
-                                <i class="fas fa-flag-checkered mr-1"></i> Mark as Completed
-                            </button>
-                        </form>
+                            <form method="POST" action="{{ route('inventory-incoming.verify', $inventoryIncoming->id) }}">
+                                @csrf
+                                <button class="btn btn-primary btn-block shadow-sm">
+                                    <i class="fas fa-check-circle mr-1"></i> Verify Batch
+                                </button>
+                            </form>
+                        @else
+                            @if(!$ledgerExists && $inventoryIncoming->supplier_id && $inventoryIncoming->items->sum('total_cost') > 0)
+                                <form method="POST" action="{{ route('inventory-incoming.verify', $inventoryIncoming->id) }}" class="mb-2">
+                                    @csrf
+                                    <button class="btn btn-danger btn-block shadow-sm">
+                                        <i class="fas fa-file-invoice-dollar mr-1"></i> Post to Supplier Ledger
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if($inventoryIncoming->status == 'verified')
+                                <form method="POST" action="{{ route('inventory-incoming.complete', $inventoryIncoming->id) }}">
+                                    @csrf
+                                    <button class="btn btn-success btn-block shadow-sm">
+                                        <i class="fas fa-flag-checkered mr-1"></i> Mark as Completed
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     </div>
                 </div>

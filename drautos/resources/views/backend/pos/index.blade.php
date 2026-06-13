@@ -1188,9 +1188,11 @@
                     let product = products.find(p => p.id == item.id && p.item_type == item.type);
                     if (product) {
                         let newPrice = getPriceForCustomer(product);
+                        if (item.price === item.base_price) {
+                            item.price = newPrice;
+                        }
                         item.base_price = newPrice;
-                        item.original_price = newPrice;
-                        item.price = newPrice;
+                        item.original_price = Math.max(item.price, newPrice);
                     }
                     if (id == 1) {
                         item.last_purchase = null;
@@ -1801,6 +1803,11 @@
         if (!product) return;
 
         let defaultPrice = getPriceForCustomer(product);
+        let cartId = type + '-' + pid;
+        let existingItem = window.posCart ? window.posCart.find(i => i.unique_id == cartId) : null;
+        if (existingItem) {
+            defaultPrice = existingItem.price;
+        }
 
         Swal.fire({
             title: `<span style="font-size: 16px; font-weight: 800;">${product.title}</span>`,

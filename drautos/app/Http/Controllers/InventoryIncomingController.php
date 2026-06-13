@@ -215,7 +215,9 @@ class InventoryIncomingController extends Controller
      */
     protected function performVerification(InventoryIncoming $inventoryIncoming)
     {
-        $inventoryIncoming->update(['status' => 'verified']);
+        if ($inventoryIncoming->status == 'pending') {
+            $inventoryIncoming->update(['status' => 'verified']);
+        }
 
         // Record in Supplier Ledger
         if ($inventoryIncoming->supplier_id && $inventoryIncoming->total_cost > 0) {
@@ -262,7 +264,16 @@ class InventoryIncomingController extends Controller
     public function show(InventoryIncoming $inventoryIncoming)
     {
         $inventoryIncoming->load(['supplier', 'warehouse', 'receiver', 'items.product']);
-        return view('backend.inventory.incoming.show', compact('inventoryIncoming'));
+        
+        $ledgerExists = false;
+        if ($inventoryIncoming->supplier_id) {
+            $ledgerExists = \App\Models\SupplierLedger::where('supplier_id', $inventoryIncoming->supplier_id)
+                ->where('reference_id', $inventoryIncoming->id)
+                ->where('category', 'purchase')
+                ->exists();
+        }
+        
+        return view('backend.inventory.incoming.show', compact('inventoryIncoming', 'ledgerExists'));
     }
 
     /**

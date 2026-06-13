@@ -90,6 +90,7 @@ class SupplierLedgerController extends Controller
 
         // Recalculate balances after any auto-fixes
         \App\Models\SupplierLedger::updateBalance($supplier->id);
+        $supplier = $supplier->fresh();
 
         $query = SupplierLedger::where('supplier_id', $supplier->id);
 
@@ -315,5 +316,46 @@ class SupplierLedgerController extends Controller
         }
         
         return view('backend.supplier_ledger.thermal-voucher', compact('transaction', 'incoming'));
+    }
+
+    public function syncIncomings()
+    {
+        $incomings = \App\Models\InventoryIncoming::whereIn('status', ['verified', 'completed'])
+            ->whereNotNull('supplier_id')
+            ->get();
+
+        $fixedCount = 0;
+        $details = [];
+
+        foreach ($incomings as $inc) {
+            if ($inc->total_cost <= 0) continue;
+
+            $exists = SupplierLedger::where('supplier_id', $inc->supplier_id)
+                ->where('reference_id', $inc->id)
+                ->where('category', 'purchase')
+                ->exists();
+
+            if (!$exists) {
+                $ledger = SupplierLedger::record(
+                    $inc->supplier_id,
+                    $inc->received_date,
+                    'debit',
+                    'purchase',
+                    'Incoming Goods Record #' . $inc->reference_number . ( $inc->invoice_number ? ' (Inv: '.$inc->invoice_number.')' : '' ),
+                    $inc->total_cost,
+                    $inc->id
+                );
+                $details[] = "INC-{$inc->reference_number}";
+                $fixedCount++;
+            }
+        }
+
+        $message = "Recalculated balances. Processed " . count($incomings) . " entries. Created {$fixedCount} missing ledger posts.";
+        if ($fixedCount > 0) {
+            $message .= " Affected entries: " . implode(', ', $details);
+        }
+
+        session()->flash('success', $message);
+        return redirect()->route('admin.supplier-ledger.index');
     }
 }
