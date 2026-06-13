@@ -364,6 +364,17 @@
             margin-right: 4px !important;
         }
     }
+
+    /* Slide cart button to left edge of drawer when open */
+    #global-cart-btn.sidebar-active {
+        right: 400px !important;
+    }
+    @media (max-width: 576px) {
+        #global-cart-btn.sidebar-active {
+            right: calc(100% - 44px) !important;
+            border-radius: 0 12px 12px 0 !important;
+        }
+    }
 </style>
 
 <script>
@@ -382,11 +393,13 @@
             
             $('#checkout-sidebar').addClass('active');
             $('#pos-overlay').addClass('active');
+            $('#global-cart-btn').addClass('sidebar-active');
         });
 
         $('#pos-overlay, #close-sidebar').on('click', function() {
             $('#checkout-sidebar').removeClass('active');
             $('#pos-overlay').removeClass('active');
+            $('#global-cart-btn').removeClass('sidebar-active');
         });
 
         $('#clear-cart').on('click', function() {
