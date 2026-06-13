@@ -5,7 +5,7 @@
     $accounts = $accounts ?? \App\Models\FinancialAccount::where('status', 'active')->orderBy('type', 'ASC')->get();
     $activeAccountId = $activeAccountId ?? ($accounts->first() ? $accounts->first()->id : null);
 @endphp
-<button id="global-cart-btn" class="shadow-lg" style="position: fixed !important; top: 50% !important; right: 0 !important; left: auto !important; bottom: auto !important; transform: translateY(-50%) !important; width: 44px; height: 80px; border-radius: 12px 0 0 12px !important; background: #facc15 !important; color: #083259 !important; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 999999 !important; cursor: pointer; border: none; transition: all 0.3s ease;">
+<button id="global-cart-btn" class="shadow-lg" data-is-pos="{{ Route::currentRouteName() === 'admin.pos' ? 'true' : 'false' }}" style="position: fixed !important; top: 50% !important; right: 0 !important; left: auto !important; bottom: auto !important; transform: translateY(-50%) !important; width: 44px; height: 80px; border-radius: 12px 0 0 12px !important; background: #facc15 !important; color: #083259 !important; display: {{ Route::currentRouteName() === 'admin.pos' ? 'flex' : 'none' }}; flex-direction: column; align-items: center; justify-content: center; z-index: 999999 !important; cursor: pointer; border: none; transition: all 0.3s ease;">
     <span class="badge badge-danger position-absolute shadow-sm" id="global-cart-badge" style="top: -6px; left: -6px; font-size: 11px; border: 2px solid #fff; border-radius: 50%; padding: 4px 6px;">0</span>
     <i class="fas fa-shopping-basket mb-1" style="font-size: 15px;"></i>
     <span style="writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); font-size: 11px; font-weight: 800; letter-spacing: 1px;">CART</span>
@@ -312,6 +312,58 @@
         background: #f8fafc;
         border-color: #e2e8f0;
     }
+
+    /* Purchase history toast styling */
+    .purchase-history-toast {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+        border-radius: 10px !important;
+        max-width: 380px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        border: 1px solid #bae6fd !important;
+        background-color: #f0f9ff !important;
+    }
+    .purchase-history-toast .swal2-title {
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        color: #0369a1 !important;
+        margin: 0 !important;
+        padding: 0 0 4px 0 !important;
+        border-bottom: 1px solid #e0f2fe;
+        text-align: left !important;
+    }
+    .purchase-history-toast .swal2-html-container {
+        font-size: 12.5px !important;
+        margin: 6px 0 0 0 !important;
+        color: #334155 !important;
+        text-align: left !important;
+        line-height: 1.4 !important;
+    }
+    .purchase-history-toast .swal2-icon {
+        scale: 0.7 !important;
+        margin: 0 8px 0 0 !important;
+    }
+
+    /* Mobile view: size should change to much smaller */
+    @media (max-width: 576px) {
+        .purchase-history-toast {
+            font-size: 11px !important;
+            padding: 6px 10px !important;
+            max-width: 280px !important;
+        }
+        .purchase-history-toast .swal2-title {
+            font-size: 11px !important;
+            padding-bottom: 2px !important;
+        }
+        .purchase-history-toast .swal2-html-container {
+            font-size: 10px !important;
+            margin-top: 4px !important;
+        }
+        .purchase-history-toast .swal2-icon {
+            scale: 0.55 !important;
+            margin-right: 4px !important;
+        }
+    }
 </style>
 
 <script>
@@ -409,7 +461,11 @@
         if (window.posCart.length == 0) {
             $('#cart-items').html('<div class="text-center py-5 text-muted"><i class="fas fa-shopping-basket fa-3x mb-3 opacity-2"></i><p>Current order is empty</p></div>');
             updateSummary(0, 0, 0);
-            $('#global-cart-btn').hide();
+            if ($('#global-cart-btn').data('is-pos') === true) {
+                $('#global-cart-btn').css('display', 'flex');
+            } else {
+                $('#global-cart-btn').hide();
+            }
             return;
         }
 
@@ -832,15 +888,16 @@ $(document).on('click', '#save-customer-btn', function() {
 
                     Swal.fire({
                         title: 'Purchase History Found!',
-                        html: `<b>Customer previously bought this item.</b><br><br>
-                               Date: <b>${res.date}</b><br>
-                               Quantity: <b>${res.quantity}</b><br>
-                               Price Paid: <b style="color: green;">Rs. ${res.price}</b>`,
+                        html: `Customer previously bought this item.<br>
+                               Date: <b>${res.date}</b> | Qty: <b>${res.quantity}</b> | Price Paid: <b style="color: green;">Rs. ${res.price}</b>`,
                         icon: 'info',
                         position: 'top',
                         toast: true,
                         showConfirmButton: false,
-                        timer: 5000
+                        timer: 5000,
+                        customClass: {
+                            popup: 'purchase-history-toast',
+                        }
                     });
                 }
             }
