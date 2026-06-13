@@ -18,24 +18,18 @@ echo "Searching for customer 'Khurram Shahzad'...\n";
 $customers = User::where('name', 'like', '%Khurram Shahzad%')->get();
 if ($customers->isEmpty()) {
     echo "❌ Customer 'Khurram Shahzad' NOT found!\n";
-    // Let's also print some potential matches
-    $anyKhurram = User::where('name', 'like', '%Khurram%')->get();
-    if (!$anyKhurram->isEmpty()) {
-        echo "Found similar users:\n";
-        foreach ($anyKhurram as $c) {
-            echo " - ID: {$c->id}, Name: '{$c->name}', Phone: '{$c->phone}', Email: '{$c->email}'\n";
-        }
-    }
 } else {
     foreach ($customers as $c) {
-        echo "✅ Found Customer: ID: {$c->id}, Name: '{$c->name}', Phone: '{$c->phone}', Email: '{$c->email}', Balance: {$c->current_balance}\n";
+        $ordersCount = Order::where('user_id', $c->id)->count();
+        $ledgerCount = CustomerLedger::where('user_id', $c->id)->count();
+        echo "✅ ID: {$c->id} | Name: '{$c->name}' | Phone: '{$c->phone}' | Balance: {$c->current_balance} | Created: {$c->created_at} | Orders: {$ordersCount} | Ledgers: {$ledgerCount}\n";
     }
 }
 
 echo "\n------------------------------------------------\n\n";
 
 // 2. Find the Order
-echo "Searching for Order #1169 or Order Number 2606133430...\n";
+echo "Searching for Order #1169...\n";
 $order = Order::find(1169);
 if (!$order) {
     $order = Order::where('order_number', '2606133430')->first();
@@ -64,8 +58,8 @@ if (!$order) {
 echo "\n------------------------------------------------\n\n";
 
 // 3. Find Customer Ledger Entries for this Order
-echo "Searching for Customer Ledger entries associated with this order (reference_id = {$order->id} or description containing order number)...\n";
 if ($order) {
+    echo "Searching for Customer Ledger entries associated with this order (reference_id = {$order->id} or description containing order number)...\n";
     $ledgers = CustomerLedger::where('reference_id', $order->id)
         ->orWhere('description', 'like', '%' . $order->order_number . '%')
         ->get();
@@ -83,8 +77,8 @@ if ($order) {
 echo "\n------------------------------------------------\n\n";
 
 // 4. Find any Payment Reminders
-echo "Searching for Payment Reminders with reference_number = '{$order->order_number}'...\n";
 if ($order) {
+    echo "Searching for Payment Reminders with reference_number = '{$order->order_number}'...\n";
     $reminders = PaymentReminder::where('reference_number', $order->order_number)->get();
     if ($reminders->isEmpty()) {
         echo "ℹ️ No Payment Reminders found for this order.\n";
