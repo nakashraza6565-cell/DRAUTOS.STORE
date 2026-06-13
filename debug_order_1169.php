@@ -16,24 +16,15 @@ use App\Models\PaymentReminder;
 use App\User;
 
 try {
-    // 1. Search users matching "Khurram" or "Shahzad"
-    $users = User::where('name', 'like', '%Khurram%')
-        ->orWhere('name', 'like', '%Shahzad%')
-        ->get(['id', 'name', 'phone', 'email', 'current_balance', 'created_at']);
-    
-    echo "Matching Customers:\n";
+    // 1. Search users matching exact name "Khurram Shahzad"
+    $users = User::where('name', 'Khurram Shahzad')->get();
+    echo "Khurram Shahzad Customers Count: " . $users->count() . "\n";
     foreach ($users as $u) {
-        $ordersCount = Order::where('user_id', $u->id)->count();
-        $ledgerCount = CustomerLedger::where('user_id', $u->id)->count();
-        echo " - ID: {$u->id} | Name: {$u->name} | Phone: {$u->phone} | Email: {$u->email} | Bal: {$u->current_balance} | Created: {$u->created_at} | Orders: {$ordersCount} | Ledgers: {$ledgerCount}\n";
+        echo " - ID: {$u->id} | Name: {$u->name} | Phone: {$u->phone} | Email: {$u->email} | Bal: {$u->current_balance} | Created: {$u->created_at}\n";
     }
 
     // 2. Find the Order
     $order = Order::find(1169);
-    if (!$order) {
-        $order = Order::where('order_number', '2606133430')->first();
-    }
-
     if ($order) {
         echo "\nOrder Details:\n";
         echo " - ID: {$order->id}\n";
