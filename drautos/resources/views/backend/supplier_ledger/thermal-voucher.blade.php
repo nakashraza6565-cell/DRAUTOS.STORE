@@ -103,7 +103,7 @@
         }
     </style>
 </head>
-<body onload="window.print()">
+<body onload="(function(){ var m=/Android|iPhone|iPad/i.test(navigator.userAgent); if(m){ if(localStorage.getItem('drautos_bt_name')){ setTimeout(function(){window.drautosBTPrint();},1000); } } else { window.print(); } })();">
 
     @php
         $settings = \App\Models\Settings::first();
@@ -202,8 +202,11 @@
     <div class="footer">
         <div>Thank you for your business!</div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/backend/js/bluetooth-print.js"></script>
 
 </body>
+@include('backend.partials.bluetooth-print-btn')
 </html>
 
 
