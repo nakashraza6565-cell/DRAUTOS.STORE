@@ -177,11 +177,21 @@
         THANK YOU FOR YOUR PATRONAGE!
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/backend/js/bluetooth-print.js"></script>
     <script>
+        const _isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
         window.onload = function() {
-            window.print();
+            if (_isMobile) {
+                if (localStorage.getItem('drautos_bt_name')) {
+                    setTimeout(function() { window.drautosBTPrint(); }, 1000);
+                }
+            } else {
+                window.print();
+            }
         }
     </script>
+@include('backend.partials.bluetooth-print-btn')
 </body>
 </html>
 
