@@ -584,7 +584,7 @@
             </div>
             <form action="{{ route('delivery-receipts.store') }}" method="POST" target="_blank" onsubmit="var f = this; setTimeout(function(){ $('#quickBiltyModal').modal('hide'); f.reset(); }, 500);">
                 @csrf
-                <div class="modal-body px-4 pt-3">
+                <div class="modal-body px-4 pt-3" style="max-height: 70vh; overflow-y: auto;">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="small font-weight-bold">Date <span class="text-danger">*</span></label>
@@ -611,11 +611,11 @@
                                 @endforeach
                             </datalist>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="small font-weight-bold">Address</label>
-                            <textarea name="address" id="bilty_address" class="form-control" rows="2"></textarea>
+                            <textarea name="address" id="bilty_address" class="form-control" rows="1"></textarea>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 col-md-6 mb-3">
                             <label class="small font-weight-bold">City</label>
                             <input type="text" name="city" id="bilty_city" class="form-control">
                         </div>
