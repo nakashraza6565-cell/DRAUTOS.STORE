@@ -19,13 +19,13 @@
         color: #fff;
         border: none;
         border-radius: 50px;
-        padding: 14px 24px;
-        font-size: 15px;
+        padding: 14px 20px;
+        font-size: 14px;
         font-weight: 700;
         cursor: pointer;
         box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
-        min-width: 220px;
-        transition: all 0.2s ease;
+        width: 260px;
+        transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
         white-space: nowrap;
         -webkit-tap-highlight-color: transparent;
         user-select: none;
