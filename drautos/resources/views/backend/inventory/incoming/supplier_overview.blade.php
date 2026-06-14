@@ -10,6 +10,16 @@
                     <a href="{{route('inventory-incoming.create')}}" class="btn btn-primary btn-sm shadow-sm"><i class="fas fa-plus fa-sm text-white-50"></i> New Entry</a>
                 </div>
                 <div class="card-body">
+                    <div class="mb-4">
+                        <div class="input-group shadow-sm" style="border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text bg-white border-0 px-3" style="color: #64748b;">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                            <input type="text" id="custom-supplier-search" class="form-control border-0 pl-1" placeholder="Search supplier by name or company name..." style="height: 46px !important; font-size: 0.95rem; outline: none; box-shadow: none !important;">
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         @if(count($suppliersWithEntries) > 0)
                         <table class="table table-hover responsive-table-to-cards" id="supplier-table" width="100%" cellspacing="0">
@@ -89,10 +99,60 @@
 <script src="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
 <script>
 $(document).ready(function() {
-    $('#supplier-table').DataTable({
-        "order": [[ 1, "desc" ]], // Sort by entry count by default
-        "pageLength": 25
-    });
+    var table = null;
+    
+    // Try to initialize DataTable
+    try {
+        table = $('#supplier-table').DataTable({
+            "order": [[ 1, "desc" ]], // Sort by entry count by default
+            "pageLength": 25,
+            "dom": "lrtip" // Hide the default search bar since we have our custom one
+        });
+    } catch (e) {
+        console.warn("DataTable initialization failed, falling back to manual search. Error: ", e);
+    }
+
+    // Custom search handler
+    var searchInput = document.getElementById('custom-supplier-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var val = this.value.trim();
+            if (table) {
+                // Use DataTable search
+                table.search(val).draw();
+            } else {
+                // Custom manual fallback filtering if DataTables failed/cached out
+                var cleanVal = val.toLowerCase();
+                var rows = document.querySelectorAll('#supplier-table tbody tr');
+                var foundAny = false;
+
+                rows.forEach(function(row) {
+                    if (row.classList.contains('no-results-row')) return;
+                    
+                    var text = row.textContent.toLowerCase();
+                    if (text.indexOf(cleanVal) > -1) {
+                        row.style.setProperty('display', '', 'important');
+                        foundAny = true;
+                    } else {
+                        row.style.setProperty('display', 'none', 'important');
+                    }
+                });
+
+                // Handle no results row
+                var tbody = document.querySelector('#supplier-table tbody');
+                var existing = tbody.querySelector('.no-results-row');
+                if (existing) existing.remove();
+
+                if (!foundAny && cleanVal !== '') {
+                    var colSpan = document.querySelectorAll('#supplier-table thead th').length || 5;
+                    var noResultsRow = document.createElement('tr');
+                    noResultsRow.className = 'no-results-row';
+                    noResultsRow.innerHTML = '<td colspan="' + colSpan + '" class="text-center py-4 text-muted"><i class="fas fa-search mr-2"></i>No suppliers matching "' + val + '" found.</td>';
+                    tbody.appendChild(noResultsRow);
+                }
+            }
+        });
+    }
 });
 </script>
 @endpush
