@@ -72,6 +72,7 @@
 @endsection
 
 @push('styles')
+<link href="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
 <style>
     .table-hover tbody tr:hover {
         background-color: rgba(78, 115, 223, 0.05);
@@ -84,6 +85,8 @@
 @endpush
 
 @push('scripts')
+<script src="{{asset('backend/vendor/datatables/jquery.dataTables.min.js')}}"></script>
+<script src="{{asset('backend/vendor/datatables/dataTables.bootstrap4.min.js')}}"></script>
 <script>
 $(document).ready(function() {
     $('#supplier-table').DataTable({
