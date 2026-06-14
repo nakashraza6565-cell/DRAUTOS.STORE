@@ -115,7 +115,7 @@
 
 @include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
-<body onload="window.print();">
+<body onload="(function(){ var m=/Android|iPhone|iPad/i.test(navigator.userAgent); if(m){ if(localStorage.getItem('drautos_bt_name')){ setTimeout(function(){window.drautosBTPrint();},1200); } } else { window.print(); } })();">
     <!-- RECEIPT 1: PURCHASE ORDER (PERFORMA) -->
     <div class="header-container text-center">
         <div class="merchant-name">DANYAL AUTOS</div>
@@ -253,7 +253,10 @@
     <div class="text-center no-print" style="margin-top: 10mm;">
         <button onclick="window.print()" style="padding: 5mm 10mm;">Print Again</button>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="/backend/js/bluetooth-print.js"></script>
 </body>
+@include('backend.partials.bluetooth-print-btn')
 </html>
 
 
