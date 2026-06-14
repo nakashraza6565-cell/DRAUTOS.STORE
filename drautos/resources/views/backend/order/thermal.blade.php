@@ -2,6 +2,7 @@
 <html dir="{{ request('lang') === 'ur' ? 'rtl' : 'ltr' }}">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt #{{ $order->order_number }}</title>
     @if(request('lang') === 'ur')
     <link rel="preconnect" href="https://fonts.googleapis.com">

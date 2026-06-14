@@ -212,6 +212,22 @@
 </div>
 
 <style>
+    /* Specificity overrides to bypass parent page's color: #000 !important */
+    #drautos-bt-btn,
+    #drautos-bt-btn span,
+    #drautos-bt-btn i,
+    #drautos-bt-settings-modal,
+    #drautos-bt-settings-modal div,
+    #drautos-bt-settings-modal span,
+    #drautos-bt-settings-modal strong,
+    #drautos-bt-settings-modal h3,
+    #drautos-bt-settings-modal label,
+    #drautos-bt-settings-modal i,
+    #drautos-bt-settings-modal button,
+    #drautos-bt-settings-modal a {
+        color: #fff !important;
+    }
+
     #drautos-bt-btn {
         transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease !important;
     }
