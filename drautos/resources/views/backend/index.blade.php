@@ -619,11 +619,11 @@
                             <label class="small font-weight-bold">City</label>
                             <input type="text" name="city" id="bilty_city" class="form-control">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-6 col-md-4 mb-3">
                             <label class="small font-weight-bold">No. of Cartons</label>
                             <input type="number" name="no_of_cartons" class="form-control" value="0" min="0">
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-6 col-md-4 mb-3">
                             <label class="small font-weight-bold">No. of Bags</label>
                             <input type="number" name="no_of_bags" class="form-control" value="0" min="0">
                         </div>
