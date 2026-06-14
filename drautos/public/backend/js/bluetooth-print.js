@@ -1,11 +1,9 @@
 /**
- * DRAUTOS Web Bluetooth Thermal Printer Engine
- * ============================================
- * Direct BLE printing for SpeedX 80mm and compatible thermal printers.
- * Uses html2canvas to render the receipt as a bitmap, then sends it
- * via ESC/POS raster image commands over Bluetooth Low Energy (BLE).
+ * DRAUTOS Web Bluetooth & RawBT Thermal Printer Engine
+ * ====================================================
+ * Direct BLE printing for SpeedX 80mm BLE printers, and RawBT App
+ * intent integration for all classic Bluetooth / USB printers.
  *
- * Compatible browsers: Samsung Internet 6+, Chrome 56+ (Android)
  * Paper: 80mm | 576 printable dots wide | 203 DPI
  */
 (function (window) {
@@ -39,6 +37,24 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    // ─── Helper: Convert Uint8Array to Base64 (Safe for large receipts) ───────
+    function uint8ArrayToBase64(uint8) {
+        let binary = '';
+        const len = uint8.byteLength;
+        const chunk = 8192;
+        if (len < chunk) {
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(uint8[i]);
+            }
+            return window.btoa(binary);
+        }
+        for (let i = 0; i < len; i += chunk) {
+            const sub = uint8.subarray(i, Math.min(i + chunk, len));
+            binary += String.fromCharCode.apply(null, sub);
+        }
+        return window.btoa(binary);
+    }
+
     // ─── UI State Manager ─────────────────────────────────────────────────────
     function setState(state, message) {
         const btn    = document.getElementById('drautos-bt-btn');
@@ -51,12 +67,14 @@
         const states = ['bt-idle', 'bt-scanning', 'bt-printing', 'bt-success', 'bt-error', 'bt-unsupported'];
         states.forEach(s => btn.classList.remove(s));
 
+        const mode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+
         switch (state) {
             case 'idle':
                 btn.classList.add('bt-idle');
-                icon.className  = 'fas fa-bluetooth-b';
-                label.textContent = message || 'Bluetooth Print';
-                dot.style.background = '#94a3b8';
+                icon.className  = mode === 'rawbt' ? 'fas fa-print' : 'fas fa-bluetooth-b';
+                label.textContent = message || (mode === 'rawbt' ? 'Print via RawBT' : 'Bluetooth Print');
+                dot.style.background = mode === 'rawbt' ? '#818cf8' : '#94a3b8';
                 break;
             case 'scanning':
             case 'connecting':
@@ -79,8 +97,7 @@
                 label.textContent = message || 'Printed successfully!';
                 dot.style.background = '#10b981';
                 setTimeout(() => {
-                    const saved = localStorage.getItem('drautos_bt_name') || 'Printer';
-                    setState('connected', saved);
+                    updateUIForCurrentMode();
                 }, 3000);
                 break;
             case 'connected':
@@ -96,12 +113,22 @@
                 dot.style.background = '#ef4444';
                 break;
             case 'unsupported':
-                btn.classList.add('bt-error');
+                btn.classList.add('bt-unsupported');
                 icon.className  = 'fas fa-times-circle';
                 label.textContent = 'Bluetooth not supported on this browser';
                 btn.disabled = true;
                 dot.style.background = '#ef4444';
                 break;
+        }
+    }
+
+    function updateUIForCurrentMode() {
+        const mode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+        if (mode === 'rawbt') {
+            setState('idle', 'Print via RawBT');
+        } else {
+            const savedName = localStorage.getItem('drautos_bt_name');
+            setState('idle', savedName ? `${savedName} — tap to print` : 'Bluetooth Print');
         }
     }
 
@@ -127,7 +154,6 @@
     }
 
     async function ensureConnected() {
-        // Already connected?
         if (btCharacteristic && btDevice && btDevice.gatt.connected) return;
 
         setState('scanning');
@@ -162,7 +188,6 @@
 
     // ─── ESC/POS: Image command builder ──────────────────────────────────────
     function buildRasterCmd(pixels, canvasWidth, canvasHeight) {
-        // Clamp printable width
         const printWidth  = Math.min(canvasWidth, DOTS_PER_ROW);
         const bytesPerRow = Math.ceil(printWidth / 8);
         const rows        = canvasHeight;
@@ -204,12 +229,11 @@
     // ─── Main capture + print pipeline ───────────────────────────────────────
     async function captureAndPrint() {
         const panel = document.getElementById('drautos-bt-panel');
-
-        // Hide BT panel so it doesn't appear in the screenshot
         if (panel) panel.style.display = 'none';
 
         try {
-            setState('printing', 'Capturing receipt...');
+            const mode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+            setState('printing', mode === 'rawbt' ? 'Rendering with RawBT...' : 'Capturing receipt...');
 
             // Calculate scale: target 576px canvas width from current body width
             const bodyWidth = document.body.scrollWidth || document.documentElement.scrollWidth;
@@ -244,15 +268,106 @@
             job.set(feed,   off); off += feed.length;
             job.set(cut,    off);
 
-            await writeAll(job);
-
-            const name = localStorage.getItem('drautos_bt_name') || 'Printer';
-            setState('success', `Printed via ${name} ✓`);
+            if (mode === 'rawbt') {
+                setState('printing', 'Opening RawBT App...');
+                const base64 = uint8ArrayToBase64(job);
+                window.location.href = "intent:base64," + base64 + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+                setState('success', 'Sent to RawBT App ✓');
+            } else {
+                await writeAll(job);
+                const name = localStorage.getItem('drautos_bt_name') || 'Printer';
+                setState('success', `Printed via ${name} ✓`);
+            }
 
         } finally {
             if (panel) panel.style.display = '';
         }
     }
+
+    // ─── Settings Modal Controllers ───────────────────────────────────────────
+    window.drautosOpenSettings = function() {
+        const modal = document.getElementById('drautos-bt-settings-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        const hasBt = 'bluetooth' in navigator;
+        const bleOpt = document.getElementById('mode-option-ble');
+        const bleSub = document.getElementById('ble-subtext');
+        
+        if (!hasBt) {
+            if (bleOpt) {
+                bleOpt.style.opacity = '0.5';
+                bleOpt.style.cursor = 'not-allowed';
+                bleOpt.onclick = null;
+            }
+            if (bleSub) {
+                bleSub.textContent = 'Direct BLE connection (Not supported on this browser/device)';
+            }
+            // Force setting mode to rawbt if BLE is not supported
+            localStorage.setItem('drautos_print_mode', 'rawbt');
+        }
+
+        const mode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+        window.drautosSetPrintMode(mode, true);
+    };
+
+    window.drautosCloseSettings = function() {
+        const modal = document.getElementById('drautos-bt-settings-modal');
+        if (modal) modal.style.display = 'none';
+        updateUIForCurrentMode();
+    };
+
+    window.drautosSetPrintMode = function(mode, skipSave = false) {
+        if (mode === 'ble' && !('bluetooth' in navigator)) {
+            return; // Block selection
+        }
+
+        if (!skipSave) {
+            localStorage.setItem('drautos_print_mode', mode);
+        }
+
+        const rawbtRadio = document.getElementById('mode-rawbt');
+        const bleRadio = document.getElementById('mode-ble');
+        if (rawbtRadio) rawbtRadio.checked = (mode === 'rawbt');
+        if (bleRadio) bleRadio.checked = (mode === 'ble');
+
+        const rawbtCard = document.getElementById('mode-option-rawbt');
+        const bleCard = document.getElementById('mode-option-ble');
+
+        if (rawbtCard) {
+            if (mode === 'rawbt') {
+                rawbtCard.style.border = '2px solid #6366f1';
+                rawbtCard.style.background = 'rgba(255, 255, 255, 0.05)';
+            } else {
+                rawbtCard.style.border = '2px solid rgba(255, 255, 255, 0.05)';
+                rawbtCard.style.background = 'rgba(255, 255, 255, 0.02)';
+            }
+        }
+
+        if (bleCard && ('bluetooth' in navigator)) {
+            if (mode === 'ble') {
+                bleCard.style.border = '2px solid #6366f1';
+                bleCard.style.background = 'rgba(255, 255, 255, 0.05)';
+            } else {
+                bleCard.style.border = '2px solid rgba(255, 255, 255, 0.05)';
+                bleCard.style.background = 'rgba(255, 255, 255, 0.02)';
+            }
+        }
+
+        const installBtn = document.getElementById('rawbt-install-btn');
+        const forgetBtn = document.getElementById('ble-forget-btn');
+        if (installBtn) installBtn.style.display = mode === 'rawbt' ? 'flex' : 'none';
+        if (forgetBtn) forgetBtn.style.display = mode === 'ble' ? 'flex' : 'none';
+    };
+
+    window.drautosForgetBle = function() {
+        if (confirm('Forget saved BLE printer and scan for a new one next time?')) {
+            localStorage.removeItem('drautos_bt_name');
+            btDevice = null;
+            btCharacteristic = null;
+            window.drautosCloseSettings();
+        }
+    };
 
     // ─── Public API ───────────────────────────────────────────────────────────
     window.drautosBTPrint = async function () {
@@ -260,17 +375,21 @@
         isPrinting = true;
 
         try {
-            if (!('bluetooth' in navigator)) {
-                setState('unsupported');
-                return;
+            const currentMode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+            
+            if (currentMode === 'ble') {
+                if (!('bluetooth' in navigator)) {
+                    setState('unsupported');
+                    return;
+                }
+                await ensureConnected();
             }
-            await ensureConnected();
+            
             await captureAndPrint();
         } catch (err) {
             console.error('[DRAUTOS-BT] Error:', err);
             const msg = err.message || 'Unknown error';
             if (err.name === 'NotFoundError') {
-                // User cancelled the device picker — restore idle
                 const name = localStorage.getItem('drautos_bt_name') || '';
                 setState('idle', name ? `${name} — tap to print` : 'Bluetooth Print');
             } else {
@@ -286,14 +405,12 @@
         const btn = document.getElementById('drautos-bt-btn');
         if (!btn) return;
 
-        if (!('bluetooth' in navigator)) {
-            setState('unsupported');
-            return;
+        const currentMode = localStorage.getItem('drautos_print_mode') || 'rawbt';
+        if (currentMode === 'ble' && !('bluetooth' in navigator)) {
+            localStorage.setItem('drautos_print_mode', 'rawbt');
         }
 
-        const savedName = localStorage.getItem('drautos_bt_name');
-        setState('idle', savedName ? `${savedName} — tap to print` : 'Bluetooth Print');
-
+        updateUIForCurrentMode();
         btn.addEventListener('click', window.drautosBTPrint);
     });
 

@@ -255,8 +255,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="/backend/js/bluetooth-print.js"></script>
+    @include('backend.partials.bluetooth-print-btn')
 </body>
-@include('backend.partials.bluetooth-print-btn')
 </html>
 
 
