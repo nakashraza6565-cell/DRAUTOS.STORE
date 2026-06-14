@@ -189,18 +189,20 @@
             </div>
         </div>
 
-        <!-- Cash Register -->
+        <!-- Cash Register / Total Wallets -->
         <div class="col-6 col-xl-3 col-md-6 mb-3">
             <div class="premium-card gradient-primary text-white shadow-lg h-100">
                 <div class="card-body p-3 p-md-4">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="text-xs font-weight-bold text-uppercase opacity-75 d-none d-md-block" style="letter-spacing: 1px;">Active Cash Drawer</div>
-                        <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">Register</div>
-                        <i class="fas fa-cash-register fa-lg opacity-50"></i>
+                        <div class="text-xs font-weight-bold text-uppercase opacity-75 d-none d-md-block" style="letter-spacing: 1px;">Total Cash & Wallets</div>
+                        <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">All Wallets</div>
+                        <i class="fas fa-wallet fa-lg opacity-50"></i>
                     </div>
-                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($register_balance) }}</div>
+                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($total_wallet_balance) }}</div>
                     <div class="mt-2 small font-weight-bold">
-                        <span class="badge badge-light text-primary px-2 py-1">{{ $active_register ? 'OPEN' : 'CLOSED' }}</span>
+                        <span class="badge badge-light text-primary px-2 py-1" style="font-size: 0.7rem; font-weight: 800;">
+                            <i class="fas fa-cash-register mr-1" style="font-size: 0.65rem;"></i> Register: {{ $active_register ? 'OPEN' : 'CLOSED' }}
+                        </span>
                     </div>
                 </div>
             </div>

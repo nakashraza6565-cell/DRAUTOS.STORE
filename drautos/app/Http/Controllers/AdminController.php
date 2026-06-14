@@ -315,6 +315,8 @@ class AdminController extends Controller
         }
 
         $accounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        $total_wallet_balance = $accounts->sum('current_balance');
+
         $recent_expense_titles = \App\Models\Expense::select('title')
             ->groupBy('title')
             ->orderByRaw('COUNT(*) DESC')
@@ -329,7 +331,7 @@ class AdminController extends Controller
                 'yesterday_sales', 'top_revenue_customers', 'top_order_customers', 'recent_customers', 'staff_count',
                 'supplier_count', 'total_stock_value', 'active_register', 'today_tasks',
                 'new_products', 'order_labels', 'order_counts', 'order_amounts',
-                'register_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
+                'register_balance', 'total_wallet_balance', 'today_reminders', 'low_stock_count', 'sticker_count',
                 'box_count', 'today_attendance', 'present_staff_count', 'all_staff',
                 'total_payables', 'total_receivables', 'activity_logs', 'ai_headlines',
                 'money_in', 'money_out', 'accounts', 'staffAccId', 'recent_expense_titles',
