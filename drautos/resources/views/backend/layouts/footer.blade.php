@@ -476,6 +476,85 @@
                 });
             }
 
+            function getEmoji(text) {
+                var clean = String(text || '').trim();
+                var mapping = {
+                    // Danyal Autos Enterprise
+                    'Media Assets': '📁',
+                    'Activity Log': '📋',
+                    'Active Banners': '🖼️',
+                    'Create Banner': '➕',
+                    'Coupons': '🎟️',
+                    'All Receipts': '📦',
+                    'Global Analytics': '📊',
+                    
+                    // Point of Sale
+                    'Local Sales (POS)': '🛒',
+                    'Sale Orders': '📋',
+                    'Cash Register': '💵',
+                    'Orders & Billing': '🧾',
+                    'Sale Returns': '🔄',
+                    
+                    // Product / Stock Control
+                    'All Products': '📦',
+                    'Add New Item': '➕',
+                    'Price List': '🏷️',
+                    'Product Categories': '🗂️',
+                    'Brands': '🔖',
+                    'Bundles / Kitting': '🎁',
+                    
+                    // Supply Chain
+                    'Suppliers / Vendors': '🏭',
+                    'Warehouses': '🏢',
+                    'Purchase Orders': '📑',
+                    
+                    // Incoming Goods
+                    'Incoming Goods': '📥',
+                    
+                    // Packaging Handling
+                    'Stock Inventory': '📦',
+                    'New Purchases': '🛍️',
+                    'Usage History': '🕒',
+                    
+                    // Purchase Returns
+                    'Purchase Returns': '📤',
+                    
+                    // Manufacturing
+                    'Die Management': '🔩',
+                    'Raw Materials & Labor': '🪵',
+                    'Raw Material Invoices': '🧾',
+                    'Bill of Materials': '📋',
+                    'Create New BOM': '➕',
+                    
+                    // Financial Management
+                    'Payment Reminders': '🔔',
+                    'Customer Ledgers': '👥',
+                    'Supplier Ledgers': '🏭',
+                    'Cheque Management': '💳',
+                    
+                    // Business Intelligence / Reports
+                    'Sales Reports': '📈',
+                    'Stock Reports': '📊',
+                    'Dead Products': '💀',
+                    'Profit & Loss': '💵',
+                    'Payable Charts': '📉',
+                    'Receivable Charts': '📈',
+                    'Product Analysis': '🧪',
+                    'Customer Reports': '👥',
+                    
+                    // System Configuration
+                    'Roles & Permissions': '🛡️',
+                    'Customers (Users)': '👥',
+                    'Pending Registrations': '⏳',
+                    'General Settings': '⚙️',
+                    'WhatsApp Settings': '💬',
+                    'WhatsApp Campaigns': '📣',
+                    'WhatsApp Test Tool': '🧪',
+                    'Visit Storefront': '🌐'
+                };
+                return mapping[clean] ? mapping[clean] + ' ' : '';
+            }
+
             function topNavIcon(heading) {
                 var icons = {
                     'Main Content': '<i class="fas fa-tachometer-alt mr-1"></i>',
@@ -521,7 +600,7 @@
                             var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
                             var subKey = subText + '|' + subHref;
                             if (subText && !added[subKey]) {
-                                productItemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
+                                productItemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '</a>';
                                 added[subKey] = true;
                             }
                         });
@@ -568,7 +647,7 @@
                         var mainText = $mainLink.clone().find('i,span.badge').remove().end().text().trim();
                         var mainKey = mainText + '|' + mainHref;
                         if (mainText && !added[mainKey]) {
-                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(mainHref) + '">' + esc(mainText) + '</a>';
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(mainHref) + '">' + getEmoji(mainText) + esc(mainText) + '</a>';
                             added[mainKey] = true;
                         }
                     }
@@ -583,7 +662,7 @@
                         }
                         
                         if (subText && !added[subKey]) {
-                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '</a>';
                             added[subKey] = true;
                         }
                     });
@@ -618,7 +697,7 @@
                         if ($dieMgmt.length) {
                             var dieHref = $dieMgmt.find('> .nav-link').attr('href');
                             if (dieHref && !added['Die Management|' + dieHref]) {
-                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(dieHref) + '">Die Management</a>';
+                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(dieHref) + '">' + getEmoji('Die Management') + 'Die Management</a>';
                                 added['Die Management|' + dieHref] = true;
                             }
                         }
@@ -629,7 +708,7 @@
                             var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
                             var subKey = subText + '|' + subHref;
                             if (subText && !added[subKey]) {
-                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + esc(subText) + '</a>';
+                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '</a>';
                                 added[subKey] = true;
                             }
                         });

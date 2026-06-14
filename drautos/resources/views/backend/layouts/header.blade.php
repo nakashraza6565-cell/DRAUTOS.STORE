@@ -32,14 +32,14 @@
                 <i class="fas fa-users mr-1"></i> HR
             </a>
             <div class="dropdown-menu shadow-sm border-0 animated--grow-in top-category-menu" aria-labelledby="hrDropdown" style="border-radius: 8px; border-top: 3px solid #083259 !important;">
-                <a class="dropdown-item py-2" href="{{route('staff.index')}}"><i class="fas fa-id-badge mr-2 text-primary"></i> Staff Management</a>
-                <a class="dropdown-item py-2" href="{{route('attendance.index')}}"><i class="fas fa-clock mr-2 text-info"></i> Attendance</a>
-                <a class="dropdown-item py-2" href="{{route('expenses.index')}}"><i class="fas fa-money-bill-wave mr-2 text-danger"></i> Expenses</a>
+                <a class="dropdown-item py-2" href="{{route('staff.index')}}">👥 Staff Management</a>
+                <a class="dropdown-item py-2" href="{{route('attendance.index')}}">🕐 Attendance</a>
+                <a class="dropdown-item py-2" href="{{route('expenses.index')}}">💸 Expenses</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item py-2" href="{{route('tasks.index')}}"><i class="fas fa-tasks mr-2 text-success"></i> Tasks List</a>
-                <a class="dropdown-item py-2" href="{{route('tasks.calendar')}}"><i class="fas fa-calendar mr-2 text-warning"></i> Task Calendar</a>
+                <a class="dropdown-item py-2" href="{{route('tasks.index')}}">✅ Tasks List</a>
+                <a class="dropdown-item py-2" href="{{route('tasks.calendar')}}">📅 Task Calendar</a>
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item py-2" href="{{route('commissions.index')}}"><i class="fas fa-percentage mr-2 text-secondary"></i> Commissions</a>
+                <a class="dropdown-item py-2" href="{{route('commissions.index')}}">💰 Commissions</a>
             </div>
         </li>
         @endhasrole
@@ -93,18 +93,18 @@
               <div style="font-size:11px; color:#94a3b8; font-weight:500;">System Administrator</div>
           </div>
           <a class="dropdown-item py-2" href="{{route('admin-profile')}}">
-            <i class="fas fa-user fa-sm fa-fw mr-2" style="color:#083259; opacity:0.6;"></i> Profile
+            👤 Profile
           </a>
           <a class="dropdown-item py-2" href="{{route('change.password.form')}}">
-            <i class="fas fa-key fa-sm fa-fw mr-2" style="color:#083259; opacity:0.6;"></i> Change Password
+            🔑 Change Password
           </a>
           <a class="dropdown-item py-2" href="{{route('settings')}}">
-            <i class="fas fa-cogs fa-sm fa-fw mr-2" style="color:#083259; opacity:0.6;"></i> Settings
+            ⚙️ Settings
           </a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item py-2" style="color:#dc2626; font-weight:700;" href="{{ route('logout') }}"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-             <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2"></i> {{ __('Logout') }}
+             🚪 {{ __('Logout') }}
           </a>
           <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
               @csrf
