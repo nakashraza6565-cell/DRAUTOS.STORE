@@ -346,8 +346,21 @@
 
 @push('scripts')
 <script>
-    let cart = {!! isset($edit_cart) ? json_encode($edit_cart) : '[]' !!};
-    let initialProducts = {!! json_encode($products) !!};
+    let rawCart = {!! isset($edit_cart) ? json_encode($edit_cart) : '[]' !!};
+    let cart = [];
+    try {
+        if (rawCart) {
+            if (Array.isArray(rawCart)) {
+                cart = rawCart;
+            } else if (typeof rawCart === 'object') {
+                cart = Object.values(rawCart);
+            }
+        }
+    } catch (e) {
+        console.error("Error parsing cart:", e);
+    }
+    let rawProducts = {!! json_encode($products) !!};
+    let initialProducts = Array.isArray(rawProducts) ? rawProducts : Object.values(rawProducts);
     let products = initialProducts;
     const customerType = "{{ auth()->user()->customer_type ?? 'retail' }}";
     const isEdit = {{ isset($order) ? 'true' : 'false' }};
