@@ -1,18 +1,18 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
+header('Content-Type: text/plain; charset=utf-8');
 require 'drautos/vendor/autoload.php';
 $app = require_once 'drautos/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$order = \App\Models\Order::find(534);
-$cartData = $order->cart_info->map(function($item) {
-    return [
-        'id' => $item->product_id,
-        'bundle_id' => $item->bundle_id,
-        'is_bundle' => $item->bundle_id ? true : false,
-        'title' => $item->product ? $item->product->title : ($item->bundle ? $item->bundle->name : 'Unknown Product'),
-        'price' => (float)($item->price ?? 0),
-        'qty' => (int)($item->quantity ?? 1)
-    ];
-});
-echo json_encode($cartData);
+$orders = \App\Models\Order::orderBy('id', 'desc')->limit(10)->get();
+foreach ($orders as $order) {
+    echo "Order ID: {$order->id}, Number: {$order->order_number}, Status: {$order->status}\n";
+    echo "  cart_info count: " . $order->cart_info()->count() . "\n";
+    echo "  cart count: " . $order->cart()->count() . "\n";
+    foreach ($order->cart_info as $item) {
+        echo "    - Item Type: {$item->item_type}, Product ID: {$item->product_id}, Bundle ID: {$item->bundle_id}, Price: {$item->price}, Qty: {$item->quantity}\n";
+        echo "      Product title: " . ($item->product->title ?? 'N/A') . "\n";
+        echo "      Bundle name: " . ($item->bundle->name ?? 'N/A') . "\n";
+    }
+    echo "\n";
+}
