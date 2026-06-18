@@ -48,6 +48,29 @@ Route::get('/debug-logs', function() {
     }
     return 'Log file not found.';
 });
+
+Route::get('/check-edit-diagnostic', function() {
+    $order = \App\Models\Order::has('cart_info')->orderBy('id', 'desc')->first();
+    if (!$order) {
+        return response()->json(['error' => 'No order found with items!']);
+    }
+    $cartData = $order->cart_info->map(function($item) {
+        return [
+            'id' => $item->product_id,
+            'bundle_id' => $item->bundle_id,
+            'is_bundle' => $item->bundle_id ? true : false,
+            'title' => $item->product ? $item->product->title : ($item->bundle ? $item->bundle->name : 'Unknown Product'),
+            'price' => (float)($item->price ?? 0),
+            'qty' => (int)($item->quantity ?? 1)
+        ];
+    })->values();
+    return response()->json([
+        'order_number' => $order->order_number,
+        'order_id' => $order->id,
+        'cart_info_count' => $order->cart_info->count(),
+        'cartData' => $cartData
+    ]);
+});
 Route::get('/fix-db', function () {
     try {
         $migrations = [
