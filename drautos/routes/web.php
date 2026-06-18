@@ -49,6 +49,19 @@ Route::get('/debug-logs', function() {
     return 'Log file not found.';
 });
 
+Route::get('/test-render-edit/{id}', function($id) {
+    $order = \App\Models\Order::with(['cart_info.product', 'cart_info.bundle'])->find($id);
+    if (!$order) {
+        return "Order not found";
+    }
+    $reminder = \App\Models\PaymentReminder::where('reference_number', $order->order_number)->first();
+    $paid_at_pos = $order->total_amount;
+    if($reminder) {
+        $paid_at_pos = $order->total_amount - $reminder->amount;
+    }
+    return view('backend.order.edit', compact('order', 'reminder', 'paid_at_pos'));
+});
+
 Route::get('/fix-db', function () {
     try {
         $migrations = [
