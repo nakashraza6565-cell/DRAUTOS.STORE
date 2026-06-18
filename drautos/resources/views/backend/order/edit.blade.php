@@ -173,11 +173,24 @@
             'price' => (float)($item->price ?? 0),
             'qty' => (int)($item->quantity ?? 1)
         ];
-    });
+    })->values();
 @endphp
 <script>
     // Initialize cart with existing items safely
-    let cart = @json($cartData);
+    let rawCart = @json($cartData);
+    let cart = [];
+    try {
+        if (rawCart) {
+            if (Array.isArray(rawCart)) {
+                cart = rawCart;
+            } else if (typeof rawCart === 'object') {
+                cart = Object.values(rawCart);
+            }
+        }
+        console.log("Loaded cart items:", cart);
+    } catch (e) {
+        console.error("Error parsing cart data:", e);
+    }
 
     $(document).ready(function() {
         renderCart();
@@ -239,49 +252,55 @@
     });
 
     function renderCart() {
-        let html = '';
-        let total = 0;
-        
-        cart.forEach((item, index) => {
-            let subtotal = item.price * item.qty;
-            total += subtotal;
+        try {
+            let html = '';
+            let total = 0;
             
-            html += `
-                <tr>
-                    <td>
-                        ${item.title}
-                        <input type="hidden" name="items[${index}][id]" value="${item.id}">
-                        <input type="hidden" name="items[${index}][bundle_id]" value="${item.bundle_id || ''}">
-                        <input type="hidden" name="items[${index}][is_bundle]" value="${item.is_bundle ? '1' : '0'}">
-                    </td>
-                    <td>
-                        <div class="input-group input-group-sm">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text px-2">Rs.</span>
+            cart.forEach((item, index) => {
+                let price = parseFloat(item.price) || 0;
+                let qty = parseInt(item.qty) || 1;
+                let subtotal = price * qty;
+                total += subtotal;
+                
+                html += `
+                    <tr>
+                        <td>
+                            ${item.title || 'Unknown Product'}
+                            <input type="hidden" name="items[${index}][id]" value="${item.id || ''}">
+                            <input type="hidden" name="items[${index}][bundle_id]" value="${item.bundle_id || ''}">
+                            <input type="hidden" name="items[${index}][is_bundle]" value="${item.is_bundle ? '1' : '0'}">
+                        </td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text px-2">Rs.</span>
+                                </div>
+                                <input type="number" name="items[${index}][price]" class="form-control" 
+                                       value="${price}" step="0.01" min="0" style="min-width: 80px;"
+                                       onchange="updateTxPrice(${index}, this.value)">
                             </div>
-                            <input type="number" name="items[${index}][price]" class="form-control" 
-                                   value="${item.price}" step="0.01" min="0" style="min-width: 80px;"
-                                   onchange="updateTxPrice(${index}, this.value)">
-                        </div>
-                    </td>
-                    <td>
-                        <input type="number" name="items[${index}][qty]" class="form-control form-control-sm" 
-                               value="${item.qty}" min="1" style="width: 80px;" 
-                               onchange="updateTxQty(${index}, this.value)">
-                    </td>
-                    <td class="align-middle">Rs. ${subtotal.toFixed(2)}</td>
-                    <td class="align-middle">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        $('#cart_body').html(html);
-        $('#grand_total').text('Rs. ' + total.toFixed(2));
+                        </td>
+                        <td>
+                            <input type="number" name="items[${index}][qty]" class="form-control form-control-sm" 
+                                   value="${qty}" min="1" style="width: 80px;" 
+                                   onchange="updateTxQty(${index}, this.value)">
+                        </td>
+                        <td class="align-middle">Rs. ${subtotal.toFixed(2)}</td>
+                        <td class="align-middle">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${index})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            $('#cart_body').html(html);
+            $('#grand_total').text('Rs. ' + total.toFixed(2));
 
-        // Auto-update pending amount calculation
-        updatePendingCalculation(total);
+            // Auto-update pending amount calculation
+            updatePendingCalculation(total);
+        } catch (err) {
+            console.error("Error in renderCart:", err);
+        }
     }
 
     window.updateTxPrice = function(index, val) {
@@ -299,7 +318,7 @@
     // Listener for manual paid amount change
     $('#form_amount_paid').on('input', function() {
         let total = 0;
-        cart.forEach(item => total += (item.price * item.qty));
+        cart.forEach(item => total += (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1));
         updatePendingCalculation(total);
     });
 
