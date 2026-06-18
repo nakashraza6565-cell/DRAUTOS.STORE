@@ -119,8 +119,6 @@
         <span style="font-family: sans-serif; font-size: 14px;">Powered by DRAUTOS</span>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/backend/js/bluetooth-print.js"></script>
     <script>
         // Check if text contains mostly English characters
         function isEnglish(text) {
@@ -152,8 +150,6 @@
             }
         }
 
-        const _biltyMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
         window.onload = async function() {
             // Auto translate fields if they are in English.
             // Use json_encode to safely encode quotes and newlines, preventing Javascript syntax errors.
@@ -164,20 +160,9 @@
                 translateToUrdu({!! json_encode($receipt->courier_company) !!}, "val-courier")
             ]);
 
-            if (_biltyMobile) {
-                // On mobile: use Bluetooth printing after translations complete
-                const savedPrinter = localStorage.getItem('drautos_bt_name');
-                if (savedPrinter) {
-                    setTimeout(function() { window.drautosBTPrint(); }, 500);
-                }
-                // If no printer paired, user taps the BT button manually
-            } else {
-                // Desktop: use system print dialog then go back
-                window.print();
-                setTimeout(() => window.history.back(), 1000);
-            }
+            window.print();
+            setTimeout(() => window.history.back(), 1000);
         };
     </script>
-@include('backend.partials.bluetooth-print-btn')
 </body>
 </html>

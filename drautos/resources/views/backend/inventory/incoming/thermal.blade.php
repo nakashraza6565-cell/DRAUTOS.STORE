@@ -41,7 +41,7 @@
 
 @include('backend.layouts.watermark', ['type' => 'thermal'])
 </head>
-<body onload="(function(){ var m=/Android|iPhone|iPad/i.test(navigator.userAgent); if(m){ if(localStorage.getItem('drautos_bt_name')){ setTimeout(function(){window.drautosBTPrint();},1200); } } else { window.print(); } })();">
+<body onload="window.print()">
     <div class="text-center header">
         <h2 style="margin: 0; font-size: 18px;">DANYAL AUTOS</h2>
         <p style="margin: 2px 0;">INCOMING GOODS RECEIPT</p>
@@ -174,9 +174,7 @@
     <div class="text-center no-print" style="margin-top: 10mm;">
         <button onclick="window.print()" style="padding: 5mm 10mm;">Print Again</button>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/backend/js/bluetooth-print.js"></script>
-    @include('backend.partials.bluetooth-print-btn')
+
 </body>
 </html>
 

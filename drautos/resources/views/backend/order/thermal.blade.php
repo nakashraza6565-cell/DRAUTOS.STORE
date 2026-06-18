@@ -310,32 +310,10 @@
     @endforeach
 
     <script>
-        // html2canvas for BLE bitmap printing
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="/backend/js/bluetooth-print.js"></script>
-
-    <script>
-        const _isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-
         window.onload = function() {
-            if (_isMobile) {
-                // On mobile: skip the system print dialog.
-                // BT button handles printing. If printer is already paired, auto-print.
-                const savedPrinter = localStorage.getItem('drautos_bt_name');
-                if (savedPrinter) {
-                    // Small delay to let page render fully before capture
-                    setTimeout(function() {
-                        window.drautosBTPrint();
-                    }, 1200);
-                }
-            } else {
-                // On desktop: use the normal browser print dialog
-                window.print();
-            }
+            window.print();
         }
     </script>
-@include('backend.partials.bluetooth-print-btn')
 </body>
 </html>
 
