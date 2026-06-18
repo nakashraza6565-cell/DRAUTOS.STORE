@@ -164,7 +164,7 @@
 
 @push('scripts')
 @php
-    $cartData = $order->cart->map(function($item) {
+    $cartData = $order->cart_info->map(function($item) {
         return [
             'id' => $item->product_id,
             'bundle_id' => $item->bundle_id,

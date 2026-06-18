@@ -262,7 +262,7 @@ class OrderController extends Controller
      */
     public function edit($id)
     {
-        $order = Order::with('cart.product')->find($id);
+        $order = Order::with(['cart_info.product', 'cart_info.bundle'])->find($id);
         
         if(!$order) {
             request()->session()->flash('error', 'Order not found');
@@ -300,7 +300,7 @@ class OrderController extends Controller
         if ($request->has('items')) {
             // 1. Revert Stock if previously delivered
             if ($order->status == 'delivered') {
-                foreach($order->cart as $cart){
+                foreach($order->cart_info as $cart){
                     $product = \App\Models\Product::find($cart->product_id);
                     if($product) {
                         $product->stock += $cart->quantity;
@@ -310,7 +310,7 @@ class OrderController extends Controller
             }
             
             // 2. Clear Old Cart
-            $order->cart()->delete();
+            $order->cart_info()->delete();
             
             // 3. Build New Cart
             $total_amount = 0;
@@ -365,7 +365,7 @@ class OrderController extends Controller
         else {
             // Legacy Status Update Only
             if($order->status != 'delivered' && $request->status == 'delivered'){
-                foreach($order->cart as $cart){
+                foreach($order->cart_info as $cart){
                      if ($cart->item_type === 'bundle') continue;
                      $product=$cart->product;
                      if($product) {
@@ -375,7 +375,7 @@ class OrderController extends Controller
                 }
             }
             elseif($order->status == 'delivered' && $request->status != 'delivered'){
-                foreach($order->cart as $cart){
+                foreach($order->cart_info as $cart){
                      if ($cart->item_type === 'bundle') continue;
                      $product=$cart->product;
                      if($product) {
