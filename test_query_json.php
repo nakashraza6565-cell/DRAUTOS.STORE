@@ -1,27 +1,14 @@
 <?php
 header('Content-Type: text/plain; charset=utf-8');
-$filePath = __DIR__ . '/drautos/app/Http/Controllers/OrderController.php';
+require 'drautos/vendor/autoload.php';
+$app = require_once 'drautos/bootstrap/app.php';
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-if (!file_exists($filePath)) {
-    echo "File not found at: {$filePath}\n";
-    exit;
-}
-
-echo "File exists! Size: " . filesize($filePath) . " bytes\n";
-echo "Last Modified: " . date("Y-m-d H:i:s", filemtime($filePath)) . "\n\n";
-
-$content = file_get_contents($filePath);
-
-// Search for edit method in OrderController.php
-$lines = explode("\n", $content);
-$foundEdit = false;
-$editLines = 0;
-foreach ($lines as $num => $line) {
-    if (strpos($line, 'public function edit(') !== false) {
-        $foundEdit = true;
+try {
+    $admins = \App\User::where('role', 'admin')->get();
+    foreach ($admins as $admin) {
+        echo "ID: {$admin->id} | Name: {$admin->name} | Email: {$admin->email} | Role: {$admin->role}\n";
     }
-    if ($foundEdit && $editLines < 15) {
-        echo "Line " . ($num + 1) . ": " . trim($line) . "\n";
-        $editLines++;
-    }
+} catch (\Exception $e) {
+    echo "Error: " . $e->getMessage() . "\n";
 }
