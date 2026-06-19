@@ -1,0 +1,2002 @@
+=== Script #1 (inline) ===
+(function() {
+          const chatWindow  = document.getElementById('ai-chat-window');
+          const trigger     = document.getElementById('ai-chat-trigger');
+          const closeBtn    = document.getElementById('ai-chat-close');
+          const resizeBtn   = document.getElementById('ai-chat-resize');
+          const input       = document.getElementById('ai-chat-input');
+          const sendBtn     = document.getElementById('ai-chat-send');
+          const messages    = document.getElementById('ai-chat-messages');
+          const quickActions = document.querySelectorAll('.ai-action-btn');
+          
+          let chatHistory = [];
+
+          trigger.addEventListener('click', () => {
+              chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+          });
+          closeBtn.addEventListener('click', () => { chatWindow.style.display = 'none'; });
+          
+          resizeBtn.addEventListener('click', () => {
+              chatWindow.classList.toggle('large-view');
+              const isLarge = chatWindow.classList.contains('large-view');
+              document.getElementById('resize-icon-max').style.display = isLarge ? 'none' : 'block';
+              document.getElementById('resize-icon-min').style.display = isLarge ? 'block' : 'none';
+          });
+
+          sendBtn.addEventListener('click', () => sendMessage());
+          input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+          quickActions.forEach(btn => {
+              btn.addEventListener('click', () => sendMessage(btn.getAttribute('data-query')));
+          });
+
+          function addMessage(text, type) {
+              const div = document.createElement('div');
+              div.className = 'ai-msg ' + type;
+              div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1').replace(/\n/g, '<br>');
+              messages.appendChild(div);
+              messages.scrollTop = messages.scrollHeight;
+              return div;
+          }
+
+          function sendMessage(overrideText = null) {
+              const text = overrideText || input.value.trim();
+              if (!text) return;
+
+              addMessage(text, 'user');
+              if (!overrideText) input.value = '';
+
+              const thinking = addMessage('🧠 Manager is working...', 'thinking');
+
+              fetch('/admin/ai-chat', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                  },
+                  body: JSON.stringify({
+                      message: text,
+                      history: chatHistory
+                  })
+              })
+              .then(async res => {
+                  if (!res.ok) {
+                      const textVal = await res.text();
+                      let errMsg = `Server Error (Status ${res.status})`;
+                      try {
+                          const errJson = JSON.parse(textVal);
+                          if (errJson.reply) return errJson;
+                          if (errJson.message) errMsg += ': ' + errJson.message;
+                      } catch(e) {
+                          const match = textVal.match(/<title>(.*?)<\/title>/i);
+                          if (match && match[1]) {
+                              errMsg += ' - ' + match[1];
+                          } else {
+                              errMsg += ' - ' + textVal.substring(0, 150) + '...';
+                          }
+                      }
+                      throw new Error(errMsg);
+                  }
+                  return res.json();
+              })
+              .then(data => {
+                  thinking.remove();
+                  addMessage(data.reply, 'bot');
+                  chatHistory = data.history || chatHistory;
+
+                  if (data.redirect) {
+                      setTimeout(() => { window.open(data.redirect, '_blank'); }, 1000);
+                  }
+              })
+              .catch(err => {
+                  thinking.remove();
+                  addMessage('❌ Brain connection lost: ' + err.message + '. Please check if your server .env contains GEMINI_API_KEY.', 'bot');
+              });
+          }
+
+          // Voice Logic
+          const micBtn = document.getElementById('ai-mic-btn');
+          let recognition = null;
+          if ('webkitSpeechRecognition' in window) {
+              recognition = new webkitSpeechRecognition();
+              recognition.lang = 'ur-PK';
+              recognition.onstart = () => micBtn.classList.add('recording');
+              recognition.onend = () => micBtn.classList.remove('recording');
+              recognition.onresult = (e) => {
+                  input.value = e.results[0][0].transcript;
+                  sendMessage();
+              };
+              micBtn.onclick = () => recognition.start();
+          }
+      })();
+
+
+=== Script #2 (src: https://drautos.store/backend/vendor/jquery/jquery.min.js) ===
+[External script]
+
+
+=== Script #3 (src: https://drautos.store/backend/vendor/bootstrap/js/bootstrap.bundle.min.js) ===
+[External script]
+
+
+=== Script #4 (src: https://cdn.jsdelivr.net/npm/sweetalert2@11) ===
+[External script]
+
+
+=== Script #5 (src: https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js) ===
+[External script]
+
+
+=== Script #6 (src: https://drautos.store/backend/vendor/jquery-easing/jquery.easing.min.js) ===
+[External script]
+
+
+=== Script #7 (src: https://drautos.store/backend/js/sb-admin-2.min.js) ===
+[External script]
+
+
+=== Script #8 (src: https://drautos.store/backend/vendor/chart.js/Chart.min.js) ===
+[External script]
+
+
+=== Script #9 (inline) ===
+// Initialize cart with existing items safely
+    let rawCart = [{"id":1544,"bundle_id":null,"is_bundle":false,"title":"Wheel Cap FAW","price":800,"qty":12},{"id":1622,"bundle_id":null,"is_bundle":false,"title":"Gear Lever Shifter Hino","price":400,"qty":12}];
+    let cart = [];
+    try {
+        if (rawCart) {
+            if (Array.isArray(rawCart)) {
+                cart = rawCart;
+            } else if (typeof rawCart === 'object') {
+                cart = Object.values(rawCart);
+            }
+        }
+        console.log("Loaded cart items:", cart);
+    } catch (e) {
+        console.error("Error parsing cart data:", e);
+    }
+
+    $(document).ready(function() {
+        renderCart();
+
+        // Product Search
+        $('#product_search').on('input', function() {
+            let query = $(this).val();
+            if(query.length < 2) {
+                $('#search_results').hide();
+                return;
+            }
+            
+            $.ajax({
+                url: "https://drautos.store/admin/pos/search-products",
+                data: {query: query},
+                success: function(res) {
+                    let html = '';
+                    res.forEach(p => {
+                        let isBundle = p.item_type === 'bundle' ? 1 : 0;
+                        html += `<a href="#" class="list-group-item list-group-item-action add-item" 
+                                data-id="${p.id}" data-title="${p.title}" data-price="${p.price}" data-is_bundle="${isBundle}">
+                                ${p.item_type === 'bundle' ? '<span class="text-primary">[BUNDLE]' : ''} ${p.title} (Rs. ${p.price})
+                                `;
+                    });
+                    $('#search_results').html(html).show();
+                }
+            });
+        });
+
+        // Add Item
+        $(document).on('click', '.add-item', function(e) {
+            e.preventDefault();
+            let id = $(this).data('id');
+            let title = $(this).data('title');
+            let price = parseFloat($(this).data('price'));
+            let isBundle = $(this).data('is_bundle') == 1;
+
+            let existing = cart.find(i => (isBundle ? i.bundle_id == id : i.id == id) && i.is_bundle == isBundle);
+            if(existing) {
+                existing.qty++;
+            } else {
+                if(isBundle) {
+                    cart.push({id: null, bundle_id: id, is_bundle: true, title: title, price: price, qty: 1});
+                } else {
+                    cart.push({id: id, bundle_id: null, is_bundle: false, title: title, price: price, qty: 1});
+                }
+            }
+            
+            renderCart();
+            $('#product_search').val('');
+            $('#search_results').hide();
+        });
+
+        $(document).on('click', function(e) {
+            if(!$(e.target).closest('#product_search, #search_results').length) {
+                $('#search_results').hide();
+            }
+        });
+    });
+
+    function renderCart() {
+        try {
+            let html = '';
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                let price = parseFloat(item.price) || 0;
+                let qty = parseInt(item.qty) || 1;
+                let subtotal = price * qty;
+                total += subtotal;
+                
+                html += `
+                    <tr>
+                        <td>
+                            ${item.title || 'Unknown Product'}
+                            <input type="hidden" name="items[${index}][id]" value="${item.id || ''}">
+                            <input type="hidden" name="items[${index}][bundle_id]" value="${item.bundle_id || ''}">
+                            <input type="hidden" name="items[${index}][is_bundle]" value="${item.is_bundle ? '1' : '0'}">
+                        
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text px-2">Rs.
+                                
+                                <input type="number" name="items[${index}][price]" class="form-control" 
+                                       value="${price}" step="0.01" min="0" style="min-width: 80px;"
+                                       onchange="updateTxPrice(${index}, this.value)">
+                            
+                        
+                        <td>
+                            <input type="number" name="items[${index}][qty]" class="form-control form-control-sm" 
+                                   value="${qty}" min="1" style="width: 80px;" 
+                                   onchange="updateTxQty(${index}, this.value)">
+                        
+                        <td class="align-middle">Rs. ${subtotal.toFixed(2)}
+                        <td class="align-middle">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${index})"><i class="fas fa-trash">
+                        
+                    
+                `;
+            });
+            
+            $('#cart_body').html(html);
+            $('#grand_total').text('Rs. ' + total.toFixed(2));
+
+            // Auto-update pending amount calculation
+            updatePendingCalculation(total);
+        } catch (err) {
+            console.error("Error in renderCart:", err);
+        }
+    }
+
+    window.updateTxPrice = function(index, val) {
+        let price = parseFloat(val) || 0;
+        cart[index].price = price;
+        renderCart();
+    }
+
+    function updatePendingCalculation(total) {
+        let amountPaid = parseFloat($('#form_amount_paid').val()) || 0;
+        let pending = total - amountPaid;
+        $('#form_pending_amount').val(pending > 0 ? pending.toFixed(2) : 0);
+    }
+
+    // Listener for manual paid amount change
+    $('#form_amount_paid').on('input', function() {
+        let total = 0;
+        cart.forEach(item => total += (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1));
+        updatePendingCalculation(total);
+    });
+
+    window.updateTxQty = function(index, val) {
+        let qty = parseInt(val) || 1;
+        cart[index].qty = qty;
+        renderCart();
+    }
+
+    window.removeItem = function(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+
+=== Script #10 (inline) ===
+$(document).ready(function() {
+
+    /* 
+    Echo.channel('message')
+      .listen('MessageSent', (e) => {
+
+      const message_container = $('#message-items');
+      const message_counter_area = $('#messages .count');
+      const message_counter = parseInt( $(message_counter_area).attr('data-count') ) + 1;
+      const message_length = parseInt( $('#message-items>.dropdown-item').length );
+      $(message_counter_area).attr('data-count', message_counter);
+
+      const data = `
+      <a class="dropdown-item d-flex align-items-center message-item" href="${e.message.url}">
+        <div class="dropdown-list-image mr-3">
+          <img class="rounded-circle" src="${e.message.photo}" alt="${e.message.name}">
+        
+        <div class="font-weight-bold">
+          <div class="text-truncate">${e.message.subject}
+          <div class="small text-gray-500">${e.message.name} · ${e.message.date}
+        
+      
+      `;
+
+      $(message_container).prepend(data);
+
+      if(message_counter<=5){
+        $(message_counter_area).text( message_counter );
+      }else{ 
+        $(message_counter_area).text('5+');
+      };
+
+      if(message_length>=5) $(message_container).find('.message-item').last().remove();
+
+    });
+    */
+
+  });
+
+
+=== Script #11 (inline) ===
+$(document).ready(function() {
+        function buildDesktopTopNavCategories() {
+            try {
+                if ($(window).width() < 769) {
+                    return;
+                }
+
+                var $container = $('#topNavCategories');
+                if (!$container.length) {
+                    return;
+                }
+
+                $container.find('.top-nav-category:not(#hr-nav-item)').remove();
+
+                var added = {};
+                var catIndex = 0;
+
+            function esc(s) {
+                return String(s || '').replace(/[&<>"']/g, function (m) {
+                    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]);
+                });
+            }
+
+            function getEmoji(text) {
+                var clean = String(text || '').trim();
+                var mapping = {
+                    // Danyal Autos Enterprise
+                    'Media Assets': '📁',
+                    'Activity Log': '📋',
+                    'Active Banners': '🖼️',
+                    'Create Banner': '➕',
+                    'Coupons': '🎟️',
+                    'All Receipts': '📦',
+                    'Global Analytics': '📊',
+                    
+                    // Point of Sale
+                    'Local Sales (POS)': '🛒',
+                    'Sale Orders': '📋',
+                    'Cash Register': '💵',
+                    'Orders & Billing': '🧾',
+                    'Sale Returns': '🔄',
+                    
+                    // Product / Stock Control
+                    'All Products': '📦',
+                    'Add New Item': '➕',
+                    'Price List': '🏷️',
+                    'Product Categories': '🗂️',
+                    'Brands': '🔖',
+                    'Bundles / Kitting': '🎁',
+                    
+                    // Supply Chain
+                    'Suppliers / Vendors': '🏭',
+                    'Warehouses': '🏢',
+                    'Purchase Orders': '📑',
+                    
+                    // Incoming Goods
+                    'Incoming Goods': '📥',
+                    
+                    // Packaging Handling
+                    'Stock Inventory': '📦',
+                    'New Purchases': '🛍️',
+                    'Usage History': '🕒',
+                    
+                    // Purchase Returns
+                    'Purchase Returns': '📤',
+                    
+                    // Manufacturing
+                    'Die Management': '🔩',
+                    'Raw Materials & Labor': '🪵',
+                    'Raw Material Invoices': '🧾',
+                    'Bill of Materials': '📋',
+                    'Create New BOM': '➕',
+                    
+                    // Financial Management
+                    'Payment Reminders': '🔔',
+                    'Customer Ledgers': '👥',
+                    'Supplier Ledgers': '🏭',
+                    'Cheque Management': '💳',
+                    
+                    // Business Intelligence / Reports
+                    'Sales Reports': '📈',
+                    'Stock Reports': '📊',
+                    'Dead Products': '💀',
+                    'Profit & Loss': '💵',
+                    'Payable Charts': '📉',
+                    'Receivable Charts': '📈',
+                    'Product Analysis': '🧪',
+                    'Customer Reports': '👥',
+                    
+                    // System Configuration
+                    'Roles & Permissions': '🛡️',
+                    'Customers (Users)': '👥',
+                    'Pending Registrations': '⏳',
+                    'General Settings': '⚙️',
+                    'WhatsApp Settings': '💬',
+                    'WhatsApp Campaigns': '📣',
+                    'WhatsApp Test Tool': '🧪',
+                    'Visit Storefront': '🌐'
+                };
+                return mapping[clean] ? mapping[clean] + ' ' : '';
+            }
+
+            function topNavIcon(heading) {
+                var icons = {
+                    'Main Content': '<i class="fas fa-tachometer-alt mr-1">',
+                    'Point of Sale': '<i class="fas fa-cash-register mr-1">',
+                    'Inventory & Assets': '<i class="fas fa-warehouse mr-1">',
+                    'Financial Management': '<i class="fas fa-wallet mr-1">',
+                    'Danyal Autos Enterprise': '<i class="fas fa-building mr-1">',
+                    'Business Intelligence': '<i class="fas fa-chart-line mr-1">',
+                    'System Configuration': '<i class="fas fa-cogs mr-1">',
+                    'Product': '<i class="fas fa-box-open mr-1">',
+                    'Manufacturing': '<i class="fas fa-industry mr-1">'
+                };
+                return icons[heading] || '';
+            }
+
+            function topNavLabel(heading) {
+                var labels = {
+                    'Main Content': 'Content',
+                    'Point of Sale': 'POS',
+                    'Inventory & Assets': 'Inventory',
+                    'Financial Management': 'Finance',
+                    'Danyal Autos Enterprise': 'Enterprise',
+                    'Business Intelligence': 'Reports',
+                    'System Configuration': 'System'
+                };
+                return labels[heading] || heading;
+            }
+
+            $('.sidebar .sidebar-heading').each(function() {
+                var heading = $(this).text().trim();
+                var $section = $(this).nextUntil('.sidebar-heading');
+                
+                // Special separation: Extract "Stock Control" collapsible menu items from "Inventory & Assets"
+                if (heading === 'Inventory & Assets') {
+                    var $productItem = $section.filter(function() {
+                        return $(this).find('[data-target="#productCollapse"]').length > 0;
+                    });
+                    
+                    if ($productItem.length) {
+                        var productItemsHtml = '';
+                        $productItem.find('.collapse-item[href]').each(function() {
+                            var subHref = $(this).attr('href');
+                            var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                            var subKey = subText + '|' + subHref;
+                            if (subText && !added[subKey]) {
+                                productItemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '';
+                                added[subKey] = true;
+                            }
+                        });
+                        
+                        if (productItemsHtml) {
+                            catIndex++;
+                            var productMenuId = 'topNavCat-' + catIndex;
+                            $container.append(
+                                '<li class="nav-item dropdown top-nav-category mx-1">'
+                                + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + productMenuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + topNavIcon('Product') + ' Product'
+                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + productMenuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
+                                + '<h6 class="dropdown-header">Stock Control'
+                                + productItemsHtml
+                                + ''
+                                + ''
+                            );
+                        }
+                        
+                        // Exclude the product nav-item from the general "Inventory & Assets" section
+                        $section = $section.not($productItem);
+                    }
+
+                    // Always exclude Die Management and Manufacturing from Inventory & Assets
+                    var $dieMgmtItem = $section.filter(function() {
+                        return $(this).find('> .nav-link span').text().trim() === 'Die Management';
+                    });
+                    var $mfgItem = $section.filter(function() {
+                        return $(this).find('[data-target="#manufacturingCollapse"]').length > 0;
+                    });
+                    $section = $section.not($dieMgmtItem).not($mfgItem);
+                }
+
+                var itemsHtml = '';
+
+                $section.each(function() {
+                    var $item = $(this);
+                    if (!$item.hasClass('nav-item')) {
+                        return;
+                    }
+
+                    var $mainLink = $item.find('> .nav-link[href]:not([href="#"])').first();
+                    if ($mainLink.length) {
+                        var mainHref = $mainLink.attr('href');
+                        var mainText = $mainLink.clone().find('i,span.badge').remove().end().text().trim();
+                        var mainKey = mainText + '|' + mainHref;
+                        if (mainText && !added[mainKey]) {
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(mainHref) + '">' + getEmoji(mainText) + esc(mainText) + '';
+                            added[mainKey] = true;
+                        }
+                    }
+
+                    $item.find('.collapse-item[href]').each(function() {
+                        var subHref = $(this).attr('href');
+                        var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                        var subKey = subText + '|' + subHref;
+                        
+                        if (subText === 'Stock Inventory') {
+                            itemsHtml += '<div class="dropdown-divider mb-1 mt-1" style="border-top: 1px solid #e2e8f0;">';
+                        }
+                        
+                        if (subText && !added[subKey]) {
+                            itemsHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '';
+                            added[subKey] = true;
+                        }
+                    });
+                });
+
+                if (itemsHtml) {
+                    catIndex++;
+                    var menuId = 'topNavCat-' + catIndex;
+                    var navLabel = esc(topNavLabel(heading));
+                    var navIcon = topNavIcon(heading);
+
+                    $container.append(
+                        '<li class="nav-item dropdown top-nav-category mx-1">'
+                        + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + menuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + navIcon + ' ' + navLabel + ''
+                        + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + menuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
+                        + '<h6 class="dropdown-header">' + esc(heading) + ''
+                        + itemsHtml
+                        + ''
+                        + ''
+                    );
+                }
+
+                // Inject Manufacturing dropdown immediately after Inventory & Assets
+                if (heading === 'Inventory & Assets') {
+                    (function() {
+                        var mfgHtml = '';
+
+                        // 1. Die Management – direct nav-link
+                        var $dieMgmt = $('.sidebar .nav-item').filter(function() {
+                            return $(this).find('> .nav-link span').text().trim() === 'Die Management';
+                        }).first();
+                        if ($dieMgmt.length) {
+                            var dieHref = $dieMgmt.find('> .nav-link').attr('href');
+                            if (dieHref && !added['Die Management|' + dieHref]) {
+                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(dieHref) + '">' + getEmoji('Die Management') + 'Die Management';
+                                added['Die Management|' + dieHref] = true;
+                            }
+                        }
+
+                        // 2. Manufacturing collapse items (Raw Materials & Labor, Bill of Materials, etc.)
+                        $('#manufacturingCollapse .collapse-item[href]').each(function() {
+                            var subHref = $(this).attr('href');
+                            var subText = $(this).clone().find('i,span.badge').remove().end().text().trim();
+                            var subKey = subText + '|' + subHref;
+                            if (subText && !added[subKey]) {
+                                mfgHtml += '<a class="dropdown-item py-2" href="' + esc(subHref) + '">' + getEmoji(subText) + esc(subText) + '';
+                                added[subKey] = true;
+                            }
+                        });
+
+                        if (mfgHtml) {
+                            catIndex++;
+                            var mfgMenuId = 'topNavCat-' + catIndex;
+                            $container.append(
+                                '<li class="nav-item dropdown top-nav-category mx-1">'
+                                + '<a class="nav-link dropdown-toggle px-1 top-nav-link font-weight-bold" href="#" id="' + mfgMenuId + '" role="button" aria-haspopup="true" aria-expanded="false" style="color: #083259; font-size: 13px;">' + topNavIcon('Manufacturing') + ' Manufacturing'
+                                + '<div class="dropdown-menu shadow border-0 animated--grow-in top-category-menu" aria-labelledby="' + mfgMenuId + '" style="border-radius: 8px; border-top: 3px solid #083259 !important;">'
+                                + '<h6 class="dropdown-header">Manufacturing'
+                                + mfgHtml
+                                + ''
+                                + ''
+                            );
+                        }
+                    })();
+                }
+            });
+            } catch (err) {
+                console.error("buildDesktopTopNavCategories error: ", err);
+                $('#topNavCategories').append('<li class="nav-item text-danger px-2 font-weight-bold" style="font-size:0.8rem;">JS Error: ' + err.message + '');
+            }
+        }
+
+
+        buildDesktopTopNavCategories();
+
+        // Move HR to the middle of the generated nav items
+        var $hrItem = $('#hr-nav-item');
+        if ($hrItem.length) {
+            var $categories = $('#topNavCategories .top-nav-category');
+            if ($categories.length > 0) {
+                var middleIndex = Math.floor($categories.length / 2);
+                $categories.eq(middleIndex).before($hrItem);
+            }
+        }
+
+        // Bulletproof manual click event listener for dynamically-injected categories
+        $(document).on('click', '.top-nav-category .top-nav-link', function(e) {
+            var $parent = $(this).closest('.top-nav-category');
+            var $menu = $parent.find('.top-category-menu');
+            
+            // Toggle active menu state
+            var isShowing = $parent.hasClass('show');
+            
+            // Close any other open dropdowns first
+            $('.top-nav-category').removeClass('show').find('.top-category-menu').hide();
+            $('.top-nav-category .top-nav-link').attr('aria-expanded', 'false');
+            
+            if (!isShowing) {
+                $parent.addClass('show');
+                $menu.show();
+                $(this).attr('aria-expanded', 'true');
+            } else {
+                $parent.removeClass('show');
+                $menu.hide();
+                $(this).attr('aria-expanded', 'false');
+            }
+            
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        // Close dropdown menus when clicking anywhere else on the document
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.top-nav-category').length) {
+                $('.top-nav-category').removeClass('show').find('.top-category-menu').hide();
+                $('.top-nav-category .top-nav-link').attr('aria-expanded', 'false');
+            }
+        });
+
+        // Project-wide Ghost Sidebar Logic
+        $(".sidebar").addClass("sidebar-ghost-mode");
+        // Hover to reveal is removed as per user request
+
+         // Intercept standard Sidebar Toggles to act as 'Full Drawer' toggles (Mobile only)
+         $('#sidebarToggle, #sidebarToggleTop, #main-sidebar-toggle').off('click').on('click', function(e) {
+             if ($(window).width() <= 768) {
+                 e.preventDefault();
+                 e.stopImmediatePropagation();
+                 $(".sidebar").toggleClass("reveal toggled");
+                 $("body").toggleClass("sidebar-toggled");
+             }
+         });
+ 
+         // Auto-expand sidebar if any dropdown menu is clicked while minimized (Mobile only)
+         $('.sidebar .nav-link[data-toggle="collapse"]').on('click', function() {
+             if ($(window).width() <= 768) {
+                 if ($('body').hasClass('sidebar-toggled')) {
+                     $(".sidebar").removeClass("toggled").addClass("reveal");
+                     $("body").removeClass("sidebar-toggled");
+                 }
+             }
+         });
+
+        // Robust Mobile & iPad Swipe Gesture to Open/Close Sidebar
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchEndX = 0;
+        var touchEndY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, {passive: true});
+
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            var diffX = touchEndX - touchStartX;
+            var diffY = Math.abs(touchEndY - touchStartY);
+            
+            // Ignore if it was mostly a vertical scroll
+            if (diffY > 60 || Math.abs(diffX) < 50) return;
+
+            // Swipe Right (Open) - Allowed if started within 100px of left edge (better for iPads with cases)
+            if (diffX > 50 && touchStartX < 100) {
+                $(".sidebar").addClass("reveal toggled");
+                $("body").addClass("sidebar-toggled");
+            }
+            // Swipe Left (Close)
+            if (diffX < -50) {
+                $(".sidebar").removeClass("reveal toggled");
+                $("body").removeClass("sidebar-toggled");
+            }
+        }
+
+        // Reusable touch drag positioning helper for Mobile screens (place ANYWHERE)
+        function makeElementDraggable(selector, storageKey, defaultBottomOffset) {
+            var $elem = $(selector);
+            if (!$elem.length || $(window).width() > 768) return;
+
+            var elem = $elem[0];
+            var isDragging = false;
+            var startX, startY, initialX, initialY;
+            var screenWidth = $(window).width();
+            var screenHeight = $(window).height();
+            var elemWidth = $elem.outerWidth() || 56;
+            var elemHeight = $elem.outerHeight() || 56;
+
+            // Load saved coordinates from localStorage if present
+            var savedTop = localStorage.getItem(storageKey + '_top');
+            var savedLeft = localStorage.getItem(storageKey + '_left');
+
+            function applyCoordinates(x, y) {
+                // Keep strictly inside bounds with 10px safe margin
+                if (x < 10) x = 10;
+                if (x > screenWidth - elemWidth - 10) x = screenWidth - elemWidth - 10;
+                if (y < 10) y = 10;
+                if (y > screenHeight - elemHeight - 10) y = screenHeight - elemHeight - 10;
+
+                $elem.css({
+                    'top': y + 'px',
+                    'left': x + 'px',
+                    'bottom': 'auto',
+                    'right': 'auto'
+                });
+            }
+
+            if (savedTop !== null && savedLeft !== null) {
+                applyCoordinates(parseFloat(savedLeft), parseFloat(savedTop));
+            } else {
+                // Position default from bottom-right
+                var defaultTop = screenHeight - elemHeight - defaultBottomOffset;
+                var defaultLeft = screenWidth - elemWidth - 20;
+                applyCoordinates(defaultLeft, defaultTop);
+            }
+
+            // Touch Drag Event Listeners
+            elem.addEventListener('touchstart', function(e) {
+                var touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+
+                var rect = elem.getBoundingClientRect();
+                initialX = rect.left;
+                initialY = rect.top;
+
+                isDragging = false;
+                $elem.css('transition', 'none'); // Remove transitions during touch moves for zero-lag responsiveness
+            }, { passive: true });
+
+            elem.addEventListener('touchmove', function(e) {
+                var touch = e.touches[0];
+                var deltaX = touch.clientX - startX;
+                var deltaY = touch.clientY - startY;
+
+                // Threshold of 5px to distinguish drag vs normal tap
+                if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+                    isDragging = true;
+                }
+
+                if (isDragging) {
+                    var newLeft = initialX + deltaX;
+                    var newTop = initialY + deltaY;
+
+                    // Keep inside bounds
+                    if (newLeft < 10) newLeft = 10;
+                    if (newLeft > screenWidth - elemWidth - 10) newLeft = screenWidth - elemWidth - 10;
+                    if (newTop < 10) newTop = 10;
+                    if (newTop > screenHeight - elemHeight - 10) newTop = screenHeight - elemHeight - 10;
+
+                    $elem.css({
+                        'left': newLeft + 'px',
+                        'top': newTop + 'px'
+                    });
+
+                    // Prevent scrolling on mobile while dragging the button
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
+                }
+            }, { passive: false });
+
+            elem.addEventListener('touchend', function(e) {
+                // Restore transition properties
+                $elem.css('transition', 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease');
+
+                if (isDragging) {
+                    var rect = elem.getBoundingClientRect();
+                    
+                    // Allow dropping ANYWHERE on the screen (no horizontal side snapping)
+                    var dropLeft = rect.left;
+                    var dropTop = rect.top;
+
+                    applyCoordinates(dropLeft, dropTop);
+
+                    // Save position
+                    localStorage.setItem(storageKey + '_top', dropTop);
+                    localStorage.setItem(storageKey + '_left', dropLeft);
+
+                    // Prevent firing standard click events
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+
+            // Ensure window scaling behaves on resize / rotate
+            $(window).on('resize orientationchange', function() {
+                screenWidth = $(window).width();
+                screenHeight = $(window).height();
+                var rect = elem.getBoundingClientRect();
+                applyCoordinates(rect.left, rect.top);
+            });
+        }
+
+        // Initialize mobile draggable controllers
+        // makeElementDraggable('#launcherTrigger', 'launcher_fab', 120); // Removed: Now a fixed drawer tab
+        makeElementDraggable('#ai-chat-trigger', 'ai_fab', 20);
+
+        setTimeout(function(){
+          $('.alert').slideUp();
+        },4000);
+    });
+
+
+=== Script #12 (src: https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js) ===
+[External script]
+
+
+=== Script #13 (inline) ===
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "46461a8a-1e8f-4f50-9561-967e52304cba",
+        safari_web_id: "web.onesignal.auto.drautos",
+        notifyButton: {
+          enable: true, // Enable the floating bell icon for reliable subscription
+        },
+        allowLocalhostAsSecureOrigin: true
+      });
+
+      // Handle manual subscribe button click (if it still exists anywhere)
+      $('#onesignal-manual-subscribe').on('click', async function(e) {
+          e.preventDefault();
+          
+          if (typeof Notification === 'undefined') {
+              alert("Oops! Your current browser or App wrapper DOES NOT support Web Push Notifications. Please open the website in Google Chrome.");
+              return;
+          }
+          
+          try {
+              if (Notification.permission === 'granted') {
+                  alert("Permissions already allowed! Forcing OneSignal to sync your device now...");
+                  await OneSignal.User.PushSubscription.optIn();
+              } else if (Notification.permission === 'denied') {
+                  alert("Your browser is BLOCKING the prompt. Please click the lock icon in the URL bar, go to Site Settings, and change Notifications to Allow.");
+              } else {
+                  // Removed alert() because Chrome blocks permission requests if an alert breaks the click-gesture chain
+                  await OneSignal.Notifications.requestPermission();
+              }
+              
+              if (OneSignal.User.PushSubscription.optedIn) {
+                  $('#onesignal-manual-subscribe').hide();
+              } else {
+                  $(this).find('i').addClass('text-danger');
+              }
+          } catch (err) {
+              console.error(err);
+              alert('An error occurred while enabling notifications.');
+          }
+      });
+
+      // Hide the manual button if already subscribed
+      OneSignal.User.PushSubscription.addEventListener("change", function(e) {
+          if (OneSignal.User.PushSubscription.optedIn) {
+              $('#onesignal-manual-subscribe').hide();
+          }
+      });
+      
+      if(OneSignal.User.PushSubscription.optedIn) {
+          $('#onesignal-manual-subscribe').hide();
+      }
+    });
+
+
+=== Script #14 (inline) ===
+$(document).ready(function() {
+          $('#launcherTrigger').on('click', function() {
+              $('#adminAppLauncher').fadeIn(300).addClass('active');
+              $('body').css('overflow', 'hidden');
+          });
+
+          $('#launcherClose, .launcher-item').on('click', function() {
+              $('#adminAppLauncher').fadeOut(300).removeClass('active');
+              $('body').css('overflow', 'auto');
+          });
+
+          // Global Bootstrap Modal Focus Fix for Select2
+          if ($.fn.modal) {
+              $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+          }
+
+          // Ledger & Order Table Accordion Logic
+          $(document).on('click', '.ledger-table-to-cards tr, .order-table-to-cards tr', function(e) {
+              // Prevent expanding/collapsing if clicking on an interactive element
+              // (Removed 'form' from this list because the entire table might be wrapped in a form)
+              if ($(e.target).closest('button, a, input, select, textarea').length > 0) return;
+              
+              // Toggle this row
+              $(this).toggleClass('expanded');
+          });
+      });
+
+
+=== Script #15 (inline) ===
+window.posCart = JSON.parse(localStorage.getItem('posCart')) || [];
+    
+    
+
+    $(document).ready(function() {
+        if($('#customer-select').length) {
+            $('#customer-select').select2({ width: '100%' });
+        }
+        
+        renderCart();
+
+        $('#global-cart-btn, #toggle-cart').on('click', function(e) {
+            
+            $('#checkout-sidebar').addClass('active');
+            $('#pos-overlay').addClass('active');
+            $('#global-cart-btn').addClass('sidebar-active');
+        });
+
+        $('#pos-overlay, #close-sidebar').on('click', function() {
+            $('#checkout-sidebar').removeClass('active');
+            $('#pos-overlay').removeClass('active');
+            $('#global-cart-btn').removeClass('sidebar-active');
+        });
+
+        $('#clear-cart').on('click', function() {
+            Swal.fire({
+                title: 'Clear Cart?',
+                text: "All items will be removed!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, clear it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.posCart = [];
+                    saveCart();
+                }
+            });
+        });
+        // Clear Cart
+        $(document).on('click', '#clear-cart', function() {
+            if (window.posCart.length == 0) return;
+            Swal.fire({
+                title: 'Clear Cart?',
+                text: "This will remove all items from the current order.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74a3b',
+                cancelButtonColor: '#858796',
+                confirmButtonText: 'Yes, clear it'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.posCart = [];
+                    window.saveCart();
+                }
+            });
+        });
+    });
+
+    window.saveCart = function() {
+        localStorage.setItem('posCart', JSON.stringify(window.posCart));
+        renderCart();
+    };
+
+    window.removeFromCart = function(index) {
+        window.posCart.splice(index, 1);
+        saveCart();
+    };
+
+    window.updatePrice = function(index, val) {
+        let p = parseFloat(val);
+        p = isNaN(p) ? 0 : p;
+        window.posCart[index].price = p;
+
+        if (p > window.posCart[index].base_price) {
+            window.posCart[index].original_price = p;
+        } else {
+            window.posCart[index].original_price = window.posCart[index].base_price;
+        }
+        saveCart();
+    };
+
+    window.updateQty = function(index, val) {
+        window.posCart[index].qty = Math.max(1, parseInt(val));
+        saveCart();
+    };
+
+    window.renderCart = function() {
+        let html = '';
+        let subtotal = 0;
+        let totalDiscount = 0;
+
+        if (window.posCart.length == 0) {
+            $('#cart-items').html('<div class="text-center py-5 text-muted"><i class="fas fa-shopping-basket fa-3x mb-3 opacity-2"><p>Current order is empty');
+            updateSummary(0, 0, 0);
+            if ($('#global-cart-btn').data('is-pos') === true) {
+                $('#global-cart-btn').css('display', 'flex');
+            } else {
+                $('#global-cart-btn').hide();
+            }
+            return;
+        }
+
+        $('#global-cart-btn').css('display', 'flex');
+
+        window.posCart.forEach((item, index) => {
+            let lineOriginalTotal = item.original_price * item.qty;
+            let lineActualTotal = item.price * item.qty;
+            subtotal += lineOriginalTotal;
+            totalDiscount += (lineOriginalTotal - lineActualTotal);
+
+            html += `
+                <div class="cart-item d-flex align-items-center p-2 mb-1 border-bottom" style="background: #fff; min-height: 45px;">
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="d-flex align-items-center flex-wrap overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-center mb-1 w-100">
+                                <h6 class="font-weight-bold m-0 text-dark text-truncate" style="font-size: 13px; line-height: 1.1; max-width: 85%;">${item.title}
+                                <button class="btn btn-sm btn-info p-0 d-flex align-items-center justify-content-center shadow-sm" 
+                                    style="width: 18px; height: 18px; border-radius: 4px; font-size: 10px;" 
+                                    onclick="showProductHistoryGlobal(${item.id}, '${item.type}')" title="Selling History">
+                                    <i class="fas fa-info-circle text-white" style="font-size: 10px;">
+                                
+                            
+                            ${item.last_purchase ? `<div class="w-100 mt-1 mb-1"><span class="badge badge-soft-info" style="font-size: 10px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 2px 6px; border-radius: 4px;"><i class="fas fa-history mr-1">${item.last_purchase}` : ''}
+                        
+                        <div class="d-flex align-items-center mt-1" style="gap: 4px;">
+                            <div class="price-cell-sleek d-flex align-items-center border rounded px-1 bg-light-soft" style="border-color: #e2e8f0 !important; height: 22px;">
+                                <span class="text-muted" style="font-size: 9px; margin-right: 2px;">Rs.
+                                <input type="number" step="0.01" class="border-0 bg-transparent p-0 font-weight-bold text-dark" value="${item.price}" style="width: 52px; font-size: 12px; outline: none; box-shadow: none;" onchange="updatePrice(${index}, this.value)">
+                            
+                            <span class="text-muted small ml-1" style="font-size: 10px; opacity: 0.8;">x ${item.qty} ${item.unit || ''}
+                        
+                    
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <div class="qty-cell-sleek d-flex align-items-center border rounded bg-light-soft" style="border-color: #e2e8f0 !important; height: 22px; padding: 0 2px;">
+                            <button class="btn btn-link p-0 text-muted" onclick="updateQty(${index}, ${item.qty - 1})" style="width: 16px;"><i class="fas fa-minus fa-xs">
+                            <input type="number" class="border-0 bg-transparent text-center font-weight-bold p-0 mx-1 text-dark" value="${item.qty}" style="width: 30px; font-size: 12px; outline: none; box-shadow: none;" onchange="updateQty(${index}, this.value)">
+                            <button class="btn btn-link p-0 text-muted" onclick="updateQty(${index}, ${item.qty + 1})" style="width: 16px;"><i class="fas fa-plus fa-xs">
+                        
+                        <div class="text-right" style="min-width: 65px;">
+                            <span class="font-weight-bold text-success" style="font-size: 13.5px;">Rs.${lineActualTotal.toLocaleString()}
+                        
+                        <button class="btn btn-link text-danger p-0 border-0" onclick="removeFromCart(${index})" style="font-size: 14px; opacity: 0.7;">
+                            <i class="fas fa-times-circle">
+                        
+                    
+                
+            `;
+        });
+        $('#cart-items').html(html);
+        updateSummary(subtotal, totalDiscount, window.posCart.length);
+    };
+
+    function updateSummary(subtotal, discount, count) {
+        let total = subtotal - discount;
+        $('#items-count').text(count);
+        $('#modal-items-count').text(count);
+        $('#subtotal-val').text('Rs. ' + subtotal.toFixed(2));
+        $('#discount-val').text('Rs. ' + discount.toFixed(2));
+        $('#total-val').text('Rs. ' + total.toFixed(2));
+        $('.total-payable').text('Rs. ' + total.toFixed(2));
+
+        if (count > 0) {
+            $('#cart-badge').text(count).show();
+            $('#global-cart-badge').text(count);
+            $('#toggle-cart').addClass('animated-pulse');
+        } else {
+            $('#cart-badge').hide();
+            $('#global-cart-badge').text('0');
+            $('#toggle-cart').removeClass('animated-pulse');
+        }
+    }
+
+    // Payment Logic
+    $(document).on('click', '.payment-option', function() {
+        $('.payment-option').removeClass('active');
+        $(this).addClass('active');
+
+        let method = $(this).data('method');
+        
+        if (method === 'credit') {
+            $('#due-date-wrapper').fadeIn();
+            $('#amount-received').val(0).trigger('input');
+        } else {
+            $('#due-date-wrapper').fadeOut();
+            if ($('#amount-received').val() == 0) {
+                $('#amount-received').val('').trigger('input');
+            }
+        }
+        $('#amount-input-wrapper').show();
+        $('#amount-received').focus();
+    });
+
+    $(document).on('input', '#amount-received, #order-discount', function() {
+        let subtotal = parseFloat($('#subtotal-val').text().replace('Rs. ', '')) || 0;
+        let lineDiscount = parseFloat($('#discount-val').text().replace('Rs. ', '')) || 0;
+        let originalTotal = subtotal - lineDiscount;
+
+        let globalDiscount = parseFloat($('#order-discount').val()) || 0;
+        let newTotal = originalTotal - globalDiscount;
+
+        $('.total-payable').text('Rs. ' + newTotal.toFixed(2));
+        $('#total-val').text('Rs. ' + newTotal.toFixed(2));
+
+        let received = parseFloat($('#amount-received').val()) || 0;
+        if (received > 0 && received < newTotal) {
+            $('#partial-info').show();
+        } else {
+            $('#partial-info').hide();
+        }
+    });
+
+    $(document).on('click', '#complete-order', function() {
+        if (window.posCart.length == 0) {
+            Swal.fire('Error', 'Cart is empty!', 'error');
+            return;
+        }
+
+        let customer_id = $('#customer-select').val();
+        let total_amount = parseFloat($('#total-val').text().replace('Rs. ', ''));
+        let payment_method = $('.payment-option.active').data('method');
+
+        if (!payment_method) {
+            Swal.fire('Error', 'Please select a payment method!', 'warning');
+            return;
+        }
+        let amount_received_raw = $('#amount-received').val();
+        let amount_received = (amount_received_raw === "" || amount_received_raw === null) ? 0 : parseFloat(amount_received_raw);
+        if (isNaN(amount_received)) amount_received = 0;
+        
+        let order_discount = parseFloat($('#order-discount').val()) || 0;
+        let due_date = $('#payment-due-date').val();
+
+        // Prepare data
+        let payload = {
+            customer_id: customer_id,
+            total_amount: total_amount,
+            discount: order_discount,
+            payment_method: payment_method,
+            payment_status: (amount_received >= total_amount) ? 'paid' : 'partial',
+            amount_paid: amount_received,
+            due_date: due_date,
+            cart: window.posCart,
+            sales_order_id: window.salesOrderId,
+            _token: "5cJh2cyxLxnZFJlP9GTqzhBe1DdFfjwQEoKMwc5F"
+        };
+
+        $(this).prop('disabled', true).text('Processing...');
+
+        $.ajax({
+            url: "https://drautos.store/admin/pos/order",
+            type: "POST",
+            data: payload,
+            success: function(response) {
+                if (response.status == 'success') {
+                    // Handle Printing via hidden iframe only if toggled ON
+                    if ($('#print-receipt-toggle').is(':checked') && response.thermal_url) {
+                        let printUrl = response.thermal_url;
+                        if ($('#print-receipt-urdu').is(':checked')) {
+                            printUrl += (printUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                        }
+                        $('#print-iframe').attr('src', printUrl);
+                    }
+
+                    // Share Receipt / Image logic
+                    let shareReceiptPromise = Promise.resolve();
+                    if ($('#share-receipt-toggle').is(':checked') && response.invoice_url) {
+                        shareReceiptPromise = new Promise((resolveOuter) => {
+                            Swal.fire({
+                                title: '<i class="fas fa-share-nodes text-primary mr-1"> Share Invoice / Image',
+                                html: `
+                                    <div class="p-2 text-center">
+                                        <p class="text-muted small mb-4">Choose your invoice language.<br><b>First Tap: Generates & downloads invoice image.<br><b>Second Tap: Opens share menu!
+                                        <div class="d-flex flex-column" style="gap: 12px;">
+                                            <button id="pos-share-en" class="btn btn-outline-primary btn-block py-3 font-weight-bold d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-file-invoice mr-2"> Share in English (EN)
+                                            
+                                            <button id="pos-share-ur" class="btn btn-outline-success btn-block py-3 font-weight-bold text-success d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; border-width: 2px;">
+                                                <i class="fas fa-language mr-2"> Share in Urdu (اردو)
+                                            
+                                        
+                                    
+                                `,
+                                showConfirmButton: false,
+                                showCancelButton: true,
+                                cancelButtonText: 'Close',
+                                cancelButtonColor: '#6c757d',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    let enBlob = null;
+                                    let urBlob = null;
+
+                                    async function handleLanguageTap(lang, $btn) {
+                                        let currentBlob = lang === 'ur' ? urBlob : enBlob;
+
+                                        // SECOND TAP: Open share menu
+                                        if (currentBlob) {
+                                            const filename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            const file = new File([currentBlob], filename, { type: 'image/png' });
+                                            let text = lang === 'ur' ? "السلام علیکم، دانیال آٹوز سے آپ کا بل یہاں ہے:" : "Assalam-o-Alaikum, here is your receipt from Danyal Autos:";
+
+                                            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                                                try {
+                                                    await navigator.share({
+                                                        files: [file],
+                                                        title: 'Danyal Autos Invoice',
+                                                        text: text
+                                                    });
+                                                } catch (err) {
+                                                    if (err.name !== 'AbortError') {
+                                                        console.log('Native Share Failed:', err);
+                                                    }
+                                                }
+                                            } else {
+                                                // Fallback to text url share via WhatsApp
+                                                let shareUrl = response.invoice_url;
+                                                if (lang === 'ur') {
+                                                    shareUrl += (shareUrl.indexOf('?') >= 0 ? '&' : '?') + 'lang=ur';
+                                                }
+                                                let customerPhone = $('#customer-select option:selected').data('phone') || '';
+                                                let cleanedPhone = customerPhone.toString().replace(/[^0-9]/g, '');
+                                                if (cleanedPhone && !cleanedPhone.startsWith('92')) {
+                                                    if (cleanedPhone.startsWith('0')) {
+                                                        cleanedPhone = '92' + cleanedPhone.substring(1);
+                                                    } else {
+                                                        cleanedPhone = '92' + cleanedPhone;
+                                                    }
+                                                }
+                                                let shareText = encodeURIComponent(text + "\n" + shareUrl);
+                                                let waUrl = cleanedPhone ? `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${shareText}` : `https://api.whatsapp.com/send?text=${shareText}`;
+                                                window.open(waUrl, '_blank');
+                                            }
+                                            return;
+                                        }
+
+                                        // FIRST TAP: Generate standard invoice screenshot & download
+                                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"> Generating & Downloading...');
+
+                                        try {
+                                            let printUrl = response.invoice_url.replace('/pdf/', '/print/') + '?type=standard';
+                                            if (lang === 'ur') {
+                                                printUrl += '&lang=ur';
+                                            }
+
+                                            const printResponse = await fetch(printUrl);
+                                            let htmlText = await printResponse.text();
+
+                                            // Strip auto-print scripts
+                                            htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
+                                            htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
+
+                                            // Render inside iframe
+                                            const iframe = document.createElement('iframe');
+                                            iframe.style.position = 'fixed';
+                                            iframe.style.right = '-9999px';
+                                            iframe.style.width = '800px';
+                                            iframe.style.height = '2500px';
+                                            document.body.appendChild(iframe);
+
+                                            const iframeDoc = iframe.contentWindow.document;
+                                            iframeDoc.open();
+                                            iframeDoc.write(htmlText);
+                                            iframeDoc.close();
+
+                                            // Wait for assets/fonts to load
+                                            await new Promise(r => setTimeout(r, 1000));
+
+                                            // Auto-resize
+                                            iframe.style.height = (iframeDoc.documentElement.scrollHeight + 100) + 'px';
+
+                                            // Load html2canvas if needed
+                                            if (typeof html2canvas === 'undefined') {
+                                                await new Promise((resolveScript) => {
+                                                    const script = document.createElement('script');
+                                                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                                                    script.onload = resolveScript;
+                                                    document.head.appendChild(script);
+                                                });
+                                            }
+
+                                            const wrapper = iframeDoc.getElementById('invoice-wrapper') || iframeDoc.body;
+                                            const canvas = await html2canvas(wrapper, {
+                                                scale: 2,
+                                                useCORS: true,
+                                                backgroundColor: '#ffffff'
+                                            });
+
+                                            const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+                                            document.body.removeChild(iframe);
+
+                                            // Save blob
+                                            if (lang === 'ur') {
+                                                urBlob = blob;
+                                            } else {
+                                                enBlob = blob;
+                                            }
+
+                                            // Trigger automatic download
+                                            const downloadLink = document.createElement('a');
+                                            downloadLink.href = URL.createObjectURL(blob);
+                                            const downloadFilename = 'Invoice_' + (response.order_number || Date.now()) + (lang === 'ur' ? '_Urdu' : '') + '.png';
+                                            downloadLink.download = downloadFilename;
+                                            document.body.appendChild(downloadLink);
+                                            downloadLink.click();
+                                            document.body.removeChild(downloadLink);
+
+                                            // Update button UI for the SECOND TAP
+                                            $btn.prop('disabled', false)
+                                                .removeClass('btn-outline-primary btn-outline-success text-success')
+                                                .addClass('btn-warning text-dark')
+                                                .html('<i class="fas fa-share-alt mr-2"> Tap to Share ' + (lang === 'ur' ? 'Urdu (اردو)' : 'English (EN)'));
+
+                                        } catch (err) {
+                                            console.error('POS Image share generation failed:', err);
+                                            $btn.prop('disabled', false).html(lang === 'ur' ? '<i class="fas fa-language mr-2"> Share in Urdu (اردو)' : '<i class="fas fa-file-invoice mr-2"> Share in English (EN)');
+                                            alert('Failed to generate standard printed image screenshot.');
+                                        }
+                                    }
+
+                                    $('#pos-share-en').on('click', function() {
+                                        handleLanguageTap('en', $(this));
+                                    });
+
+                                    $('#pos-share-ur').on('click', function() {
+                                        handleLanguageTap('ur', $(this));
+                                    });
+                                }
+                            }).then(() => {
+                                resolveOuter();
+                            });
+                        });
+                    }
+
+                    shareReceiptPromise.then(() => {
+                        window.posCart = [];
+                        localStorage.removeItem('posCart');
+                        window.saveCart && window.saveCart();
+                        if (response.wa_sent) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Order saved' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Printed.' : '.'),
+                                icon: 'success',
+                                timer: 4000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Order Saved',
+                                text: 'Order created' + ($('#print-receipt-toggle').is(':checked') ? ' and Receipt Sent to Printer' : '') + ', but WhatsApp could not be sent.',
+                                icon: 'warning',
+                                timer: 5000
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                    $('#complete-order').prop('disabled', false).text('SAVE ORDER');
+                }
+            },
+            error: function(err) {
+                console.log(err);
+                if (err.status === 422) {
+                    let errors = err.responseJSON.errors;
+                    let msg = '';
+                    $.each(errors, function(key, value) {
+                        msg += value[0] + '\n';
+                    });
+                    alert('Validation Error:\n' + msg);
+                } else {
+                    alert('Something went wrong! Check console.');
+                }
+                $('#complete-order').prop('disabled', false).text('SAVE ORDER');
+            }
+        });
+    });
+$(document).on('click', '#save-customer-btn', function() {
+        let form = $('#add-customer-form');
+        $.ajax({
+            url: "https://drautos.store/direct-user-store",
+            type: "POST",
+            data: form.serialize() + "&role=user&status=active&password=password123",
+            dataType: "json",
+            success: function(response) {
+                if (typeof response === 'string') {
+                    try { response = JSON.parse(response); } catch (e) {}
+                }
+                let user = response.user || response.data || response;
+                let displayText = (user.name || 'Unknown') + ' (' + (user.phone || 'N/A') + ') | Bal: Rs. 0.00';
+                let newOption = new Option(displayText, user.id, true, true);
+                $(newOption).attr('data-type', user.customer_type || 'retail');
+                $(newOption).attr('data-balance', 0);
+                $('#customer-select').append(newOption).trigger('change');
+                $('#addCustomerModal').modal('hide');
+                form[0].reset();
+                Swal.fire('Success', 'Customer Added', 'success');
+            },
+            error: function(err) {
+                Swal.fire('Error', 'Failed to add customer', 'error');
+            }
+        });
+    });
+    window.fetchLastPurchase = function(cartItem) {
+        let customer_id = $('#customer-select').val();
+        if (!customer_id || customer_id == 1) return; // Skip walk-in
+
+        $.ajax({
+            url: "https://drautos.store/admin/pos/last-purchase",
+            data: {
+                customer_id: customer_id,
+                item_type: cartItem.type,
+                item_id: cartItem.id
+            },
+            success: function(res) {
+                if (res.found) {
+                    cartItem.last_purchase = `Bought ${res.quantity} at Rs.${res.price} on ${res.date}`;
+                    renderCart();
+
+                    Swal.fire({
+                        title: 'Purchase History Found!',
+                        html: `Customer previously bought this item.<br>
+                               Date: <b>${res.date} | Qty: <b>${res.quantity} | Price Paid: <b style="color: green;">Rs. ${res.price}`,
+                        icon: 'info',
+                        position: 'top',
+                        toast: true,
+                        showConfirmButton: false,
+                        timer: 5000,
+                        customClass: {
+                            popup: 'purchase-history-toast',
+                        }
+                    });
+                }
+            }
+        });
+    };
+
+    window.showProductHistoryGlobal = function(pid, type) {
+        Swal.fire({
+            title: '<i class="fas fa-info-circle mr-2 text-info"> Selling History',
+            html: '<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-muted">',
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: '450px',
+            didOpen: () => {
+                $.get("https://drautos.store/admin/product-selling-history", { product_id: pid, item_type: type }, function(res) {
+                    if (res.success) {
+                        let historyHtml = `
+                            <div class="text-left px-1">
+                                <div class="alert alert-light border mb-3 p-2 d-flex justify-content-between align-items-center">
+                                    <div class="small font-weight-bold text-uppercase text-muted">Price Range
+                                    <div class="font-weight-bold text-primary">Rs. ${res.min_price.toLocaleString()} - Rs. ${res.max_price.toLocaleString()}
+                                
+                                
+                                <label class="small font-weight-bold text-uppercase text-muted mb-2">Last 5 Sales
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-borderless mb-0" style="font-size: 12px;">
+                                        <thead>
+                                            <tr class="border-bottom">
+                                                <th>Customer
+                                                <th class="text-center">Qty
+                                                <th class="text-right">Price
+                                            
+                                        
+                                        <tbody>
+                                            ${res.history.length > 0 ? res.history.map(s => `
+                                                <tr class="border-bottom">
+                                                    <td>
+                                                        <div class="font-weight-bold">${s.customer}
+                                                        <div class="text-muted" style="font-size: 10px;">${s.date}
+                                                    
+                                                    <td class="text-center align-middle">${s.qty}
+                                                    <td class="text-right align-middle font-weight-bold text-success">Rs. ${s.price.toLocaleString()}
+                                                
+                                            `).join('') : '<tr><td colspan="3" class="text-center py-3 text-muted">No sales history found'}
+                                        
+                                        ${res.history.length > 0 ? `
+                                        <tfoot style="position: sticky; bottom: 0; background: #f8fafc; box-shadow: 0 -1px 0 #e2e8f0;">
+                                            <tr>
+                                                <td colspan="3" class="p-2 text-center">
+                                                    <a href="https://drautos.store/admin/pos?product_id=${pid}" class="btn btn-sm btn-outline-primary btn-block">View All History
+                                                
+                                            
+                                        
+                                        ` : ''}
+                                    
+                                
+                            
+                        `;
+                        Swal.update({ html: historyHtml });
+                    } else {
+                        Swal.update({ html: '<div class="text-danger py-3">Failed to load history' });
+                    }
+                }).fail(function() {
+                    Swal.update({ html: '<div class="text-danger py-3">Error fetching data' });
+                });
+            }
+        });
+    };
+
+
+=== Script #16 (inline) ===
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('chat-widget-container');
+    const toggleBtn = document.getElementById('chat-widget-toggle');
+    const closeBtn = document.getElementById('chat-close-btn');
+    const chatHeader = document.getElementById('chat-header');
+    const chatWindow = document.getElementById('chat-widget-window');
+    const messageContainer = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('chat-send-btn');
+    const micBtn = document.getElementById('chat-mic-btn');
+    const unreadBadge = document.getElementById('chat-unread-badge');
+
+    let isOpen = false;
+    let lastMessageId = 0;
+    let unreadCount = 0;
+    let isInitialLoad = true;
+    let teamData = [];
+    const currentUserId = 1;
+
+    // --- Audio Notification Synthesizer ---
+    function playNotificationSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+            oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.5);
+        } catch(e) {
+            console.log("Audio API not supported");
+        }
+    }
+
+    // --- Drag and Drop Widget Container ---
+    let isDragging = false;
+    let hasDragged = false;
+    let dragStartX, dragStartY, initialX, initialY;
+
+    function startDrag(e) {
+        if(e.target === closeBtn) return; // Don't drag if clicking close
+        isDragging = true;
+        hasDragged = false;
+        
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        const rect = container.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+        dragStartX = clientX;
+        dragStartY = clientY;
+
+        // Switch to left/top positioning relative to viewport
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+        container.style.left = initialX + 'px';
+        container.style.top = initialY + 'px';
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchmove', drag, {passive: false});
+        document.addEventListener('touchend', stopDrag);
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+        hasDragged = true;
+        e.preventDefault(); // prevent scroll while dragging
+
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+        const dx = clientX - dragStartX;
+        const dy = clientY - dragStartY;
+
+        // Boundary checks to keep widget on screen
+        let newX = initialX + dx;
+        let newY = initialY + dy;
+        
+        const maxX = window.innerWidth - container.offsetWidth;
+        const maxY = window.innerHeight - container.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+
+        container.style.left = newX + 'px';
+        container.style.top = newY + 'px';
+    }
+
+    function stopDrag() {
+        isDragging = false;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('touchend', stopDrag);
+    }
+
+    // Bind drag to toggle button and chat header
+    toggleBtn.addEventListener('mousedown', startDrag);
+    toggleBtn.addEventListener('touchstart', startDrag, {passive: false});
+    chatHeader.addEventListener('mousedown', startDrag);
+    chatHeader.addEventListener('touchstart', startDrag, {passive: false});
+
+    // Toggle window (only if it wasn't a drag)
+    toggleBtn.addEventListener('click', (e) => {
+        if (hasDragged) return; 
+        isOpen = !isOpen;
+        chatWindow.style.display = isOpen ? 'flex' : 'none';
+        if (isOpen) {
+            unreadCount = 0;
+            unreadBadge.style.display = 'none';
+            unreadBadge.innerText = '0';
+            scrollToBottom();
+            chatInput.focus();
+            fetchMessages(); // Immediately sync read status and team data
+        }
+    });
+
+    closeBtn.addEventListener('click', () => {
+        isOpen = false;
+        chatWindow.style.display = 'none';
+        fetchMessages(); // Send closed status immediately
+    });
+
+    // --- Team Dropdown Logic ---
+    const teamDropdownBtn = document.getElementById('team-dropdown-btn');
+    const teamDropdownMenu = document.getElementById('team-dropdown-menu');
+
+    teamDropdownBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent drag start
+        teamDropdownMenu.style.display = teamDropdownMenu.style.display === 'none' ? 'block' : 'none';
+        renderTeamDropdown();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#team-status-dropdown')) {
+            teamDropdownMenu.style.display = 'none';
+        }
+    });
+    
+    teamDropdownMenu.addEventListener('mousedown', e => e.stopPropagation());
+    teamDropdownMenu.addEventListener('touchstart', e => e.stopPropagation());
+
+    function renderTeamDropdown() {
+        if (teamData.length === 0) {
+            teamDropdownMenu.innerHTML = '<div style="text-align:center; padding: 5px; color: #888;">Loading...';
+            return;
+        }
+        
+        let html = '<div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Team Status';
+        
+        teamData.forEach(member => {
+            const dotColor = member.is_online ? '#22c55e' : '#cbd5e1';
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: ${dotColor}; margin-right: 8px;">
+                        <span>${member.name}
+                    
+                    <span style="color: #64748b; font-size: 10px;">${member.last_active_str}
+                
+            `;
+        });
+        
+        teamDropdownMenu.innerHTML = html;
+    }
+
+    // --- Voice Recording Logic ---
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let recordingMimeType = '';
+
+    micBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (!isRecording) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                recordingMimeType = mediaRecorder.mimeType || 'audio/webm';
+                
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: recordingMimeType });
+                    audioChunks = [];
+                    sendVoiceNote(audioBlob, recordingMimeType);
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                micBtn.classList.add('recording');
+                chatInput.placeholder = "Recording voice note... Click mic to stop.";
+                chatInput.disabled = true;
+            } catch (err) {
+                console.error(err);
+                alert('Microphone access denied or not available.');
+            }
+        } else {
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            micBtn.classList.remove('recording');
+            chatInput.placeholder = "Type a message or drop a link...";
+            chatInput.disabled = false;
+            chatInput.focus();
+        }
+    });
+
+    // --- Chat Logic ---
+    chatInput.addEventListener('input', function() {
+        this.style.height = '40px';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendTextMessage();
+        }
+    });
+
+    sendBtn.addEventListener('click', sendTextMessage);
+
+    function fetchMessages() {
+        fetch(`https://drautos.store/admin/chat/fetch?last_id=${lastMessageId}&is_open=${isOpen ? '1' : '0'}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    // Update team data
+                    if (data.team) {
+                        teamData = data.team;
+                        if (teamDropdownMenu.style.display === 'block') {
+                            renderTeamDropdown();
+                        }
+                        updateSeenByTooltips();
+                    }
+
+                    if (data.messages && data.messages.length > 0) {
+                        let shouldScroll = isScrollAtBottom();
+                        let playedSound = false;
+                    
+                        data.messages.forEach(msg => {
+                            let isNewMsg = msg.id > lastMessageId;
+                            if (isNewMsg) lastMessageId = msg.id;
+                            
+                            renderMessage(msg);
+                            
+                            // Handle unread badges and sounds for incoming NEW messages only
+                            if (isNewMsg && !isInitialLoad && msg.user_id !== currentUserId) {
+                                if (!isOpen) {
+                                    unreadCount++;
+                                    unreadBadge.style.display = 'flex';
+                                    unreadBadge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                                }
+                                if (!playedSound) {
+                                    playNotificationSound();
+                                    playedSound = true; // only ping once per batch
+                                }
+                            }
+                        });
+
+                        if (shouldScroll || data.messages.some(m => m.user_id === currentUserId)) {
+                            scrollToBottom();
+                        }
+                        
+                        // Update tooltips immediately for newly rendered messages
+                        updateSeenByTooltips();
+                    }
+                    
+                    isInitialLoad = false;
+                }
+            })
+            .catch(err => console.error('Chat poll error', err));
+    }
+
+    function updateSeenByTooltips() {
+        const infoIcons = document.querySelectorAll('.chat-msg-info');
+        infoIcons.forEach(iconContainer => {
+            const msgId = parseInt(iconContainer.getAttribute('data-msg-id'));
+            const senderId = parseInt(iconContainer.getAttribute('data-sender-id'));
+            
+            // Find who has seen this message (excluding the sender)
+            let seenByNames = [];
+            teamData.forEach(member => {
+                if (member.id !== senderId && member.last_read_message_id >= msgId) {
+                    seenByNames.push(member.name);
+                }
+            });
+            
+            const tooltipText = iconContainer.querySelector('.tooltip-text');
+            if (seenByNames.length > 0) {
+                iconContainer.style.display = 'inline-block';
+                if(tooltipText) {
+                    tooltipText.innerText = "Seen by: " + seenByNames.join(', ');
+                }
+            } else {
+                iconContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // Toggle tooltips on click for mobile/touch
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.seen-by-tooltip')) {
+            const tooltip = e.target.closest('.seen-by-tooltip');
+            tooltip.classList.toggle('active');
+            setTimeout(() => tooltip.classList.remove('active'), 3000);
+        } else {
+            document.querySelectorAll('.seen-by-tooltip.active').forEach(t => t.classList.remove('active'));
+        }
+    });
+
+    function sendTextMessage() {
+        const text = chatInput.value.trim();
+        if(!text) return;
+
+        chatInput.value = '';
+        chatInput.style.height = '40px';
+
+        let formData = new FormData();
+        formData.append('message', text);
+        sendData(formData);
+    }
+
+    function sendVoiceNote(blob, mimeType) {
+        let formData = new FormData();
+        let ext = 'webm';
+        if (mimeType) {
+            if (mimeType.includes('mp4')) ext = 'mp4';
+            else if (mimeType.includes('ogg')) ext = 'ogg';
+            else if (mimeType.includes('wav')) ext = 'wav';
+            else if (mimeType.includes('mpeg')) ext = 'mp3';
+            else if (mimeType.includes('aac')) ext = 'aac';
+        }
+        
+        formData.append('audio', blob, 'voicenote.' + ext);
+        sendData(formData);
+    }
+
+    function sendData(formData) {
+        fetch(`https://drautos.store/admin/chat/send`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '5cJh2cyxLxnZFJlP9GTqzhBe1DdFfjwQEoKMwc5F'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                if (data.message.id > lastMessageId) {
+                    lastMessageId = data.message.id;
+                    renderMessage(data.message);
+                    scrollToBottom();
+                }
+            } else {
+                alert(data.message || 'Error sending message');
+            }
+        }).catch(err => console.error('Send error', err));
+    }
+
+    function renderMessage(msg) {
+        if(document.getElementById('msg-'+msg.id)) return;
+
+        let msgContent = '';
+        
+        if (msg.file_type === 'audio' && msg.file_path) {
+            // Add cache buster to prevent browser from caching a 0-byte file immediately after upload
+            let audioSrc = msg.file_path + '?v=' + Date.now();
+            msgContent += `<audio controls preload="auto" src="${audioSrc}" class="chat-audio-player" style="margin-bottom: ${msg.message ? '5px' : '0'};" oncanplay="this.style.opacity=1" onerror="setTimeout(()=>this.load(), 1000)"><br>`;
+        }
+        
+        if (msg.message) {
+            let formattedMsg = msg.message.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1');
+            msgContent += formattedMsg.replace(/\n/g, '<br>');
+        }
+        
+        let infoIcon = `
+            <div class="seen-by-tooltip chat-msg-info" data-msg-id="${msg.id}" data-sender-id="${msg.user_id}" style="display: none; cursor: pointer;">
+                <i class="fas fa-check-double" style="font-size: 10px; color: #3b82f6; margin-top: 4px;">
+                <span class="tooltip-text">
+            
+        `;
+
+        let msgDiv = document.createElement('div');
+        msgDiv.className = `chat-msg ${msg.user_id === currentUserId ? 'self' : 'other'}`;
+        msgDiv.id = 'msg-'+msg.id;
+        msgDiv.innerHTML = `
+            <div class="sender-name">${msg.user ? msg.user.name : 'Unknown'} <span style="opacity:0.5; font-weight:normal; font-size:9px;">${msg.time_str}
+            <div class="msg-content">${msgContent}
+            <div style="text-align: right; line-height: 1;">${infoIcon}
+        `;
+        messageContainer.appendChild(msgDiv);
+    }
+
+    function isScrollAtBottom() {
+        return messageContainer.scrollHeight - messageContainer.scrollTop <= messageContainer.clientHeight + 50;
+    }
+
+    function scrollToBottom() {
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+
+    // --- Drag and Drop Links Logic ---
+    chatWindow.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        chatInput.classList.add('drag-over');
+    });
+
+    chatWindow.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        chatInput.classList.remove('drag-over');
+    });
+
+    chatWindow.addEventListener('drop', (e) => {
+        e.preventDefault();
+        chatInput.classList.remove('drag-over');
+        
+        let url = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list');
+        
+        if (url) {
+            chatInput.value += (chatInput.value ? ' ' : '') + url;
+            chatInput.focus();
+            chatInput.style.height = (chatInput.scrollHeight) + 'px';
+        }
+    });
+
+    // Initial load and polling
+    fetchMessages();
+    setInterval(fetchMessages, 4000);
+});
+
+

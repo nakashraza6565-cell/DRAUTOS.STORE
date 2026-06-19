@@ -193,7 +193,7 @@
     }
 
     $(document).ready(function() {
-        renderCart();
+        renderOrderEditCart();
 
         // Product Search
         $('#product_search').on('input', function() {
@@ -239,7 +239,7 @@
                 }
             }
             
-            renderCart();
+            renderOrderEditCart();
             $('#product_search').val('');
             $('#search_results').hide();
         });
@@ -251,7 +251,7 @@
         });
     });
 
-    function renderCart() {
+    function renderOrderEditCart() {
         try {
             let html = '';
             let total = 0;
@@ -299,14 +299,14 @@
             // Auto-update pending amount calculation
             updatePendingCalculation(total);
         } catch (err) {
-            console.error("Error in renderCart:", err);
+            console.error("Error in renderOrderEditCart:", err);
         }
     }
 
     window.updateTxPrice = function(index, val) {
         let price = parseFloat(val) || 0;
         cart[index].price = price;
-        renderCart();
+        renderOrderEditCart();
     }
 
     function updatePendingCalculation(total) {
@@ -325,12 +325,12 @@
     window.updateTxQty = function(index, val) {
         let qty = parseInt(val) || 1;
         cart[index].qty = qty;
-        renderCart();
+        renderOrderEditCart();
     }
 
     window.removeItem = function(index) {
         cart.splice(index, 1);
-        renderCart();
+        renderOrderEditCart();
     }
 </script>
 @endpush
