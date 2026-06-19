@@ -1,15 +1,15 @@
 <?php
 header('Content-Type: text/plain');
-echo "=== Live File Checker ===\n";
-$filePath = __DIR__ . '/drautos/routes/web.php';
+echo "=== Live File Checker - edit.blade.php script section ===\n";
+$filePath = __DIR__ . '/drautos/resources/views/backend/order/edit.blade.php';
 if (file_exists($filePath)) {
-    echo "File exists!\n";
-    echo "Modified: " . date("Y-m-d H:i:s", filemtime($filePath)) . "\n";
     $content = file_get_contents($filePath);
-    if (strpos($content, '/ping-recent-activity') !== false) {
-        echo "FOUND: /ping-recent-activity in the file!\n";
+    // Find the @push('scripts') section
+    $pos = strpos($content, "@push('scripts')");
+    if ($pos !== false) {
+        echo substr($content, $pos, 1000);
     } else {
-        echo "NOT FOUND: /ping-recent-activity in the file!\n";
+        echo "@push('scripts') not found\n";
     }
 } else {
     echo "File not found at: $filePath\n";
