@@ -47,6 +47,12 @@
               <span class="launcher-label">Billing</span>
           </a>
           @endcan
+          @can('view-return')
+          <a href="{{route('returns.sale.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-undo" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Sale Returns</span>
+          </a>
+          @endcan
           <a href="{{route('admin.cash-register')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-cash-register" style="color: #facc15;"></i></div>
               <span class="launcher-label">Register</span>
@@ -95,6 +101,24 @@
               <span class="launcher-label">Categories</span>
           </a>
           @endcan
+          @can('view-purchase')
+          <a href="{{route('suppliers.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-truck-fast" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Suppliers</span>
+          </a>
+          @endcan
+          @can('view-packaging')
+          <a href="{{route('packaging.purchases.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-shopping-bag" style="color: #facc15;"></i></div>
+              <span class="launcher-label">New Purchases</span>
+          </a>
+          @endcan
+          @can('view-return')
+          <a href="{{route('returns.purchase.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-file-import" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Purchase Returns</span>
+          </a>
+          @endcan
       </div>
 
       <div class="launcher-section-title" style="color: #facc15;">Manufacturing</div>
@@ -109,6 +133,10 @@
           <a href="{{route('manufacturing.production-factors.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-cubes" style="color: #facc15;"></i></div>
               <span class="launcher-label">Raw Materials</span>
+          </a>
+          <a href="{{route('manufacturing.production-factors.invoices')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-file-invoice-dollar" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Material Invs</span>
           </a>
           <a href="{{route('manufacturing.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-industry" style="color: #facc15;"></i></div>
@@ -129,6 +157,16 @@
               <span class="launcher-label">Reports</span>
           </a>
           @endcan
+          @can('view-dashboard')
+          <a href="{{route('admin.activity-logs')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-history" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Activity Log</span>
+          </a>
+          @endcan
+          <a href="{{route('delivery-receipts.index')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-receipt" style="color: #facc15;"></i></div>
+              <span class="launcher-label">All Receipts</span>
+          </a>
           <a href="{{route('staff.index')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-users-cog" style="color: #facc15;"></i></div>
               <span class="launcher-label">Staff</span>

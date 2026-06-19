@@ -22,16 +22,20 @@
     </div>
     @endif
 
-    <div class="card-header py-3 mt-2">
-      <h6 class="m-0 font-weight-bold text-primary float-left">
-          Users List
-          @if(isset($filterStatus) && $filterStatus == 'pending')
-              <span class="badge badge-warning ml-2">Pending Requests</span>
-          @endif
-      </h6>
-      <div class="float-right d-flex align-items-center" style="gap: 12px;">
+    <div class="card-header py-3 mt-2 d-flex flex-column flex-md-row align-items-md-center justify-content-between" style="gap: 15px;">
+      <div class="d-flex align-items-center justify-content-between w-100 w-md-auto">
+          <h6 class="m-0 font-weight-bold text-primary">
+              Users List
+              @if(isset($filterStatus) && $filterStatus == 'pending')
+                  <span class="badge badge-warning ml-2">Pending Requests</span>
+              @endif
+          </h6>
+          <a href="{{route('users.create')}}" class="btn btn-primary btn-sm px-3 shadow-sm d-md-none" style="height: 36px; display: flex; align-items: center; border-radius: 50px;"><i class="fas fa-plus mr-1"></i> Add User</a>
+      </div>
+      
+      <div class="d-flex flex-wrap align-items-center w-100 w-md-auto filter-container" style="gap: 10px;">
           {{-- Search Bar --}}
-          <form action="{{request()->url()}}" method="GET" class="d-flex align-items-center position-relative" style="width: 280px;">
+          <form action="{{request()->url()}}" method="GET" class="d-flex align-items-center position-relative filter-search-form">
               {{-- Preserve other filters --}}
               @if(request('status')) <input type="hidden" name="status" value="{{request('status')}}"> @endif
               @if(request('city')) <input type="hidden" name="city" value="{{request('city')}}"> @endif
@@ -51,7 +55,7 @@
           </form>
 
           {{-- Status Filter --}}
-          <form action="{{request()->url()}}" method="GET" class="d-inline-block" style="width: 150px;">
+          <form action="{{request()->url()}}" method="GET" class="filter-status-form">
               @if(request('search')) <input type="hidden" name="search" value="{{request('search')}}"> @endif
               @if(request('city')) <input type="hidden" name="city" value="{{request('city')}}"> @endif
               <select name="status" class="form-control form-control-sm" onchange="this.form.submit()" style="border-radius: 50px; height: 38px;">
@@ -62,7 +66,8 @@
               </select>
           </form>
 
-          <form action="{{request()->url()}}" method="GET" class="d-inline-block" style="width: 160px;">
+          {{-- City Filter --}}
+          <form action="{{request()->url()}}" method="GET" class="filter-city-form">
               @if(request('search')) <input type="hidden" name="search" value="{{request('search')}}"> @endif
               @if(request('status')) <input type="hidden" name="status" value="{{request('status')}}"> @endif
               <select name="city" class="form-control form-control-sm" onchange="this.form.submit()" style="border-radius: 50px; height: 38px;">
@@ -73,7 +78,7 @@
               </select>
           </form>
           
-          <a href="{{route('users.create')}}" class="btn btn-primary btn-sm px-4 shadow-sm" style="height: 38px; display: flex; align-items: center;"><i class="fas fa-plus mr-2"></i> Add User</a>
+          <a href="{{route('users.create')}}" class="btn btn-primary btn-sm px-4 shadow-sm d-none d-md-flex" style="height: 38px; align-items: center; border-radius: 50px;"><i class="fas fa-plus mr-2"></i> Add User</a>
       </div>
     </div>
     <div class="card-body">
@@ -320,6 +325,34 @@
           padding: 3px 20px;
           transform: rotate(45deg);
           letter-spacing: 0.5px;
+      }
+      
+      /* Responsive filter controls */
+      .filter-container {
+          justify-content: flex-end;
+      }
+      .filter-search-form {
+          width: 280px;
+      }
+      .filter-status-form {
+          width: 150px;
+      }
+      .filter-city-form {
+          width: 160px;
+      }
+      
+      @media (max-width: 767px) {
+          .filter-container {
+              justify-content: space-between;
+              width: 100%;
+          }
+          .filter-search-form {
+              width: 100% !important;
+              margin-bottom: 5px;
+          }
+          .filter-status-form, .filter-city-form {
+              width: calc(50% - 5px) !important;
+          }
       }
   </style>
 @endpush
