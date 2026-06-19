@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\ChequeController;
 
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
+Route::post('/direct-user-update/{id}', 'UsersController@posUpdate')->name('users.pos-update');
 
 Route::get('.well-known/assetlinks.json', function () {
     return response()->json([

@@ -28,11 +28,26 @@
         <select class="form-control select2" id="customer-select">
             <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
             @foreach($customers as $customer)
-            <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}">
+            <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}" data-city="{{$customer->city}}" data-address="{{$customer->address}}">
                 {{$customer->name}} ({{$customer->phone ?? 'N/A'}}) | Bal: Rs. {{ number_format($customer->current_balance ?? 0, 2) }}
             </option>
             @endforeach
         </select>
+        <!-- Compact customer info bar -->
+        <div id="cust-info-bar" style="display:none; margin-top:5px; background:#eff6ff; border:1px solid #dbeafe; border-radius:5px; padding:3px 8px; font-size:11px; line-height:1.6;">
+            <div class="d-flex align-items-center">
+                <span class="text-truncate flex-grow-1" style="color:#374151;">
+                    <i class="fas fa-phone-alt mr-1" style="font-size:9px; color:#6b7280;"></i><span id="cust-bar-phone">—</span>
+                    <span class="mx-1" style="color:#d1d5db;">|</span>
+                    <i class="fas fa-map-marker-alt mr-1" style="font-size:9px; color:#6b7280;"></i><span id="cust-bar-city">—</span>
+                    <span class="mx-1" style="color:#d1d5db;">|</span>
+                    <span class="font-weight-bold" style="color:#dc2626;"><i class="fas fa-wallet mr-1" style="font-size:9px;"></i><span id="cust-bar-bal">0</span></span>
+                </span>
+                <button id="edit-cust-btn" class="btn btn-link p-0 ml-2 flex-shrink-0" style="font-size:10px; color:#2563eb; line-height:1; text-decoration:none;" title="Quick Edit Customer">
+                    <i class="fas fa-pen mr-1" style="font-size:9px;"></i>Edit
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Current Order List -->
@@ -100,11 +115,65 @@
                         <label>Phone</label>
                         <input type="text" name="phone" class="form-control">
                     </div>
+                    <!-- Collapsible More Details -->
+                    <a class="d-block text-center text-muted py-1" data-toggle="collapse" href="#moreCustomerDetails" role="button" style="font-size:11px; text-decoration:none;">
+                        <i class="fas fa-chevron-down mr-1" style="font-size:9px;"></i> More details (optional)
+                    </a>
+                    <div class="collapse" id="moreCustomerDetails">
+                        <hr class="mt-1 mb-2">
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted mb-1">Email</label>
+                            <input type="email" name="email" class="form-control form-control-sm" placeholder="Optional">
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="small font-weight-bold text-muted mb-1">City</label>
+                            <input type="text" name="city" class="form-control form-control-sm" placeholder="e.g. Lahore">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold text-muted mb-1">Address</label>
+                            <input type="text" name="address" class="form-control form-control-sm" placeholder="Optional">
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="save-customer-btn">Save Customer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal (POS Quick Edit) -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1" role="dialog" style="z-index: 106000;">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title font-weight-bold"><i class="fas fa-user-edit mr-1 text-primary"></i> Edit Customer</h6>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body pb-2">
+                <input type="hidden" id="edit-cust-id">
+                <div class="form-group mb-2">
+                    <label class="small font-weight-bold text-muted mb-1">Name</label>
+                    <input type="text" id="edit-cust-name" class="form-control form-control-sm">
+                </div>
+                <div class="form-group mb-2">
+                    <label class="small font-weight-bold text-muted mb-1">Phone</label>
+                    <input type="text" id="edit-cust-phone" class="form-control form-control-sm">
+                </div>
+                <div class="form-group mb-2">
+                    <label class="small font-weight-bold text-muted mb-1">City</label>
+                    <input type="text" id="edit-cust-city" class="form-control form-control-sm">
+                </div>
+                <div class="form-group mb-0">
+                    <label class="small font-weight-bold text-muted mb-1">Address</label>
+                    <input type="text" id="edit-cust-address" class="form-control form-control-sm">
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="save-edit-cust-btn"><i class="fas fa-save mr-1"></i>Save</button>
             </div>
         </div>
     </div>
@@ -873,9 +942,14 @@ $(document).on('click', '#save-customer-btn', function() {
                 let newOption = new Option(displayText, user.id, true, true);
                 $(newOption).attr('data-type', user.customer_type || 'retail');
                 $(newOption).attr('data-balance', 0);
+                $(newOption).attr('data-name', user.name || '');
+                $(newOption).attr('data-phone', user.phone || '');
+                $(newOption).attr('data-city', user.city || '');
+                $(newOption).attr('data-address', user.address || '');
                 $('#customer-select').append(newOption).trigger('change');
                 $('#addCustomerModal').modal('hide');
                 form[0].reset();
+                $('#moreCustomerDetails').collapse('hide');
                 Swal.fire('Success', 'Customer Added', 'success');
             },
             error: function(err) {
@@ -883,6 +957,67 @@ $(document).on('click', '#save-customer-btn', function() {
             }
         });
     });
+    // ── Customer info bar ──────────────────────────────────────────────
+    function refreshCustBar() {
+        let opt = $('#customer-select').find('option:selected');
+        let val = $('#customer-select').val();
+        let walkInId = '{{$walkInId}}';
+        if (!val || val == walkInId) { $('#cust-info-bar').hide(); return; }
+        let phone = opt.data('phone') || '—';
+        let city  = opt.data('city')  || '—';
+        let bal   = parseFloat(opt.data('balance') || 0);
+        let balTxt = (bal < 0 ? '-' : '') + 'Rs. ' + Math.abs(bal).toLocaleString('en', {minimumFractionDigits:0});
+        $('#cust-bar-phone').text(phone);
+        $('#cust-bar-city').text(city);
+        $('#cust-bar-bal').text(balTxt);
+        $('#cust-info-bar').show();
+    }
+    $(document).on('change', '#customer-select', function() { refreshCustBar(); });
+
+    // ── Open Edit Customer modal ────────────────────────────────────────
+    $(document).on('click', '#edit-cust-btn', function(e) {
+        e.preventDefault();
+        let opt = $('#customer-select').find('option:selected');
+        let id  = $('#customer-select').val();
+        $('#edit-cust-id').val(id);
+        $('#edit-cust-name').val(opt.data('name') || opt.text().split('(')[0].trim());
+        $('#edit-cust-phone').val(opt.data('phone') || '');
+        $('#edit-cust-city').val(opt.data('city') || '');
+        $('#edit-cust-address').val(opt.data('address') || '');
+        $('#editCustomerModal').modal('show');
+    });
+
+    // ── Save Edit Customer via AJAX ─────────────────────────────────────
+    $(document).on('click', '#save-edit-cust-btn', function() {
+        let id      = $('#edit-cust-id').val();
+        let name    = $('#edit-cust-name').val();
+        let phone   = $('#edit-cust-phone').val();
+        let city    = $('#edit-cust-city').val();
+        let address = $('#edit-cust-address').val();
+        let $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Saving...');
+        $.ajax({
+            url: '/direct-user-update/' + id,
+            type: 'POST',
+            data: { name: name, phone: phone, city: city, address: address, _token: '{{csrf_token()}}' },
+            success: function(res) {
+                let opt = $('#customer-select option[value="' + id + '"]');
+                opt.attr('data-name', name).attr('data-phone', phone).attr('data-city', city).attr('data-address', address);
+                let bal = opt.data('balance') || 0;
+                opt.text(name + ' (' + (phone || 'N/A') + ') | Bal: Rs. ' + parseFloat(bal).toFixed(2));
+                refreshCustBar();
+                $('#editCustomerModal').modal('hide');
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Save');
+                Swal.fire({ icon:'success', title:'Customer Updated!', toast:true, position:'top-end', showConfirmButton:false, timer:2000 });
+            },
+            error: function() {
+                $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Save');
+                Swal.fire('Error', 'Could not update customer.', 'error');
+            }
+        });
+    });
+    // ───────────────────────────────────────────────────────────────────
+
     window.fetchLastPurchase = function(cartItem) {
         let customer_id = $('#customer-select').val();
         if (!customer_id || customer_id == 1) return; // Skip walk-in

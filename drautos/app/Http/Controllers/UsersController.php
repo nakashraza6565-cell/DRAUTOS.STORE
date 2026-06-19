@@ -268,6 +268,21 @@ class UsersController extends Controller
     }
 
     /**
+     * Lightweight POS quick-update: only updates name, phone, city, address.
+     * No role/status/email validation needed.
+     */
+    public function posUpdate(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        if ($request->filled('name'))    $user->name    = $request->name;
+        if (!is_null($request->phone))   $user->phone   = $request->phone;
+        if (!is_null($request->city))    $user->city    = $request->city;
+        if (!is_null($request->address)) $user->address = $request->address;
+        $user->save();
+        return response()->json(['status' => 'success', 'user' => $user]);
+    }
+
+    /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
