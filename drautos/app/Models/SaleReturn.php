@@ -17,7 +17,7 @@ class SaleReturn extends Model
     ];
 
     protected $casts = [
-        'return_date' => 'date',
+        'return_date'         => 'date',
         'total_return_amount' => 'float',
     ];
 

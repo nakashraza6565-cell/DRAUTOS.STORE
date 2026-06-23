@@ -718,6 +718,9 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         // Sale Returns
         Route::prefix('sale')->group(function () {
             Route::get('/', 'ReturnsController@saleReturnsIndex')->name('returns.sale.index');
+            // Smart multi-order return (customer-first) — must be before /{return} wildcard
+            Route::get('/new', 'ReturnsController@createSmartSaleReturn')->name('returns.sale.create-smart');
+            Route::get('/search-products', 'ReturnsController@searchCustomerProducts')->name('returns.sale.search-products');
             Route::get('/create/{order}', 'ReturnsController@createSaleReturn')->name('returns.sale.create');
             Route::post('/store', 'ReturnsController@storeSaleReturn')->name('returns.sale.store');
             Route::get('/{return}', 'ReturnsController@showSaleReturn')->name('returns.sale.show');

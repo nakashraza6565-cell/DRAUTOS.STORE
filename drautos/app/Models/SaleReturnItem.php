@@ -10,12 +10,12 @@ class SaleReturnItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sale_return_id', 'product_id', 'quantity', 'unit_price',
-        'total_price', 'condition', 'notes'
+        'sale_return_id', 'order_id', 'product_id', 'quantity',
+        'unit_price', 'total_price', 'condition', 'notes'
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
+        'quantity'   => 'integer',
         'unit_price' => 'float',
         'total_price' => 'float',
     ];
@@ -28,5 +28,10 @@ class SaleReturnItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }

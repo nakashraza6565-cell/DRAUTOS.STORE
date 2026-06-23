@@ -47,7 +47,73 @@ class ReturnsController extends Controller
     }
 
     /**
-     * Create sale return
+     * AJAX: Search customer's purchase history for smart return basket
+     * GET /admin/returns/sale/search-products?customer_id=X&q=tyre
+     */
+    public function searchCustomerProducts(Request $request)
+    {
+        $customerId = $request->input('customer_id');
+        $query      = trim($request->input('q', ''));
+
+        if (!$customerId) {
+            return response()->json([]);
+        }
+
+        // Get all cart items for this customer across all their orders
+        $cartItems = \App\Models\Cart::with(['product', 'order'])
+            ->whereHas('order', function ($q) use ($customerId) {
+                $q->where('user_id', $customerId);
+            })
+            ->whereNotNull('product_id')
+            ->when($query !== '', function ($q) use ($query) {
+                $q->whereHas('product', function ($pq) use ($query) {
+                    $pq->where('title', 'LIKE', "%{$query}%")
+                       ->orWhere('sku',   'LIKE', "%{$query}%");
+                });
+            })
+            ->get();
+
+        // For each cart item, calculate how many have already been returned
+        $results = $cartItems->map(function ($item) {
+            $alreadyReturned = \App\Models\SaleReturnItem::where('product_id', $item->product_id)
+                ->where('order_id', $item->order_id)
+                ->sum('quantity');
+
+            $returnable = max(0, $item->quantity - $alreadyReturned);
+
+            return [
+                'cart_id'          => $item->id,
+                'order_id'         => $item->order_id,
+                'order_number'     => $item->order->order_number ?? 'N/A',
+                'order_date'       => $item->order ? $item->order->created_at->format('d M Y') : 'N/A',
+                'product_id'       => $item->product_id,
+                'product_title'    => $item->product->title ?? 'Unknown',
+                'product_sku'      => $item->product->sku ?? '',
+                'qty_sold'         => $item->quantity,
+                'already_returned' => $alreadyReturned,
+                'returnable_qty'   => $returnable,
+                'unit_price'       => (float) $item->price,
+            ];
+        })->filter(fn($r) => $r['returnable_qty'] > 0)->values();
+
+        return response()->json($results);
+    }
+
+    /**
+     * Smart customer-first return create page (no order required)
+     */
+    public function createSmartSaleReturn()
+    {
+        $customers = \App\User::where('role', 'user')
+            ->orWhere('role', 'customer')
+            ->orderBy('name')
+            ->get(['id', 'name', 'phone']);
+
+        return view('backend.returns.sale.create_smart', compact('customers'));
+    }
+
+    /**
+     * Create sale return (old flow — single order)
      */
     public function createSaleReturn(Request $request, Order $order)
     {
@@ -56,30 +122,58 @@ class ReturnsController extends Controller
     }
 
     /**
-     * Store sale return
+     * Store sale return — supports both old single-order and new multi-order smart basket
      */
     public function storeSaleReturn(Request $request)
     {
-        $validated = $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'return_date' => 'required|date',
-            'refund_method' => 'required|in:cash,credit_note,bank_transfer,cheque',
-            'refund_reference' => 'nullable|string',
-            'reason' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.condition' => 'required|in:good,damaged,defective',
-            'items.*.notes' => 'nullable|string',
-        ]);
+        // Determine if this is a smart (multi-order) return or old single-order return
+        $isSmartReturn = $request->input('smart_return') === '1';
+
+        if ($isSmartReturn) {
+            $validated = $request->validate([
+                'customer_id'          => 'required|exists:users,id',
+                'return_date'          => 'required|date',
+                'refund_method'        => 'required|in:cash,credit_note,bank_transfer,cheque',
+                'refund_reference'     => 'nullable|string',
+                'reason'               => 'nullable|string',
+                'items'                => 'required|array|min:1',
+                'items.*.product_id'   => 'required|exists:products,id',
+                'items.*.order_id'     => 'required|exists:orders,id',
+                'items.*.quantity'     => 'required|integer|min:1',
+                'items.*.unit_price'   => 'required|numeric|min:0',
+                'items.*.condition'    => 'required|in:good,damaged,defective',
+                'items.*.notes'        => 'nullable|string',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'order_id'             => 'required|exists:orders,id',
+                'return_date'          => 'required|date',
+                'refund_method'        => 'required|in:cash,credit_note,bank_transfer,cheque',
+                'refund_reference'     => 'nullable|string',
+                'reason'               => 'nullable|string',
+                'items'                => 'required|array|min:1',
+                'items.*.product_id'   => 'required|exists:products,id',
+                'items.*.quantity'     => 'required|integer|min:1',
+                'items.*.unit_price'   => 'required|numeric|min:0',
+                'items.*.condition'    => 'required|in:good,damaged,defective',
+                'items.*.notes'        => 'nullable|string',
+            ]);
+        }
 
         DB::beginTransaction();
         try {
-            $order = Order::findOrFail($validated['order_id']);
-            
             // Generate return number
             $returnNumber = 'SR-' . date('Ymd') . '-' . str_pad(SaleReturn::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+
+            // Determine customer and order for header
+            if ($isSmartReturn) {
+                $customerId = $validated['customer_id'];
+                $orderId    = null; // consolidated return has no single order
+            } else {
+                $order      = Order::findOrFail($validated['order_id']);
+                $customerId = $order->user_id;
+                $orderId    = $order->id;
+            }
 
             // Calculate total
             $totalReturnAmount = 0;
@@ -87,18 +181,18 @@ class ReturnsController extends Controller
                 $totalReturnAmount += $item['quantity'] * $item['unit_price'];
             }
 
-            // Create return
+            // Create return header
             $return = SaleReturn::create([
-                'return_number' => $returnNumber,
-                'order_id' => $order->id,
-                'customer_id' => $order->user_id,
-                'return_date' => $validated['return_date'],
+                'return_number'       => $returnNumber,
+                'order_id'            => $orderId,
+                'customer_id'         => $customerId,
+                'return_date'         => $validated['return_date'],
                 'total_return_amount' => $totalReturnAmount,
-                'refund_method' => $validated['refund_method'],
-                'refund_reference' => $validated['refund_reference'] ?? null,
-                'reason' => $validated['reason'] ?? null,
-                'status' => 'pending',
-                'processed_by' => Auth::id(),
+                'refund_method'       => $validated['refund_method'],
+                'refund_reference'    => $validated['refund_reference'] ?? null,
+                'reason'              => $validated['reason'] ?? null,
+                'status'              => 'pending',
+                'processed_by'        => Auth::id(),
             ]);
 
             // Add items and update stock
@@ -107,19 +201,22 @@ class ReturnsController extends Controller
 
                 SaleReturnItem::create([
                     'sale_return_id' => $return->id,
-                    'product_id' => $item['product_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $totalPrice,
-                    'condition' => $item['condition'],
-                    'notes' => $item['notes'] ?? null,
+                    'order_id'       => $isSmartReturn ? ($item['order_id'] ?? null) : $orderId,
+                    'product_id'     => $item['product_id'],
+                    'quantity'       => $item['quantity'],
+                    'unit_price'     => $item['unit_price'],
+                    'total_price'    => $totalPrice,
+                    'condition'      => $item['condition'],
+                    'notes'          => $item['notes'] ?? null,
                 ]);
 
                 // Update product stock (only if condition is good)
                 if ($item['condition'] === 'good') {
                     $product = Product::find($item['product_id']);
-                    $product->stock += $item['quantity'];
-                    $product->save();
+                    if ($product) {
+                        $product->stock += $item['quantity'];
+                        $product->save();
+                    }
                 }
             }
 
@@ -127,18 +224,18 @@ class ReturnsController extends Controller
             try {
                 $admins = User::where('role', 'admin')->get();
                 $details = [
-                    'title' => 'New Sale Return created by Admin',
+                    'title'     => 'New Sale Return created',
                     'actionURL' => route('returns.sale.show', $return->id),
-                    'fas' => 'fa-undo-alt'
+                    'fas'       => 'fa-undo-alt'
                 ];
                 Notification::send($admins, new StatusNotification($details));
             } catch (\Exception $e) {
-                \Log::error('Failed to notify admins of admin sale return: ' . $e->getMessage());
+                \Log::error('Failed to notify admins of sale return: ' . $e->getMessage());
             }
 
             DB::commit();
 
-            session()->flash('success', 'Sale return created successfully');
+            session()->flash('success', 'Sale return #' . $returnNumber . ' created successfully');
             return redirect()->route('returns.sale.show', $return->id);
 
         } catch (\Exception $e) {
