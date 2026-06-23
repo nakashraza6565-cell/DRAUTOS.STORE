@@ -70,40 +70,28 @@ Route::get('/test-render-edit/{id}', function($id) {
 Route::get('/fix-db', function () {
     try {
         $migrations = [
-            '2026_06_01_145119_create_group_chats_table.php',
-            '2026_06_01_154249_add_file_path_to_group_chats_table.php',
-            '2026_06_01_165400_add_chat_tracking_to_users_table.php'
+            '2026_06_23_000001_make_order_id_nullable_on_sale_returns.php',
+            '2026_06_23_000002_add_order_id_to_sale_return_items.php',
         ];
 
+        $output = [];
         foreach ($migrations as $file) {
             \Illuminate\Support\Facades\Artisan::call('migrate', [
                 '--path' => 'database/migrations/' . $file,
                 '--force' => true
             ]);
+            $output[] = $file . ': ' . \Illuminate\Support\Facades\Artisan::output();
         }
 
-        // Seed Staff Cash accounts if they don't exist
-        $admins = ['Naqash Cash', 'Tamoor Cash', 'Danial Cash'];
-        foreach ($admins as $name) {
-            \App\Models\FinancialAccount::firstOrCreate(
-                ['name' => $name],
-                ['type' => 'cash', 'opening_balance' => 0, 'status' => 'active']
-            );
-        }
-
-        // Remove legacy admin accounts if they exist
-        \App\Models\FinancialAccount::whereIn('name', ['Admin 2 Cash', 'Admin 3 Cash'])->delete();
-        
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        
-        return "<h1>Unified System Activated!</h1>
-                <p>Cash Registers and Financial Accounts have been merged.</p>
-                <a href='/admin/cash-register' style='padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;'>Go to Cash Register</a>";
+
+        return "<h1>✅ Sale Return Migrations Done!</h1><pre>" . implode("\n", $output) . "</pre><br><a href='/admin/returns/sale' style='padding:10px 20px;background:#007bff;color:white;text-decoration:none;border-radius:5px;'>Go to Sale Returns</a>";
     } catch (\Throwable $e) {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        return "<h1>Status Check</h1><p>Error: " . $e->getMessage() . "</p><p>File: " . $e->getFile() . " Line: " . $e->getLine() . "</p>";
+        return "<h1>❌ Error</h1><p>" . $e->getMessage() . "</p><p>File: " . $e->getFile() . " Line: " . $e->getLine() . "</p>";
     }
 });
+
 
 Route::get('/fix-balances', function () {
     try {
