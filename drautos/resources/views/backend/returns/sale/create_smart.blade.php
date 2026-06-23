@@ -3,290 +3,450 @@
 @section('title','New Sale Return')
 
 @section('main-content')
-<div class="container-fluid px-2 px-md-4 py-3">
+<style>
+/* ======== MOBILE-FIRST RETURN PAGE ======== */
+:root {
+    --clr-primary: #2563eb;
+    --clr-success: #16a34a;
+    --clr-danger:  #dc2626;
+    --clr-muted:   #6b7280;
+    --radius:      12px;
+}
 
-    {{-- Page Header --}}
-    <div class="d-flex align-items-center justify-content-between mb-3">
+#srPage { padding: 12px; max-width: 680px; margin: 0 auto; }
+
+/* Step cards */
+.sr-card {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1.5px solid #e5e7eb;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    transition: opacity .25s, border-color .25s;
+}
+.sr-card.locked { opacity: .42; pointer-events: none; }
+.sr-card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+.sr-step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem;
+    background: #d1d5db; color: #fff; flex-shrink: 0;
+    transition: background .2s;
+}
+.sr-card:not(.locked) .sr-step-num { background: var(--clr-primary); }
+.sr-card-title { font-weight: 700; font-size: .95rem; flex-grow: 1; }
+.sr-card-body { padding: 14px; }
+
+/* Customer search */
+#customerSearchBox {
+    width: 100%; padding: 12px 14px;
+    font-size: 1rem; border: 2px solid #d1d5db;
+    border-radius: 10px; outline: none;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+}
+#customerSearchBox:focus { border-color: var(--clr-primary); }
+#customerDropdown {
+    border: 1.5px solid #d1d5db; border-top: none;
+    border-radius: 0 0 10px 10px;
+    max-height: 220px; overflow-y: auto;
+    background: #fff; display: none;
+}
+.cust-option {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer; font-size: .95rem;
+}
+.cust-option:last-child { border-bottom: none; }
+.cust-option:active, .cust-option.highlighted { background: #eff6ff; }
+.cust-option .cust-phone { font-size: .8rem; color: var(--clr-muted); }
+#selectedCustomerPill {
+    display: none;
+    margin-top: 10px;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+#selectedCustomerPill .pill-name { font-weight: 600; font-size: .95rem; flex-grow: 1; }
+#clearCustomerBtn {
+    background: none; border: none;
+    color: var(--clr-danger); font-size: 1.2rem;
+    cursor: pointer; padding: 2px 4px; line-height: 1;
+}
+
+/* Product search */
+#productSearchBox {
+    width: 100%; padding: 12px 14px;
+    font-size: 1rem; border: 2px solid #d1d5db;
+    border-radius: 10px; outline: none;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+}
+#productSearchBox:focus { border-color: var(--clr-primary); }
+#searchSpinner { display: none; margin-top: 8px; text-align: center; color: var(--clr-muted); font-size: .9rem; }
+
+/* Search result cards */
+.result-card {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+    background: #fff;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.result-card .rc-info { flex-grow: 1; min-width: 0; }
+.result-card .rc-title { font-weight: 700; font-size: .95rem; word-break: break-word; }
+.result-card .rc-meta { font-size: .78rem; color: var(--clr-muted); margin-top: 3px; }
+.result-card .rc-price { font-size: .9rem; color: var(--clr-primary); font-weight: 600; margin-top: 4px; }
+.rc-returnable { display: inline-block; background: #dcfce7; color: #15803d; border-radius: 6px; padding: 1px 7px; font-size: .78rem; font-weight: 600; }
+.btn-add-result {
+    background: var(--clr-primary); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 10px 14px; font-size: .9rem; font-weight: 600;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    min-width: 64px; text-align: center;
+    transition: background .15s;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-add-result:active { background: #1d4ed8; }
+.btn-add-result.added { background: var(--clr-success); cursor: default; }
+#searchResultsContainer { margin-top: 4px; }
+
+/* Basket items */
+.basket-entry {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #fff;
+}
+.basket-entry .be-title { font-weight: 700; font-size: .95rem; }
+.basket-entry .be-meta { font-size: .78rem; color: var(--clr-muted); margin-top: 2px; }
+.be-controls {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; flex-wrap: wrap;
+}
+.qty-box {
+    display: flex; align-items: center;
+    border: 1.5px solid #d1d5db; border-radius: 8px;
+    overflow: hidden;
+}
+.qty-btn {
+    width: 42px; height: 42px;
+    background: #f3f4f6; border: none;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .12s;
+    flex-shrink: 0;
+}
+.qty-btn:active { background: #e5e7eb; }
+.qty-val {
+    width: 48px; text-align: center;
+    font-size: 1rem; font-weight: 700;
+    border: none; border-left: 1.5px solid #d1d5db; border-right: 1.5px solid #d1d5db;
+    height: 42px; outline: none;
+    -webkit-appearance: none; -moz-appearance: textfield;
+}
+.qty-val::-webkit-inner-spin-button,
+.qty-val::-webkit-outer-spin-button { -webkit-appearance: none; }
+.be-condition {
+    flex-grow: 1; min-width: 120px;
+    padding: 10px 12px; font-size: .88rem;
+    border: 1.5px solid #d1d5db; border-radius: 8px;
+    background: #fff; outline: none; height: 42px;
+    -webkit-appearance: auto;
+}
+.be-total { font-weight: 700; color: var(--clr-success); font-size: 1rem; min-width: 80px; text-align: right; }
+.be-remove {
+    background: none; border: none;
+    color: var(--clr-danger); font-size: 1.4rem;
+    cursor: pointer; padding: 4px; line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+}
+.be-notes {
+    margin-top: 8px; width: 100%;
+    padding: 9px 12px; font-size: .88rem;
+    border: 1.5px solid #e5e7eb; border-radius: 8px;
+    outline: none;
+}
+.be-notes:focus { border-color: var(--clr-primary); }
+
+/* Basket total bar */
+#basketTotalBar {
+    background: #f0fdf4; border: 1.5px solid #bbf7d0;
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 4px; display: none;
+}
+#basketTotalBar .bt-label { font-weight: 600; font-size: .95rem; }
+#basketTotalBar .bt-amount { font-weight: 800; font-size: 1.2rem; color: var(--clr-success); }
+
+/* Form fields */
+.sr-field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+@media (max-width: 480px) { .sr-field-group { grid-template-columns: 1fr; } }
+.sr-field label { display: block; font-size: .82rem; font-weight: 700; color: #374151; margin-bottom: 4px; }
+.sr-field input, .sr-field select, .sr-field textarea {
+    width: 100%; padding: 11px 12px;
+    font-size: .95rem; border: 1.5px solid #d1d5db;
+    border-radius: 8px; outline: none;
+    transition: border-color .2s; background: #fff;
+    -webkit-appearance: none; appearance: none;
+}
+.sr-field select { -webkit-appearance: auto; appearance: auto; }
+.sr-field input:focus, .sr-field select:focus, .sr-field textarea:focus { border-color: var(--clr-primary); }
+
+/* Submit */
+#submitBtn {
+    width: 100%; padding: 16px;
+    background: var(--clr-danger); color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 1.1rem; font-weight: 700;
+    cursor: pointer; margin-top: 14px;
+    transition: background .15s;
+    -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#submitBtn:active { background: #b91c1c; }
+#submitBtn:disabled { opacity: .65; cursor: not-allowed; }
+
+/* Misc */
+.sr-empty-msg { text-align: center; padding: 24px; color: var(--clr-muted); font-size: .9rem; }
+.alert-inline { background: #fef9c3; border: 1.5px solid #fde047; border-radius: 8px; padding: 10px 14px; font-size: .88rem; color: #713f12; display: none; margin-top: 10px; }
+.sr-basket-count { background: var(--clr-danger); color: #fff; border-radius: 50%; width: 22px; height: 22px; font-size: .75rem; font-weight: 700; display: none; align-items: center; justify-content: center; flex-shrink: 0; }
+</style>
+
+<div id="srPage">
+    {{-- Header --}}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div>
-            <h5 class="m-0 font-weight-bold text-primary"><i class="fas fa-undo mr-2"></i>New Sale Return</h5>
-            <small class="text-muted">Select customer → Search products → Build basket → Submit</small>
+            <div style="font-size:1.15rem;font-weight:800;color:#111;">↩ New Sale Return</div>
+            <div style="font-size:.78rem;color:var(--clr-muted);">Select customer → search product → submit</div>
         </div>
-        <a href="{{ route('returns.sale.index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left mr-1"></i>Back</a>
+        <a href="{{ route('returns.sale.index') }}" style="padding:8px 14px;background:#f3f4f6;border-radius:8px;font-size:.85rem;color:#374151;font-weight:600;text-decoration:none;">← Back</a>
     </div>
 
     @include('backend.layouts.notification')
 
-    {{-- STEP 1: Customer Selection --}}
-    <div class="card shadow-sm mb-3" id="step1Card">
-        <div class="card-header py-2 d-flex align-items-center" style="background:#f8f9fc;">
-            <span class="badge badge-primary mr-2" style="font-size:0.9rem;width:26px;height:26px;line-height:22px;border-radius:50%;">1</span>
-            <span class="font-weight-bold">Select Customer</span>
-            <span class="ml-auto text-success d-none" id="customerSelectedBadge"><i class="fas fa-check-circle mr-1"></i><span id="customerSelectedName"></span></span>
+    {{-- STEP 1: Customer --}}
+    <div class="sr-card" id="step1Card">
+        <div class="sr-card-head">
+            <div class="sr-step-num">1</div>
+            <div class="sr-card-title">Select Customer</div>
+            <div id="custDoneIcon" style="display:none;color:var(--clr-success);font-size:1.1rem;">✓</div>
         </div>
-        <div class="card-body py-2">
-            <select id="customerSelect" class="form-control" style="width:100%">
-                <option value="">-- Search customer by name or phone --</option>
+        <div class="sr-card-body">
+            <input type="text" id="customerSearchBox" placeholder="Search by name or phone..." autocomplete="off" autocorrect="off" spellcheck="false">
+            <div id="customerDropdown">
                 @foreach($customers as $c)
-                    <option value="{{ $c->id }}" data-phone="{{ $c->phone }}">{{ $c->name }}{{ $c->phone ? ' — '.$c->phone : '' }}</option>
+                    <div class="cust-option" data-id="{{ $c->id }}" data-name="{{ $c->name }}" data-phone="{{ $c->phone ?? '' }}">
+                        {{ $c->name }}
+                        @if($c->phone)<div class="cust-phone">{{ $c->phone }}</div>@endif
+                    </div>
                 @endforeach
-            </select>
+            </div>
+            <div id="selectedCustomerPill">
+                <i class="fas fa-user-check" style="color:var(--clr-primary);"></i>
+                <span class="pill-name" id="pillCustomerName"></span>
+                <button id="clearCustomerBtn" type="button" title="Change customer">×</button>
+            </div>
         </div>
     </div>
 
     {{-- STEP 2: Product Search --}}
-    <div class="card shadow-sm mb-3" id="step2Card" style="opacity:0.45;pointer-events:none;">
-        <div class="card-header py-2 d-flex align-items-center" style="background:#f8f9fc;">
-            <span class="badge badge-secondary mr-2" id="step2Badge" style="font-size:0.9rem;width:26px;height:26px;line-height:22px;border-radius:50%;">2</span>
-            <span class="font-weight-bold">Search Product to Return</span>
+    <div class="sr-card locked" id="step2Card">
+        <div class="sr-card-head">
+            <div class="sr-step-num">2</div>
+            <div class="sr-card-title">Search Product to Return</div>
         </div>
-        <div class="card-body py-2">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text bg-white"><i class="fas fa-search text-primary"></i></span>
-                </div>
-                <input type="text" id="productSearch" class="form-control border-left-0" placeholder="Type product name or SKU..." autocomplete="off">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="button" id="clearProductSearch" style="display:none;"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            {{-- Dropdown Results --}}
-            <div id="searchResultsDropdown" class="border rounded mt-1 shadow-sm" style="display:none;max-height:280px;overflow-y:auto;background:#fff;z-index:999;position:relative;">
-                <div id="searchResultsList"></div>
-                <div id="searchNoResults" class="text-center text-muted py-3" style="display:none;">
-                    <i class="fas fa-search-minus mr-1"></i> No returnable items found
-                </div>
-                <div id="searchLoading" class="text-center text-muted py-3" style="display:none;">
-                    <i class="fas fa-spinner fa-spin mr-1"></i> Searching...
-                </div>
-            </div>
+        <div class="sr-card-body">
+            <input type="text" id="productSearchBox" placeholder="Type product name or SKU..." autocomplete="off" autocorrect="off" spellcheck="false">
+            <div id="searchSpinner"><i class="fas fa-spinner fa-spin"></i> Searching...</div>
+            <div id="searchResultsContainer"></div>
         </div>
     </div>
 
-    {{-- STEP 3: Return Basket --}}
-    <div class="card shadow-sm mb-3" id="step3Card" style="opacity:0.45;pointer-events:none;">
-        <div class="card-header py-2 d-flex align-items-center justify-content-between" style="background:#f8f9fc;">
-            <div class="d-flex align-items-center">
-                <span class="badge badge-secondary mr-2" id="step3Badge" style="font-size:0.9rem;width:26px;height:26px;line-height:22px;border-radius:50%;">3</span>
-                <span class="font-weight-bold">Return Basket</span>
-                <span class="badge badge-danger ml-2" id="basketCountBadge" style="display:none;">0</span>
-            </div>
-            <button type="button" class="btn btn-outline-danger btn-sm" id="clearBasketBtn" style="display:none;" onclick="clearBasket()">
-                <i class="fas fa-trash mr-1"></i>Clear All
-            </button>
+    {{-- STEP 3: Basket --}}
+    <div class="sr-card locked" id="step3Card">
+        <div class="sr-card-head">
+            <div class="sr-step-num">3</div>
+            <div class="sr-card-title">Return Basket</div>
+            <div class="sr-basket-count" id="basketCountBadge">0</div>
+            <button type="button" id="clearBasketBtn" onclick="clearBasket()" style="display:none;margin-left:auto;background:none;border:none;color:var(--clr-danger);font-size:.8rem;font-weight:600;cursor:pointer;">Clear</button>
         </div>
-        <div class="card-body p-0" id="basketBody">
-            <div class="text-center text-muted py-4" id="basketEmpty">
-                <i class="fas fa-shopping-basket fa-2x mb-2 text-gray-400"></i>
-                <p class="mb-0">No items added yet. Search a product above.</p>
+        <div class="sr-card-body" id="basketBody">
+            <div class="sr-empty-msg" id="basketEmpty">
+                <div style="font-size:2rem;">🛒</div>
+                No items yet. Search a product above.
             </div>
             <div id="basketItemsList"></div>
-            {{-- Basket Total --}}
-            <div id="basketTotalRow" class="d-none px-3 py-2 border-top" style="background:#f8f9fc;">
-                <div class="d-flex justify-content-between align-items-center">
-                    <strong>Total Refund:</strong>
-                    <span class="text-success font-weight-bold" style="font-size:1.2rem;" id="basketTotal">PKR 0.00</span>
-                </div>
+            <div id="basketTotalBar">
+                <span class="bt-label">Total Refund</span>
+                <span class="bt-amount" id="basketTotalAmt">PKR 0.00</span>
             </div>
         </div>
     </div>
 
-    {{-- STEP 4: Return Details & Submit --}}
-    <div class="card shadow-sm mb-3" id="step4Card" style="opacity:0.45;pointer-events:none;">
-        <div class="card-header py-2 d-flex align-items-center" style="background:#f8f9fc;">
-            <span class="badge badge-secondary mr-2" id="step4Badge" style="font-size:0.9rem;width:26px;height:26px;line-height:22px;border-radius:50%;">4</span>
-            <span class="font-weight-bold">Return Details & Submit</span>
+    {{-- STEP 4: Details & Submit --}}
+    <div class="sr-card locked" id="step4Card">
+        <div class="sr-card-head">
+            <div class="sr-step-num">4</div>
+            <div class="sr-card-title">Details & Submit</div>
         </div>
-        <div class="card-body">
+        <div class="sr-card-body">
             <form id="smartReturnForm" action="{{ route('returns.sale.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="smart_return" value="1">
                 <input type="hidden" name="customer_id" id="hiddenCustomerId">
                 <div id="hiddenBasketInputs"></div>
 
-                <div class="row">
-                    <div class="col-6 col-md-4">
-                        <div class="form-group mb-2">
-                            <label class="small font-weight-bold">Return Date <span class="text-danger">*</span></label>
-                            <input type="date" name="return_date" class="form-control" value="{{ date('Y-m-d') }}" required>
-                        </div>
+                <div class="sr-field-group">
+                    <div class="sr-field">
+                        <label>Return Date *</label>
+                        <input type="date" name="return_date" value="{{ date('Y-m-d') }}" required>
                     </div>
-                    <div class="col-6 col-md-4">
-                        <div class="form-group mb-2">
-                            <label class="small font-weight-bold">Refund Method <span class="text-danger">*</span></label>
-                            <select name="refund_method" class="form-control" required>
-                                <option value="cash">Cash</option>
-                                <option value="credit_note">Credit to Balance</option>
-                                <option value="bank_transfer">Bank Transfer</option>
-                                <option value="cheque">Cheque</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="form-group mb-2">
-                            <label class="small font-weight-bold">Reference <small class="text-muted">(Optional)</small></label>
-                            <input type="text" name="refund_reference" class="form-control" placeholder="Cheque #, Transaction ID...">
-                        </div>
+                    <div class="sr-field">
+                        <label>Refund Method *</label>
+                        <select name="refund_method" required>
+                            <option value="cash">💵 Cash</option>
+                            <option value="credit_note">💳 Credit to Balance</option>
+                            <option value="bank_transfer">🏦 Bank Transfer</option>
+                            <option value="cheque">📄 Cheque</option>
+                        </select>
                     </div>
                 </div>
-                <div class="form-group mb-3">
-                    <label class="small font-weight-bold">Reason <small class="text-muted">(Optional)</small></label>
-                    <textarea name="reason" class="form-control" rows="2" placeholder="Reason for return..."></textarea>
+                <div class="sr-field" style="margin-bottom:10px;">
+                    <label>Reference <span style="font-weight:400;color:var(--clr-muted);">(optional)</span></label>
+                    <input type="text" name="refund_reference" placeholder="Cheque #, transaction ID...">
+                </div>
+                <div class="sr-field" style="margin-bottom:10px;">
+                    <label>Reason <span style="font-weight:400;color:var(--clr-muted);">(optional)</span></label>
+                    <textarea name="reason" rows="2" placeholder="Reason for return..." style="resize:vertical;"></textarea>
                 </div>
 
-                <div id="noBasketWarning" class="alert alert-warning d-none">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>Please add at least one product to the return basket.
-                </div>
-                <div id="noCustomerWarning" class="alert alert-warning d-none">
-                    <i class="fas fa-exclamation-triangle mr-2"></i>Please select a customer first.
-                </div>
+                <div class="alert-inline" id="noBasketWarning">⚠️ Please add at least one product to the basket.</div>
+                <div class="alert-inline" id="noCustomerWarning">⚠️ Please select a customer first.</div>
 
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
-                    <div class="text-muted small" id="submitSummary"></div>
-                    <button type="submit" class="btn btn-danger btn-lg px-4" id="submitBtn">
-                        <i class="fas fa-undo mr-2"></i>Process Return
-                    </button>
-                </div>
+                <div id="submitSummary" style="font-size:.85rem;color:var(--clr-muted);margin-top:6px;"></div>
+
+                <button type="submit" id="submitBtn">
+                    <i class="fas fa-undo"></i> Process Return
+                </button>
             </form>
         </div>
     </div>
 </div>
 
-<style>
-/* ---- Mobile-first styles ---- */
-#searchResultsDropdown .result-item {
-    padding: 10px 14px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-#searchResultsDropdown .result-item:last-child { border-bottom: none; }
-#searchResultsDropdown .result-item:active,
-#searchResultsDropdown .result-item:hover { background: #e8f4fd; }
-#searchResultsDropdown .result-item .order-badge {
-    font-size: 0.72rem;
-    background: #e9ecef;
-    border-radius: 4px;
-    padding: 1px 6px;
-    color: #555;
-}
-
-.basket-item {
-    border-bottom: 1px solid #eee;
-    padding: 10px 14px;
-}
-.basket-item:last-child { border-bottom: none; }
-.basket-item .basket-item-title { font-weight: 600; font-size: 0.92rem; }
-.basket-item .basket-item-meta { font-size: 0.78rem; color: #888; }
-.basket-qty-control { display: flex; align-items: center; gap: 6px; }
-.basket-qty-control button {
-    width: 30px; height: 30px;
-    border-radius: 6px; border: 1px solid #ddd;
-    background: #f8f9fc; font-size: 1rem; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-}
-.basket-qty-control input {
-    width: 52px; text-align: center;
-    border: 1px solid #ddd; border-radius: 6px;
-    padding: 4px; font-size: 0.9rem;
-}
-.condition-select-mobile {
-    font-size: 0.82rem;
-    padding: 3px 6px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: #fff;
-    max-width: 140px;
-}
-.remove-basket-item {
-    background: none; border: none; color: #dc3545;
-    font-size: 1.1rem; cursor: pointer; padding: 4px 6px;
-}
-/* Step activation animation */
-.step-active { opacity:1 !important; pointer-events:auto !important; transition: opacity 0.3s; }
-.step-active .badge-secondary { background:#007bff !important; }
-
-@media (max-width: 575px) {
-    .basket-item { padding: 10px; }
-    #step1Card .card-body, #step2Card .card-body,
-    #step3Card .card-body, #step4Card .card-body { padding: 10px; }
-    .btn-lg { font-size: 1rem; padding: .55rem 1.2rem; }
-}
-</style>
-@endsection
-
 @push('scripts')
 <script>
 $(function () {
 
-    // ====================================================
-    // STATE
-    // ====================================================
+    /* ===============================================
+       STATE
+    =============================================== */
     var selectedCustomerId   = null;
-    var selectedCustomerName = '';
-    var basket = []; // [{product_id, order_id, order_number, product_title, unit_price, qty, max_qty, condition, notes}]
+    var allCustomers = [];
+    var basket = [];
     var searchTimer = null;
 
-    // ====================================================
-    // STEP 1 — Customer Select2
-    // ====================================================
-    $('#customerSelect').select2({
-        placeholder: '-- Search customer by name or phone --',
-        allowClear: true,
-        width: '100%'
+    // Build customer list from DOM
+    document.querySelectorAll('.cust-option').forEach(function(el) {
+        allCustomers.push({
+            id:    el.dataset.id,
+            name:  el.dataset.name,
+            phone: el.dataset.phone
+        });
     });
 
-    $('#customerSelect').on('change', function () {
-        selectedCustomerId   = $(this).val();
-        selectedCustomerName = $(this).find('option:selected').text();
+    /* ===============================================
+       STEP 1 – CUSTOMER SEARCH (native, no Select2)
+    =============================================== */
+    var $csBox = $('#customerSearchBox');
+    var $csDrop = $('#customerDropdown');
+    var $pill = $('#selectedCustomerPill');
 
-        if (selectedCustomerId) {
-            // Show badge
-            $('#customerSelectedName').text(selectedCustomerName.split(' — ')[0]);
-            $('#customerSelectedBadge').removeClass('d-none');
-            $('#hiddenCustomerId').val(selectedCustomerId);
-            activateStep('step2Card', 'step2Badge');
-            activateStep('step3Card', 'step3Badge');
-            activateStep('step4Card', 'step4Badge');
-        } else {
-            selectedCustomerId = null;
-            $('#customerSelectedBadge').addClass('d-none');
-            $('#hiddenCustomerId').val('');
-            deactivateStep('step2Card', 'step2Badge');
-            deactivateStep('step3Card', 'step3Badge');
-            deactivateStep('step4Card', 'step4Badge');
-            clearBasket();
-        }
+    $csBox.on('input', function () {
+        var q = this.value.toLowerCase().trim();
+        var $opts = $csDrop.find('.cust-option');
+        var shown = 0;
+        $opts.each(function () {
+            var match = (this.dataset.name + ' ' + this.dataset.phone).toLowerCase().includes(q);
+            $(this).toggle(match);
+            if (match) shown++;
+        });
+        $csDrop.show();
     });
 
-    // ====================================================
-    // STEP 2 — Product Search (AJAX with debounce)
-    // ====================================================
-    $('#productSearch').on('input', function () {
-        var q = $(this).val().trim();
-        $('#clearProductSearch').toggle(q.length > 0);
+    $csBox.on('focus', function () {
+        if (!selectedCustomerId) $csDrop.show();
+    });
 
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#step1Card').length) $csDrop.hide();
+    });
+
+    $(document).on('click', '.cust-option', function () {
+        selectCustomer(this.dataset.id, this.dataset.name, this.dataset.phone);
+    });
+
+    $('#clearCustomerBtn').on('click', function () {
+        clearCustomer();
+    });
+
+    function selectCustomer(id, name, phone) {
+        selectedCustomerId = id;
+        $('#hiddenCustomerId').val(id);
+        $csBox.val('').hide();
+        $csDrop.hide();
+        $('#pillCustomerName').text(name + (phone ? ' — ' + phone : ''));
+        $pill.css('display', 'flex');
+        $('#custDoneIcon').show();
+        // unlock steps
+        ['step2Card','step3Card','step4Card'].forEach(function(id) { $('#'+id).removeClass('locked'); });
+        // clear basket if customer changed
+        clearBasket();
+    }
+
+    function clearCustomer() {
+        selectedCustomerId = null;
+        $('#hiddenCustomerId').val('');
+        $pill.hide();
+        $csBox.val('').show().focus();
+        $('#custDoneIcon').hide();
+        ['step2Card','step3Card','step4Card'].forEach(function(id) { $('#'+id).addClass('locked'); });
+        clearBasket();
+    }
+
+    /* ===============================================
+       STEP 2 – PRODUCT SEARCH
+    =============================================== */
+    var $psBox = $('#productSearchBox');
+
+    $psBox.on('input', function () {
+        var q = this.value.trim();
         clearTimeout(searchTimer);
-        if (!selectedCustomerId) return;
-
-        if (q.length === 0) {
-            hideDropdown();
-            return;
-        }
-        showLoading();
-        searchTimer = setTimeout(function () {
-            doSearch(q);
-        }, 300);
+        $('#searchResultsContainer').empty();
+        if (!selectedCustomerId || q.length < 1) { $('#searchSpinner').hide(); return; }
+        $('#searchSpinner').show();
+        searchTimer = setTimeout(function () { doSearch(q); }, 350);
     });
 
-    $('#clearProductSearch').on('click', function () {
-        $('#productSearch').val('').trigger('input');
-    });
-
-    // Close dropdown when clicking outside
-    $(document).on('click', function (e) {
+    // Close results on outside click
+    $(document).on('click', function(e) {
         if (!$(e.target).closest('#step2Card').length) {
-            hideDropdown();
+            $('#searchResultsContainer').empty();
         }
     });
 
@@ -295,270 +455,188 @@ $(function () {
             url: '{{ route("returns.sale.search-products") }}',
             data: { customer_id: selectedCustomerId, q: q },
             success: function (data) {
+                $('#searchSpinner').hide();
                 renderResults(data);
             },
             error: function () {
-                hideDropdown();
+                $('#searchSpinner').hide();
+                $('#searchResultsContainer').html('<div class="sr-empty-msg">Search failed. Try again.</div>');
             }
         });
     }
 
     function renderResults(data) {
-        var $list = $('#searchResultsList').empty();
-        $('#searchLoading').hide();
-        $('#searchResultsDropdown').show();
-
+        var $c = $('#searchResultsContainer').empty();
         if (!data || data.length === 0) {
-            $('#searchNoResults').show();
+            $c.html('<div class="sr-empty-msg">No returnable items found for this search.</div>');
             return;
         }
-        $('#searchNoResults').hide();
-
         data.forEach(function (item) {
-            var alreadyInBasket = basket.find(function(b) {
-                return b.product_id === item.product_id && b.order_id === item.order_id;
-            });
+            var inBasket = basket.find(function(b){ return b.product_id===item.product_id && b.order_id===item.order_id; });
+            var btnHtml = inBasket
+                ? '<button class="btn-add-result added" disabled>✓ Added</button>'
+                : '<button class="btn-add-result add-to-basket-btn" data-item=\'' + JSON.stringify(item).replace(/'/g,"&#39;") + '\'>+ Add</button>';
 
-            var html = '<div class="result-item d-flex align-items-start" data-item=\'' + JSON.stringify(item).replace(/'/g, "&#39;") + '\'>' +
-                '<div class="flex-grow-1">' +
-                    '<div class="font-weight-bold" style="font-size:0.9rem;">' + escapeHtml(item.product_title) + '</div>' +
-                    '<div class="mt-1">' +
-                        '<span class="order-badge mr-1">' + escapeHtml(item.order_number) + '</span>' +
-                        '<span class="order-badge mr-1">' + escapeHtml(item.order_date) + '</span>' +
-                        (item.product_sku ? '<span class="order-badge">SKU: ' + escapeHtml(item.product_sku) + '</span>' : '') +
+            $c.append(
+                '<div class="result-card">' +
+                    '<div class="rc-info">' +
+                        '<div class="rc-title">' + esc(item.product_title) + '</div>' +
+                        '<div class="rc-meta">Order: <strong>' + esc(item.order_number) + '</strong> &nbsp;·&nbsp; ' + esc(item.order_date) + (item.product_sku ? ' &nbsp;·&nbsp; SKU: '+esc(item.product_sku) : '') + '</div>' +
+                        '<div class="rc-price">PKR ' + fmt(item.unit_price) + '/ea &nbsp; <span class="rc-returnable">' + item.returnable_qty + ' returnable</span></div>' +
                     '</div>' +
-                    '<div class="mt-1" style="font-size:0.8rem;color:#555;">' +
-                        'Sold: <strong>' + item.qty_sold + '</strong> &nbsp;|&nbsp; ' +
-                        'Returnable: <strong class="text-success">' + item.returnable_qty + '</strong> &nbsp;|&nbsp; ' +
-                        'PKR <strong>' + formatNum(item.unit_price) + '</strong>/ea' +
-                    '</div>' +
-                '</div>' +
-                '<div class="ml-2">' +
-                    (alreadyInBasket
-                        ? '<span class="badge badge-success" style="font-size:0.75rem;"><i class="fas fa-check"></i> Added</span>'
-                        : '<button class="btn btn-primary btn-sm px-2 py-1 add-to-basket-btn"><i class="fas fa-plus"></i> Add</button>'
-                    ) +
-                '</div>' +
-            '</div>';
-            $list.append(html);
+                    btnHtml +
+                '</div>'
+            );
         });
     }
 
-    // Add to basket click
     $(document).on('click', '.add-to-basket-btn', function () {
-        var $item = $(this).closest('.result-item');
-        var data  = JSON.parse($item.attr('data-item'));
+        var data = JSON.parse($(this).attr('data-item'));
         addToBasket(data);
-        // Update button to "Added"
-        $(this).replaceWith('<span class="badge badge-success" style="font-size:0.75rem;"><i class="fas fa-check"></i> Added</span>');
+        $(this).addClass('added').prop('disabled', true).text('✓ Added');
+        // Scroll to basket
+        setTimeout(function(){ $('html,body').animate({scrollTop: $('#step3Card').offset().top - 60}, 300); }, 100);
     });
 
-    function showLoading() {
-        $('#searchResultsList').empty();
-        $('#searchNoResults').hide();
-        $('#searchLoading').show();
-        $('#searchResultsDropdown').show();
-    }
-    function hideDropdown() {
-        $('#searchResultsDropdown').hide();
-    }
-
-    // ====================================================
-    // STEP 3 — Basket Logic
-    // ====================================================
+    /* ===============================================
+       STEP 3 – BASKET
+    =============================================== */
     function addToBasket(item) {
-        // Prevent duplicate
-        var exists = basket.find(function(b) { return b.product_id === item.product_id && b.order_id === item.order_id; });
+        var exists = basket.find(function(b){ return b.product_id===item.product_id && b.order_id===item.order_id; });
         if (exists) return;
-
         basket.push({
-            product_id:    item.product_id,
-            order_id:      item.order_id,
-            order_number:  item.order_number,
-            product_title: item.product_title,
-            product_sku:   item.product_sku,
-            unit_price:    item.unit_price,
-            qty:           item.returnable_qty,
-            max_qty:       item.returnable_qty,
-            condition:     'good',
-            notes:         ''
+            product_id: item.product_id, order_id: item.order_id,
+            order_number: item.order_number, product_title: item.product_title,
+            product_sku: item.product_sku, unit_price: item.unit_price,
+            qty: item.returnable_qty, max_qty: item.returnable_qty,
+            condition: 'good', notes: ''
         });
         renderBasket();
     }
 
-    window.clearBasket = function () {
-        basket = [];
-        renderBasket();
-    };
+    window.clearBasket = function () { basket = []; renderBasket(); };
 
     function renderBasket() {
-        var $list  = $('#basketItemsList').empty();
+        var $list = $('#basketItemsList').empty();
         var $empty = $('#basketEmpty');
-        var $total = $('#basketTotalRow');
+        var $total = $('#basketTotalBar');
         var $badge = $('#basketCountBadge');
         var $clrBtn = $('#clearBasketBtn');
 
         if (basket.length === 0) {
-            $empty.show();
-            $total.addClass('d-none');
-            $badge.hide();
-            $clrBtn.hide();
-            updateSubmitSummary();
-            rebuildHiddenInputs();
-            return;
+            $empty.show(); $total.hide();
+            $badge.css('display','none'); $clrBtn.hide();
+            rebuildHiddenInputs(); updateSubmitSummary(); return;
         }
-
         $empty.hide();
-        $total.removeClass('d-none');
-        $badge.text(basket.length).show();
+        $badge.text(basket.length).css('display','flex');
         $clrBtn.show();
 
-        var grandTotal = 0;
+        var grand = 0;
         basket.forEach(function (item, idx) {
             var rowTotal = item.qty * item.unit_price;
-            grandTotal += rowTotal;
+            grand += rowTotal;
 
-            var html =
-                '<div class="basket-item" data-idx="' + idx + '">' +
-                    '<div class="d-flex align-items-start justify-content-between">' +
-                        '<div class="flex-grow-1">' +
-                            '<div class="basket-item-title">' + escapeHtml(item.product_title) + '</div>' +
-                            '<div class="basket-item-meta">' +
-                                'Order: ' + escapeHtml(item.order_number) +
-                                (item.product_sku ? ' &nbsp;|&nbsp; SKU: ' + escapeHtml(item.product_sku) : '') +
-                                ' &nbsp;|&nbsp; PKR ' + formatNum(item.unit_price) + '/ea' +
-                            '</div>' +
+            $list.append(
+                '<div class="basket-entry">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:flex-start;">' +
+                        '<div style="flex-grow:1;min-width:0;">' +
+                            '<div class="be-title">' + esc(item.product_title) + '</div>' +
+                            '<div class="be-meta">Order: ' + esc(item.order_number) + (item.product_sku ? ' · SKU: '+esc(item.product_sku) : '') + '</div>' +
                         '</div>' +
-                        '<button class="remove-basket-item" onclick="removeFromBasket(' + idx + ')" title="Remove"><i class="fas fa-times-circle"></i></button>' +
+                        '<button class="be-remove" onclick="removeFromBasket('+idx+')" title="Remove">×</button>' +
                     '</div>' +
-                    '<div class="d-flex align-items-center justify-content-between mt-2 flex-wrap gap-2">' +
-                        '<div class="basket-qty-control">' +
-                            '<button type="button" onclick="changeQty(' + idx + ', -1)"><i class="fas fa-minus" style="font-size:0.7rem;"></i></button>' +
-                            '<input type="number" class="basket-qty-input" data-idx="' + idx + '" min="1" max="' + item.max_qty + '" value="' + item.qty + '">' +
-                            '<button type="button" onclick="changeQty(' + idx + ', 1)"><i class="fas fa-plus" style="font-size:0.7rem;"></i></button>' +
-                            '<span class="small text-muted ml-1">/ ' + item.max_qty + '</span>' +
+                    '<div class="be-controls">' +
+                        '<div class="qty-box">' +
+                            '<button class="qty-btn" type="button" onclick="changeQty('+idx+',-1)">−</button>' +
+                            '<input class="qty-val basket-qty-input" type="number" data-idx="'+idx+'" min="1" max="'+item.max_qty+'" value="'+item.qty+'">' +
+                            '<button class="qty-btn" type="button" onclick="changeQty('+idx+',1)">+</button>' +
                         '</div>' +
-                        '<select class="condition-select-mobile" data-idx="' + idx + '">' +
-                            '<option value="good"' + (item.condition === 'good' ? ' selected' : '') + '>✅ Good (Restock)</option>' +
-                            '<option value="damaged"' + (item.condition === 'damaged' ? ' selected' : '') + '>⚠️ Damaged</option>' +
-                            '<option value="defective"' + (item.condition === 'defective' ? ' selected' : '') + '>❌ Defective</option>' +
+                        '<span style="font-size:.78rem;color:var(--clr-muted);">max '+item.max_qty+'</span>' +
+                        '<select class="be-condition" data-idx="'+idx+'">' +
+                            '<option value="good"'+(item.condition==='good'?' selected':'')+'>✅ Good (Restock)</option>' +
+                            '<option value="damaged"'+(item.condition==='damaged'?' selected':'')+'>⚠️ Damaged</option>' +
+                            '<option value="defective"'+(item.condition==='defective'?' selected':'')+'>❌ Defective</option>' +
                         '</select>' +
-                        '<span class="font-weight-bold text-success" style="font-size:0.95rem;">PKR ' + formatNum(rowTotal) + '</span>' +
+                        '<span class="be-total">PKR '+fmt(rowTotal)+'</span>' +
                     '</div>' +
-                    '<input type="text" class="form-control form-control-sm mt-2 basket-notes-input" data-idx="' + idx + '" placeholder="Optional note..." value="' + escapeHtml(item.notes) + '">' +
-                '</div>';
-
-            $list.append(html);
+                    '<input class="be-notes basket-notes-input" type="text" data-idx="'+idx+'" placeholder="Note (optional)..." value="'+esc(item.notes)+'">' +
+                '</div>'
+            );
         });
 
-        $('#basketTotal').text('PKR ' + formatNum(grandTotal));
-        updateSubmitSummary();
+        $('#basketTotalAmt').text('PKR ' + fmt(grand));
+        $total.show();
         rebuildHiddenInputs();
+        updateSubmitSummary();
     }
 
-    // Qty change via +/- buttons
     window.changeQty = function (idx, delta) {
-        var item = basket[idx];
-        if (!item) return;
-        var newQty = item.qty + delta;
-        if (newQty < 1) newQty = 1;
-        if (newQty > item.max_qty) newQty = item.max_qty;
-        item.qty = newQty;
+        var item = basket[idx]; if (!item) return;
+        item.qty = Math.min(item.max_qty, Math.max(1, item.qty + delta));
         renderBasket();
     };
+    window.removeFromBasket = function (idx) { basket.splice(idx, 1); renderBasket(); };
 
-    // Qty change via direct input
     $(document).on('change', '.basket-qty-input', function () {
-        var idx = parseInt($(this).data('idx'));
-        var val = parseInt($(this).val()) || 1;
-        if (val < 1) val = 1;
-        if (val > basket[idx].max_qty) val = basket[idx].max_qty;
-        basket[idx].qty = val;
+        var idx = +$(this).data('idx');
+        basket[idx].qty = Math.min(basket[idx].max_qty, Math.max(1, +$(this).val() || 1));
         renderBasket();
     });
-
-    // Condition change
-    $(document).on('change', '.condition-select-mobile', function () {
-        var idx = parseInt($(this).data('idx'));
-        basket[idx].condition = $(this).val();
+    $(document).on('change', '.be-condition', function () {
+        basket[+$(this).data('idx')].condition = $(this).val();
         rebuildHiddenInputs();
     });
-
-    // Notes change
     $(document).on('input', '.basket-notes-input', function () {
-        var idx = parseInt($(this).data('idx'));
-        basket[idx].notes = $(this).val();
+        basket[+$(this).data('idx')].notes = $(this).val();
         rebuildHiddenInputs();
     });
-
-    window.removeFromBasket = function (idx) {
-        basket.splice(idx, 1);
-        renderBasket();
-    };
 
     function rebuildHiddenInputs() {
-        var $container = $('#hiddenBasketInputs').empty();
+        var $c = $('#hiddenBasketInputs').empty();
         basket.forEach(function (item, idx) {
-            $container.append('<input type="hidden" name="items[' + idx + '][product_id]" value="' + item.product_id + '">');
-            $container.append('<input type="hidden" name="items[' + idx + '][order_id]" value="' + item.order_id + '">');
-            $container.append('<input type="hidden" name="items[' + idx + '][quantity]" value="' + item.qty + '">');
-            $container.append('<input type="hidden" name="items[' + idx + '][unit_price]" value="' + item.unit_price + '">');
-            $container.append('<input type="hidden" name="items[' + idx + '][condition]" value="' + item.condition + '">');
-            $container.append('<input type="hidden" name="items[' + idx + '][notes]" value="' + escapeHtml(item.notes) + '">');
+            $c.append('<input type="hidden" name="items['+idx+'][product_id]" value="'+item.product_id+'">');
+            $c.append('<input type="hidden" name="items['+idx+'][order_id]" value="'+item.order_id+'">');
+            $c.append('<input type="hidden" name="items['+idx+'][quantity]" value="'+item.qty+'">');
+            $c.append('<input type="hidden" name="items['+idx+'][unit_price]" value="'+item.unit_price+'">');
+            $c.append('<input type="hidden" name="items['+idx+'][condition]" value="'+item.condition+'">');
+            $c.append('<input type="hidden" name="items['+idx+'][notes]" value="'+esc(item.notes)+'">');
         });
     }
 
     function updateSubmitSummary() {
-        if (basket.length === 0) {
-            $('#submitSummary').text('');
-            return;
-        }
-        var total = basket.reduce(function(s, i) { return s + (i.qty * i.unit_price); }, 0);
-        $('#submitSummary').html(basket.length + ' item(s) &nbsp;|&nbsp; Total: <strong>PKR ' + formatNum(total) + '</strong>');
+        if (basket.length === 0) { $('#submitSummary').text(''); return; }
+        var total = basket.reduce(function(s,i){ return s + i.qty*i.unit_price; }, 0);
+        $('#submitSummary').html(basket.length + ' item(s) &nbsp;·&nbsp; <strong>PKR ' + fmt(total) + '</strong>');
     }
 
-    // ====================================================
-    // STEP 4 — Form Submission
-    // ====================================================
+    /* ===============================================
+       STEP 4 – SUBMIT
+    =============================================== */
     $('#smartReturnForm').on('submit', function (e) {
-        $('#noBasketWarning').addClass('d-none');
-        $('#noCustomerWarning').addClass('d-none');
-
+        $('#noBasketWarning, #noCustomerWarning').hide();
         if (!selectedCustomerId) {
             e.preventDefault();
-            $('#noCustomerWarning').removeClass('d-none');
-            $('html,body').animate({ scrollTop: $('#noCustomerWarning').offset().top - 80 }, 400);
+            $('#noCustomerWarning').show();
+            $('html,body').animate({scrollTop: $('#step1Card').offset().top - 60}, 300);
             return false;
         }
         if (basket.length === 0) {
             e.preventDefault();
-            $('#noBasketWarning').removeClass('d-none');
-            $('html,body').animate({ scrollTop: $('#noBasketWarning').offset().top - 80 }, 400);
+            $('#noBasketWarning').show();
+            $('html,body').animate({scrollTop: $('#step3Card').offset().top - 60}, 300);
             return false;
         }
-
         rebuildHiddenInputs();
-        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
     });
 
-    // ====================================================
-    // HELPERS
-    // ====================================================
-    function activateStep(cardId, badgeId) {
-        $('#' + cardId).addClass('step-active');
-        $('#' + badgeId).removeClass('badge-secondary').addClass('badge-primary');
-    }
-    function deactivateStep(cardId, badgeId) {
-        $('#' + cardId).removeClass('step-active');
-        $('#' + badgeId).removeClass('badge-primary').addClass('badge-secondary');
-    }
-    function formatNum(n) {
-        return parseFloat(n).toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-    function escapeHtml(text) {
-        if (!text) return '';
-        return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
+    /* ===============================================
+       HELPERS
+    =============================================== */
+    function fmt(n) { return parseFloat(n).toLocaleString('en-PK',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function esc(t) { if(!t) return ''; return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 });
 </script>
 @endpush
+@endsection
