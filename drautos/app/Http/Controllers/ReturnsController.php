@@ -263,9 +263,11 @@ class ReturnsController extends Controller
         try {
             $return->update(['status' => 'approved']);
 
-            // Record return in customer ledger to deduct from outstanding balance
+            // Record return in customer ledger
             if ($return->customer) {
                 $invoiceReference = $return->order ? ' for Invoice #' . $return->order->order_number : '';
+                
+                // 1. Always record the return credit (reduces what the customer owes)
                 CustomerLedger::record(
                     $return->customer_id,
                     now(),
@@ -275,6 +277,25 @@ class ReturnsController extends Controller
                     $return->total_return_amount,
                     $return->id
                 );
+
+                // 2. If it's a cash refund, record a balancing debit entry (payout) so outstanding balance remains unchanged,
+                // and deduct the amount from the active staff cash register/account.
+                if ($return->refund_method === 'cash') {
+                    $staffAccId = class_exists('\App\Models\FinancialAccount') ? \App\Models\FinancialAccount::getStaffAccount() : null;
+                    
+                    CustomerLedger::record(
+                        $return->customer_id,
+                        now(),
+                        'debit',
+                        'payment',
+                        'Cash Refund Payout for Sale Return #' . $return->return_number,
+                        $return->total_return_amount,
+                        $return->id,
+                        'cash',
+                        null,
+                        $staffAccId
+                    );
+                }
             }
 
             DB::commit();
