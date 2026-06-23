@@ -133,7 +133,7 @@ class ReturnsController extends Controller
             $validated = $request->validate([
                 'customer_id'          => 'required|exists:users,id',
                 'return_date'          => 'required|date',
-                'refund_method'        => 'required|in:cash,credit_note,bank_transfer,cheque',
+                'refund_method'        => 'required|in:cash,credit_note',
                 'refund_reference'     => 'nullable|string',
                 'reason'               => 'nullable|string',
                 'items'                => 'required|array|min:1',
@@ -148,7 +148,7 @@ class ReturnsController extends Controller
             $validated = $request->validate([
                 'order_id'             => 'required|exists:orders,id',
                 'return_date'          => 'required|date',
-                'refund_method'        => 'required|in:cash,credit_note,bank_transfer,cheque',
+                'refund_method'        => 'required|in:cash,credit_note',
                 'refund_reference'     => 'nullable|string',
                 'reason'               => 'nullable|string',
                 'items'                => 'required|array|min:1',

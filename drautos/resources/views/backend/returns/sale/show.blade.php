@@ -45,7 +45,17 @@
                         <button class="btn btn-success btn-sm" onclick="return confirm('Approve return?')">Approve</button>
                     </form>
                 @endif
-                <div><strong>Refund Method:</strong> {{ucfirst(str_replace('_',' ',$return->refund_method))}}</div>
+                <div><strong>Refund Method:</strong>
+                    @php
+                        $refundLabels = [
+                            'cash'          => '💵 Cash Refund',
+                            'credit_note'   => '💳 Credit to Account',
+                            'bank_transfer' => '🏦 Bank Transfer',
+                            'cheque'        => '📄 Cheque',
+                        ];
+                    @endphp
+                    {{ $refundLabels[$return->refund_method] ?? ucfirst(str_replace('_',' ',$return->refund_method)) }}
+                </div>
             </div>
         </div>
 

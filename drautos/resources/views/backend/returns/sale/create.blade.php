@@ -32,10 +32,8 @@
                     <div class="form-group">
                         <label class="font-weight-bold">Refund Method <span class="text-danger">*</span></label>
                         <select name="refund_method" class="form-control" required>
-                            <option value="cash">Cash</option>
-                            <option value="credit_note">Credit Applied to Balance</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                            <option value="cheque">Cheque</option>
+                            <option value="cash">💵 Cash Refund</option>
+                            <option value="credit_note">💳 Credit Applied to Balance</option>
                         </select>
                     </div>
                 </div>

@@ -320,10 +320,8 @@
                     <div class="sr-field">
                         <label>Refund Method *</label>
                         <select name="refund_method" required>
-                            <option value="cash">💵 Cash</option>
-                            <option value="credit_note">💳 Credit to Balance</option>
-                            <option value="bank_transfer">🏦 Bank Transfer</option>
-                            <option value="cheque">📄 Cheque</option>
+                            <option value="cash">💵 Cash Refund</option>
+                            <option value="credit_note">💳 Credit to Account</option>
                         </select>
                     </div>
                 </div>
