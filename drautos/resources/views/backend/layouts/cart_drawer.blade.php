@@ -26,6 +26,7 @@
             <button class="btn btn-sm btn-link text-primary p-0" data-toggle="modal" data-target="#addCustomerModal"><i class="fas fa-plus-circle fa-lg"></i></button>
         </div>
         <select class="form-control select2" id="customer-select">
+            <option value=""></option>
             <option value="{{$walkInId}}" data-type="walkin" data-phone="0000000000">Walk-in Customer</option>
             @foreach($customers as $customer)
             <option value="{{$customer->id}}" data-name="{{$customer->name}}" data-type="{{$customer->customer_type}}" data-balance="{{$customer->current_balance ?? 0}}" data-phone="{{$customer->phone}}" data-city="{{$customer->city}}" data-address="{{$customer->address}}">
@@ -76,7 +77,7 @@
         <div class="d-flex align-items-center" style="gap: 5px;">
             <button class="btn btn-light btn-sm px-3" id="park-order" title="Park Order" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-pause text-muted"></i></button>
             <button class="btn btn-light btn-sm px-3" id="clear-cart" title="Clear Cart" style="height: 38px; border: 1px solid #e2e8f0;"><i class="fas fa-trash-alt text-danger"></i></button>
-            <button class="btn btn-success btn-sm flex-grow-1 font-weight-bold shadow-sm animated-pulse" data-toggle="modal" data-target="#paymentModal" style="height: 38px; border-radius: 8px; font-size: 13px;">
+            <button class="btn btn-success btn-sm flex-grow-1 font-weight-bold shadow-sm animated-pulse" id="checkout-btn" style="height: 38px; border-radius: 8px; font-size: 13px;">
                 <i class="fas fa-check-circle mr-1"></i> CHECKOUT
             </button>
         </div>
@@ -453,10 +454,49 @@
 
     $(document).ready(function() {
         if($('#customer-select').length) {
-            $('#customer-select').select2({ width: '100%' });
+            if (!$('#customer-select').hasClass("select2-hidden-accessible")) {
+                $('#customer-select').select2({
+                    placeholder: 'Select Customer...',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+            
+            // Restore saved customer from localStorage
+            let savedCustId = localStorage.getItem('posCustomerId');
+            if (savedCustId && $('#customer-select option[value="' + savedCustId + '"]').length) {
+                $('#customer-select').val(savedCustId).trigger('change');
+            } else {
+                $('#customer-select').val(null).trigger('change');
+            }
         }
         
         renderCart();
+
+        $('#checkout-btn').on('click', function(e) {
+            let customer_id = $('#customer-select').val();
+            if (!customer_id) {
+                Swal.fire({
+                    title: 'Customer Required',
+                    text: 'Please select a customer before proceeding to checkout.',
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+            if (window.posCart.length == 0) {
+                Swal.fire('Error', 'Cart is empty!', 'error');
+                return;
+            }
+
+            // Update modal ledger balance dynamically before showing the modal
+            let opt = $('#customer-select').find('option:selected');
+            let bal = parseFloat(opt.data('balance') || 0);
+            let balTxt = (bal < 0 ? '-' : '') + 'Rs. ' + Math.abs(bal).toLocaleString('en', {minimumFractionDigits: 2});
+            $('#modal-ledger-balance').text(balTxt);
+
+            $('#paymentModal').modal('show');
+        });
 
         $('#global-cart-btn, #toggle-cart').on('click', function(e) {
             
@@ -484,6 +524,7 @@
                 if (result.isConfirmed) {
                     window.posCart = [];
                     saveCart();
+                    clearCustomer();
                 }
             });
         });
@@ -502,6 +543,7 @@
                 if (result.isConfirmed) {
                     window.posCart = [];
                     window.saveCart();
+                    clearCustomer();
                 }
             });
         });
@@ -885,6 +927,7 @@
                         window.posCart = [];
                         localStorage.removeItem('posCart');
                         window.saveCart && window.saveCart();
+                        clearCustomer();
                         if (response.wa_sent) {
                             Swal.fire({
                                 title: 'Success!',
@@ -972,7 +1015,22 @@ $(document).on('click', '#save-customer-btn', function() {
         $('#cust-bar-bal').text(balTxt);
         $('#cust-info-bar').show();
     }
-    $(document).on('change', '#customer-select', function() { refreshCustBar(); });
+    window.clearCustomer = function() {
+        localStorage.removeItem('posCustomerId');
+        if ($('#customer-select').length) {
+            $('#customer-select').val(null).trigger('change');
+        }
+    };
+
+    $(document).on('change', '#customer-select', function() {
+        let val = $(this).val();
+        if (val) {
+            localStorage.setItem('posCustomerId', val);
+        } else {
+            localStorage.removeItem('posCustomerId');
+        }
+        refreshCustBar();
+    });
 
     // ── Open Edit Customer modal ────────────────────────────────────────
     $(document).on('click', '#edit-cust-btn', function(e) {

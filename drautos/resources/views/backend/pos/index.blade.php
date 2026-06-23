@@ -1147,7 +1147,7 @@
 
         $('#customer-select').select2({
             placeholder: "Select Customer",
-            allowClear: false,
+            allowClear: true,
             dropdownParent: $('body'), // Ensure it's appended to body for correct z-index handling
             templateResult: formatCustomer,
             templateSelection: formatCustomer
