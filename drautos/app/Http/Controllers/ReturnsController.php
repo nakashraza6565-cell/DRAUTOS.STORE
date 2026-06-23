@@ -222,9 +222,31 @@ class ReturnsController extends Controller
 
             // Notify Admins
             try {
+                // Build a list of returned products & quantities
+                $return->load('items.product');
+                $itemDescriptions = [];
+                foreach ($return->items as $rtItem) {
+                    $productTitle = $rtItem->product->title ?? 'Item';
+                    $itemDescriptions[] = $rtItem->quantity . 'x ' . $productTitle;
+                }
+                $itemListString = implode(', ', $itemDescriptions);
+
+                // Find order number
+                $refInfo = '';
+                if ($return->order) {
+                    $refInfo = ' from Order #' . $return->order->order_number;
+                } elseif ($return->items->isNotEmpty()) {
+                    $firstItemOrder = \App\Models\Order::find($return->items->first()->order_id);
+                    if ($firstItemOrder) {
+                        $refInfo = ' from Order #' . $firstItemOrder->order_number;
+                    }
+                }
+
+                $titleText = "Sale Return #{$return->return_number}: {$itemListString}{$refInfo}";
+
                 $admins = User::where('role', 'admin')->get();
                 $details = [
-                    'title'     => 'New Sale Return created',
+                    'title'     => $titleText,
                     'actionURL' => route('returns.sale.show', $return->id),
                     'fas'       => 'fa-undo-alt'
                 ];
