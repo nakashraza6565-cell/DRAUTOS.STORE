@@ -185,6 +185,40 @@
                         <span class="item-meta">{{ Helper::translateLabel('Model:') }} {{ $cart->product->model }}</span>
                     @endif
                     </div>
+
+                    @php
+                        $returnedQty = 0;
+                        $pendingReturnQty = 0;
+                        if ($cart->product_id) {
+                            $returnedQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                ->where('product_id', $cart->product_id)
+                                ->whereHas('saleReturn', function ($q) {
+                                    $q->where('status', 'approved');
+                                })
+                                ->sum('quantity');
+
+                            $pendingReturnQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                ->where('product_id', $cart->product_id)
+                                ->whereHas('saleReturn', function ($q) {
+                                    $q->where('status', 'pending');
+                                })
+                                ->sum('quantity');
+                        }
+                    @endphp
+                    @if($returnedQty > 0)
+                        <div style="margin-top: 4px;">
+                            <span style="color: #d9534f; font-weight: bold; font-size: 9px; background-color: #fcebeb; padding: 1px 4px; border: 1px solid #d9534f; border-radius: 2px; display: inline-block;">
+                                {{ Helper::translateLabel('Returned:') }} {{ $returnedQty }}
+                            </span>
+                        </div>
+                    @endif
+                    @if($pendingReturnQty > 0)
+                        <div style="margin-top: 4px;">
+                            <span style="color: #f0ad4e; font-weight: bold; font-size: 9px; background-color: #fcf8e3; padding: 1px 4px; border: 1px solid #f0ad4e; border-radius: 2px; display: inline-block;">
+                                {{ Helper::translateLabel('Pending Return:') }} {{ $pendingReturnQty }}
+                            </span>
+                        </div>
+                    @endif
                 </td>
                 <td class="text-center">{{ $cart->quantity }} <span style="font-size:8px;">{{ optional($cart->product)->unit ?? '' }}</span></td>
                 <td class="text-right">

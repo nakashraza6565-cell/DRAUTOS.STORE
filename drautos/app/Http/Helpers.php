@@ -409,6 +409,8 @@ class Helper
             'Amount Paid' => 'ادا شدہ رقم',
             'Previous Balance' => 'سابقہ واجب الادا بقایا',
             'Balance Due' => 'کل واجب الادا رقم',
+            'Returned:' => 'واپس شدہ:',
+            'Pending Return:' => 'واپسی زیر التوا:',
             'THANK YOU FOR YOUR BUSINESS!' => 'آپ کی شراکت داری کا شکریہ!',
             'This is a computer generated document. | Danyal Autos' => 'یہ کمپیوٹر سے تیار کردہ بل ہے۔ | دانیال آٹوز',
             'COURIER' => 'کورئیر',

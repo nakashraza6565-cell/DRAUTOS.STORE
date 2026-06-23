@@ -211,6 +211,35 @@
                                 @endif
                             </span>
                             <span class="item-details"><br>{{ $isUrdu ? 'فی قیمت:' : 'UNIT PRICE:' }} {{ number_format($item->price, 0) }}</span>
+                            @php
+                                $returnedQty = 0;
+                                $pendingReturnQty = 0;
+                                if ($item->product_id) {
+                                    $returnedQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                        ->where('product_id', $item->product_id)
+                                        ->whereHas('saleReturn', function ($q) {
+                                            $q->where('status', 'approved');
+                                        })
+                                        ->sum('quantity');
+
+                                    $pendingReturnQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                        ->where('product_id', $item->product_id)
+                                        ->whereHas('saleReturn', function ($q) {
+                                            $q->where('status', 'pending');
+                                        })
+                                        ->sum('quantity');
+                                }
+                            @endphp
+                            @if($returnedQty > 0)
+                                <span class="item-details" style="display: block; margin-top: 2px;">
+                                    <strong>* {{ Helper::translateLabel('Returned:', false) }} {{ $returnedQty }}</strong>
+                                </span>
+                            @endif
+                            @if($pendingReturnQty > 0)
+                                <span class="item-details" style="display: block; margin-top: 2px;">
+                                    <strong>* {{ Helper::translateLabel('Pending Return:', false) }} {{ $pendingReturnQty }}</strong>
+                                </span>
+                            @endif
                         </td>
                         <td class="text-center bold" style="font-size: 16px;">
                             {{ $item->quantity }}<span style="font-size: 10px; margin-{{ $isUrdu ? 'right' : 'left' }}: 2px;">{{ strtoupper($item->product->unit ?? '') }}</span>

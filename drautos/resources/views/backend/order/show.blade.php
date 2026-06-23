@@ -156,6 +156,31 @@
                                     SKU: {{ $cart->product->sku ?? ($cart->bundle->sku ?? 'N/A') }}
                                     <span class="d-inline-block d-md-none ml-2 text-dark" style="font-weight: 600;">Rs. {{number_format($cart->price, 2)}}</span>
                                 </div>
+                                @php
+                                    $returnedQty = 0;
+                                    $pendingReturnQty = 0;
+                                    if ($cart->product_id) {
+                                        $returnedQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                            ->where('product_id', $cart->product_id)
+                                            ->whereHas('saleReturn', function ($q) {
+                                                $q->where('status', 'approved');
+                                            })
+                                            ->sum('quantity');
+
+                                        $pendingReturnQty = \App\Models\SaleReturnItem::where('order_id', $order->id)
+                                            ->where('product_id', $cart->product_id)
+                                            ->whereHas('saleReturn', function ($q) {
+                                                $q->where('status', 'pending');
+                                            })
+                                            ->sum('quantity');
+                                    }
+                                @endphp
+                                @if($returnedQty > 0)
+                                    <span class="badge badge-danger mt-1 text-white" style="font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 4px;">Returned: {{ $returnedQty }}</span>
+                                @endif
+                                @if($pendingReturnQty > 0)
+                                    <span class="badge badge-warning mt-1 text-white" style="font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 4px;">Pending Return: {{ $pendingReturnQty }}</span>
+                                @endif
                             </div>
                         </td>
                         <td data-title="Quantity" class="text-center font-weight-bold">{{$cart->quantity}}</td>
