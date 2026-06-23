@@ -14,7 +14,7 @@
                 <select name="manufacturing_bill_id" id="manufacturing_bill_id" class="form-control select2" required>
                     <option value="">-- Select BOM --</option>
                     @foreach($boms as $bom)
-                        <option value="{{$bom->id}}" {{(isset($selectedBom) && $selectedBom->id == $bom->id) ? 'selected' : ''}}>
+                        <option value="{{$bom->id}}" data-product-id="{{$bom->product_id}}" {{(isset($selectedBom) && $selectedBom->id == $bom->id) ? 'selected' : ''}}>
                             {{$bom->bom_number}} - {{$bom->product->title}} (Batch: {{$bom->batch_quantity}} units)
                         </option>
                     @endforeach
@@ -28,6 +28,19 @@
                         @endforeach
                     </small>
                 @endif
+            </div>
+
+            <div class="form-group" id="die_select_group">
+                <label for="die_id">Select Die (Mould) <span class="text-muted">(Optional)</span></label>
+                <select name="die_id" id="die_id" class="form-control select2">
+                    <option value="">-- Select Die --</option>
+                    @foreach($dies as $die)
+                        <option value="{{$die->id}}" data-product-id="{{$die->product_id}}">
+                            {{$die->name}} (Rack: {{$die->rack_number ?? 'N/A'}}, Status: {{ucfirst(str_replace('_', ' ', $die->quality_status ?? 'Good'))}})
+                        </option>
+                    @endforeach
+                </select>
+                <small class="text-muted" id="die_helper_text">Only active dies mapped to this BOM's product will be listed.</small>
             </div>
 
             <div class="form-group">
@@ -78,16 +91,50 @@
             width: '100%'
         });
 
-        // Optional: reload page on BOM change to show ingredients hint (handled by server logic if I implemented it, but for now just basic select)
-        // If I want dynamic hints without reload, I need an API endpoint or store data in data attributes.
-        // For MVP, if they change selection, they rely on the dropdown text.
-        // If they arrived via 'Produce This' button, the info is shown.
+        // Cache all die options
+        const originalDieOptions = $('#die_id option').clone();
+
+        function filterDies() {
+            const selectedBomOption = $('#manufacturing_bill_id option:selected');
+            const productId = selectedBomOption.attr('data-product-id');
+            
+            // Clear current options
+            $('#die_id').empty();
+            
+            // Re-add default option
+            $('#die_id').append('<option value="">-- Select Die --</option>');
+
+            if (!productId) {
+                // If no BOM selected, disable
+                $('#die_id').prop('disabled', true);
+                $('#die_helper_text').text('Please select a BOM recipe first.');
+            } else {
+                // Filter matching dies
+                const matchingDies = originalDieOptions.filter(function() {
+                    const dieProdId = $(this).attr('data-product-id');
+                    return dieProdId === productId || $(this).val() === '';
+                });
+
+                if (matchingDies.length > 1) {
+                    $('#die_id').append(matchingDies.not('[value=""]'));
+                    $('#die_id').prop('disabled', false);
+                    $('#die_helper_text').text('Select the specific die/mould used for this production run.');
+                } else {
+                    $('#die_id').prop('disabled', true);
+                    $('#die_helper_text').text('No active dies found for the selected BOM product.');
+                }
+            }
+            
+            // Trigger select2 update
+            $('#die_id').trigger('change.select2');
+        }
+
+        // Run filter on load (if BOM preselected)
+        filterDies();
+
+        // Run filter on change
         $('#manufacturing_bill_id').change(function(){
-             // Ideally fetch info via AJAX or redirect to self with ?bom_id=VAL
-             // simplified:
-             // window.location.href = "{{route('manufacturing.production.create')}}?bom_id=" + $(this).val();
-             // Uncommenting the above line would make it interactive but might lose other inputs.
-             // Let's stick to simple form submission.
+            filterDies();
         });
     });
 </script>

@@ -646,7 +646,8 @@ class ManufacturingController extends Controller
             $selectedBom = ManufacturingBill::with('components.componentProduct')->find($request->bom_id);
         }
         $suppliers = \App\Models\Supplier::where('status', 'active')->orderBy('name')->get();
-        return view('backend.manufacturing.production.create', compact('boms', 'selectedBom', 'suppliers'));
+        $dies = \App\Models\DieModel::where('status', 'active')->orderBy('name')->get();
+        return view('backend.manufacturing.production.create', compact('boms', 'selectedBom', 'suppliers', 'dies'));
     }
 
     /**
@@ -656,6 +657,7 @@ class ManufacturingController extends Controller
     {
         $request->validate([
             'manufacturing_bill_id' => 'required|exists:manufacturing_bills,id',
+            'die_id' => 'nullable|exists:dies,id',
             'quantity_produced' => 'required|integer|min:1',
             'production_date' => 'required|date',
             'subcontractor_id' => 'nullable|exists:suppliers,id',
@@ -717,12 +719,18 @@ class ManufacturingController extends Controller
             $production = new ManufacturingProduction();
             $production->production_number = 'PROD-' . Str::upper(Str::random(8));
             $production->manufacturing_bill_id = $bom->id;
+            $production->die_id = $request->die_id;
             $production->quantity_produced = $request->quantity_produced;
             $production->production_date = $request->production_date;
             $production->actual_cost = $bom->total_cost_per_unit * $request->quantity_produced;
             $production->notes = $request->notes;
             $production->produced_by = Auth::id();
             $production->save();
+
+            // Increment goods_produced on DieModel if die is selected
+            if ($request->die_id) {
+                \App\Models\DieModel::where('id', $request->die_id)->increment('goods_produced', $request->quantity_produced);
+            }
 
             // Subcontractor Ledger Automation Hook
             if ($request->subcontractor_id && $totalLaborCost > 0) {

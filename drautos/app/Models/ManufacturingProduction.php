@@ -11,7 +11,7 @@ class ManufacturingProduction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'production_number', 'manufacturing_bill_id', 'quantity_produced',
+        'production_number', 'manufacturing_bill_id', 'die_id', 'quantity_produced',
         'production_date', 'actual_cost', 'notes', 'produced_by'
     ];
 
@@ -24,6 +24,11 @@ class ManufacturingProduction extends Model
     public function manufacturingBill()
     {
         return $this->belongsTo(ManufacturingBill::class);
+    }
+
+    public function die()
+    {
+        return $this->belongsTo(DieModel::class, 'die_id');
     }
 
     public function producer()

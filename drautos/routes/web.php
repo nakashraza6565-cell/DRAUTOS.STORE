@@ -72,6 +72,7 @@ Route::get('/fix-db', function () {
         $migrations = [
             '2026_06_23_000001_make_order_id_nullable_on_sale_returns.php',
             '2026_06_23_000002_add_order_id_to_sale_return_items.php',
+            '2026_06_23_120000_upgrade_dies_system_tables.php',
         ];
 
         $output = [];
@@ -559,6 +560,9 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     });
 
     Route::group(['middleware' => ['permission:view-die']], function () {
+        Route::post('die-management/{id}/handover', 'DieController@recordHandover')->name('die-management.handover');
+        Route::post('die-management/{id}/quality', 'DieController@recordQualityReport')->name('die-management.quality');
+        Route::post('die-management/{id}/expense', 'DieController@recordExpense')->name('die-management.expense');
         Route::resource('die-management', 'DieController');
     });
 
