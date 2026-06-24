@@ -272,8 +272,10 @@ class InventoryIncomingController extends Controller
                 ->where('category', 'purchase')
                 ->exists();
         }
+
+        $products = Product::where('status', 'active')->orderBy('title')->get();
         
-        return view('backend.inventory.incoming.show', compact('inventoryIncoming', 'ledgerExists'));
+        return view('backend.inventory.incoming.show', compact('inventoryIncoming', 'ledgerExists', 'products'));
     }
 
     /**
@@ -381,13 +383,14 @@ class InventoryIncomingController extends Controller
     }
 
     /**
-     * Update item quantity or cost (AJAX)
+     * Update item quantity, cost, or product (AJAX)
      */
     public function updateItem(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'unit_cost' => 'required|numeric|min:0'
+            'quantity' => 'required|numeric|min:0.01',
+            'unit_cost' => 'required|numeric|min:0',
+            'product_id' => 'nullable|exists:products,id'
         ]);
 
         DB::beginTransaction();
@@ -395,14 +398,35 @@ class InventoryIncomingController extends Controller
             $item = InventoryIncomingItem::findOrFail($id);
             $oldQty = $item->quantity;
             $newQty = $request->quantity;
-            
-            // 1. Update Product Stock (Difference)
-            $product = Product::find($item->product_id);
-            if ($product) {
-                $qtyDiff = $newQty - $oldQty;
-                $product->stock += $qtyDiff;
-                $product->purchase_price = $request->unit_cost; // Update product's cost price
-                $product->save();
+            $oldProductId = $item->product_id;
+            $newProductId = $request->product_id ?: $oldProductId;
+
+            // 1. Update Product Stock and price
+            if ($oldProductId != $newProductId) {
+                // Deduct from old product
+                $oldProduct = Product::find($oldProductId);
+                if ($oldProduct) {
+                    $oldProduct->stock -= $oldQty;
+                    $oldProduct->save();
+                }
+
+                // Add to new product
+                $newProduct = Product::find($newProductId);
+                if ($newProduct) {
+                    $newProduct->stock += $newQty;
+                    $newProduct->purchase_price = $request->unit_cost;
+                    $newProduct->save();
+                }
+
+                $item->product_id = $newProductId;
+            } else {
+                $product = Product::find($oldProductId);
+                if ($product) {
+                    $qtyDiff = $newQty - $oldQty;
+                    $product->stock += $qtyDiff;
+                    $product->purchase_price = $request->unit_cost;
+                    $product->save();
+                }
             }
 
             // 2. Update Item record
@@ -438,9 +462,148 @@ class InventoryIncomingController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true, 
-                'message' => 'Item updated successfully and product cost price updated.',
+                'message' => 'Item updated successfully.',
                 'new_total' => number_format($item->total_cost, 2),
                 'grand_total' => number_format($incoming->total_cost, 2)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Delete an item from the incoming goods batch (AJAX)
+     */
+    public function deleteItem($id)
+    {
+        DB::beginTransaction();
+        try {
+            $item = InventoryIncomingItem::findOrFail($id);
+            $incoming = $item->inventoryIncoming;
+            
+            // 1. Deduct Product Stock
+            $product = Product::find($item->product_id);
+            if ($product) {
+                $product->stock -= $item->quantity;
+                $product->save();
+            }
+
+            // 2. Adjust packaging item stock if any
+            if ($item->packaging_item_id && $item->packaging_quantity) {
+                $pkgItem = \App\Models\PackagingItem::find($item->packaging_item_id);
+                if ($pkgItem) {
+                    $pkgItem->stock += $item->packaging_quantity;
+                    $pkgItem->save();
+                }
+            }
+
+            // 3. Delete item
+            $item->delete();
+
+            // 4. Sync with Supplier Ledger if parent is verified
+            if ($incoming->status == 'verified' || $incoming->status == 'completed') {
+                $ledger = \App\Models\SupplierLedger::where('supplier_id', $incoming->supplier_id)
+                    ->where('reference_id', $incoming->id)
+                    ->where('category', 'purchase')
+                    ->first();
+                
+                if ($ledger) {
+                    $ledger->amount = $incoming->total_cost;
+                    $ledger->save();
+                    \App\Models\SupplierLedger::updateBalance($incoming->supplier_id);
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Item deleted successfully.',
+                'grand_total' => number_format($incoming->total_cost, 2)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Add a new item to the incoming goods batch (AJAX)
+     */
+    public function addItem(Request $request, InventoryIncoming $inventoryIncoming)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|numeric|min:0.01',
+            'unit_cost' => 'required|numeric|min:0',
+            'batch_number' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Check if product already exists in this incoming batch
+            $item = InventoryIncomingItem::where('inventory_incoming_id', $inventoryIncoming->id)
+                ->where('product_id', $request->product_id)
+                ->first();
+
+            if ($item) {
+                // If it already exists, update its quantity and cost
+                $oldQty = $item->quantity;
+                $newQty = $oldQty + $request->quantity;
+
+                $item->quantity = $newQty;
+                $item->unit_cost = $request->unit_cost;
+                $item->total_cost = $newQty * $request->unit_cost;
+                $item->save();
+
+                // Update product stock and price
+                $product = Product::find($request->product_id);
+                if ($product) {
+                    $product->stock += $request->quantity;
+                    $product->purchase_price = $request->unit_cost;
+                    $product->save();
+                }
+            } else {
+                // Create new item
+                $totalCost = $request->quantity * $request->unit_cost;
+                InventoryIncomingItem::create([
+                    'inventory_incoming_id' => $inventoryIncoming->id,
+                    'product_id' => $request->product_id,
+                    'quantity' => $request->quantity,
+                    'unit_cost' => $request->unit_cost,
+                    'total_cost' => $totalCost,
+                    'batch_number' => $request->batch_number,
+                    'barcode_printed' => false,
+                ]);
+
+                // Update product stock and price
+                $product = Product::find($request->product_id);
+                if ($product) {
+                    $product->stock += $request->quantity;
+                    $product->purchase_price = $request->unit_cost;
+                    $product->save();
+                }
+            }
+
+            // Sync with Supplier Ledger if parent is verified
+            if ($inventoryIncoming->status == 'verified' || $inventoryIncoming->status == 'completed') {
+                $ledger = \App\Models\SupplierLedger::where('supplier_id', $inventoryIncoming->supplier_id)
+                    ->where('reference_id', $inventoryIncoming->id)
+                    ->where('category', 'purchase')
+                    ->first();
+                
+                if ($ledger) {
+                    $ledger->amount = $inventoryIncoming->total_cost;
+                    $ledger->save();
+                    \App\Models\SupplierLedger::updateBalance($inventoryIncoming->supplier_id);
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'message' => 'Product added to batch successfully.',
+                'grand_total' => number_format($inventoryIncoming->total_cost, 2)
             ]);
         } catch (\Exception $e) {
             DB::rollback();

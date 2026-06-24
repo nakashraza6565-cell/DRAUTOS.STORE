@@ -674,6 +674,8 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::post('/{inventoryIncoming}/complete', 'InventoryIncomingController@complete')->name('inventory-incoming.complete');
         Route::get('/{inventoryIncoming}/thermal', 'InventoryIncomingController@thermalPrint')->name('inventory-incoming.thermal');
         Route::post('/item/{id}/update', 'InventoryIncomingController@updateItem')->name('inventory-incoming.item.update');
+        Route::delete('/item/{id}/delete', 'InventoryIncomingController@deleteItem')->name('inventory-incoming.item.delete');
+        Route::post('/{inventoryIncoming}/item/add', 'InventoryIncomingController@addItem')->name('inventory-incoming.item.add');
         Route::get('/search/products', 'InventoryIncomingController@searchProducts')->name('inventory-incoming.search-products');
     });
 
