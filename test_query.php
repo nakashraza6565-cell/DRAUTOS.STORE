@@ -30,7 +30,7 @@ foreach ($products as $p) {
         ->where('sale_returns.status', 'approved')
         ->count();
 
-    if ($salesCount > 0 || $incomingCount > 0 || $returnsCount > 0) {
+    if ($salesCount > 0 && $incomingCount > 0 && $returnsCount > 0) {
         printf("%-10d | %-30s | %-17d | %-20d | %-16d\n", $p->id, substr($p->title, 0, 30), $salesCount, $incomingCount, $returnsCount);
     }
 }
