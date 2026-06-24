@@ -259,7 +259,7 @@
                                 <td>
                                     @if($event->party_url)
                                         <a href="{{ $event->party_url }}" class="font-weight-semibold text-slate-700 hover-underline" target="_blank">
-                                            <i class="fas fa-link mr-1.5 text-slate-400 small"></i>{{ $event->party_name }}
+                                            <i class="fas fa-link mr-2 text-slate-400 small"></i>{{ $event->party_name }}
                                         </a>
                                     @else
                                         <span class="font-weight-semibold text-slate-600">{{ $event->party_name }}</span>
@@ -303,6 +303,14 @@
         font-family: 'Plus Jakarta Sans', sans-serif;
         background-color: #f8fafc;
         min-height: 100vh;
+    }
+    
+    /* Fix for FontAwesome icons font override */
+    #product-analysis-dashboard i.fas, 
+    #product-analysis-dashboard i.far, 
+    #product-analysis-dashboard i.fab,
+    #product-analysis-dashboard i.fa {
+        font-family: "Font Awesome 5 Free", "Font Awesome 6 Free", "FontAwesome", sans-serif !important;
     }
     
     .font-weight-extrabold { font-weight: 800 !important; }
@@ -542,15 +550,43 @@
         border-bottom-right-radius: 12px !important;
     }
     
-    /* Table left indicator lines */
-    #product-analysis-dashboard .table-modern tbody tr.row-sale td:first-child {
-        border-left: 5px solid #6366f1 !important;
+    /* Table left indicator lines via absolute positioning to prevent curved borders */
+    #product-analysis-dashboard .table-modern tbody tr td:first-child {
+        position: relative;
+        padding-left: 24px !important;
     }
-    #product-analysis-dashboard .table-modern tbody tr.row-purchase td:first-child {
-        border-left: 5px solid #10b981 !important;
+    #product-analysis-dashboard .table-modern tbody tr.row-sale td:first-child::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background-color: #6366f1;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
     }
-    #product-analysis-dashboard .table-modern tbody tr.row-return td:first-child {
-        border-left: 5px solid #f43f5e !important;
+    #product-analysis-dashboard .table-modern tbody tr.row-purchase td:first-child::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background-color: #10b981;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+    #product-analysis-dashboard .table-modern tbody tr.row-return td:first-child::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background-color: #f43f5e;
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
     }
     
     /* Soft color badges for table tags */
