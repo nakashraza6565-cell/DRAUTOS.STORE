@@ -275,6 +275,7 @@ class ReportController extends Controller
 
         return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData', 'interval', 'startDate', 'endDate'));
     }
+
     public function productAnalysis(Request $request)
     {
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
@@ -285,84 +286,305 @@ class ReportController extends Controller
         
         $selectedProduct = null;
         $stats = [
-            'quantity_sold' => 0,
+            'gross_sold' => 0,
             'total_revenue' => 0,
+            'returned_qty' => 0,
+            'refunded_revenue' => 0,
+            'return_ratio' => 0,
+            'net_sold' => 0,
+            'net_revenue' => 0,
             'total_cost' => 0,
             'gross_profit' => 0,
-            'orders_count' => 0
+            'margin_loss_returns' => 0,
+            'purchased_qty' => 0,
+            'total_purchased_cost' => 0
         ];
         $salesHistory = [];
+        
+        $chartLabels = [];
+        $chartSalesData = [];
+        $chartPurchasesData = [];
+        $chartReturnsData = [];
 
         if ($productId) {
             $selectedProduct = Product::find($productId);
             
-            $query = DB::table('carts')
+            // 1. Sales
+            $sales = DB::table('carts')
+                ->join('orders', 'carts.order_id', '=', 'orders.id')
+                ->leftJoin('users', 'orders.user_id', '=', 'users.id')
+                ->where('carts.product_id', $productId)
+                ->where('orders.status', 'delivered') 
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->select(
+                    'carts.quantity', 
+                    'carts.price as unit_price',
+                    'carts.amount',
+                    'orders.created_at',
+                    'orders.order_number',
+                    'orders.id as order_id',
+                    'orders.first_name',
+                    'orders.last_name',
+                    'orders.user_id',
+                    'users.name as user_name'
+                )
+                ->get();
+
+            // 2. Returns
+            $returns = DB::table('sale_return_items')
+                ->join('sale_returns', 'sale_return_items.sale_return_id', '=', 'sale_returns.id')
+                ->leftJoin('users', 'sale_returns.customer_id', '=', 'users.id')
+                ->where('sale_return_items.product_id', $productId)
+                ->where('sale_returns.status', 'approved')
+                ->whereBetween('sale_returns.created_at', [$startDate, $endDate])
+                ->select(
+                    'sale_return_items.quantity',
+                    'sale_return_items.unit_price',
+                    'sale_return_items.total_price',
+                    'sale_returns.created_at',
+                    'sale_returns.return_number',
+                    'sale_returns.id as return_id',
+                    'sale_returns.customer_id',
+                    'users.name as user_name'
+                )
+                ->get();
+
+            // 3. Purchases (Incoming Goods)
+            $purchases = DB::table('inventory_incoming_items')
+                ->join('inventory_incoming', 'inventory_incoming_items.inventory_incoming_id', '=', 'inventory_incoming.id')
+                ->leftJoin('suppliers', 'inventory_incoming.supplier_id', '=', 'suppliers.id')
+                ->where('inventory_incoming_items.product_id', $productId)
+                ->whereBetween('inventory_incoming.received_date', [$startDate, $endDate])
+                ->select(
+                    'inventory_incoming_items.quantity',
+                    'inventory_incoming_items.unit_cost',
+                    'inventory_incoming_items.total_cost',
+                    'inventory_incoming.received_date as created_at',
+                    'inventory_incoming.reference_number',
+                    'inventory_incoming.id as incoming_id',
+                    'inventory_incoming.supplier_id',
+                    'suppliers.name as supplier_name'
+                )
+                ->get();
+
+            // Cost per unit calculation
+            $costPerUnit = $selectedProduct->purchase_price ?: 0;
+            if ($costPerUnit == 0) {
+                $costPerUnit = DB::table('inventory_incoming_items')
+                    ->where('product_id', $productId)
+                    ->avg('unit_cost') ?: 0;
+            }
+
+            // Populate Stats
+            foreach ($sales as $sale) {
+                $stats['gross_sold'] += $sale->quantity;
+                $stats['total_revenue'] += $sale->amount;
+            }
+            foreach ($returns as $ret) {
+                $stats['returned_qty'] += $ret->quantity;
+                $stats['refunded_revenue'] += $ret->total_price;
+            }
+            foreach ($purchases as $p) {
+                $stats['purchased_qty'] += $p->quantity;
+                $stats['total_purchased_cost'] += $p->total_cost;
+            }
+
+            $stats['net_sold'] = $stats['gross_sold'] - $stats['returned_qty'];
+            $stats['net_revenue'] = $stats['total_revenue'] - $stats['refunded_revenue'];
+            
+            if ($stats['gross_sold'] > 0) {
+                $stats['return_ratio'] = ($stats['returned_qty'] / $stats['gross_sold']) * 100;
+            }
+
+            $stats['total_cost'] = $stats['net_sold'] * $costPerUnit;
+            $stats['gross_profit'] = $stats['net_revenue'] - $stats['total_cost'];
+            $stats['margin_loss_returns'] = $stats['returned_qty'] * ($selectedProduct->price - $costPerUnit);
+
+            // Combine flow events chronologically
+            $flowEvents = collect();
+
+            foreach ($sales as $sale) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($sale->created_at),
+                    'type' => 'sale',
+                    'ref' => $sale->order_number,
+                    'ref_url' => route('order.show', $sale->order_id),
+                    'party_name' => $sale->user_name ?: ($sale->first_name . ' ' . $sale->last_name),
+                    'party_url' => $sale->user_id ? route('admin.customer-ledger.show', $sale->user_id) : null,
+                    'qty' => -$sale->quantity,
+                    'unit_price' => $sale->unit_price,
+                    'total' => $sale->amount
+                ]);
+            }
+
+            foreach ($returns as $ret) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($ret->created_at),
+                    'type' => 'return',
+                    'ref' => $ret->return_number,
+                    'ref_url' => route('returns.sale.show', $ret->return_id),
+                    'party_name' => $ret->user_name ?: 'Walk-in Customer',
+                    'party_url' => $ret->customer_id ? route('admin.customer-ledger.show', $ret->customer_id) : null,
+                    'qty' => $ret->quantity,
+                    'unit_price' => $ret->unit_price,
+                    'total' => $ret->total_price
+                ]);
+            }
+
+            foreach ($purchases as $p) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($p->created_at),
+                    'type' => 'purchase',
+                    'ref' => $p->reference_number,
+                    'ref_url' => route('inventory-incoming.show', $p->incoming_id),
+                    'party_name' => $p->supplier_name ?: 'Unknown Supplier',
+                    'party_url' => $p->supplier_id ? route('admin.supplier-ledger.show', $p->supplier_id) : null,
+                    'qty' => $p->quantity,
+                    'unit_price' => $p->unit_cost,
+                    'total' => $p->total_cost
+                ]);
+            }
+
+            $salesHistory = $flowEvents->sortByDesc('date')->values()->all();
+
+            // Chart data preparation
+            $currentDate = $startDate->copy()->startOfDay();
+            $targetEndDate = $endDate->copy()->startOfDay();
+
+            $salesByDay = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->where('carts.product_id', $productId)
-                ->whereIn('orders.status', ['delivered', 'received', 'process', 'new'])
-                ->where('orders.status', 'delivered') 
+                ->where('orders.status', 'delivered')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
-                ->select(
-                    'carts.quantity', 
-                    'carts.price as unit_price',
-                    'carts.amount',
-                    'carts.created_at',
-                    'orders.order_number',
-                    'orders.id as order_id'
-                );
+                ->select(DB::raw('DATE(orders.created_at) as date'), DB::raw('SUM(carts.quantity) as qty'))
+                ->groupBy('date')
+                ->pluck('qty', 'date')
+                ->toArray();
 
-            $salesHistory = $query->orderBy('created_at', 'DESC')->get();
+            $purchasesByDay = DB::table('inventory_incoming_items')
+                ->join('inventory_incoming', 'inventory_incoming_items.inventory_incoming_id', '=', 'inventory_incoming.id')
+                ->where('inventory_incoming_items.product_id', $productId)
+                ->whereBetween('inventory_incoming.received_date', [$startDate, $endDate])
+                ->select(DB::raw('DATE(inventory_incoming.received_date) as date'), DB::raw('SUM(inventory_incoming_items.quantity) as qty'))
+                ->groupBy('date')
+                ->pluck('qty', 'date')
+                ->toArray();
 
-            foreach ($salesHistory as $sale) {
-                $stats['quantity_sold'] += $sale->quantity;
-                $stats['total_revenue'] += $sale->amount;
-                $stats['orders_count']++;
-                
-                $cost = 0;
-                if ($selectedProduct) {
-                    $purchasePrice = $selectedProduct->purchase_price ?? 0;
-                    $cost = $purchasePrice * $sale->quantity;
-                }
-                $stats['total_cost'] += $cost;
+            $returnsByDay = DB::table('sale_return_items')
+                ->join('sale_returns', 'sale_return_items.sale_return_id', '=', 'sale_returns.id')
+                ->where('sale_return_items.product_id', $productId)
+                ->where('sale_returns.status', 'approved')
+                ->whereBetween('sale_returns.created_at', [$startDate, $endDate])
+                ->select(DB::raw('DATE(sale_returns.created_at) as date'), DB::raw('SUM(sale_return_items.quantity) as qty'))
+                ->groupBy('date')
+                ->pluck('qty', 'date')
+                ->toArray();
+
+            while ($currentDate <= $targetEndDate) {
+                $dateStr = $currentDate->format('Y-m-d');
+                $chartLabels[] = $currentDate->format('d M');
+                $chartSalesData[] = (int)($salesByDay[$dateStr] ?? 0);
+                $chartPurchasesData[] = (int)($purchasesByDay[$dateStr] ?? 0);
+                $chartReturnsData[] = (int)($returnsByDay[$dateStr] ?? 0);
+                $currentDate->addDay();
             }
-            $stats['gross_profit'] = $stats['total_revenue'] - $stats['total_cost'];
         } else {
-            // Show Analysis for ALL products (Top Level Stats)
-            // Or listing of all sales? Listing all sales might be heavy. 
-            // Better to show aggregate stats for the period.
-            
-             $query = DB::table('carts')
+            // Aggregate totals across all active products
+            $sales = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->where('orders.status', 'delivered') 
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->select('carts.quantity', 'carts.amount')
+                ->get();
+
+            $returns = DB::table('sale_return_items')
+                ->join('sale_returns', 'sale_return_items.sale_return_id', '=', 'sale_returns.id')
+                ->where('sale_returns.status', 'approved')
+                ->whereBetween('sale_returns.created_at', [$startDate, $endDate])
+                ->select('sale_return_items.quantity', 'sale_return_items.total_price')
+                ->get();
+
+            $purchases = DB::table('inventory_incoming_items')
+                ->join('inventory_incoming', 'inventory_incoming_items.inventory_incoming_id', '=', 'inventory_incoming.id')
+                ->whereBetween('inventory_incoming.received_date', [$startDate, $endDate])
+                ->select('inventory_incoming_items.quantity', 'inventory_incoming_items.total_cost')
+                ->get();
+
+            foreach ($sales as $sale) {
+                $stats['gross_sold'] += $sale->quantity;
+                $stats['total_revenue'] += $sale->amount;
+            }
+            foreach ($returns as $ret) {
+                $stats['returned_qty'] += $ret->quantity;
+                $stats['refunded_revenue'] += $ret->total_price;
+            }
+            foreach ($purchases as $p) {
+                $stats['purchased_qty'] += $p->quantity;
+                $stats['total_purchased_cost'] += $p->total_cost;
+            }
+
+            $stats['net_sold'] = $stats['gross_sold'] - $stats['returned_qty'];
+            $stats['net_revenue'] = $stats['total_revenue'] - $stats['refunded_revenue'];
+            
+            if ($stats['gross_sold'] > 0) {
+                $stats['return_ratio'] = ($stats['returned_qty'] / $stats['gross_sold']) * 100;
+            }
+
+            // Fallback for aggregate cost
+            $stats['total_cost'] = DB::table('carts')
+                ->join('products', 'carts.product_id', '=', 'products.id')
+                ->join('orders', 'carts.order_id', '=', 'orders.id')
+                ->where('orders.status', 'delivered')
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->sum(DB::raw('carts.quantity * COALESCE(products.purchase_price, 0)'));
+
+            $stats['gross_profit'] = $stats['net_revenue'] - $stats['total_cost'];
+
+            // Fetch recent sales events
+            $recentSales = DB::table('carts')
+                ->join('orders', 'carts.order_id', '=', 'orders.id')
+                ->join('products', 'carts.product_id', '=', 'products.id')
+                ->leftJoin('users', 'orders.user_id', '=', 'users.id')
+                ->where('orders.status', 'delivered')
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(
-                    'carts.quantity', 
+                    'carts.quantity',
                     'carts.price as unit_price',
                     'carts.amount',
-                    'carts.product_id',
-                    'carts.created_at',
+                    'orders.created_at',
                     'orders.order_number',
-                    'orders.id as order_id'
-                );
-            
-            // Limit history to 100 for general view to avoid crash
-            $salesHistory = $query->orderBy('created_at', 'DESC')->limit(100)->get();
+                    'orders.id as order_id',
+                    'orders.first_name',
+                    'orders.last_name',
+                    'orders.user_id',
+                    'users.name as user_name',
+                    'products.title as product_title'
+                )
+                ->orderBy('orders.created_at', 'DESC')
+                ->limit(100)
+                ->get();
 
-            // Calculate aggregate stats
-            foreach ($salesHistory as $sale) {
-                 $stats['quantity_sold'] += $sale->quantity;
-                 $stats['total_revenue'] += $sale->amount;
-                 $stats['orders_count']++;
-                 
-                 // For all products, we need to fetch cost per product.
-                 // This is expensive in a loop. Let's approximate or fetch eager.
-                 // For now, let's skip Cost/Profit for "All Products" view or use simplified logic
-                 // to avoid N+1.
+            $flowEvents = collect();
+            foreach ($recentSales as $sale) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($sale->created_at),
+                    'type' => 'sale',
+                    'ref' => $sale->order_number,
+                    'ref_url' => route('order.show', $sale->order_id),
+                    'party_name' => ($sale->user_name ?: ($sale->first_name . ' ' . $sale->last_name)) . ' (' . $sale->product_title . ')',
+                    'party_url' => $sale->user_id ? route('admin.customer-ledger.show', $sale->user_id) : null,
+                    'qty' => -$sale->quantity,
+                    'unit_price' => $sale->unit_price,
+                    'total' => $sale->amount
+                ]);
             }
-            // For general view, maybe 'selectedProduct' remaining null is enough signal to View
+            $salesHistory = $flowEvents->sortByDesc('date')->values()->all();
         }
 
-        return view('backend.reports.product_analysis', compact('products', 'selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate'));
+        return view('backend.reports.product_analysis', compact(
+            'products', 'selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate',
+            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData'
+        ));
     }
 
     public function productAnalysisPdf(Request $request)
@@ -373,19 +595,28 @@ class ReportController extends Controller
 
         $selectedProduct = null;
         $stats = [
-            'quantity_sold' => 0,
+            'gross_sold' => 0,
             'total_revenue' => 0,
+            'returned_qty' => 0,
+            'refunded_revenue' => 0,
+            'return_ratio' => 0,
+            'net_sold' => 0,
+            'net_revenue' => 0,
             'total_cost' => 0,
             'gross_profit' => 0,
-            'orders_count' => 0
+            'margin_loss_returns' => 0,
+            'purchased_qty' => 0,
+            'total_purchased_cost' => 0
         ];
         $salesHistory = [];
 
         if ($productId) {
             $selectedProduct = Product::find($productId);
             
-            $query = DB::table('carts')
+            // 1. Sales
+            $sales = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
+                ->leftJoin('users', 'orders.user_id', '=', 'users.id')
                 ->where('carts.product_id', $productId)
                 ->where('orders.status', 'delivered') 
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
@@ -393,32 +624,136 @@ class ReportController extends Controller
                     'carts.quantity', 
                     'carts.price as unit_price',
                     'carts.amount',
-                    'carts.created_at',
+                    'orders.created_at',
                     'orders.order_number',
-                    'orders.id as order_id'
-                );
+                    'orders.id as order_id',
+                    'orders.first_name',
+                    'orders.last_name',
+                    'orders.user_id',
+                    'users.name as user_name'
+                )
+                ->get();
 
-            $salesHistory = $query->orderBy('created_at', 'DESC')->get();
+            // 2. Returns
+            $returns = DB::table('sale_return_items')
+                ->join('sale_returns', 'sale_return_items.sale_return_id', '=', 'sale_returns.id')
+                ->leftJoin('users', 'sale_returns.customer_id', '=', 'users.id')
+                ->where('sale_return_items.product_id', $productId)
+                ->where('sale_returns.status', 'approved')
+                ->whereBetween('sale_returns.created_at', [$startDate, $endDate])
+                ->select(
+                    'sale_return_items.quantity',
+                    'sale_return_items.unit_price',
+                    'sale_return_items.total_price',
+                    'sale_returns.created_at',
+                    'sale_returns.return_number',
+                    'sale_returns.id as return_id',
+                    'sale_returns.customer_id',
+                    'users.name as user_name'
+                )
+                ->get();
 
-            foreach ($salesHistory as $sale) {
-                $stats['quantity_sold'] += $sale->quantity;
-                $stats['total_revenue'] += $sale->amount;
-                $stats['orders_count']++;
-                
-                $cost = 0;
-                if ($selectedProduct) {
-                    $purchasePrice = $selectedProduct->purchase_price ?? 0;
-                    $cost = $purchasePrice * $sale->quantity;
-                }
-                $stats['total_cost'] += $cost;
+            // 3. Purchases (Incoming Goods)
+            $purchases = DB::table('inventory_incoming_items')
+                ->join('inventory_incoming', 'inventory_incoming_items.inventory_incoming_id', '=', 'inventory_incoming.id')
+                ->leftJoin('suppliers', 'inventory_incoming.supplier_id', '=', 'suppliers.id')
+                ->where('inventory_incoming_items.product_id', $productId)
+                ->whereBetween('inventory_incoming.received_date', [$startDate, $endDate])
+                ->select(
+                    'inventory_incoming_items.quantity',
+                    'inventory_incoming_items.unit_cost',
+                    'inventory_incoming_items.total_cost',
+                    'inventory_incoming.received_date as created_at',
+                    'inventory_incoming.reference_number',
+                    'inventory_incoming.id as incoming_id',
+                    'inventory_incoming.supplier_id',
+                    'suppliers.name as supplier_name'
+                )
+                ->get();
+
+            $costPerUnit = $selectedProduct->purchase_price ?: 0;
+            if ($costPerUnit == 0) {
+                $costPerUnit = DB::table('inventory_incoming_items')
+                    ->where('product_id', $productId)
+                    ->avg('unit_cost') ?: 0;
             }
-            $stats['gross_profit'] = $stats['total_revenue'] - $stats['total_cost'];
+
+            foreach ($sales as $sale) {
+                $stats['gross_sold'] += $sale->quantity;
+                $stats['total_revenue'] += $sale->amount;
+            }
+            foreach ($returns as $ret) {
+                $stats['returned_qty'] += $ret->quantity;
+                $stats['refunded_revenue'] += $ret->total_price;
+            }
+            foreach ($purchases as $p) {
+                $stats['purchased_qty'] += $p->quantity;
+                $stats['total_purchased_cost'] += $p->total_cost;
+            }
+
+            $stats['net_sold'] = $stats['gross_sold'] - $stats['returned_qty'];
+            $stats['net_revenue'] = $stats['total_revenue'] - $stats['refunded_revenue'];
+            
+            if ($stats['gross_sold'] > 0) {
+                $stats['return_ratio'] = ($stats['returned_qty'] / $stats['gross_sold']) * 100;
+            }
+
+            $stats['total_cost'] = $stats['net_sold'] * $costPerUnit;
+            $stats['gross_profit'] = $stats['net_revenue'] - $stats['total_cost'];
+            $stats['margin_loss_returns'] = $stats['returned_qty'] * ($selectedProduct->price - $costPerUnit);
+
+            $flowEvents = collect();
+
+            foreach ($sales as $sale) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($sale->created_at),
+                    'type' => 'sale',
+                    'ref' => $sale->order_number,
+                    'ref_url' => route('order.show', $sale->order_id),
+                    'party_name' => $sale->user_name ?: ($sale->first_name . ' ' . $sale->last_name),
+                    'party_url' => $sale->user_id ? route('admin.customer-ledger.show', $sale->user_id) : null,
+                    'qty' => -$sale->quantity,
+                    'unit_price' => $sale->unit_price,
+                    'total' => $sale->amount
+                ]);
+            }
+
+            foreach ($returns as $ret) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($ret->created_at),
+                    'type' => 'return',
+                    'ref' => $ret->return_number,
+                    'ref_url' => route('returns.sale.show', $ret->return_id),
+                    'party_name' => $ret->user_name ?: 'Walk-in Customer',
+                    'party_url' => $ret->customer_id ? route('admin.customer-ledger.show', $ret->customer_id) : null,
+                    'qty' => $ret->quantity,
+                    'unit_price' => $ret->unit_price,
+                    'total' => $ret->total_price
+                ]);
+            }
+
+            foreach ($purchases as $p) {
+                $flowEvents->push((object)[
+                    'date' => Carbon::parse($p->created_at),
+                    'type' => 'purchase',
+                    'ref' => $p->reference_number,
+                    'ref_url' => route('inventory-incoming.show', $p->incoming_id),
+                    'party_name' => $p->supplier_name ?: 'Unknown Supplier',
+                    'party_url' => $p->supplier_id ? route('admin.supplier-ledger.show', $p->supplier_id) : null,
+                    'qty' => $p->quantity,
+                    'unit_price' => $p->unit_cost,
+                    'total' => $p->total_cost
+                ]);
+            }
+
+            $salesHistory = $flowEvents->sortByDesc('date')->values()->all();
         }
 
         $pdf = \PDF::loadView('backend.reports.product_analysis_pdf', compact('selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate'));
         $filename = 'product_analysis_' . ($selectedProduct ? str_replace(' ', '_', strtolower($selectedProduct->title)) : 'all') . '_' . date('Y-m-d') . '.pdf';
         return $pdf->download($filename);
     }
+
     public function customer(Request $request)
     {
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
