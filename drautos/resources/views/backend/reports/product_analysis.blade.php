@@ -2,243 +2,605 @@
 @section('title', 'Product Sales Analysis')
 
 @section('main-content')
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Advanced Product Analysis</h6>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div id="product-analysis-dashboard" class="container-fluid py-4">
+    <!-- Header Page Title -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-slate-800 font-weight-extrabold tracking-tight">
+            <i class="fas fa-chart-pie mr-2 text-indigo-600"></i>Advanced Product Analysis
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 m-0">
+                <li class="breadcrumb-item"><a href="{{route('admin')}}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Product Analysis</li>
+            </ol>
+        </nav>
     </div>
-    <div class="card-body">
-        <form method="GET" action="{{ route('reports.product-analysis') }}" class="mb-4">
-            <div class="row align-items-end">
-                <div class="col-md-3 col-sm-6 mb-2 mb-md-0">
-                    <label class="font-weight-bold">Select Product</label>
-                    <select name="product_id" class="form-control select2" required>
-                        <option value="">-- Choose Product --</option>
-                        @foreach($products as $prod)
-                            <option value="{{ $prod->id }}" {{ request('product_id') == $prod->id ? 'selected' : '' }}>
-                                {{ $prod->title }} (SKU: {{ $prod->sku }})
-                            </option>
-                        @endforeach
-                    </select>
+
+    <!-- Floating Filters Panel -->
+    <div class="card glass-card border-0 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" action="{{ route('reports.product-analysis') }}">
+                <div class="row align-items-end">
+                    <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">Select Product</label>
+                        <select name="product_id" class="form-control select2 select-premium" required>
+                            <option value="">-- Choose Product --</option>
+                            @foreach($products as $prod)
+                                <option value="{{ $prod->id }}" {{ request('product_id') == $prod->id ? 'selected' : '' }}>
+                                    {{ $prod->title }} (SKU: {{ $prod->sku }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6 mb-3 mb-lg-0">
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">Start Date</label>
+                        <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="form-control form-premium">
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-sm-6 mb-3 mb-lg-0">
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">End Date</label>
+                        <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="form-control form-premium">
+                    </div>
+                    <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                        <button type="submit" class="btn btn-premium-primary btn-block h-45 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-magic mr-2"></i> Analyze
+                        </button>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        @if($selectedProduct)
+                            <a href="{{ route('reports.product-analysis.pdf', ['product_id' => request('product_id'), 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" 
+                               class="btn btn-premium-danger btn-block h-45 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-file-pdf mr-2"></i> Export PDF
+                            </a>
+                        @endif
+                    </div>
                 </div>
-                <div class="col-md-2 col-sm-6 mb-2 mb-md-0">
-                    <label class="font-weight-bold">Start Date</label>
-                    <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="form-control">
-                </div>
-                <div class="col-md-2 col-sm-6 mb-2 mb-md-0">
-                    <label class="font-weight-bold">End Date</label>
-                    <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="form-control">
-                </div>
-                <div class="col-md-2 col-sm-6 mb-2 mb-md-0">
-                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> Analyze</button>
-                </div>
-                <div class="col-md-3 col-sm-12">
-                    @if($selectedProduct)
-                        <a href="{{ route('reports.product-analysis.pdf', ['product_id' => request('product_id'), 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" 
-                           class="btn btn-danger btn-block">
-                            <i class="fas fa-file-pdf"></i> Download PDF Report
-                        </a>
-                    @endif
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert for Missing Cost -->
+    @if($selectedProduct && $selectedProduct->purchase_price == 0)
+        <div class="alert premium-alert-warning d-flex align-items-center mb-4 border-0 shadow-sm" role="alert">
+            <div class="alert-icon-box mr-3">
+                <i class="fas fa-exclamation-triangle fa-lg"></i>
+            </div>
+            <div>
+                <strong class="font-weight-bold">Cost Configuration Missing:</strong> The purchase price of this product is not set. We have calculated margins using fallback average cost from incoming goods or $0.
+                <a href="{{ route('product.edit', $selectedProduct->id) }}" class="alert-link font-weight-bold ml-2 text-decoration-underline" target="_blank">
+                    Configure Product Cost <i class="fas fa-external-link-alt ml-1 small"></i>
+                </a>
+            </div>
+        </div>
+    @endif
+
+    @if($selectedProduct || count($salesHistory) > 0)
+        <!-- KPI Metrics Grid -->
+        <div class="row mb-4">
+            <!-- Net Sold Volume -->
+            <div class="col-xl-3 col-md-6 mb-4 mb-xl-0">
+                <div class="card gradient-card-indigo h-100">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="text-xs font-weight-bold text-uppercase tracking-wider opacity-75">Net Sold Volume</span>
+                            <div class="kpi-icon-wrapper">
+                                <i class="fas fa-box fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">{{ number_format($stats['net_sold']) }}</h2>
+                            <span class="badge badge-pill badge-light-danger font-weight-bold text-xs py-1 px-2">
+                                <i class="fas fa-undo-alt mr-1"></i> Return Rate: {{ number_format($stats['return_ratio'], 1) }}%
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </form>
 
-        @if($selectedProduct && $selectedProduct->purchase_price == 0)
-            <div class="alert alert-warning shadow-sm border-left-warning mb-4" role="alert">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <strong>Cost is Missing:</strong> The purchase price of this product is not set in the inventory database. Gross profit margin is calculated using fallback average cost from incoming goods or $0. Set a purchase price to see exact margin details. 
-                <a href="{{ route('product.edit', $selectedProduct->id) }}" class="alert-link font-weight-bold text-dark ml-1" target="_blank"><i class="fas fa-edit"></i> Edit Product Cost</a>
+            <!-- Net Revenue -->
+            <div class="col-xl-3 col-md-6 mb-4 mb-xl-0">
+                <div class="card gradient-card-emerald h-100">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="text-xs font-weight-bold text-uppercase tracking-wider opacity-75">Net Revenue</span>
+                            <div class="kpi-icon-wrapper">
+                                <i class="fas fa-wallet fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">Rs. {{ number_format($stats['net_revenue'], 2) }}</h2>
+                            <span class="badge badge-pill badge-light-success font-weight-bold text-xs py-1 px-2">
+                                Refunds: Rs. {{ number_format($stats['refunded_revenue'], 0) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goods Received -->
+            <div class="col-xl-3 col-md-6 mb-4 mb-md-0">
+                <div class="card gradient-card-violet h-100">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="text-xs font-weight-bold text-uppercase tracking-wider opacity-75">Goods Received</span>
+                            <div class="kpi-icon-wrapper">
+                                <i class="fas fa-truck-loading fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">{{ number_format($stats['purchased_qty']) }} Units</h2>
+                            <span class="badge badge-pill badge-light-violet font-weight-bold text-xs py-1 px-2">
+                                Cost: Rs. {{ number_format($stats['total_purchased_cost'], 0) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profit / Margin -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card gradient-card-{{ $stats['gross_profit'] >= 0 ? 'amber' : 'rose' }} h-100">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="text-xs font-weight-bold text-uppercase tracking-wider opacity-75">Gross Profit / Margin</span>
+                            <div class="kpi-icon-wrapper">
+                                <i class="fas fa-chart-line fa-lg"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">Rs. {{ number_format($stats['gross_profit'], 2) }}</h2>
+                            @if($stats['net_revenue'] > 0)
+                                <span class="badge badge-pill badge-light-gold font-weight-bold text-xs py-1 px-2">
+                                    Margin: {{ number_format(($stats['gross_profit'] / $stats['net_revenue']) * 100, 1) }}%
+                                </span>
+                            @else
+                                <span class="badge badge-pill badge-light-gold font-weight-bold text-xs py-1 px-2">
+                                    Margin: 0%
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trend Chart Container -->
+        @if($selectedProduct && count($chartLabels) > 0)
+            <div class="card glass-card border-0 mb-5">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="font-weight-bold text-slate-800 mb-0">Sales vs Purchases Trend</h5>
+                        <p class="text-xs text-slate-400 mb-0">Daily monitoring flow of transaction volumes</p>
+                    </div>
+                    <div class="chart-badges d-flex">
+                        <span class="badge-legend mr-3 text-xs font-weight-bold text-slate-600"><i class="fas fa-circle mr-1 text-indigo-500"></i> Sales</span>
+                        <span class="badge-legend mr-3 text-xs font-weight-bold text-slate-600"><i class="fas fa-circle mr-1 text-emerald-500"></i> Purchases</span>
+                        <span class="badge-legend text-xs font-weight-bold text-slate-600"><i class="fas fa-circle mr-1 text-rose-500"></i> Returns</span>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 350px; position: relative;">
+                        <canvas id="salesVelocityChart"></canvas>
+                    </div>
+                </div>
             </div>
         @endif
 
-        @if($selectedProduct || count($salesHistory) > 0)
-            <div class="row mb-4">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-primary shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Net Sold Volume</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['net_sold']) }} Units</div>
-                                    <span class="badge badge-pill badge-danger mt-1">Return Rate: {{ number_format($stats['return_ratio'], 1) }}%</span>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-box fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-success shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Net Revenue</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{ number_format($stats['net_revenue'], 2) }}</div>
-                                    <small class="text-xs text-muted">Refunds: Rs. {{ number_format($stats['refunded_revenue'], 2) }}</small>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Goods Received (Incoming)</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($stats['purchased_qty']) }} Units</div>
-                                    <small class="text-xs text-muted">Received Cost: Rs. {{ number_format($stats['total_purchased_cost'], 2) }}</small>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-{{ $stats['gross_profit'] >= 0 ? 'success' : 'danger' }} shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-{{ $stats['gross_profit'] >= 0 ? 'success' : 'danger' }} text-uppercase mb-1">Gross Profit / Margin</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{ number_format($stats['gross_profit'], 2) }}</div>
-                                    @if($stats['net_revenue'] > 0)
-                                        <small class="text-xs text-muted">Margin: {{ number_format(($stats['gross_profit'] / $stats['net_revenue']) * 100, 1) }}%</small>
+        <!-- Flow Ledger Panel -->
+        <div class="card glass-card border-0">
+            <div class="card-header bg-transparent border-0 pt-4 px-4">
+                <h5 class="font-weight-bold text-slate-800 mb-0">Inventory Flow Ledger</h5>
+                <p class="text-xs text-slate-400 mb-0">Chronological list of all sales, returns, and incoming shipments</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-modern" id="analysisTable" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Event Type</th>
+                                <th>Reference #</th>
+                                <th>Customer / Supplier</th>
+                                <th class="text-center">Quantity Change</th>
+                                <th class="text-right">Unit Price/Cost</th>
+                                <th class="text-right">Total Flow Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($salesHistory as $event)
+                            @php
+                                $rowClass = '';
+                                $badgeClass = '';
+                                $typeLabel = '';
+                                $qtyPrefix = '';
+                                $qtyColor = '';
+                                
+                                if ($event->type == 'sale') {
+                                    $rowClass = 'row-sale';
+                                    $badgeClass = 'badge-soft-indigo';
+                                    $typeLabel = 'Sale (Outgoing)';
+                                    $qtyPrefix = '-';
+                                    $qtyColor = 'text-indigo-600 font-weight-bold';
+                                } elseif ($event->type == 'purchase') {
+                                    $rowClass = 'row-purchase';
+                                    $badgeClass = 'badge-soft-emerald';
+                                    $typeLabel = 'Incoming Goods';
+                                    $qtyPrefix = '+';
+                                    $qtyColor = 'text-emerald-600 font-weight-bold';
+                                } elseif ($event->type == 'return') {
+                                    $rowClass = 'row-return';
+                                    $badgeClass = 'badge-soft-rose';
+                                    $typeLabel = 'Sale Return';
+                                    $qtyPrefix = '+';
+                                    $qtyColor = 'text-rose-600 font-weight-bold';
+                                }
+                            @endphp
+                            <tr class="{{ $rowClass }}">
+                                <td>
+                                    <div class="text-xs font-weight-semibold text-slate-400">
+                                        <i class="far fa-clock mr-1"></i>{{ \Carbon\Carbon::parse($event->date)->format('d M Y, h:i A') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge {{ $badgeClass }} font-weight-bold px-2.5 py-1.5 text-xs">
+                                        {{ $typeLabel }}
+                                    </span>
+                                </td>
+                                <td>
+                                    @if($event->ref_url)
+                                        <a href="{{ $event->ref_url }}" class="font-weight-bold text-indigo-600 hover-underline" target="_blank">
+                                            {{ $event->ref }} <i class="fas fa-external-link-alt ml-1 small opacity-50"></i>
+                                        </a>
+                                    @else
+                                        <span class="font-weight-bold text-slate-700">{{ $event->ref }}</span>
                                     @endif
-                                </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                </td>
+                                <td>
+                                    @if($event->party_url)
+                                        <a href="{{ $event->party_url }}" class="font-weight-semibold text-slate-700 hover-underline" target="_blank">
+                                            <i class="fas fa-link mr-1.5 text-slate-400 small"></i>{{ $event->party_name }}
+                                        </a>
+                                    @else
+                                        <span class="font-weight-semibold text-slate-600">{{ $event->party_name }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-center {{ $qtyColor }}" style="font-size: 1.05rem;">
+                                    {{ $qtyPrefix }}{{ abs($event->qty) }}
+                                </td>
+                                <td class="text-right text-slate-700 font-weight-semibold">
+                                    Rs. {{ number_format($event->unit_price, 2) }}
+                                </td>
+                                <td class="text-right text-slate-800 font-weight-extrabold">
+                                    Rs. {{ number_format($event->total, 2) }}
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            @if($selectedProduct && count($chartLabels) > 0)
-                <div class="card shadow mb-4 border-0">
-                    <div class="card-header py-3 bg-white border-bottom d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-area mr-1"></i> Sales vs Purchases Trend (Timeline Flow)</h6>
-                    </div>
-                    <div class="card-body">
-                        <div style="height: 320px; position: relative;">
-                            <canvas id="salesVelocityChart"></canvas>
-                        </div>
-                    </div>
+        </div>
+    @else
+        <div class="card glass-card border-0 shadow-sm py-5 text-center">
+            <div class="card-body">
+                <div class="empty-state-icon mb-3">
+                    <i class="fas fa-folder-open fa-3x text-slate-300"></i>
                 </div>
-            @endif
-
-            <h5 class="font-weight-bold text-dark mb-3 mt-4"><i class="fas fa-exchange-alt mr-2 text-primary"></i> Inventory Flow Ledger</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover shadow-sm" id="analysisTable" width="100%">
-                    <thead class="bg-light text-dark font-weight-bold">
-                        <tr>
-                            <th>Date</th>
-                            <th>Event Type</th>
-                            <th>Reference #</th>
-                            <th>Customer / Supplier</th>
-                            <th class="text-center">Quantity Change</th>
-                            <th class="text-right">Unit Price/Cost</th>
-                            <th class="text-right">Total Flow Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($salesHistory as $event)
-                        @php
-                            $rowClass = '';
-                            $badgeClass = '';
-                            $typeLabel = '';
-                            $qtyPrefix = '';
-                            $qtyColor = '';
-                            
-                            if ($event->type == 'sale') {
-                                $rowClass = 'table-primary-light';
-                                $badgeClass = 'badge-primary';
-                                $typeLabel = 'Sale (Outgoing)';
-                                $qtyPrefix = '-';
-                                $qtyColor = 'text-danger font-weight-bold';
-                            } elseif ($event->type == 'purchase') {
-                                $rowClass = 'table-success-light';
-                                $badgeClass = 'badge-success';
-                                $typeLabel = 'Incoming Goods';
-                                $qtyPrefix = '+';
-                                $qtyColor = 'text-success font-weight-bold';
-                            } elseif ($event->type == 'return') {
-                                $rowClass = 'table-danger-light';
-                                $badgeClass = 'badge-danger';
-                                $typeLabel = 'Sale Return';
-                                $qtyPrefix = '+';
-                                $qtyColor = 'text-info font-weight-bold';
-                            }
-                        @endphp
-                        <tr class="{{ $rowClass }}">
-                            <td>{{ \Carbon\Carbon::parse($event->date)->format('d M Y h:i A') }}</td>
-                            <td>
-                                <span class="badge {{ $badgeClass }} px-2 py-1">{{ $typeLabel }}</span>
-                            </td>
-                            <td>
-                                @if($event->ref_url)
-                                    <a href="{{ $event->ref_url }}" class="font-weight-bold" target="_blank">{{ $event->ref }}</a>
-                                @else
-                                    {{ $event->ref }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($event->party_url)
-                                    <a href="{{ $event->party_url }}" class="font-weight-bold text-dark" target="_blank">
-                                        <i class="fas fa-link mr-1 small text-muted"></i>{{ $event->party_name }}
-                                    </a>
-                                @else
-                                    {{ $event->party_name }}
-                                @endif
-                            </td>
-                            <td class="text-center {{ $qtyColor }}" style="font-size: 1.05rem;">
-                                {{ $qtyPrefix }}{{ abs($event->qty) }}
-                            </td>
-                            <td class="text-right">Rs. {{ number_format($event->unit_price, 2) }}</td>
-                            <td class="text-right font-weight-bold">Rs. {{ number_format($event->total, 2) }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <h5 class="font-weight-bold text-slate-700">No Data Loaded</h5>
+                <p class="text-slate-400 text-sm max-w-md mx-auto mb-4">Please select a product and pick a date range to generate visual charts and interactive chronological flow ledgers.</p>
             </div>
-        @else
-            <div class="alert alert-info text-center py-4">
-                <i class="fas fa-info-circle fa-2x mb-2 text-primary d-block"></i>
-                Please select a product and click <strong>Analyze</strong> to load inventory analysis charts and ledger history.
-            </div>
-        @endif
-    </div>
+        </div>
+    @endif
 </div>
 @endsection
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container .select2-selection--single {
-        height: 38px;
-        border: 1px solid #d1d3e2;
+    /* Premium Styling Overrides */
+    #product-analysis-dashboard {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+        min-height: 100vh;
     }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 38px;
+    
+    .font-weight-extrabold { font-weight: 800 !important; }
+    .font-weight-semibold { font-weight: 600 !important; }
+    
+    /* Colors & Typography */
+    .text-slate-800 { color: #1e293b; }
+    .text-slate-700 { color: #334155; }
+    .text-slate-600 { color: #475569; }
+    .text-slate-500 { color: #64748b; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-300 { color: #cbd5e1; }
+    
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .hover-underline:hover { text-decoration: underline !important; }
+    
+    /* Card Glassmorphism */
+    #product-analysis-dashboard .glass-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.08), 0 2px 8px -1px rgba(148, 163, 184, 0.04);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
+    #product-analysis-dashboard .glass-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -4px rgba(148, 163, 184, 0.14), 0 4px 12px -2px rgba(148, 163, 184, 0.08);
+    }
+    
+    /* Gaps & Height Controls */
+    .h-45 { height: 45px !important; }
+    .max-w-md { max-w: 28rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    
+    /* Premium KPI Gradients */
+    #product-analysis-dashboard .gradient-card-indigo {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #product-analysis-dashboard .gradient-card-indigo:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px -8px rgba(99, 102, 241, 0.5);
+    }
+    
+    #product-analysis-dashboard .gradient-card-emerald {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #product-analysis-dashboard .gradient-card-emerald:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px -8px rgba(16, 185, 129, 0.5);
+    }
+    
+    #product-analysis-dashboard .gradient-card-violet {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #product-analysis-dashboard .gradient-card-violet:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px -8px rgba(139, 92, 246, 0.5);
+    }
+    
+    #product-analysis-dashboard .gradient-card-amber {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #product-analysis-dashboard .gradient-card-amber:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px -8px rgba(245, 158, 11, 0.5);
+    }
+
+    #product-analysis-dashboard .gradient-card-rose {
+        background: linear-gradient(135deg, #f43f5e, #e11d48);
+        color: #ffffff;
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #product-analysis-dashboard .gradient-card-rose:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px -8px rgba(244, 63, 94, 0.5);
+    }
+    
+    /* KPI Icons and Badges */
+    .kpi-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+        box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
+    }
+    .badge-light-danger {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    .badge-light-success {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    .badge-light-violet {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    .badge-light-gold {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    
+    /* Form Premium Inputs */
+    #product-analysis-dashboard .form-premium {
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        height: 45px !important;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        background-color: #fff;
+    }
+    #product-analysis-dashboard .form-premium:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        background-color: #fff;
+    }
+    
+    /* Premium Buttons */
+    #product-analysis-dashboard .btn-premium-primary {
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        color: #fff !important;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        transition: all 0.25s ease;
+    }
+    #product-analysis-dashboard .btn-premium-primary:hover {
+        background: linear-gradient(135deg, #4338ca, #3730a3);
+        box-shadow: 0 8px 18px rgba(79, 70, 229, 0.35);
+        transform: translateY(-1.5px);
+    }
+    
+    #product-analysis-dashboard .btn-premium-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: #fff !important;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        transition: all 0.25s ease;
+    }
+    #product-analysis-dashboard .btn-premium-danger:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        box-shadow: 0 8px 18px rgba(239, 68, 68, 0.3);
+        transform: translateY(-1.5px);
+    }
+    
+    /* Warning Alert Premium */
+    #product-analysis-dashboard .premium-alert-warning {
+        background: #fef3c7;
+        color: #92400e;
+        border-radius: 12px;
+        padding: 16px 20px;
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.05);
+    }
+    #product-analysis-dashboard .alert-icon-box {
+        width: 36px;
         height: 36px;
+        background-color: rgba(245, 158, 11, 0.15);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #d97706;
     }
-    .table-primary-light { background-color: rgba(78, 115, 223, 0.03); }
-    .table-success-light { background-color: rgba(28, 200, 138, 0.03); }
-    .table-danger-light { background-color: rgba(231, 74, 59, 0.03); }
-    .table-primary-light:hover { background-color: rgba(78, 115, 223, 0.07) !important; }
-    .table-success-light:hover { background-color: rgba(28, 200, 138, 0.07) !important; }
-    .table-danger-light:hover { background-color: rgba(231, 74, 59, 0.07) !important; }
+    
+    /* Modern Ledger Floating Rows */
+    #product-analysis-dashboard .table-modern {
+        border-collapse: separate !important;
+        border-spacing: 0 10px !important;
+        background: transparent;
+        width: 100% !important;
+        border: none !important;
+    }
+    #product-analysis-dashboard .table-modern th {
+        border: none !important;
+        background: transparent !important;
+        color: #64748b !important;
+        font-weight: 700 !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        padding: 8px 16px !important;
+    }
+    #product-analysis-dashboard .table-modern tbody tr {
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(148, 163, 184, 0.04), 0 1px 2px rgba(148, 163, 184, 0.02);
+        transition: all 0.2s ease;
+        border-radius: 12px;
+    }
+    #product-analysis-dashboard .table-modern tbody tr:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 10px 20px rgba(148, 163, 184, 0.08), 0 4px 6px rgba(148, 163, 184, 0.04);
+    }
+    #product-analysis-dashboard .table-modern td {
+        border: none !important;
+        padding: 16px !important;
+        vertical-align: middle !important;
+        background-color: #ffffff;
+    }
+    #product-analysis-dashboard .table-modern tbody td:first-child {
+        border-top-left-radius: 12px !important;
+        border-bottom-left-radius: 12px !important;
+    }
+    #product-analysis-dashboard .table-modern tbody td:last-child {
+        border-top-right-radius: 12px !important;
+        border-bottom-right-radius: 12px !important;
+    }
+    
+    /* Table left indicator lines */
+    #product-analysis-dashboard .table-modern tbody tr.row-sale td:first-child {
+        border-left: 5px solid #6366f1 !important;
+    }
+    #product-analysis-dashboard .table-modern tbody tr.row-purchase td:first-child {
+        border-left: 5px solid #10b981 !important;
+    }
+    #product-analysis-dashboard .table-modern tbody tr.row-return td:first-child {
+        border-left: 5px solid #f43f5e !important;
+    }
+    
+    /* Soft color badges for table tags */
+    .badge-soft-indigo {
+        background-color: #e0e7ff;
+        color: #4f46e5;
+        border-radius: 6px;
+    }
+    .badge-soft-emerald {
+        background-color: #d1fae5;
+        color: #059669;
+        border-radius: 6px;
+    }
+    .badge-soft-rose {
+        background-color: #ffe4e6;
+        color: #e11d48;
+        border-radius: 6px;
+    }
+    
+    /* Select2 custom override inside dashboard wrapper */
+    #product-analysis-dashboard .select2-container--default .select2-selection--single {
+        border-radius: 10px;
+        border: 1px solid #cbd5e1;
+        height: 45px;
+        padding: 8px 12px;
+        background-color: #fff;
+    }
+    #product-analysis-dashboard .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 27px;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+    #product-analysis-dashboard .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 43px;
+    }
+    
+    /* DataTables search/pagination overrides */
+    #product-analysis-dashboard .dataTables_wrapper .dataTables_filter input {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        padding: 6px 12px;
+        margin-left: 0.5em;
+        font-size: 0.85rem;
+    }
+    #product-analysis-dashboard .dataTables_wrapper .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
 </style>
 @endpush
 
@@ -247,16 +609,35 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.select2').select2();
+        $('.select2').select2({
+            width: '100%'
+        });
         
         $('#analysisTable').DataTable({
             "order": [[ 0, "desc" ]],
-            "pageLength": 25
+            "pageLength": 25,
+            "dom": "<'row mb-3 align-items-center'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 text-right'f>>" +
+                   "<'row'<'col-sm-12'tr>>" +
+                   "<'row mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 text-right'p>>"
         });
 
         @if($selectedProduct && count($chartLabels) > 0)
         // Setup Chart
         const ctx = document.getElementById('salesVelocityChart').getContext('2d');
+        
+        // Create canvas line gradients
+        const gradientSales = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientSales.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+        gradientSales.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+        
+        const gradientPurchases = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurchases.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
+        gradientPurchases.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        
+        const gradientReturns = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientReturns.addColorStop(0, 'rgba(244, 63, 94, 0.15)');
+        gradientReturns.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
+
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -265,33 +646,46 @@
                     {
                         label: 'Units Sold (Sales)',
                         data: @json($chartSalesData),
-                        borderColor: '#4e73df',
-                        backgroundColor: 'rgba(78, 115, 223, 0.03)',
+                        borderColor: '#6366f1',
+                        backgroundColor: gradientSales,
                         borderWidth: 3,
-                        pointBackgroundColor: '#4e73df',
-                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 7,
+                        pointHoverBorderWidth: 3,
+                        pointRadius: 4,
                         tension: 0.35,
                         fill: true
                     },
                     {
                         label: 'Units Bought (Incoming Goods)',
                         data: @json($chartPurchasesData),
-                        borderColor: '#1cc88a',
-                        backgroundColor: 'rgba(28, 200, 138, 0.03)',
+                        borderColor: '#10b981',
+                        backgroundColor: gradientPurchases,
                         borderWidth: 3,
-                        pointBackgroundColor: '#1cc88a',
-                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 7,
+                        pointHoverBorderWidth: 3,
+                        pointRadius: 4,
                         tension: 0.35,
                         fill: true
                     },
                     {
                         label: 'Units Returned (Sales Return)',
                         data: @json($chartReturnsData),
-                        borderColor: '#e74c3c',
-                        backgroundColor: 'rgba(231, 74, 59, 0.03)',
+                        borderColor: '#f43f5e',
+                        backgroundColor: gradientReturns,
                         borderWidth: 2,
-                        pointBackgroundColor: '#e74c3c',
-                        pointHoverRadius: 5,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: '#f43f5e',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1.5,
+                        pointHoverRadius: 6,
+                        pointHoverBorderWidth: 2,
+                        pointRadius: 3,
                         tension: 0.35,
                         fill: true
                     }
@@ -304,12 +698,15 @@
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: '#eaecf4',
+                            color: '#f1f5f9',
                             drawBorder: false
                         },
                         ticks: {
+                            color: '#64748b',
                             font: {
-                                size: 11
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 11,
+                                weight: 500
                             }
                         }
                     },
@@ -318,34 +715,34 @@
                             display: false
                         },
                         ticks: {
+                            color: '#64748b',
                             font: {
-                                size: 11
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 11,
+                                weight: 500
                             }
                         }
                     }
                 },
                 plugins: {
                     legend: {
-                        position: 'top',
-                        labels: {
-                            boxWidth: 15,
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            }
-                        }
+                        display: false /* Custom HTML legend implemented in header */
                     },
                     tooltip: {
-                        padding: 12,
-                        backgroundColor: 'rgba(30, 30, 45, 0.95)',
+                        padding: 14,
+                        backgroundColor: '#1e293b',
                         titleFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
                             size: 13,
                             weight: 'bold'
                         },
                         bodyFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
                             size: 12
                         },
-                        cornerRadius: 8
+                        cornerRadius: 12,
+                        boxPadding: 6,
+                        usePointStyle: true
                     }
                 }
             }
