@@ -75,7 +75,7 @@
         </div>
     @endif
 
-    @if($selectedProduct || count($salesHistory) > 0)
+    @if($selectedProduct || count($salesHistory) > 0 || $topProducts->count() > 0)
         <!-- KPI Metrics Grid -->
         <div class="row mb-4">
             <!-- Net Sold Volume -->
