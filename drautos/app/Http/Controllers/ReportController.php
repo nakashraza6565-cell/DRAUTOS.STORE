@@ -300,6 +300,7 @@ class ReportController extends Controller
             'total_purchased_cost' => 0
         ];
         $salesHistory = [];
+        $topProducts = collect();
         
         $chartLabels = [];
         $chartSalesData = [];
@@ -540,50 +541,67 @@ class ReportController extends Controller
 
             $stats['gross_profit'] = $stats['net_revenue'] - $stats['total_cost'];
 
-            // Fetch recent sales events
-            $recentSales = DB::table('carts')
+            // =========================================================
+            // Product-ranked leaderboard: sorted by total amount sold DESC
+            // =========================================================
+            $salesByProduct = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->join('products', 'carts.product_id', '=', 'products.id')
-                ->leftJoin('users', 'orders.user_id', '=', 'users.id')
                 ->where('orders.status', 'delivered')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(
-                    'carts.quantity',
-                    'carts.price as unit_price',
-                    'carts.amount',
-                    'orders.created_at',
-                    'orders.order_number',
-                    'orders.id as order_id',
-                    'orders.first_name',
-                    'orders.last_name',
-                    'orders.user_id',
-                    'users.name as user_name',
-                    'products.title as product_title'
+                    'carts.product_id',
+                    'products.title as product_title',
+                    'products.sku',
+                    DB::raw('SUM(carts.quantity) as total_qty'),
+                    DB::raw('SUM(carts.amount) as total_revenue')
                 )
-                ->orderBy('orders.created_at', 'DESC')
-                ->limit(100)
+                ->groupBy('carts.product_id', 'products.title', 'products.sku')
+                ->orderByDesc('total_revenue')
                 ->get();
 
-            $flowEvents = collect();
-            foreach ($recentSales as $sale) {
-                $flowEvents->push((object)[
-                    'date' => Carbon::parse($sale->created_at),
-                    'type' => 'sale',
-                    'ref' => $sale->order_number,
-                    'ref_url' => route('order.show', $sale->order_id),
-                    'party_name' => ($sale->user_name ?: ($sale->first_name . ' ' . $sale->last_name)) . ' (' . $sale->product_title . ')',
-                    'party_url' => $sale->user_id ? route('admin.customer-ledger.show', $sale->user_id) : null,
-                    'qty' => -$sale->quantity,
-                    'unit_price' => $sale->unit_price,
-                    'total' => $sale->amount
-                ]);
-            }
-            $salesHistory = $flowEvents->sortByDesc('date')->values()->all();
+            // Fetch return totals per product
+            $returnsByProduct = DB::table('sale_return_items')
+                ->join('sale_returns', 'sale_return_items.sale_return_id', '=', 'sale_returns.id')
+                ->where('sale_returns.status', 'approved')
+                ->whereBetween('sale_returns.created_at', [$startDate, $endDate])
+                ->select(
+                    'sale_return_items.product_id',
+                    DB::raw('SUM(sale_return_items.quantity) as returned_qty'),
+                    DB::raw('SUM(sale_return_items.total_price) as refunded_amount')
+                )
+                ->groupBy('sale_return_items.product_id')
+                ->get()
+                ->keyBy('product_id');
+
+            $topProducts = $salesByProduct->map(function ($row) use ($returnsByProduct) {
+                $retData = $returnsByProduct->get($row->product_id);
+                $returnedQty    = $retData ? (int)$retData->returned_qty : 0;
+                $refundedAmount = $retData ? (float)$retData->refunded_amount : 0;
+                $grossQty       = (int)$row->total_qty;
+                $netQty         = $grossQty - $returnedQty;
+                $netRevenue     = (float)$row->total_revenue - $refundedAmount;
+                $returnRate     = $grossQty > 0 ? round(($returnedQty / $grossQty) * 100, 1) : 0;
+                return (object)[
+                    'product_id'      => $row->product_id,
+                    'product_title'   => $row->product_title,
+                    'sku'             => $row->sku,
+                    'gross_qty'       => $grossQty,
+                    'returned_qty'    => $returnedQty,
+                    'net_qty'         => $netQty,
+                    'total_revenue'   => (float)$row->total_revenue,
+                    'refunded_amount' => $refundedAmount,
+                    'net_revenue'     => $netRevenue,
+                    'return_rate'     => $returnRate,
+                ];
+            });
+
+            $salesHistory = [];
         }
 
         return view('backend.reports.product_analysis', compact(
             'products', 'selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate',
-            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData'
+            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData', 'topProducts'
         ));
     }
 

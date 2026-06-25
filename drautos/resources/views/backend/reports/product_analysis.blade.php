@@ -187,7 +187,107 @@
             </div>
         @endif
 
-        <!-- Flow Ledger Panel -->
+        @if(!$selectedProduct && $topProducts->count() > 0)
+        {{-- ===== Product Sales Leaderboard (All-Products View) ===== --}}
+        <div class="card glass-card border-0 mb-0" id="leaderboardPanel">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center flex-wrap" style="gap:8px;">
+                <div>
+                    <h5 class="font-weight-bold text-slate-800 mb-0">
+                        <i class="fas fa-trophy mr-2" style="color:#f59e0b;"></i>Product Sales Leaderboard
+                    </h5>
+                    <p class="text-xs text-slate-400 mb-0">Ranked by total revenue — highest selling product first</p>
+                </div>
+                <div class="d-flex align-items-center" style="gap:10px;">
+                    <span class="badge badge-soft-indigo font-weight-bold px-3 py-2 text-xs">
+                        <i class="fas fa-layer-group mr-1"></i>{{ $topProducts->count() }} Products
+                    </span>
+                    <div class="lb-search-wrap" style="position:relative;">
+                        <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.75rem;"></i>
+                        <input type="text" id="lbSearchInput" placeholder="Search product..." class="form-control form-premium" style="padding-left:30px;height:36px;font-size:0.83rem;width:200px;">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4 pt-2">
+                <div class="table-responsive">
+                    <table class="table table-modern" id="leaderboardTable" width="100%">
+                        <thead>
+                            <tr>
+                                <th style="width:52px;">Rank</th>
+                                <th>Product</th>
+                                <th class="text-center">Gross Sold</th>
+                                <th class="text-center">Returns</th>
+                                <th class="text-center">Net Sold</th>
+                                <th class="text-center">Return Rate</th>
+                                <th class="text-right">Gross Revenue</th>
+                                <th class="text-right">Net Revenue</th>
+                                <th class="text-center" style="width:90px;">Analyze</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            @php $maxRevenue = $topProducts->first()->total_revenue ?? 1; @endphp
+                            @foreach($topProducts as $idx => $p)
+                            @php
+                                $rank = $idx + 1;
+                                $barPct = $maxRevenue > 0 ? round(($p->net_revenue / $maxRevenue) * 100) : 0;
+                                $rankIcon = $rank === 1 ? '🥇' : ($rank === 2 ? '🥈' : ($rank === 3 ? '🥉' : '#'.$rank));
+                                $rateColor = $p->return_rate > 15 ? '#f43f5e' : ($p->return_rate > 5 ? '#f59e0b' : '#10b981');
+                                $rateClass = $p->return_rate > 15 ? 'badge-soft-rose' : ($p->return_rate > 5 ? 'badge-soft-amber' : 'badge-soft-emerald');
+                            @endphp
+                            <tr class="lb-row row-sale" data-name="{{ strtolower($p->product_title) }}" data-sku="{{ strtolower($p->sku ?? '') }}">
+                                <td>
+                                    <span class="lb-rank-badge" style="font-size:{{ $rank <= 3 ? '1.3rem' : '0.85rem' }};font-weight:800;color:#64748b;">
+                                        {{ $rankIcon }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold text-slate-800" style="font-size:0.88rem;line-height:1.3;">{{ $p->product_title }}</div>
+                                    <div class="text-xs text-slate-400 mt-1">SKU: {{ $p->sku ?? '—' }}</div>
+                                    <div class="lb-bar-wrap mt-2" style="background:#f1f5f9;border-radius:6px;height:5px;overflow:hidden;">
+                                        <div class="lb-bar" style="width:{{ $barPct }}%;height:5px;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:6px;transition:width 1s ease;"></div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="font-weight-bold text-slate-700" style="font-size:0.95rem;">{{ number_format($p->gross_qty) }}</span>
+                                    <div class="text-xs text-slate-400">units</div>
+                                </td>
+                                <td class="text-center">
+                                    @if($p->returned_qty > 0)
+                                        <span class="font-weight-bold" style="color:#f43f5e;font-size:0.95rem;">{{ number_format($p->returned_qty) }}</span>
+                                        <div class="text-xs text-slate-400">Rs. {{ number_format($p->refunded_amount, 0) }}</div>
+                                    @else
+                                        <span class="text-slate-300 font-weight-bold">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <span class="font-weight-bold text-emerald-600" style="font-size:0.95rem;">{{ number_format($p->net_qty) }}</span>
+                                    <div class="text-xs text-slate-400">units</div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {{ $rateClass }} font-weight-bold px-2 py-1" style="font-size:0.78rem;border-radius:6px;">
+                                        {{ $p->return_rate }}%
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    <span class="font-weight-semibold text-slate-600" style="font-size:0.88rem;">Rs. {{ number_format($p->total_revenue, 0) }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <span class="font-weight-extrabold text-slate-800" style="font-size:0.95rem;">Rs. {{ number_format($p->net_revenue, 0) }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('reports.product-analysis', ['product_id' => $p->product_id, 'start_date' => request('start_date', $startDate->format('Y-m-d')), 'end_date' => request('end_date', $endDate->format('Y-m-d'))]) }}"
+                                       class="btn btn-sm btn-premium-primary px-3" style="border-radius:8px;font-size:0.75rem;height:30px;line-height:18px;" title="Deep-dive into {{ $p->product_title }}">
+                                        <i class="fas fa-search mr-1"></i> Drill
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @else
+        {{-- ===== Flow Ledger (Single Product View) ===== --}}
         <div class="card glass-card border-0">
             <div class="card-header bg-transparent border-0 pt-4 px-4">
                 <h5 class="font-weight-bold text-slate-800 mb-0">Inventory Flow Ledger</h5>
@@ -281,6 +381,7 @@
                 </div>
             </div>
         </div>
+        @endif
     @else
         <div class="card glass-card border-0 shadow-sm py-5 text-center">
             <div class="card-body">
@@ -605,6 +706,16 @@
         color: #e11d48;
         border-radius: 6px;
     }
+    .badge-soft-amber {
+        background-color: #fef3c7;
+        color: #b45309;
+        border-radius: 6px;
+    }
+    /* Leaderboard row hover animation */
+    #leaderboardPanel .lb-row:hover .lb-bar {
+        filter: brightness(1.15);
+    }
+    .text-emerald-600 { color: #059669 !important; }
     
     /* Select2 custom override inside dashboard wrapper */
     #product-analysis-dashboard .select2-container--default .select2-selection--single {
@@ -784,6 +895,19 @@
             }
         });
         @endif
+
+        // Leaderboard live search
+        var lbInput = document.getElementById('lbSearchInput');
+        if (lbInput) {
+            lbInput.addEventListener('keyup', function() {
+                var q = this.value.toLowerCase().trim();
+                document.querySelectorAll('#leaderboardBody .lb-row').forEach(function(tr) {
+                    var name = tr.getAttribute('data-name') || '';
+                    var sku  = tr.getAttribute('data-sku') || '';
+                    tr.style.display = (name.indexOf(q) !== -1 || sku.indexOf(q) !== -1) ? '' : 'none';
+                });
+            });
+        }
     });
 </script>
 @endpush
