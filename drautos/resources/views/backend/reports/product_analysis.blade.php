@@ -18,15 +18,16 @@
         </nav>
     </div>
 
-    <!-- Floating Filters Panel -->
-    <div class="card glass-card border-0 mb-4">
+    <!-- Premium Filter Panel -->
+    <div class="card glass-card border-0 mb-4" id="filterCard">
         <div class="card-body p-4">
-            <form method="GET" action="{{ route('reports.product-analysis') }}">
-                <div class="row align-items-end">
-                    <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">Select Product</label>
-                        <select name="product_id" class="form-control select2 select-premium" required>
-                            <option value="">-- Choose Product --</option>
+            <form method="GET" action="{{ route('reports.product-analysis') }}" id="analysisFilterForm">
+                <!-- Row 1: Product Selector + Analyze -->
+                <div class="row align-items-end mb-3">
+                    <div class="col-lg-7 col-md-8 mb-3 mb-md-0">
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">Select Product <span class="text-slate-400 font-weight-normal text-lowercase">(leave blank for full leaderboard)</span></label>
+                        <select name="product_id" id="productSelector" class="form-control select2 select-premium">
+                            <option value="">-- All Products (Leaderboard View) --</option>
                             @foreach($products as $prod)
                                 <option value="{{ $prod->id }}" {{ request('product_id') == $prod->id ? 'selected' : '' }}>
                                     {{ $prod->title }} (SKU: {{ $prod->sku }})
@@ -34,31 +35,80 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-2 col-md-3 col-sm-6 mb-3 mb-lg-0">
-                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">Start Date</label>
-                        <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="form-control form-premium">
-                    </div>
-                    <div class="col-lg-2 col-md-3 col-sm-6 mb-3 mb-lg-0">
-                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-2 d-block">End Date</label>
-                        <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="form-control form-premium">
-                    </div>
-                    <div class="col-lg-2 col-md-6 mb-3 mb-lg-0">
+                    <div class="col-lg-3 col-md-4 mb-3 mb-md-0">
                         <button type="submit" class="btn btn-premium-primary btn-block h-45 d-flex align-items-center justify-content-center">
                             <i class="fas fa-magic mr-2"></i> Analyze
                         </button>
                     </div>
-                    <div class="col-lg-2 col-md-6">
+                    <div class="col-lg-2 col-md-12">
                         @if($selectedProduct)
-                            <a href="{{ route('reports.product-analysis.pdf', ['product_id' => request('product_id'), 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}" 
+                            <a href="{{ route('reports.product-analysis.pdf', ['product_id' => request('product_id'), 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}"
                                class="btn btn-premium-danger btn-block h-45 d-flex align-items-center justify-content-center">
                                 <i class="fas fa-file-pdf mr-2"></i> Export PDF
                             </a>
                         @endif
                     </div>
                 </div>
+
+                <!-- Row 2: Date Preset Chips -->
+                <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                    <span class="text-xs font-weight-bold text-uppercase tracking-wider text-slate-500 mr-2">Period:</span>
+
+                    <button type="button" id="presetAllTime" onclick="applyPreset('all-time')"
+                        class="preset-chip {{ $isAllTime ? 'preset-chip-active' : '' }}">
+                        <i class="fas fa-infinity mr-1"></i> All Time
+                    </button>
+
+                    <button type="button" id="presetThisYear" onclick="applyPreset('this-year')"
+                        class="preset-chip {{ (!$isAllTime && request('start_date') == now()->startOfYear()->format('Y-m-d')) ? 'preset-chip-active' : '' }}">
+                        <i class="fas fa-calendar-alt mr-1"></i> This Year
+                    </button>
+
+                    <button type="button" id="presetThisMonth" onclick="applyPreset('this-month')"
+                        class="preset-chip {{ (!$isAllTime && request('start_date') == now()->startOfMonth()->format('Y-m-d')) ? 'preset-chip-active' : '' }}">
+                        <i class="fas fa-calendar-week mr-1"></i> This Month
+                    </button>
+
+                    <button type="button" id="presetCustom" onclick="toggleCustomDates()"
+                        class="preset-chip {{ (!$isAllTime && request('start_date') && request('start_date') != now()->startOfMonth()->format('Y-m-d') && request('start_date') != now()->startOfYear()->format('Y-m-d')) ? 'preset-chip-active' : '' }}">
+                        <i class="fas fa-sliders-h mr-1"></i> Custom Range
+                    </button>
+
+                    @if(!$isAllTime)
+                        <span class="text-xs text-slate-400 ml-2">
+                            <i class="far fa-calendar mr-1"></i>
+                            Showing: <strong class="text-slate-600">{{ $startDate->format('d M Y') }}</strong>
+                            → <strong class="text-slate-600">{{ $endDate->format('d M Y') }}</strong>
+                        </span>
+                    @else
+                        <span class="text-xs text-slate-400 ml-2">
+                            <i class="fas fa-infinity mr-1"></i>
+                            Showing: <strong class="text-indigo-600">All Time</strong>
+                            (from <strong class="text-slate-600">{{ $startDate->format('d M Y') }}</strong>)
+                        </span>
+                    @endif
+                </div>
+
+                <!-- Row 3: Custom Date Range (hidden by default) -->
+                <div id="customDateRange" class="mt-3 pt-3" style="border-top:1px dashed #e2e8f0; display:{{ (!$isAllTime && request('start_date') && request('start_date') != now()->startOfMonth()->format('Y-m-d') && request('start_date') != now()->startOfYear()->format('Y-m-d')) ? 'flex' : 'none' }}; gap:12px; align-items:center; flex-wrap:wrap;">
+                    <div>
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-1 d-block">Start Date</label>
+                        <input type="date" name="start_date" id="startDateInput" value="{{ !$isAllTime ? $startDate->format('Y-m-d') : '' }}" class="form-control form-premium" style="width:180px;">
+                    </div>
+                    <div>
+                        <label class="font-weight-bold text-xs text-uppercase tracking-wider text-slate-500 mb-1 d-block">End Date</label>
+                        <input type="date" name="end_date" id="endDateInput" value="{{ !$isAllTime ? $endDate->format('Y-m-d') : '' }}" class="form-control form-premium" style="width:180px;">
+                    </div>
+                    <div style="padding-top:20px;">
+                        <button type="submit" class="btn btn-premium-primary px-4 h-45 d-flex align-items-center">
+                            <i class="fas fa-check mr-2"></i> Apply
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
+
 
     <!-- Alert for Missing Cost -->
     @if($selectedProduct && $selectedProduct->purchase_price == 0)
@@ -748,6 +798,43 @@
         padding: 4px 8px;
         font-size: 0.85rem;
     }
+
+    /* ── Preset Chip Buttons ─────────────────────────────────── */
+    .preset-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        white-space: nowrap;
+    }
+    .preset-chip:hover {
+        border-color: #6366f1;
+        color: #4f46e5;
+        background: #eef2ff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(99,102,241,0.1);
+    }
+    .preset-chip-active {
+        background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+        border-color: #4f46e5 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.25);
+    }
+    .preset-chip-active:hover {
+        background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+    }
+    .text-indigo-600 { color: #4f46e5 !important; }
 </style>
 @endpush
 
@@ -909,5 +996,56 @@
             });
         }
     });
+
+    // ── Date Preset Chip Functions ──────────────────────────────
+    function applyPreset(preset) {
+        var form   = document.getElementById('analysisFilterForm');
+        var sInput = document.getElementById('startDateInput');
+        var eInput = document.getElementById('endDateInput');
+        var today  = new Date();
+
+        function fmt(d) {
+            return d.toISOString().split('T')[0];
+        }
+
+        if (preset === 'all-time') {
+            // Remove date params → controller will use all-time
+            if (sInput) sInput.name = '';
+            if (eInput) eInput.name = '';
+            form.submit();
+            return;
+        }
+
+        // Ensure inputs have their names
+        if (sInput) sInput.name = 'start_date';
+        if (eInput) eInput.name = 'end_date';
+
+        var start, end = fmt(today);
+
+        if (preset === 'this-year') {
+            start = fmt(new Date(today.getFullYear(), 0, 1));
+        } else if (preset === 'this-month') {
+            start = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+        }
+
+        if (sInput) sInput.value = start;
+        if (eInput) eInput.value = end;
+
+        // Show custom area with filled values, then submit
+        var customArea = document.getElementById('customDateRange');
+        if (customArea) customArea.style.display = 'flex';
+
+        form.submit();
+    }
+
+    function toggleCustomDates() {
+        var customArea = document.getElementById('customDateRange');
+        if (!customArea) return;
+        var isVisible = customArea.style.display !== 'none';
+        customArea.style.display = isVisible ? 'none' : 'flex';
+        // Make chip look active when open
+        var btn = document.getElementById('presetCustom');
+        if (btn) btn.classList.toggle('preset-chip-active', !isVisible);
+    }
 </script>
 @endpush

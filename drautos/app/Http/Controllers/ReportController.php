@@ -278,9 +278,19 @@ class ReportController extends Controller
 
     public function productAnalysis(Request $request)
     {
-        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        $isAllTime = !$request->start_date && !$request->end_date;
+
+        if ($isAllTime) {
+            $earliestOrder = DB::table('orders')->where('status', 'delivered')->min('created_at');
+            $startDate = $earliestOrder ? Carbon::parse($earliestOrder)->startOfDay() : Carbon::now()->subYears(5)->startOfDay();
+            $endDate   = Carbon::now()->endOfDay();
+        } else {
+            $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+            $endDate   = $request->end_date   ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        }
+
         $productId = $request->product_id;
+
 
         $products = Product::where('status', 'active')->orderBy('title')->get();
         
@@ -601,7 +611,7 @@ class ReportController extends Controller
 
         return view('backend.reports.product_analysis', compact(
             'products', 'selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate',
-            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData', 'topProducts'
+            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData', 'topProducts', 'isAllTime'
         ));
     }
 
