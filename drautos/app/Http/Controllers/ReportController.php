@@ -281,7 +281,7 @@ class ReportController extends Controller
         $isAllTime = !$request->start_date && !$request->end_date;
 
         if ($isAllTime) {
-            $earliestOrder = DB::table('orders')->where('status', 'delivered')->min('created_at');
+            $earliestOrder = DB::table('orders')->where('status', '!=', 'cancel')->min('created_at');
             $startDate = $earliestOrder ? Carbon::parse($earliestOrder)->startOfDay() : Carbon::now()->subYears(5)->startOfDay();
             $endDate   = Carbon::now()->endOfDay();
         } else {
@@ -325,7 +325,7 @@ class ReportController extends Controller
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->leftJoin('users', 'orders.user_id', '=', 'users.id')
                 ->where('carts.product_id', $productId)
-                ->where('orders.status', 'delivered') 
+                ->where('orders.status', '!=', 'cancel') 
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(
                     'carts.quantity', 
@@ -465,7 +465,7 @@ class ReportController extends Controller
             $salesByDay = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->where('carts.product_id', $productId)
-                ->where('orders.status', 'delivered')
+                ->where('orders.status', '!=', 'cancel')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(DB::raw('DATE(orders.created_at) as date'), DB::raw('SUM(carts.quantity) as qty'))
                 ->groupBy('date')
@@ -503,7 +503,7 @@ class ReportController extends Controller
             // Aggregate totals across all active products
             $sales = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
-                ->where('orders.status', 'delivered') 
+                ->where('orders.status', '!=', 'cancel') 
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select('carts.quantity', 'carts.amount')
                 ->get();
@@ -545,7 +545,7 @@ class ReportController extends Controller
             $stats['total_cost'] = DB::table('carts')
                 ->join('products', 'carts.product_id', '=', 'products.id')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
-                ->where('orders.status', 'delivered')
+                ->where('orders.status', '!=', 'cancel')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->sum(DB::raw('carts.quantity * COALESCE(products.purchase_price, 0)'));
 
@@ -557,7 +557,7 @@ class ReportController extends Controller
             $salesByProduct = DB::table('carts')
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->join('products', 'carts.product_id', '=', 'products.id')
-                ->where('orders.status', 'delivered')
+                ->where('orders.status', '!=', 'cancel')
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(
                     'carts.product_id',
@@ -648,7 +648,7 @@ class ReportController extends Controller
                 ->join('orders', 'carts.order_id', '=', 'orders.id')
                 ->leftJoin('users', 'orders.user_id', '=', 'users.id')
                 ->where('carts.product_id', $productId)
-                ->where('orders.status', 'delivered') 
+                ->where('orders.status', '!=', 'cancel') 
                 ->whereBetween('orders.created_at', [$startDate, $endDate])
                 ->select(
                     'carts.quantity', 
