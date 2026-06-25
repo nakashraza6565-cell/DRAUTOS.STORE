@@ -74,7 +74,7 @@
                                     <td data-title="Product">{{$product->title}}</td>
                                     <td data-title="SKU">{{$product->sku}}</td>
                                     <td data-title="Category">{{$product->cat_info->title ?? 'N/A'}}</td>
-                                    <td data-title="Quantity" class="font-weight-bold {{$product->stock < 5 ? 'text-danger' : ''}}">{{$product->stock}}</td>
+                                    <td data-title="Quantity" class="font-weight-bold {{$product->stock < 5 ? 'text-danger' : ''}}">{{$product->stock}} <span class="text-xs text-muted font-weight-normal">{{$product->unit}}</span></td>
                                     <td data-title="Value">Rs. {{number_format($product->stock * ($product->purchase_price ?? 0), 2)}}</td>
                                     <td data-title="Status">
                                         @if($product->stock <= 0)
@@ -139,10 +139,12 @@
             @php
                 $labels = $topProducts->pluck('title')->toArray();
                 $quantities = $topProducts->pluck('stock')->toArray();
+                $units = $topProducts->pluck('unit')->toArray();
             @endphp
 
             var productLabels = {!! json_encode($labels) !!};
             var productQuantities = {!! json_encode($quantities) !!};
+            var productUnits = {!! json_encode($units) !!};
             var chartColors = generateColors(productLabels.length);
 
             var myDoughnutChart = new Chart(ctx, {
@@ -169,7 +171,7 @@
                             label: function(tooltipItem, data) {
                                 var label = data.labels[tooltipItem.index] || '';
                                 var value = data.datasets[0].data[tooltipItem.index];
-                                return label + ': ' + value + ' units';
+                                return label + ': ' + value + ' ' + (productUnits[tooltipItem.index] || 'units');
                             }
                         }
                     }
@@ -187,7 +189,7 @@
                             <div style="width: 15px; height: 15px; background-color: ${color}; border-radius: 3px; margin-right: 8px; flex-shrink: 0;"></div>
                             <div class="flex-grow-1 small text-truncate">
                                 <strong>${label}</strong>
-                                <span class="text-muted float-right">${qty} units</span>
+                                <span class="text-muted float-right">${qty} ${productUnits[index] || 'units'}</span>
                             </div>
                         </div>
                     </div>

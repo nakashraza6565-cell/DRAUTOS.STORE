@@ -118,7 +118,7 @@
                 <td>{{ $product->sku }}</td>
                 <td>{{ $product->cat_info->title ?? 'N/A' }}</td>
                 <td style="text-align: center; {{ $product->stock < 5 ? 'color: #e74a3b; font-weight: bold;' : '' }}">
-                    {{ $product->stock }}
+                    {{ $product->stock }} {{ $product->unit }}
                 </td>
                 <td style="text-align: right;">Rs. {{ number_format($product->stock * ($product->purchase_price ?? 0), 2) }}</td>
                 <td style="text-align: center;">

@@ -563,10 +563,11 @@ class ReportController extends Controller
                     'carts.product_id',
                     'products.title as product_title',
                     'products.sku',
+                    'products.unit',
                     DB::raw('SUM(carts.quantity) as total_qty'),
                     DB::raw('SUM(carts.amount) as total_revenue')
                 )
-                ->groupBy('carts.product_id', 'products.title', 'products.sku')
+                ->groupBy('carts.product_id', 'products.title', 'products.sku', 'products.unit')
                 ->orderByDesc('total_revenue')
                 ->get();
 
@@ -596,6 +597,7 @@ class ReportController extends Controller
                     'product_id'      => $row->product_id,
                     'product_title'   => $row->product_title,
                     'sku'             => $row->sku,
+                    'unit'            => $row->unit,
                     'gross_qty'       => $grossQty,
                     'returned_qty'    => $returnedQty,
                     'net_qty'         => $netQty,

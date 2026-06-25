@@ -120,13 +120,13 @@
     @if($selectedProduct)
     <div class="product-info">
         <h2>{{ $selectedProduct->title }}</h2>
-        <p><strong>SKU:</strong> {{ $selectedProduct->sku }} | <strong>Category:</strong> {{ $selectedProduct->cat_info->title ?? 'N/A' }} | <strong>Current Stock:</strong> {{ $selectedProduct->stock }} units</p>
+        <p><strong>SKU:</strong> {{ $selectedProduct->sku }} | <strong>Category:</strong> {{ $selectedProduct->cat_info->title ?? 'N/A' }} | <strong>Current Stock:</strong> {{ $selectedProduct->stock }} {{ $selectedProduct->unit }}</p>
     </div>
 
     <div class="stats-grid">
         <div class="stat-card stat-primary">
             <h4>Net Sold Volume</h4>
-            <p>{{ number_format($stats['net_sold']) }} Units</p>
+            <p>{{ number_format($stats['net_sold']) }} {{ $selectedProduct->unit }}</p>
             <small>Return Rate: {{ number_format($stats['return_ratio'], 1) }}%</small>
         </div>
         <div class="stat-card stat-success">
@@ -136,7 +136,7 @@
         </div>
         <div class="stat-card stat-info">
             <h4>Goods Received</h4>
-            <p>{{ number_format($stats['purchased_qty']) }} Units</p>
+            <p>{{ number_format($stats['purchased_qty']) }} {{ $selectedProduct->unit }}</p>
             <small>Total Cost: Rs. {{ number_format($stats['total_purchased_cost'], 2) }}</small>
         </div>
         <div class="stat-card stat-warning">
@@ -191,7 +191,7 @@
                 <td class="{{ $typeClass }}">{{ $typeLabel }}</td>
                 <td>{{ $event->ref }}</td>
                 <td>{{ $event->party_name }}</td>
-                <td style="text-align: center; font-weight: bold;">{{ $qtyPrefix }}{{ abs($event->qty) }}</td>
+                <td style="text-align: center; font-weight: bold;">{{ $qtyPrefix }}{{ abs($event->qty) }} {{ $selectedProduct->unit }}</td>
                 <td style="text-align: right; font-weight: bold;">Rs. {{ number_format($event->total, 2) }}</td>
             </tr>
             @endforeach

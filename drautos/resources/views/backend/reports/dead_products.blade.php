@@ -33,7 +33,7 @@
                         <tr>
                             <td><strong>{{$product->title}}</strong></td>
                             <td>{{$product->cat_info->title ?? 'N/A'}}</td>
-                            <td class="text-center">{{$product->stock}}</td>
+                            <td class="text-center">{{$product->stock}} <span class="text-xs text-muted">{{$product->unit}}</span></td>
                             <td>Rs. {{number_format($product->purchase_price, 2)}}</td>
                             <td class="font-weight-bold text-danger">Rs. {{number_format($product->stock * $product->purchase_price, 2)}}</td>
                         </tr>

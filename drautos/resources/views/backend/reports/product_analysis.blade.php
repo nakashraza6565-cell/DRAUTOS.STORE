@@ -139,7 +139,10 @@
                             </div>
                         </div>
                         <div>
-                            <h2 class="font-weight-extrabold mb-1 tracking-tight">{{ number_format($stats['net_sold']) }}</h2>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">
+                                {{ number_format($stats['net_sold']) }}
+                                <span style="font-size: 1.1rem; font-weight: 600; opacity: 0.85; margin-left: 2px;">{{ $selectedProduct ? $selectedProduct->unit : 'Units' }}</span>
+                            </h2>
                             <span class="badge badge-pill badge-light-danger font-weight-bold text-xs py-1 px-2">
                                 <i class="fas fa-undo-alt mr-1"></i> Return Rate: {{ number_format($stats['return_ratio'], 1) }}%
                             </span>
@@ -179,7 +182,10 @@
                             </div>
                         </div>
                         <div>
-                            <h2 class="font-weight-extrabold mb-1 tracking-tight">{{ number_format($stats['purchased_qty']) }} Units</h2>
+                            <h2 class="font-weight-extrabold mb-1 tracking-tight">
+                                {{ number_format($stats['purchased_qty']) }}
+                                <span style="font-size: 1.1rem; font-weight: 600; opacity: 0.85; margin-left: 2px;">{{ $selectedProduct ? $selectedProduct->unit : 'Units' }}</span>
+                            </h2>
                             <span class="badge badge-pill badge-light-violet font-weight-bold text-xs py-1 px-2">
                                 Cost: Rs. {{ number_format($stats['total_purchased_cost'], 0) }}
                             </span>
@@ -298,7 +304,7 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="font-weight-bold text-slate-700" style="font-size:0.95rem;">{{ number_format($p->gross_qty) }}</span>
-                                    <div class="text-xs text-slate-400">units</div>
+                                    <div class="text-xs text-slate-400">{{ $p->unit ?: 'units' }}</div>
                                 </td>
                                 <td class="text-center">
                                     @if($p->returned_qty > 0)
@@ -310,7 +316,7 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="font-weight-bold text-emerald-600" style="font-size:0.95rem;">{{ number_format($p->net_qty) }}</span>
-                                    <div class="text-xs text-slate-400">units</div>
+                                    <div class="text-xs text-slate-400">{{ $p->unit ?: 'units' }}</div>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge {{ $rateClass }} font-weight-bold px-2 py-1" style="font-size:0.78rem;border-radius:6px;">
@@ -416,7 +422,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center {{ $qtyColor }}" style="font-size: 1.05rem;">
-                                    {{ $qtyPrefix }}{{ abs($event->qty) }}
+                                    {{ $qtyPrefix }}{{ abs($event->qty) }} <span class="text-xs font-weight-normal opacity-75">{{ $selectedProduct ? $selectedProduct->unit : '' }}</span>
                                 </td>
                                 <td class="text-right text-slate-700 font-weight-semibold">
                                     Rs. {{ number_format($event->unit_price, 2) }}
