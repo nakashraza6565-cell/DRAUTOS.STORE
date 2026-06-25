@@ -147,6 +147,9 @@
                                     <td>{{ $item->batch_number ?: '-' }}</td>
                                     <td class="text-center font-weight-bold text-primary editable-field" data-id="{{$item->id}}" data-field="quantity" title="Double click to edit">
                                         <span class="display-value">{{ $item->quantity }}</span>
+                                        @if($item->product->unit)
+                                            <span class="badge badge-light text-muted border ml-1" style="font-size:10px;font-weight:600;letter-spacing:0.03em;">{{ $item->product->unit }}</span>
+                                        @endif
                                         <input type="number" class="form-control form-control-sm d-none edit-input" value="{{ $item->quantity }}" style="width: 80px; margin: 0 auto;">
                                     </td>
                                     <td class="text-right editable-field" data-id="{{$item->id}}" data-field="unit_cost" title="Double click to edit">
