@@ -960,6 +960,41 @@
     [data-toggle="collapse"][aria-expanded="true"] .fa-chevron-down { transform: rotate(180deg); }
     /* ── Gap utility (BS4 doesn't have it) ── */
     .gap-2 { gap: .5rem; }
+
+    /* ── Mobile Optimization Queries ──────── */
+    @media (max-width: 576px) {
+        #customerDetailsModal .modal-body {
+            padding: 10px !important;
+        }
+        #customerDetailsModal .card-body {
+            padding: 12px 10px !important;
+        }
+        .scorecard-tile {
+            padding: 8px 8px !important;
+        }
+        .scorecard-tile-value {
+            font-size: 16px !important;
+        }
+        .scorecard-tile-label {
+            font-size: 8px !important;
+            letter-spacing: 0.2px !important;
+        }
+        .scorecard-tile-sub {
+            font-size: 8px !important;
+        }
+        .customer-avatar {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 20px !important;
+            line-height: 44px !important;
+        }
+        #customerFilterForm .col-md-5, 
+        #customerFilterForm .col-md-2, 
+        #customerFilterForm .col-md-3 {
+            margin-bottom: 12px !important;
+        }
+    }
+
     /* ══════════════════════════════════════ */
     /* PRINT STYLES                           */
     /* ══════════════════════════════════════ */

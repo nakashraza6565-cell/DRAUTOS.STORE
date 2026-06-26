@@ -138,6 +138,38 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+    /* ── Mobile Responsive Queries ────────── */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+        .card-header form.form-inline {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            width: 100% !important;
+            margin-top: 10px;
+        }
+        .card-header form.form-inline select,
+        .card-header form.form-inline input {
+            width: 100% !important;
+            margin-right: 0 !important;
+            margin-bottom: 8px !important;
+        }
+        .card-header form.form-inline button,
+        .card-header form.form-inline a {
+            width: 48% !important;
+            justify-content: center;
+            display: inline-flex !important;
+            align-items: center;
+        }
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 <script>

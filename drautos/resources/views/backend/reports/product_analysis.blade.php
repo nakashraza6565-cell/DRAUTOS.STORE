@@ -841,6 +841,43 @@
         transform: translateY(-1px);
     }
     .text-indigo-600 { color: #4f46e5 !important; }
+
+    /* ── Mobile Responsive Queries ────────── */
+    @media (max-width: 768px) {
+        #product-analysis-dashboard {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+        #product-analysis-dashboard .glass-card {
+            border-radius: 12px;
+        }
+        #product-analysis-dashboard .card-body {
+            padding: 16px !important;
+        }
+        #product-analysis-dashboard .table-modern td {
+            padding: 10px 12px !important;
+            font-size: 0.8rem !important;
+        }
+        #product-analysis-dashboard .table-modern th {
+            padding: 8px 12px !important;
+            font-size: 0.7rem !important;
+        }
+        .preset-chip {
+            padding: 4px 10px !important;
+            font-size: 0.72rem !important;
+        }
+        #product-analysis-dashboard h2 {
+            font-size: 1.4rem !important;
+        }
+        #product-analysis-dashboard .btn-premium-primary, 
+        #product-analysis-dashboard .btn-premium-danger {
+            height: 40px !important;
+            font-size: 0.85rem !important;
+        }
+        #product-analysis-dashboard .h-45 {
+            height: 40px !important;
+        }
+    }
 </style>
 @endpush
 

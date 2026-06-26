@@ -85,6 +85,18 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+    /* ── Mobile Responsive Queries ────────── */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+        }
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
 <script>
