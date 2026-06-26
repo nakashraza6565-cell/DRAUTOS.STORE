@@ -814,6 +814,62 @@ class ReportController extends Controller
         $topProducts = collect();
         $healthScorecard = null;
 
+        // ── CUSTOMER RANKINGS LEADERBOARD (always computed) ────────────
+        // Fast aggregate query: one DB call for all customers
+        $rankingData = DB::table('users')
+            ->whereIn('users.role', ['user', 'customer'])
+            ->leftJoin('orders', function($join) {
+                $join->on('orders.user_id', '=', 'users.id')
+                     ->whereNotIn('orders.status', ['cancelled']);
+            })
+            ->select(
+                'users.id',
+                'users.name',
+                'users.phone',
+                'users.city',
+                'users.customer_type',
+                'users.current_balance',
+                DB::raw('COUNT(DISTINCT orders.id)          AS total_orders'),
+                DB::raw('COALESCE(SUM(orders.total_amount),0) AS total_sales'),
+                DB::raw('MAX(orders.created_at)             AS last_order_at')
+            )
+            ->groupBy('users.id','users.name','users.phone','users.city','users.customer_type','users.current_balance')
+            ->having('total_orders', '>', 0)          // only customers who have ordered
+            ->get();
+
+        // Compute star ratings in PHP
+        $customerRankings = $rankingData->map(function($c) {
+            $outstanding  = $c->current_balance ?? 0;
+            $totalPaid    = $c->total_sales - max($outstanding, 0);
+            $recoveryRate = $c->total_sales > 0
+                ? ($totalPaid / $c->total_sales) * 100
+                : 0;
+            $recoveryRate = max(0, min(100, $recoveryRate));
+
+            $daysSinceLast = $c->last_order_at
+                ? Carbon::parse($c->last_order_at)->diffInDays(Carbon::now())
+                : 999;
+
+            // Points
+            $pRecovery = $recoveryRate >= 90 ? 5 : ($recoveryRate >= 75 ? 4 : ($recoveryRate >= 60 ? 3 : ($recoveryRate >= 40 ? 2 : 1)));
+            $pActivity = $daysSinceLast <= 30 ? 5 : ($daysSinceLast <= 60 ? 4 : ($daysSinceLast <= 90 ? 3 : ($daysSinceLast <= 180 ? 2 : 1)));
+
+            // Weighted (no payment-speed or trend here — fast version)
+            $score = ($pRecovery * 0.60) + ($pActivity * 0.40);
+            $stars = max(1, min(5, round($score)));
+
+            $labelMap  = [5=>'Excellent',4=>'Good',3=>'Average',2=>'Watch Out',1=>'Risky'];
+            $colorMap  = [5=>'#1cc88a', 4=>'#36b9cc', 3=>'#f6c23e', 2=>'#fd7e14', 1=>'#e74a3b'];
+
+            $c->recovery_rate  = round($recoveryRate, 1);
+            $c->days_since_last= $daysSinceLast < 999 ? $daysSinceLast : null;
+            $c->star_rating    = $stars;
+            $c->health_label   = $labelMap[$stars];
+            $c->health_color   = $colorMap[$stars];
+            $c->outstanding    = $outstanding;
+            return $c;
+        })->sortByDesc('star_rating')->sortByDesc('total_sales')->values();
+
 
         if ($customerId) {
             $selectedCustomer = \App\User::find($customerId);
@@ -1002,7 +1058,7 @@ class ReportController extends Controller
             'lifetimeStats', 'periodStats',
             'orders', 'ledger', 'returns', 'topProducts',
             'startDate', 'endDate',
-            'healthScorecard'
+            'healthScorecard', 'customerRankings'
         ));
     }
 

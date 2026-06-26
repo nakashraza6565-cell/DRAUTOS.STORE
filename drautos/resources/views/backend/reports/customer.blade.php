@@ -29,9 +29,117 @@
     </div>
 
     {{-- ════════════════════════════════════════════════════════ --}}
+    {{-- CUSTOMER RANKINGS LEADERBOARD                            --}}
+    {{-- ════════════════════════════════════════════════════════ --}}
+    @if($customerRankings->count() > 0)
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex align-items-center justify-content-between bg-white"
+             data-toggle="collapse" data-target="#rankingsSection" aria-expanded="true" style="cursor:pointer;">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-trophy mr-2 text-warning"></i>
+                Customer Rankings — {{ $customerRankings->count() }} customers
+            </h6>
+            <div class="d-flex align-items-center" style="gap:8px;">
+                <span class="badge badge-success">⭐⭐⭐⭐⭐ {{ $customerRankings->where('star_rating',5)->count() }} Excellent</span>
+                <span class="badge badge-info">⭐⭐⭐⭐ {{ $customerRankings->where('star_rating',4)->count() }} Good</span>
+                <span class="badge badge-warning">⭐⭐⭐ {{ $customerRankings->where('star_rating',3)->count() }} Average</span>
+                <span class="badge badge-danger">⭐⭐ {{ $customerRankings->whereIn('star_rating',[1,2])->count() }} Risky</span>
+                <i class="fas fa-chevron-down text-muted" style="font-size:12px;"></i>
+            </div>
+        </div>
+        <div class="collapse show" id="rankingsSection">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0" id="rankingsTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width:40px;" class="text-center">#</th>
+                                <th>Customer</th>
+                                <th class="text-center">Rating</th>
+                                <th class="text-center">Recovery</th>
+                                <th class="text-right">Total Sales</th>
+                                <th class="text-right">Outstanding</th>
+                                <th class="text-center">Last Order</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($customerRankings as $i => $rc)
+                            @php
+                                $rank = $i + 1;
+                                $medalColor = $rank == 1 ? '#FFD700' : ($rank == 2 ? '#C0C0C0' : ($rank == 3 ? '#CD7F32' : '#aaa'));
+                                $medalIcon  = $rank <= 3 ? 'fas fa-medal' : 'fas fa-hashtag';
+                            @endphp
+                            <tr class="{{ $rc->outstanding > 0 ? '' : '' }}" style="border-left:3px solid {{ $rc->health_color }};">
+                                <td class="text-center font-weight-bold" style="color:{{ $medalColor }};">
+                                    <i class="{{ $medalIcon }}" style="font-size:{{ $rank<=3?'14px':'11px' }};"></i>
+                                    {{ $rank }}
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold" style="font-size:13px;">{{ $rc->name }}</div>
+                                    <div class="text-muted" style="font-size:10px;">
+                                        @if($rc->phone)<span class="mr-2">{{ $rc->phone }}</span>@endif
+                                        @if($rc->city)<span>{{ $rc->city }}</span>@endif
+                                        @if($rc->customer_type)<span class="badge badge-light ml-1" style="font-size:9px;">{{ ucfirst($rc->customer_type) }}</span>@endif
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div style="color:{{ $rc->health_color }};font-size:13px;letter-spacing:-1px;">
+                                        @for($s=1;$s<=5;$s++)
+                                            <i class="fas fa-star" style="color:{{ $s<=$rc->star_rating ? $rc->health_color : '#e0e0e0' }};font-size:12px;"></i>
+                                        @endfor
+                                    </div>
+                                    <div style="font-size:9px;color:{{ $rc->health_color }};font-weight:700;">{{ $rc->health_label }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="font-weight-bold" style="color:{{ $rc->recovery_rate >= 75 ? '#1cc88a' : ($rc->recovery_rate >= 50 ? '#f6c23e' : '#e74a3b') }}; font-size:14px;">
+                                        {{ $rc->recovery_rate }}%
+                                    </div>
+                                    <div style="margin:2px auto;width:60px;height:5px;background:#e9ecef;border-radius:3px;">
+                                        <div style="width:{{ min($rc->recovery_rate,100) }}%;height:100%;background:{{ $rc->recovery_rate >= 75 ? '#1cc88a' : ($rc->recovery_rate >= 50 ? '#f6c23e' : '#e74a3b') }};border-radius:3px;"></div>
+                                    </div>
+                                </td>
+                                <td class="text-right font-weight-bold" style="font-size:13px;">
+                                    Rs. {{ number_format($rc->total_sales, 0) }}
+                                    <div class="text-muted" style="font-size:10px;">{{ $rc->total_orders }} orders</div>
+                                </td>
+                                <td class="text-right">
+                                    @if($rc->outstanding > 0)
+                                        <span class="font-weight-bold text-danger" style="font-size:13px;">Rs. {{ number_format($rc->outstanding, 0) }}</span>
+                                    @else
+                                        <span class="text-success font-weight-bold" style="font-size:13px;">Cleared ✓</span>
+                                    @endif
+                                </td>
+                                <td class="text-center" style="font-size:11px;">
+                                    @if($rc->days_since_last !== null)
+                                        <span style="color:{{ $rc->days_since_last <= 30 ? '#1cc88a' : ($rc->days_since_last <= 90 ? '#f6c23e' : '#e74a3b') }};">
+                                            {{ $rc->days_since_last }} days ago
+                                        </span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('reports.customer', ['customer_id' => $rc->id, 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}"
+                                       class="btn btn-xs btn-primary" style="font-size:11px;padding:3px 8px;">
+                                        <i class="fas fa-chart-line mr-1"></i>View
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ════════════════════════════════════════════════════════ --}}
     {{-- CUSTOMER FILTER FORM                                     --}}
     {{-- ════════════════════════════════════════════════════════ --}}
     <div class="card shadow mb-4">
+
         <div class="card-body py-3">
             <form action="{{ route('reports.customer') }}" method="GET" id="customerFilterForm">
                 <div class="form-row align-items-end">
