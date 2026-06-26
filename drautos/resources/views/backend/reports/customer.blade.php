@@ -49,6 +49,21 @@
         </div>
         <div class="collapse show" id="rankingsSection">
             <div class="card-body p-0">
+                {{-- Leaderboard Search Bar --}}
+                <div class="px-3 py-2 bg-light border-bottom d-flex align-items-center flex-wrap" style="gap:10px;">
+                    <div class="input-group input-group-sm" style="max-width:350px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white border-right-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                        </div>
+                        <input type="text" id="leaderboardSearch" class="form-control border-left-0" placeholder="Search customer, phone, city...">
+                    </div>
+                    <div class="ml-auto text-muted small" id="leaderboardSearchCount" style="font-size:11px; font-weight:600;">
+                        Showing {{ $customerRankings->count() }} of {{ $customerRankings->count() }}
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover table-sm mb-0" id="rankingsTable">
                         <thead class="thead-light">
@@ -70,7 +85,7 @@
                                 $medalColor = $rank == 1 ? '#FFD700' : ($rank == 2 ? '#C0C0C0' : ($rank == 3 ? '#CD7F32' : '#aaa'));
                                 $medalIcon  = $rank <= 3 ? 'fas fa-medal' : 'fas fa-hashtag';
                             @endphp
-                            <tr class="{{ $rc->outstanding > 0 ? '' : '' }}" style="border-left:3px solid {{ $rc->health_color }};">
+                            <tr class="leaderboard-row" data-search="{{ strtolower($rc->name) }} {{ strtolower($rc->phone ?? '') }} {{ strtolower($rc->city ?? '') }} {{ strtolower($rc->customer_type ?? '') }} {{ strtolower($rc->health_label ?? '') }}" style="border-left:3px solid {{ $rc->health_color }};">
                                 <td class="text-center font-weight-bold" style="color:{{ $medalColor }};">
                                     <i class="{{ $medalIcon }}" style="font-size:{{ $rank<=3?'14px':'11px' }};"></i>
                                     {{ $rank }}
@@ -952,6 +967,25 @@ $(document).ready(function () {
         placeholder: 'Search customer by name or phone...',
         allowClear: true,
         width: '100%'
+    });
+
+    // ── Leaderboard Search ──────────────────────────────────────
+    $('#leaderboardSearch').on('input', function () {
+        var query = $(this).val().toLowerCase().trim();
+        var rows = $('.leaderboard-row');
+        var visibleCount = 0;
+
+        rows.each(function () {
+            var searchData = $(this).attr('data-search') || '';
+            if (searchData.indexOf(query) > -1) {
+                $(this).removeClass('d-none');
+                visibleCount++;
+            } else {
+                $(this).addClass('d-none');
+            }
+        });
+
+        $('#leaderboardSearchCount').text('Showing ' + visibleCount + ' of ' + rows.length);
     });
 
     // ── Expandable order rows ────────────────────────────────────
