@@ -154,7 +154,23 @@
           @can('view-report')
           <a href="{{route('reports.sales')}}" class="launcher-item">
               <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-chart-line" style="color: #facc15;"></i></div>
-              <span class="launcher-label">Reports</span>
+              <span class="launcher-label">Sales Reports</span>
+          </a>
+          <a href="{{route('reports.payables')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-chart-bar" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Payable Charts</span>
+          </a>
+          <a href="{{route('reports.receivables')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-chart-area" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Receivable Charts</span>
+          </a>
+          <a href="{{route('reports.product-analysis')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-flask" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Product Analysis</span>
+          </a>
+          <a href="{{route('reports.customer')}}" class="launcher-item">
+              <div class="launcher-icon" style="background: #083259; border: 1px solid #facc15;"><i class="fas fa-users" style="color: #facc15;"></i></div>
+              <span class="launcher-label">Customer Reports</span>
           </a>
           @endcan
           @can('view-dashboard')
