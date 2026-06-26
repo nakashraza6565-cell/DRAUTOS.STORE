@@ -786,97 +786,148 @@ class ReportController extends Controller
 
     public function customer(Request $request)
     {
-        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
-        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate   = $request->end_date   ? Carbon::parse($request->end_date)->endOfDay()     : Carbon::now()->endOfDay();
         $customerId = $request->customer_id;
 
-        // Fetch all customers for the dropdown
-        $customers = \App\User::where('role', 'user')->orWhere('role', 'customer')->orderBy('name')->get();
-        
+        // All customers for dropdown
+        $customers = \App\User::whereIn('role', ['user', 'customer'])->orderBy('name')->get();
+
         $selectedCustomer = null;
-        $stats = [
-            'total_sales' => 0,
-            'total_paid' => 0,
-            'total_pending' => 0, // Current outstanding balance
-            'orders_count' => 0,
-            'average_order_value' => 0
+        $lifetimeStats = [
+            'total_sales'   => 0,
+            'total_paid'    => 0,
+            'outstanding'   => 0,
+            'orders_count'  => 0,
+            'returns_total' => 0,
+            'customer_since'=> null,
         ];
-        $orders = [];
+        $periodStats = [
+            'total_sales'   => 0,
+            'total_paid'    => 0,
+            'orders_count'  => 0,
+            'avg_order'     => 0,
+        ];
+        $orders      = collect();
+        $ledger      = collect();
+        $returns     = collect();
+        $topProducts = collect();
 
         if ($customerId) {
             $selectedCustomer = \App\User::find($customerId);
-            
-            // Get Orders within date range
-            $ordersQuery = Order::where('user_id', $customerId)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', '!=', 'cancelled');
-                
-            $orders = $ordersQuery->orderBy('created_at', 'DESC')->get();
 
-            // Calculate Stats for the selected period
-            $stats['total_sales'] = $orders->sum('total_amount');
-            $stats['orders_count'] = $orders->count();
-            
-            // Calculate Paid amount (Available logic: status='delivered' implies paid OR if there is a specific payment status)
-            // Assuming 'payment_status' == 'paid' implies fully paid. 
-            // If checking 'status' == 'delivered', user might want that. 
-            // I'll stick to 'payment_status' if available in Order model fillable.
-            // Order.php shows 'payment_status'.
-            $stats['total_paid'] = $orders->where('payment_status', 'paid')->sum('total_amount');
-            
-            if ($stats['orders_count'] > 0) {
-                $stats['average_order_value'] = $stats['total_sales'] / $stats['orders_count'];
-            }
+            if ($selectedCustomer) {
+                // ── LIFETIME stats ───────────────────────────────────────
+                $allOrders = Order::where('user_id', $customerId)->get();
+                $lifetimeStats['orders_count']   = $allOrders->count();
+                $lifetimeStats['total_sales']     = $allOrders->whereNotIn('status', ['cancelled'])->sum('total_amount');
+                $lifetimeStats['total_paid']      = $allOrders->where('payment_status', 'paid')->whereNotIn('status', ['cancelled'])->sum('total_amount');
+                $lifetimeStats['outstanding']     = $selectedCustomer->current_balance ?? 0;
+                $lifetimeStats['customer_since']  = $allOrders->min('created_at');
 
-            // Calculate Ledger/Pending Balance (All time)
-            // Using PaymentReminder as source of truth for receivables
-            $stats['total_pending'] = PaymentReminder::where('party_id', $customerId)
-                ->where('type', 'receivable')
-                ->where('status', '!=', 'completed')
-                ->sum('amount');
-            
-            // If PaymentReminder is not used, maybe fallback to Unpaid Orders sum
-            if ($stats['total_pending'] == 0) {
-                 $stats['total_pending'] = Order::where('user_id', $customerId)
-                    ->where('payment_status', 'unpaid')
-                    ->where('status', '!=', 'cancelled')
-                    ->sum('total_amount');
+                // Returns lifetime total
+                $lifetimeStats['returns_total'] = \App\Models\SaleReturn::where('customer_id', $customerId)->sum('total_return_amount');
+
+                // ── PERIOD stats (date-filtered) ──────────────────────────
+                $periodOrders = Order::where('user_id', $customerId)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->whereNotIn('status', ['cancelled'])
+                    ->get();
+
+                $periodStats['orders_count'] = $periodOrders->count();
+                $periodStats['total_sales']  = $periodOrders->sum('total_amount');
+                $periodStats['total_paid']   = $periodOrders->where('payment_status', 'paid')->sum('total_amount');
+                $periodStats['avg_order']    = $periodStats['orders_count'] > 0
+                    ? $periodStats['total_sales'] / $periodStats['orders_count']
+                    : 0;
+
+                // ── ORDER HISTORY (ALL statuses, date-filtered, with items) ──
+                $orders = Order::with(['cart_info.product'])
+                    ->where('user_id', $customerId)
+                    ->whereBetween('created_at', [$startDate, $endDate])
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
+
+                // ── LEDGER (ALL TIME) ─────────────────────────────────────
+                $ledger = \App\Models\CustomerLedger::where('user_id', $customerId)
+                    ->orderBy('transaction_date', 'DESC')
+                    ->orderBy('id', 'DESC')
+                    ->get();
+
+                // ── RETURNS (ALL TIME) ────────────────────────────────────
+                $returns = \App\Models\SaleReturn::with(['items.product'])
+                    ->where('customer_id', $customerId)
+                    ->orderBy('return_date', 'DESC')
+                    ->get();
+
+                // ── TOP PRODUCTS ──────────────────────────────────────────
+                $topProducts = DB::table('carts')
+                    ->join('orders',   'carts.order_id',   '=', 'orders.id')
+                    ->join('products', 'carts.product_id', '=', 'products.id')
+                    ->where('orders.user_id', $customerId)
+                    ->whereNotIn('orders.status', ['cancelled'])
+                    ->whereNotNull('carts.product_id')
+                    ->select(
+                        'products.id',
+                        'products.title',
+                        'products.unit',
+                        DB::raw('COUNT(carts.id)       as times_ordered'),
+                        DB::raw('SUM(carts.quantity)   as total_qty'),
+                        DB::raw('SUM(carts.amount)     as total_value')
+                    )
+                    ->groupBy('products.id', 'products.title', 'products.unit')
+                    ->orderBy('total_value', 'DESC')
+                    ->limit(10)
+                    ->get();
             }
         }
 
-        // CSV Export
-        if ($request->has('export') && $request->export == 'csv' && $selectedCustomer) {
-            $filename = "customer_report_" . str_replace(' ', '_', strtolower($selectedCustomer->name)) . "_" . date('Y-m-d') . ".csv";
-            $headers = [
-                "Content-type"        => "text/csv",
-                "Content-Disposition" => "attachment; filename=$filename",
-                "Pragma"              => "no-cache",
-                "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-                "Expires"             => "0"
-            ];
+        return view('backend.reports.customer', compact(
+            'customers', 'selectedCustomer',
+            'lifetimeStats', 'periodStats',
+            'orders', 'ledger', 'returns', 'topProducts',
+            'startDate', 'endDate'
+        ));
+    }
 
-            $columns = ['Date', 'Order #', 'Status', 'Payment Status', 'Total Amount', 'Paid/Unpaid'];
+    public function customerPdf(Request $request)
+    {
+        $customerId = $request->customer_id;
+        $startDate  = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfYear();
+        $endDate    = $request->end_date   ? Carbon::parse($request->end_date)->endOfDay()     : Carbon::now()->endOfDay();
 
-            $callback = function() use ($orders, $columns) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $columns);
-
-                foreach ($orders as $order) {
-                    fputcsv($file, [
-                        $order->created_at->format('Y-m-d'),
-                        $order->order_number,
-                        $order->status,
-                        $order->payment_status,
-                        $order->total_amount,
-                        ($order->payment_status == 'paid') ? 'Paid' : 'Unpaid'
-                    ]);
-                }
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
+        if (!$customerId) {
+            return redirect()->back()->with('error', 'Please select a customer first.');
         }
 
-        return view('backend.reports.customer', compact('customers', 'selectedCustomer', 'stats', 'orders', 'startDate', 'endDate'));
+        $selectedCustomer = \App\User::findOrFail($customerId);
+
+        $allOrders = Order::where('user_id', $customerId)->get();
+        $lifetimeStats = [
+            'total_sales'    => $allOrders->whereNotIn('status', ['cancelled'])->sum('total_amount'),
+            'total_paid'     => $allOrders->where('payment_status', 'paid')->whereNotIn('status', ['cancelled'])->sum('total_amount'),
+            'outstanding'    => $selectedCustomer->current_balance ?? 0,
+            'orders_count'   => $allOrders->count(),
+            'returns_total'  => \App\Models\SaleReturn::where('customer_id', $customerId)->sum('total_return_amount'),
+            'customer_since' => $allOrders->min('created_at'),
+        ];
+
+        $orders = Order::with(['cart_info.product'])
+            ->where('user_id', $customerId)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        $ledger = \App\Models\CustomerLedger::where('user_id', $customerId)
+            ->orderBy('transaction_date', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        $pdf = \PDF::loadView('backend.reports.customer_report_pdf', compact(
+            'selectedCustomer', 'lifetimeStats', 'orders', 'ledger', 'startDate', 'endDate'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'customer_report_' . str_replace(' ', '_', strtolower($selectedCustomer->name)) . '_' . date('Y-m-d') . '.pdf';
+        return $pdf->download($filename);
     }
 }

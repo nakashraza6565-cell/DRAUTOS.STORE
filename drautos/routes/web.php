@@ -761,6 +761,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::get('/product-analysis', 'ReportController@productAnalysis')->name('reports.product-analysis');
         Route::get('/product-analysis/pdf', 'ReportController@productAnalysisPdf')->name('reports.product-analysis.pdf');
         Route::get('/customer', 'ReportController@customer')->name('reports.customer');
+        Route::get('/customer/pdf', 'ReportController@customerPdf')->name('reports.customer.pdf');
     });
 
     // Password Change
