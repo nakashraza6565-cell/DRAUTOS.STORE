@@ -812,6 +812,8 @@ class ReportController extends Controller
         $ledger      = collect();
         $returns     = collect();
         $topProducts = collect();
+        $healthScorecard = null;
+
 
         if ($customerId) {
             $selectedCustomer = \App\User::find($customerId);
@@ -879,6 +881,119 @@ class ReportController extends Controller
                     ->orderBy('total_value', 'DESC')
                     ->limit(10)
                     ->get();
+                // ── HEALTH SCORECARD ─────────────────────────────────────
+
+                // 1) Average Payment Recovery Days
+                //    Logic: for each 'order' debit entry in ledger, find the
+                //    next 'payment' credit entry and measure the gap in days.
+                $orderDebits   = $ledger->where('type', 'debit')->where('category', 'order')
+                                        ->sortBy('transaction_date')->values();
+                $payCredit     = $ledger->where('type', 'credit')->where('category', 'payment')
+                                        ->sortBy('transaction_date')->values();
+                $recoveryDaysArr = [];
+                foreach ($orderDebits as $debit) {
+                    $debitDate = Carbon::parse($debit->transaction_date);
+                    // Find the first payment credit that came AFTER this order
+                    $matchedPayment = $payCredit->first(function($credit) use ($debitDate) {
+                        return Carbon::parse($credit->transaction_date)->gt($debitDate);
+                    });
+                    if ($matchedPayment) {
+                        $days = $debitDate->diffInDays(Carbon::parse($matchedPayment->transaction_date));
+                        if ($days >= 0 && $days <= 365) { // sanity filter
+                            $recoveryDaysArr[] = $days;
+                        }
+                    }
+                }
+                $avgRecoveryDays = count($recoveryDaysArr) > 0
+                    ? round(array_sum($recoveryDaysArr) / count($recoveryDaysArr))
+                    : null;
+
+                // 2) Sales Trend: compare current period vs same-length previous period
+                $periodLength  = $startDate->diffInDays($endDate);
+                $prevStart     = $startDate->copy()->subDays($periodLength + 1);
+                $prevEnd       = $startDate->copy()->subDay();
+                $prevSales     = Order::where('user_id', $customerId)
+                    ->whereBetween('created_at', [$prevStart, $prevEnd])
+                    ->whereNotIn('status', ['cancelled'])
+                    ->sum('total_amount');
+                $trendPct      = 0;
+                $trendDir      = 'stable'; // up | down | stable | new
+                if ($prevSales > 0) {
+                    $trendPct  = round((($periodStats['total_sales'] - $prevSales) / $prevSales) * 100, 1);
+                    $trendDir  = $trendPct >= 5 ? 'up' : ($trendPct <= -5 ? 'down' : 'stable');
+                } elseif ($periodStats['total_sales'] > 0) {
+                    $trendDir  = 'new';
+                    $trendPct  = 100;
+                }
+
+                // 3) Last Order Date
+                $lastOrder     = $allOrders->whereNotIn('status', ['cancelled'])->sortByDesc('created_at')->first();
+                $daysSinceLast = $lastOrder ? Carbon::parse($lastOrder->created_at)->diffInDays(Carbon::now()) : null;
+
+                // 4) Star Rating (1–5 stars) — weighted score
+                $recoveryRate  = $lifetimeStats['total_sales'] > 0
+                    ? ($lifetimeStats['total_paid'] / $lifetimeStats['total_sales']) * 100
+                    : 0;
+
+                // Points per metric (max 5 each)
+                $pRecovery = $recoveryRate >= 90 ? 5 : ($recoveryRate >= 75 ? 4 : ($recoveryRate >= 60 ? 3 : ($recoveryRate >= 40 ? 2 : 1)));
+
+                $pDays = 5; // default if no data
+                if ($avgRecoveryDays !== null) {
+                    $pDays = $avgRecoveryDays <= 15  ? 5
+                           : ($avgRecoveryDays <= 30  ? 4
+                           : ($avgRecoveryDays <= 60  ? 3
+                           : ($avgRecoveryDays <= 90  ? 2 : 1)));
+                }
+
+                $pTrend = $trendDir === 'up'  ? 5
+                        : ($trendDir === 'new'  ? 4
+                        : ($trendDir === 'stable' ? 3 : 1));
+
+                $pActivity = 5; // default if no orders
+                if ($daysSinceLast !== null) {
+                    $pActivity = $daysSinceLast <= 30  ? 5
+                               : ($daysSinceLast <= 60  ? 4
+                               : ($daysSinceLast <= 90  ? 3
+                               : ($daysSinceLast <= 180 ? 2 : 1)));
+                }
+
+                // Weighted: Recovery 40%, Days 30%, Trend 15%, Activity 15%
+                $weightedScore = ($pRecovery * 0.40) + ($pDays * 0.30) + ($pTrend * 0.15) + ($pActivity * 0.15);
+                $starRating    = round($weightedScore); // 1–5
+
+                $healthLabel   = match($starRating) {
+                    5 => 'Excellent',
+                    4 => 'Good',
+                    3 => 'Average',
+                    2 => 'Watch Out',
+                    default => 'Risky',
+                };
+                $healthColor   = match($starRating) {
+                    5 => '#1cc88a',
+                    4 => '#36b9cc',
+                    3 => '#f6c23e',
+                    2 => '#fd7e14',
+                    default => '#e74a3b',
+                };
+
+                $healthScorecard = [
+                    'recovery_rate'    => round($recoveryRate, 1),
+                    'avg_recovery_days'=> $avgRecoveryDays,
+                    'trend_pct'        => $trendPct,
+                    'trend_dir'        => $trendDir,
+                    'prev_period_sales'=> $prevSales,
+                    'days_since_last'  => $daysSinceLast,
+                    'star_rating'      => $starRating,
+                    'health_label'     => $healthLabel,
+                    'health_color'     => $healthColor,
+                    'score_breakdown'  => [
+                        'recovery' => $pRecovery,
+                        'speed'    => $pDays,
+                        'trend'    => $pTrend,
+                        'activity' => $pActivity,
+                    ],
+                ];
             }
         }
 
@@ -886,9 +1001,11 @@ class ReportController extends Controller
             'customers', 'selectedCustomer',
             'lifetimeStats', 'periodStats',
             'orders', 'ledger', 'returns', 'topProducts',
-            'startDate', 'endDate'
+            'startDate', 'endDate',
+            'healthScorecard'
         ));
     }
+
 
     public function customerPdf(Request $request)
     {

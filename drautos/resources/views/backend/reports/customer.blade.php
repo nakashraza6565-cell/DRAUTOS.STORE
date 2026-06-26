@@ -126,7 +126,169 @@
     </div>
 
     {{-- ════════════════════════════════════════════════════════ --}}
+    {{-- CUSTOMER HEALTH SCORECARD                                --}}
+    {{-- ════════════════════════════════════════════════════════ --}}
+    @if($healthScorecard)
+    @php
+        $hs    = $healthScorecard;
+        $hc    = $hs['health_color'];
+        $stars = $hs['star_rating'];
+        $trendIcons = ['up' => '▲', 'down' => '▼', 'stable' => '●', 'new' => '★'];
+        $trendColors= ['up' => '#1cc88a', 'down' => '#e74a3b', 'stable' => '#858796', 'new' => '#4e73df'];
+    @endphp
+    <div class="card shadow mb-4" style="border:2px solid {{ $hc }}; border-radius:10px;">
+        <div class="card-body py-3">
+            {{-- Header row --}}
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="health-ring mr-3" style="border-color:{{ $hc }};">
+                        <span style="color:{{ $hc }};font-size:22px;font-weight:800;">{{ $hs['recovery_rate'] }}%</span>
+                        <span style="font-size:9px;color:#888;display:block;margin-top:-2px;">Recovery</span>
+                    </div>
+                    <div>
+                        <div class="h5 font-weight-bold mb-0" style="color:{{ $hc }};">
+                            {{ $hs['health_label'] }} Customer
+                        </div>
+                        <div class="stars-row mt-1">
+                            @for($i = 1; $i <= 5; $i++)
+                                <i class="fas fa-star" style="color:{{ $i <= $stars ? $hc : '#d1d3e2' }};font-size:18px;"></i>
+                            @endfor
+                            <span class="ml-2 text-muted small">({{ $stars }}/5 stars)</span>
+                        </div>
+                    </div>
+                </div>
+                {{-- Star Legend --}}
+                <div class="d-none d-md-flex flex-column text-right">
+                    <div class="small font-weight-bold text-muted mb-1">RATING GUIDE</div>
+                    <div style="font-size:10px;line-height:1.7;">
+                        <span style="color:#1cc88a;">★★★★★</span> Excellent &nbsp;
+                        <span style="color:#36b9cc;">★★★★</span> Good &nbsp;
+                        <span style="color:#f6c23e;">★★★</span> Average &nbsp;
+                        <span style="color:#fd7e14;">★★</span> Watch Out &nbsp;
+                        <span style="color:#e74a3b;">★</span> Risky
+                    </div>
+                </div>
+            </div>
+
+            {{-- Metric tiles --}}
+            <div class="row no-gutters" style="gap:0;">
+
+                {{-- Recovery Rate --}}
+                <div class="col-6 col-md-3 p-2">
+                    <div class="scorecard-tile">
+                        <div class="scorecard-tile-label">Recovery Rate</div>
+                        <div class="scorecard-tile-value" style="color:{{ $hc }};">{{ $hs['recovery_rate'] }}%</div>
+                        <div class="scorecard-tile-sub">of total sales collected</div>
+                        <div class="progress mt-2" style="height:6px;border-radius:3px;">
+                            <div class="progress-bar" style="width:{{ min($hs['recovery_rate'],100) }}%;background:{{ $hc }};border-radius:3px;"></div>
+                        </div>
+                        <div class="scorecard-stars mt-1">
+                            @for($i=1;$i<=5;$i++)<i class="fas fa-star" style="color:{{ $i<=$hs['score_breakdown']['recovery'] ? $hc : '#d1d3e2' }};font-size:9px;"></i>@endfor
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Avg Recovery Days --}}
+                <div class="col-6 col-md-3 p-2">
+                    <div class="scorecard-tile">
+                        <div class="scorecard-tile-label">Avg Payment Speed</div>
+                        @if($hs['avg_recovery_days'] !== null)
+                            <div class="scorecard-tile-value" style="color:{{ $hs['avg_recovery_days'] <= 30 ? '#1cc88a' : ($hs['avg_recovery_days'] <= 60 ? '#f6c23e' : '#e74a3b') }};">
+                                {{ $hs['avg_recovery_days'] }} days
+                            </div>
+                            <div class="scorecard-tile-sub">avg time to pay after order</div>
+                            <div class="mt-1" style="font-size:10px;color:#888;">
+                                @if($hs['avg_recovery_days'] <= 15) ⚡ Pays very fast
+                                @elseif($hs['avg_recovery_days'] <= 30) ✅ Pays promptly
+                                @elseif($hs['avg_recovery_days'] <= 60) ⏳ Takes a month
+                                @elseif($hs['avg_recovery_days'] <= 90) ⚠️ Slow payer
+                                @else 🔴 Very slow payer
+                                @endif
+                            </div>
+                        @else
+                            <div class="scorecard-tile-value text-muted">—</div>
+                            <div class="scorecard-tile-sub">no payment data yet</div>
+                        @endif
+                        <div class="scorecard-stars mt-1">
+                            @for($i=1;$i<=5;$i++)<i class="fas fa-star" style="color:{{ $i<=$hs['score_breakdown']['speed'] ? $hc : '#d1d3e2' }};font-size:9px;"></i>@endfor
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Business Trend --}}
+                <div class="col-6 col-md-3 p-2">
+                    <div class="scorecard-tile">
+                        <div class="scorecard-tile-label">Business Trend</div>
+                        <div class="scorecard-tile-value" style="color:{{ $trendColors[$hs['trend_dir']] }};">
+                            {{ $trendIcons[$hs['trend_dir']] }}
+                            @if($hs['trend_dir'] === 'new') New
+                            @elseif($hs['trend_dir'] === 'stable') Stable
+                            @elseif($hs['trend_pct'] > 0) +{{ $hs['trend_pct'] }}%
+                            @else {{ $hs['trend_pct'] }}%
+                            @endif
+                        </div>
+                        <div class="scorecard-tile-sub">vs previous same period</div>
+                        <div class="mt-1" style="font-size:10px;color:#888;">
+                            @if($hs['trend_dir'] === 'up') 📈 Growing — buying more
+                            @elseif($hs['trend_dir'] === 'down') 📉 Declining — buying less
+                            @elseif($hs['trend_dir'] === 'new') 🆕 First purchase this period
+                            @else ➡️ Consistent buyer
+                            @endif
+                        </div>
+                        @if($hs['prev_period_sales'] > 0)
+                        <div style="font-size:9px;color:#aaa;margin-top:3px;">
+                            Prev: Rs. {{ number_format($hs['prev_period_sales'],0) }}
+                        </div>
+                        @endif
+                        <div class="scorecard-stars mt-1">
+                            @for($i=1;$i<=5;$i++)<i class="fas fa-star" style="color:{{ $i<=$hs['score_breakdown']['trend'] ? $hc : '#d1d3e2' }};font-size:9px;"></i>@endfor
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Activity --}}
+                <div class="col-6 col-md-3 p-2">
+                    <div class="scorecard-tile">
+                        <div class="scorecard-tile-label">Last Activity</div>
+                        @if($hs['days_since_last'] !== null)
+                            <div class="scorecard-tile-value" style="color:{{ $hs['days_since_last'] <= 30 ? '#1cc88a' : ($hs['days_since_last'] <= 90 ? '#f6c23e' : '#e74a3b') }};">
+                                {{ $hs['days_since_last'] }} days ago
+                            </div>
+                            <div class="scorecard-tile-sub">since last order</div>
+                            <div class="mt-1" style="font-size:10px;color:#888;">
+                                @if($hs['days_since_last'] <= 30) 🟢 Active customer
+                                @elseif($hs['days_since_last'] <= 60) 🟡 Recently active
+                                @elseif($hs['days_since_last'] <= 90) 🟠 Getting inactive
+                                @elseif($hs['days_since_last'] <= 180) 🔴 Inactive — follow up!
+                                @else ⚫ Dormant — may have left
+                                @endif
+                            </div>
+                        @else
+                            <div class="scorecard-tile-value text-muted">—</div>
+                            <div class="scorecard-tile-sub">no orders on record</div>
+                        @endif
+                        <div class="scorecard-stars mt-1">
+                            @for($i=1;$i<=5;$i++)<i class="fas fa-star" style="color:{{ $i<=$hs['score_breakdown']['activity'] ? $hc : '#d1d3e2' }};font-size:9px;"></i>@endfor
+                        </div>
+                    </div>
+                </div>
+
+            </div>{{-- end row --}}
+
+            {{-- Score Formula explanation --}}
+            <div class="mt-2 pt-2 border-top text-center">
+                <span class="text-muted" style="font-size:10px;">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Star rating = Recovery Rate (40%) + Payment Speed (30%) + Business Trend (15%) + Activity (15%)
+                </span>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ════════════════════════════════════════════════════════ --}}
     {{-- KPI ROW 1 — LIFETIME                                     --}}
+
     {{-- ════════════════════════════════════════════════════════ --}}
     <div class="row mb-1">
         <div class="col-12 mb-2">
@@ -606,6 +768,46 @@
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 2px 8px rgba(78,115,223,.3);
     }
+    /* ── Health Ring ─────────────────────── */
+    .health-ring {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        border: 4px solid #1cc88a;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        background: #fff;
+        box-shadow: 0 2px 12px rgba(0,0,0,.08);
+        flex-shrink: 0;
+    }
+    /* ── Scorecard Tiles ─────────────────── */
+    .scorecard-tile {
+        background: #f8f9fc;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        height: 100%;
+    }
+    .scorecard-tile-label {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        color: #858796;
+        margin-bottom: 4px;
+    }
+    .scorecard-tile-value {
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #2c3e50;
+    }
+    .scorecard-tile-sub {
+        font-size: 10px;
+        color: #aaa;
+        margin-top: 2px;
+    }
+    .scorecard-stars { line-height: 1; }
+
     /* ── Expand row ──────────────────────── */
     .order-main-row:hover { background: #f8f9fc !important; }
     .order-main-row.expanded .expand-toggle i { transform: rotate(90deg); }
