@@ -444,6 +444,92 @@
             right: calc(100% - 44px) !important;
             border-radius: 0 12px 12px 0 !important;
         }
+        
+        /* Compact Payment Modal for Mobile Screens */
+        #paymentModal .modal-dialog {
+            margin: 8px !important;
+        }
+        #paymentModal .col-md-5 {
+            padding: 15px 20px !important;
+            border-right: none !important;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        #paymentModal .col-md-5 i.fa-3x {
+            font-size: 1.8rem !important;
+            margin-bottom: 2px !important;
+        }
+        #paymentModal .col-md-5 h2.total-payable {
+            font-size: 1.5rem !important;
+            margin-bottom: 8px !important;
+        }
+        #paymentModal .col-md-5 hr {
+            margin-top: 8px !important;
+            margin-bottom: 8px !important;
+        }
+        #paymentModal .col-md-5 .px-3 {
+            padding: 0 !important;
+        }
+        #paymentModal .col-md-7 {
+            padding: 15px 20px !important;
+        }
+        #payment-methods-grid {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 4px;
+            background: #f8fafc;
+            margin-bottom: 12px !important;
+        }
+        .payment-option {
+            padding: 8px !important;
+            min-height: 64px !important;
+        }
+        .payment-option i {
+            font-size: 13px !important;
+            margin-bottom: 2px !important;
+        }
+        .payment-option .small {
+            font-size: 10px !important;
+            line-height: 1.1;
+        }
+        .payment-option div.text-muted {
+            font-size: 8px !important;
+            margin-top: 2px;
+        }
+        #amount-input-wrapper .input-group-lg {
+            height: 38px !important;
+        }
+        #amount-input-wrapper .input-group-lg .form-control {
+            height: 38px !important;
+            font-size: 14px !important;
+            padding: 4px 8px !important;
+        }
+        #amount-input-wrapper .input-group-lg .input-group-text {
+            height: 38px !important;
+            font-size: 12px !important;
+            padding: 4px 8px !important;
+        }
+        #amount-input-wrapper .form-group {
+            margin-bottom: 10px !important;
+        }
+        #paymentModal .modal-footer {
+            padding: 12px 20px !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px;
+        }
+        #paymentModal .modal-footer > div {
+            margin-right: 0 !important;
+            margin-bottom: 6px;
+        }
+        #paymentModal .modal-footer button {
+            width: 100% !important;
+            margin: 0 !important;
+            font-size: 14px !important;
+            padding: 8px !important;
+            height: 40px !important;
+        }
     }
 </style>
 
@@ -745,6 +831,9 @@
             data: payload,
             success: function(response) {
                 if (response.status == 'success') {
+                    // Hide the payment modal first to prevent overlay z-index issues
+                    $('#paymentModal').modal('hide');
+
                     // Handle Printing via hidden iframe only if toggled ON
                     if ($('#print-receipt-toggle').is(':checked') && response.thermal_url) {
                         let printUrl = response.thermal_url;
