@@ -198,6 +198,19 @@
     </div>
 
     @if($selectedCustomer)
+    <!-- Customer Details Modal -->
+    <div class="modal fade" id="customerDetailsModal" tabindex="-1" role="dialog" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white py-2 px-3">
+                    <h5 class="modal-title font-weight-bold" id="customerDetailsModalLabel" style="font-size:15px;">
+                        <i class="fas fa-chart-line mr-2"></i>Customer Analysis: {{ $selectedCustomer->name }}
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="outline:none;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body bg-light" style="max-height:85vh; overflow-y:auto; padding:20px;">
 
     {{-- ════════════════════════════════════════════════════════ --}}
     {{-- CUSTOMER PROFILE CARD                                    --}}
@@ -861,6 +874,13 @@
             </div>
         </div>
     </div>
+                </div> {{-- Closing modal-body --}}
+                <div class="modal-footer py-2 bg-white">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     @else
     {{-- No customer selected yet --}}
@@ -1011,6 +1031,11 @@ $(document).ready(function () {
     }).on('hide.bs.collapse', function () {
         $(this).prev('.card-header').find('.fa-chevron-down').css('transform', 'rotate(0deg)');
     });
+
+    @if($selectedCustomer)
+    // ── Auto-open Customer Details Modal ─────────────────────────
+    $('#customerDetailsModal').modal('show');
+    @endif
 });
 </script>
 @endpush

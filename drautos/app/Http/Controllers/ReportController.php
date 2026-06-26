@@ -868,7 +868,18 @@ class ReportController extends Controller
             $c->health_color   = $colorMap[$stars];
             $c->outstanding    = $outstanding;
             return $c;
-        })->sortByDesc('star_rating')->sortByDesc('total_sales')->values();
+        })->sort(function($a, $b) {
+            // 1. Sort by star rating desc
+            if ($a->star_rating !== $b->star_rating) {
+                return $b->star_rating <=> $a->star_rating;
+            }
+            // 2. Sort by recovery rate desc
+            if ($a->recovery_rate !== $b->recovery_rate) {
+                return $b->recovery_rate <=> $a->recovery_rate;
+            }
+            // 3. Sort by total sales desc
+            return $b->total_sales <=> $a->total_sales;
+        })->values();
 
 
         if ($customerId) {
