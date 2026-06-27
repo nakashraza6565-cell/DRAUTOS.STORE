@@ -49,58 +49,46 @@
     <ul class="navbar-nav ml-auto align-items-center">
 
       <style>
-          .btn-quick-expense {
-              background: #fff1f2;
-              border: 1px solid #ffe4e6;
-              color: #e11d48;
-              font-size: 11px;
-              font-weight: 700;
-              border-radius: 6px;
-              padding: 5px 12px;
-              height: 28px;
-              line-height: 1;
+          .btn-nav-action {
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0;
+              margin: auto 4px;
               transition: all 0.2s ease-in-out;
           }
-          .btn-quick-expense:hover {
-              background: #ffe4e6;
-              border-color: #fecdd3;
-              color: #be123c;
-              transform: translateY(-1px);
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          .btn-nav-action:hover {
+              background-color: #f1f5f9;
+              transform: scale(1.08);
+              text-decoration: none;
           }
-          .btn-quick-bilty {
-              background: #e0f2fe;
-              border: 1px solid #bae6fd;
-              color: #0284c7;
-              font-size: 11px;
-              font-weight: 700;
-              border-radius: 6px;
-              padding: 5px 12px;
-              height: 28px;
-              line-height: 1;
-              transition: all 0.2s ease-in-out;
+          .btn-nav-expense {
+              color: #dc2626 !important;
           }
-          .btn-quick-bilty:hover {
-              background: #bae6fd;
-              border-color: #7dd3fc;
-              color: #0369a1;
-              transform: translateY(-1px);
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          .btn-nav-expense:hover {
+              color: #b91c1c !important;
+          }
+          .btn-nav-bilty {
+              color: #0284c7 !important;
+          }
+          .btn-nav-bilty:hover {
+              color: #0369a1 !important;
           }
       </style>
 
-      <li class="nav-item mr-2">
-          <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-sm btn-quick-expense d-inline-flex align-items-center">
-              <i class="fas fa-minus-circle mr-1" style="font-size:10px;"></i>
-              <span class="d-none d-md-inline">Expense</span>
-          </button>
+      <li class="nav-item mx-1">
+          <a class="nav-link btn-nav-action btn-nav-expense" href="#" data-toggle="modal" data-target="#quickExpenseModal" role="button" title="Quick Expense">
+              <i class="fas fa-minus-circle fa-fw"></i>
+          </a>
       </li>
 
-      <li class="nav-item mr-2">
-          <button data-toggle="modal" data-target="#quickBiltyModal" class="btn btn-sm btn-quick-bilty d-inline-flex align-items-center">
-              <i class="fas fa-truck mr-1" style="font-size:10px;"></i>
-              <span class="d-none d-md-inline">Delivery Receipt</span>
-          </button>
+      <li class="nav-item mx-1">
+          <a class="nav-link btn-nav-action btn-nav-bilty" href="#" data-toggle="modal" data-target="#quickBiltyModal" role="button" title="Quick Delivery Receipt">
+              <i class="fas fa-truck fa-fw"></i>
+          </a>
       </li>
 
       <li class="nav-item mr-3">
