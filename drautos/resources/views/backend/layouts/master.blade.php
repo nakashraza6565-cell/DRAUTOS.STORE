@@ -252,5 +252,6 @@
   </script>
   @include('backend.layouts.cart_drawer')
   @include('backend.layouts.chat_widget')
+  @include('backend.layouts.global_modals')
 </body>
 </html>

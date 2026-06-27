@@ -48,6 +48,61 @@
     <!-- Topbar Navbar (right side) -->
     <ul class="navbar-nav ml-auto align-items-center">
 
+      <style>
+          .btn-quick-expense {
+              background: #fff1f2;
+              border: 1px solid #ffe4e6;
+              color: #e11d48;
+              font-size: 11px;
+              font-weight: 700;
+              border-radius: 6px;
+              padding: 5px 12px;
+              height: 28px;
+              line-height: 1;
+              transition: all 0.2s ease-in-out;
+          }
+          .btn-quick-expense:hover {
+              background: #ffe4e6;
+              border-color: #fecdd3;
+              color: #be123c;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          }
+          .btn-quick-bilty {
+              background: #e0f2fe;
+              border: 1px solid #bae6fd;
+              color: #0284c7;
+              font-size: 11px;
+              font-weight: 700;
+              border-radius: 6px;
+              padding: 5px 12px;
+              height: 28px;
+              line-height: 1;
+              transition: all 0.2s ease-in-out;
+          }
+          .btn-quick-bilty:hover {
+              background: #bae6fd;
+              border-color: #7dd3fc;
+              color: #0369a1;
+              transform: translateY(-1px);
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+          }
+      </style>
+
+      <li class="nav-item mr-2">
+          <button data-toggle="modal" data-target="#quickExpenseModal" class="btn btn-sm btn-quick-expense d-inline-flex align-items-center">
+              <i class="fas fa-minus-circle mr-1" style="font-size:10px;"></i>
+              <span class="d-none d-md-inline">Expense</span>
+          </button>
+      </li>
+
+      <li class="nav-item mr-2">
+          <button data-toggle="modal" data-target="#quickBiltyModal" class="btn btn-sm btn-quick-bilty d-inline-flex align-items-center">
+              <i class="fas fa-truck mr-1" style="font-size:10px;"></i>
+              <span class="d-none d-md-inline">Delivery Receipt</span>
+          </button>
+      </li>
+
       <li class="nav-item mr-3">
           <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">
               <i class="fas fa-sync-alt mr-1" style="font-size:10px;"></i> Clear Cache
