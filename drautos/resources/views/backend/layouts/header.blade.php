@@ -79,13 +79,13 @@
           }
       </style>
 
-      <li class="nav-item mx-1">
+      <li class="nav-item mx-1 d-none d-md-inline-flex">
           <a class="nav-link btn-nav-action btn-nav-expense" href="#" data-toggle="modal" data-target="#quickExpenseModal" role="button" title="Quick Expense">
               <i class="fas fa-minus-circle fa-fw"></i>
           </a>
       </li>
 
-      <li class="nav-item mx-1">
+      <li class="nav-item mx-1 d-none d-md-inline-flex">
           <a class="nav-link btn-nav-action btn-nav-bilty" href="#" data-toggle="modal" data-target="#quickBiltyModal" role="button" title="Quick Delivery Receipt">
               <i class="fas fa-truck fa-fw"></i>
           </a>
