@@ -24,7 +24,7 @@ try {
             \App\Models\Cart::where('order_id', 1297)->update(['user_id' => 540]);
             echo "Successfully reverted Order ID 1297 (#{$order1297->order_number}) back to User ID 540 ({$oldUser->name}).\n";
         } else {
-            echo "Warning: Original User ID 540 not found. Order 1297 not reverted.\n";
+            echo "Warning: Original User ID 540 not found.\n";
         }
     } else {
         echo "Order ID 1297 not found.\n";
@@ -37,14 +37,32 @@ try {
     $orderNumber = '2806213043';
     $toUserId = 80; // Makkah Autos (M)
     
-    $order = \App\Models\Order::where('order_number', $orderNumber)->first();
-    $toUser = \App\User::find($toUserId);
+    // Search with wildcards
+    $order = \App\Models\Order::where('order_number', 'like', "%{$orderNumber}%")->first();
     
     if (!$order) {
+        echo "Order number $orderNumber not found directly. Let's search by user...\n";
+        // Let's find any orders for User ID 64 created today
+        $ordersToday = \App\Models\Order::where('user_id', 64)
+            ->whereDate('created_at', \Carbon\Carbon::today())
+            ->get();
+        echo "Found " . $ordersToday->count() . " orders for Makkah Autos (ID 64) created today:\n";
+        foreach ($ordersToday as $o) {
+            echo "  ID: {$o->id} | Number: {$o->order_number} | Total: {$o->total_amount}\n";
+        }
+        
+        echo "\nLast 10 orders in database:\n";
+        $last10 = \App\Models\Order::orderBy('id', 'desc')->limit(10)->get();
+        foreach ($last10 as $o) {
+            echo "  ID: {$o->id} | Number: {$o->order_number} | User ID: {$o->user_id} | Name: {$o->first_name} | Total: {$o->total_amount}\n";
+        }
+        
         throw new \Exception("Order number $orderNumber not found in database.");
     }
+    
+    $toUser = \App\User::find($toUserId);
     if (!$toUser) {
-        throw new \Exception("Target User ID $toUserId not found in database.");
+        throw new \Exception("Target User ID $toUserId not found.");
     }
     
     $fromUserId = $order->user_id;
@@ -56,23 +74,15 @@ try {
     $order->first_name = $toUser->name;
     $order->last_name = '';
     $order->save();
-    echo "Shifted Order #{$orderNumber} (ID: {$order->id}) from $fromUserName (ID: $fromUserId) to {$toUser->name} (ID: $toUserId).\n";
+    echo "Shifted Order #{$order->order_number} (ID: {$order->id}) from $fromUserName (ID: $fromUserId) to {$toUser->name} (ID: $toUserId).\n";
     
     // Update cart items
     $cartCount = \App\Models\Cart::where('order_id', $order->id)->update(['user_id' => $toUserId]);
     echo "Updated $cartCount cart items to User ID $toUserId.\n";
     
-    // Update payment reminders (if column exists)
-    if (\Illuminate\Support\Facades\Schema::hasColumn('payment_reminders', 'user_id')) {
-        $reminderCount = \App\Models\PaymentReminder::where('reference_number', $orderNumber)->update(['user_id' => $toUserId]);
-        echo "Updated $reminderCount payment reminders to User ID $toUserId.\n";
-    } else {
-        echo "Note: 'user_id' column does not exist in 'payment_reminders'. Checked and skipped.\n";
-    }
-    
     // Update customer ledger entries
     $ledgerEntries = \App\Models\CustomerLedger::where('reference_id', $order->id)
-        ->orWhere('description', 'like', "%{$orderNumber}%")
+        ->orWhere('description', 'like', "%{$order->order_number}%")
         ->get();
         
     echo "Found " . $ledgerEntries->count() . " customer ledger entries to update:\n";
