@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: text/plain; charset=utf-8');
-echo "=== GLOBAL DATABASE SEARCH ===\n\n";
+echo "=== DETAILED DATABASE SEARCH ===\n\n";
 
 // Bootstrap Laravel
 define('LARAVEL_START', microtime(true));
@@ -8,47 +8,35 @@ require __DIR__.'/drautos/vendor/autoload.php';
 $app = require_once __DIR__.'/drautos/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-$searchStr = '2806213043';
-echo "Searching for '$searchStr' across all tables...\n\n";
-
 try {
-    $pdo = \DB::connection()->getPdo();
-    $tablesResult = $pdo->query("SHOW TABLES");
-    $tables = $tablesResult->fetchAll(\PDO::FETCH_COLUMN);
-
-    $found = false;
-    foreach ($tables as $table) {
-        // Get all columns of the table
-        $columnsResult = $pdo->query("DESCRIBE `$table`");
-        $columns = $columnsResult->fetchAll(\PDO::FETCH_COLUMN);
+    // 1. Search for any orders with "Makkah" in name or phone matching
+    echo "--- Searching Orders by Name / Phone ---\n";
+    $orders = \App\Models\Order::where('first_name', 'like', '%Makkah%')
+        ->orWhere('last_name', 'like', '%Makkah%')
+        ->orWhere('phone', 'like', '%03118834066%')
+        ->orWhere('phone', 'like', '%03009581335%')
+        ->get();
         
-        // Build a search query for this table
-        $conditions = [];
-        foreach ($columns as $column) {
-            $conditions[] = "`$column` LIKE " . $pdo->quote("%$searchStr%");
-        }
-        
-        if (empty($conditions)) continue;
-        
-        $sql = "SELECT * FROM `$table` WHERE " . implode(" OR ", $conditions) . " LIMIT 10";
-        $stmt = $pdo->query($sql);
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        
-        if (!empty($results)) {
-            $found = true;
-            echo "Table: $table\n";
-            echo "  Found " . count($results) . " matching row(s):\n";
-            foreach ($results as $row) {
-                echo "    " . json_encode($row) . "\n";
-            }
-            echo "\n";
-        }
+    echo "Found " . $orders->count() . " orders:\n";
+    foreach ($orders as $o) {
+        echo "  ID: {$o->id} | Number: {$o->order_number} | User ID: {$o->user_id} | Name: {$o->first_name} {$o->last_name} | Phone: {$o->phone} | Total: {$o->total_amount} | Date: {$o->created_at}\n";
     }
-    
-    if (!$found) {
-        echo "No matches found for '$searchStr' in the entire database.\n";
+
+    // 2. Search all Customer Ledger entries with "Makkah"
+    echo "\n--- Searching Ledger by Description / User ---\n";
+    $ledgers = \App\Models\CustomerLedger::where('description', 'like', '%Makkah%')->get();
+    echo "Found " . $ledgers->count() . " entries:\n";
+    foreach ($ledgers as $l) {
+        echo "  ID: {$l->id} | User ID: {$l->user_id} | Amount: {$l->amount} | Desc: {$l->description}\n";
+    }
+
+    // 3. Search all Users with "Makkah" in their name
+    echo "\n--- All Users with 'Makkah' ---\n";
+    $users = \App\User::where('name', 'like', '%Makkah%')->get();
+    foreach ($users as $u) {
+        echo "  ID: {$u->id} | Name: {$u->name} | Phone: {$u->phone} | Balance: {$u->current_balance}\n";
     }
 
 } catch (\Exception $e) {
-    echo "❌ Search Error: " . $e->getMessage() . "\n";
+    echo "❌ Error: " . $e->getMessage() . "\n";
 }
