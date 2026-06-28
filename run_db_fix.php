@@ -18,9 +18,10 @@ try {
         
     echo "Found " . $orders->count() . " orders in total:\n";
     foreach ($orders as $o) {
-        $first = preg_replace('/[^a-zA-Z0-9\s()]/', '', $o->first_name);
-        $last = preg_replace('/[^a-zA-Z0-9\s()]/', '', $o->last_name);
-        echo "  ID: {$o->id} | Num: {$o->order_number} | User ID: {$o->user_id} | Name: {$first} {$last} | Phone: {$o->phone} | Total: {$o->total_amount}\n";
+        $first = preg_replace('/[^a-zA-Z0-9\s()]/', '', (string)$o->first_name);
+        $last = preg_replace('/[^a-zA-Z0-9\s()]/', '', (string)$o->last_name);
+        $phone = $o->phone ? $o->phone : 'NONE';
+        echo "  ID: {$o->id} | Num: {$o->order_number} | User ID: {$o->user_id} | Name: {$first} {$last} | Phone: {$phone} | Total: {$o->total_amount}\n";
     }
 
 } catch (\Exception $e) {
