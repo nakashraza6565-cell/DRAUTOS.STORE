@@ -78,68 +78,388 @@ class ReportController extends Controller
         return $pdf->download('stock_report_'.date('Y-m-d').'.pdf');
     }
 
-    public function deadProducts()
+    public function cashFlow(Request $request)
     {
-        // Products not sold in the last 30 days
-        $soldProductIds = DB::table('carts')
-            ->where('created_at', '>', Carbon::now()->subMonth())
-            ->pluck('product_id')
-            ->unique();
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfYear();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        
+        $diffDays = $startDate->diffInDays($endDate);
+        $groupBy = $request->group_by ?: 'auto';
+        if ($groupBy === 'auto') {
+            if ($diffDays <= 31) {
+                $groupBy = 'daily';
+            } elseif ($diffDays <= 180) {
+                $groupBy = 'weekly';
+            } else {
+                $groupBy = 'monthly';
+            }
+        }
 
-        $deadProducts = Product::whereNotIn('id', $soldProductIds)
-            ->where('status', 'active')
+        $intervals = [];
+        $current = $startDate->copy();
+        
+        if ($groupBy === 'daily') {
+            while ($current <= $endDate) {
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $current->copy()->endOfDay(),
+                    'label' => $current->format('M d, Y'),
+                ];
+                $current->addDay();
+            }
+        } elseif ($groupBy === 'weekly') {
+            while ($current <= $endDate) {
+                $weekEnd = $current->copy()->endOfWeek();
+                if ($weekEnd > $endDate) {
+                    $weekEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $weekEnd->copy()->endOfDay(),
+                    'label' => 'Wk ' . $current->format('W') . ' (' . $current->format('M d') . ' - ' . $weekEnd->format('M d') . ')',
+                ];
+                $current->addWeek()->startOfWeek();
+            }
+        } else { // monthly
+            while ($current <= $endDate) {
+                $monthEnd = $current->copy()->endOfMonth();
+                if ($monthEnd > $endDate) {
+                    $monthEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $monthEnd->copy()->endOfDay(),
+                    'label' => $current->format('F Y'),
+                ];
+                $current->addMonth()->startOfMonth();
+            }
+        }
+
+        $reportData = [];
+        $totalMoneyIn = 0;
+        $totalMoneyOut = 0;
+
+        foreach ($intervals as $interval) {
+            $in = (float) \App\Models\AccountTransaction::whereBetween('transaction_date', [$interval['start']->format('Y-m-d'), $interval['end']->format('Y-m-d')])
+                ->where('type', 'in')
+                ->sum('amount');
+            $out = (float) \App\Models\AccountTransaction::whereBetween('transaction_date', [$interval['start']->format('Y-m-d'), $interval['end']->format('Y-m-d')])
+                ->where('type', 'out')
+                ->sum('amount');
+            
+            $totalMoneyIn += $in;
+            $totalMoneyOut += $out;
+
+            $reportData[] = [
+                'label' => $interval['label'],
+                'money_in' => $in,
+                'money_out' => $out,
+                'net_flow' => $in - $out,
+            ];
+        }
+
+        // Active wallets summary
+        $wallets = \App\Models\FinancialAccount::where('status', 'active')->get();
+        $totalWalletBalance = $wallets->sum('current_balance');
+
+        $transactions = \App\Models\AccountTransaction::with('financialAccount')
+            ->whereBetween('transaction_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->orderBy('transaction_date', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->paginate(50);
+
+        return view('backend.reports.cash_flow', compact(
+            'reportData', 'totalMoneyIn', 'totalMoneyOut', 'totalWalletBalance', 'wallets',
+            'transactions', 'startDate', 'endDate', 'groupBy'
+        ));
+    }
+
+    public function cashFlowPdf(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfYear();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        
+        $diffDays = $startDate->diffInDays($endDate);
+        $groupBy = $request->group_by ?: 'auto';
+        if ($groupBy === 'auto') {
+            if ($diffDays <= 31) {
+                $groupBy = 'daily';
+            } elseif ($diffDays <= 180) {
+                $groupBy = 'weekly';
+            } else {
+                $groupBy = 'monthly';
+            }
+        }
+
+        $intervals = [];
+        $current = $startDate->copy();
+        
+        if ($groupBy === 'daily') {
+            while ($current <= $endDate) {
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $current->copy()->endOfDay(),
+                    'label' => $current->format('M d, Y'),
+                ];
+                $current->addDay();
+            }
+        } elseif ($groupBy === 'weekly') {
+            while ($current <= $endDate) {
+                $weekEnd = $current->copy()->endOfWeek();
+                if ($weekEnd > $endDate) {
+                    $weekEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $weekEnd->copy()->endOfDay(),
+                    'label' => 'Wk ' . $current->format('W') . ' (' . $current->format('M d') . ' - ' . $weekEnd->format('M d') . ')',
+                ];
+                $current->addWeek()->startOfWeek();
+            }
+        } else { // monthly
+            while ($current <= $endDate) {
+                $monthEnd = $current->copy()->endOfMonth();
+                if ($monthEnd > $endDate) {
+                    $monthEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $monthEnd->copy()->endOfDay(),
+                    'label' => $current->format('F Y'),
+                ];
+                $current->addMonth()->startOfMonth();
+            }
+        }
+
+        $reportData = [];
+        $totalMoneyIn = 0;
+        $totalMoneyOut = 0;
+
+        foreach ($intervals as $interval) {
+            $in = (float) \App\Models\AccountTransaction::whereBetween('transaction_date', [$interval['start']->format('Y-m-d'), $interval['end']->format('Y-m-d')])
+                ->where('type', 'in')
+                ->sum('amount');
+            $out = (float) \App\Models\AccountTransaction::whereBetween('transaction_date', [$interval['start']->format('Y-m-d'), $interval['end']->format('Y-m-d')])
+                ->where('type', 'out')
+                ->sum('amount');
+            
+            $totalMoneyIn += $in;
+            $totalMoneyOut += $out;
+
+            $reportData[] = [
+                'label' => $interval['label'],
+                'money_in' => $in,
+                'money_out' => $out,
+                'net_flow' => $in - $out,
+            ];
+        }
+
+        $pdf = \PDF::loadView('backend.reports.cash_flow_pdf', compact(
+            'reportData', 'totalMoneyIn', 'totalMoneyOut', 'startDate', 'endDate', 'groupBy'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->download('cash_flow_report_'.date('Y-m-d').'.pdf');
+    }
+
+    public function salesPurchases(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfYear();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
+        
+        $diffDays = $startDate->diffInDays($endDate);
+        $groupBy = $request->group_by ?: 'auto';
+        if ($groupBy === 'auto') {
+            if ($diffDays <= 31) {
+                $groupBy = 'daily';
+            } elseif ($diffDays <= 180) {
+                $groupBy = 'weekly';
+            } else {
+                $groupBy = 'monthly';
+            }
+        }
+
+        $intervals = [];
+        $current = $startDate->copy();
+        
+        if ($groupBy === 'daily') {
+            while ($current <= $endDate) {
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $current->copy()->endOfDay(),
+                    'label' => $current->format('M d, Y'),
+                ];
+                $current->addDay();
+            }
+        } elseif ($groupBy === 'weekly') {
+            while ($current <= $endDate) {
+                $weekEnd = $current->copy()->endOfWeek();
+                if ($weekEnd > $endDate) {
+                    $weekEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $weekEnd->copy()->endOfDay(),
+                    'label' => 'Wk ' . $current->format('W') . ' (' . $current->format('M d') . ' - ' . $weekEnd->format('M d') . ')',
+                ];
+                $current->addWeek()->startOfWeek();
+            }
+        } else { // monthly
+            while ($current <= $endDate) {
+                $monthEnd = $current->copy()->endOfMonth();
+                if ($monthEnd > $endDate) {
+                    $monthEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $monthEnd->copy()->endOfDay(),
+                    'label' => $current->format('F Y'),
+                ];
+                $current->addMonth()->startOfMonth();
+            }
+        }
+
+        $incomingGoods = \App\Models\InventoryIncoming::with(['items', 'supplier'])
+            ->whereBetween('received_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
 
-        return view('backend.reports.dead_products', compact('deadProducts'));
-    }
-
-    public function deadProductsPdf()
-    {
-        $soldProductIds = DB::table('carts')
-            ->where('created_at', '>', Carbon::now()->subMonth())
-            ->pluck('product_id')
-            ->unique();
-
-        $deadProducts = Product::whereNotIn('id', $soldProductIds)
-            ->where('status', 'active')
+        $orders = \App\Models\Order::with(['user', 'cart_info'])
+            ->whereNotIn('status', ['cancelled'])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->get();
 
-        $pdf = \PDF::loadView('backend.reports.dead_products_pdf', compact('deadProducts'));
-        return $pdf->download('dead_products_report_'.date('Y-m-d').'.pdf');
+        $reportData = [];
+        $totalSales = 0;
+        $totalPurchases = 0;
+
+        foreach ($intervals as $interval) {
+            $periodIncoming = $incomingGoods->filter(function($item) use ($interval) {
+                return $item->received_date >= $interval['start'] && $item->received_date <= $interval['end'];
+            });
+            $incomingCost = (float) $periodIncoming->sum(function($incoming) {
+                return $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
+            });
+            
+            $periodOrders = $orders->filter(function($item) use ($interval) {
+                return $item->created_at >= $interval['start'] && $item->created_at <= $interval['end'];
+            });
+            $salesVal = (float) $periodOrders->sum('total_amount');
+            
+            $totalSales += $salesVal;
+            $totalPurchases += $incomingCost;
+
+            $reportData[] = [
+                'label' => $interval['label'],
+                'incoming_goods' => $incomingCost,
+                'customer_sales' => $salesVal,
+                'difference' => $salesVal - $incomingCost,
+            ];
+        }
+
+        return view('backend.reports.sales_purchases', compact(
+            'reportData', 'totalSales', 'totalPurchases', 'incomingGoods', 'orders',
+            'startDate', 'endDate', 'groupBy'
+        ));
     }
 
-    public function profitLoss()
+    public function salesPurchasesPdf(Request $request)
     {
-        $totalRevenue = Order::where('status', 'delivered')->sum('total_amount');
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfYear();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
         
-        // Approximation if purchase price isn't consistently tracked in orders
-        // Ideal: sum of (selling_price - purchase_price) from order items
-        $totalCostOfGoods = DB::table('carts')
-            ->join('products', 'carts.product_id', '=', 'products.id')
-            ->join('orders', 'carts.order_id', '=', 'orders.id')
-            ->where('orders.status', 'delivered')
-            ->sum(DB::raw('carts.quantity * products.purchase_price'));
+        $diffDays = $startDate->diffInDays($endDate);
+        $groupBy = $request->group_by ?: 'auto';
+        if ($groupBy === 'auto') {
+            if ($diffDays <= 31) {
+                $groupBy = 'daily';
+            } elseif ($diffDays <= 180) {
+                $groupBy = 'weekly';
+            } else {
+                $groupBy = 'monthly';
+            }
+        }
 
-        $totalExpenses = DB::table('expenses')->sum('amount');
+        $intervals = [];
+        $current = $startDate->copy();
         
-        $netProfit = $totalRevenue - $totalCostOfGoods - $totalExpenses;
+        if ($groupBy === 'daily') {
+            while ($current <= $endDate) {
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $current->copy()->endOfDay(),
+                    'label' => $current->format('M d, Y'),
+                ];
+                $current->addDay();
+            }
+        } elseif ($groupBy === 'weekly') {
+            while ($current <= $endDate) {
+                $weekEnd = $current->copy()->endOfWeek();
+                if ($weekEnd > $endDate) {
+                    $weekEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $weekEnd->copy()->endOfDay(),
+                    'label' => 'Wk ' . $current->format('W') . ' (' . $current->format('M d') . ' - ' . $weekEnd->format('M d') . ')',
+                ];
+                $current->addWeek()->startOfWeek();
+            }
+        } else { // monthly
+            while ($current <= $endDate) {
+                $monthEnd = $current->copy()->endOfMonth();
+                if ($monthEnd > $endDate) {
+                    $monthEnd = $endDate->copy();
+                }
+                $intervals[] = [
+                    'start' => $current->copy()->startOfDay(),
+                    'end' => $monthEnd->copy()->endOfDay(),
+                    'label' => $current->format('F Y'),
+                ];
+                $current->addMonth()->startOfMonth();
+            }
+        }
 
-        return view('backend.reports.profit_loss', compact('totalRevenue', 'totalCostOfGoods', 'totalExpenses', 'netProfit'));
-    }
+        $incomingGoods = \App\Models\InventoryIncoming::with(['items', 'supplier'])
+            ->whereBetween('received_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->get();
 
-    public function profitLossPdf()
-    {
-        $totalRevenue = Order::where('status', 'delivered')->sum('total_amount');
-        $totalCostOfGoods = DB::table('carts')
-            ->join('products', 'carts.product_id', '=', 'products.id')
-            ->join('orders', 'carts.order_id', '=', 'orders.id')
-            ->where('orders.status', 'delivered')
-            ->sum(DB::raw('carts.quantity * products.purchase_price'));
-        $totalExpenses = DB::table('expenses')->sum('amount');
-        $netProfit = $totalRevenue - $totalCostOfGoods - $totalExpenses;
+        $orders = \App\Models\Order::with(['user', 'cart_info'])
+            ->whereNotIn('status', ['cancelled'])
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
 
-        $pdf = \PDF::loadView('backend.reports.profit_loss_pdf', compact('totalRevenue', 'totalCostOfGoods', 'totalExpenses', 'netProfit'));
-        return $pdf->download('profit_loss_report_'.date('Y-m-d').'.pdf');
+        $reportData = [];
+        $totalSales = 0;
+        $totalPurchases = 0;
+
+        foreach ($intervals as $interval) {
+            $periodIncoming = $incomingGoods->filter(function($item) use ($interval) {
+                return $item->received_date >= $interval['start'] && $item->received_date <= $interval['end'];
+            });
+            $incomingCost = (float) $periodIncoming->sum(function($incoming) {
+                return $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
+            });
+            
+            $periodOrders = $orders->filter(function($item) use ($interval) {
+                return $item->created_at >= $interval['start'] && $item->created_at <= $interval['end'];
+            });
+            $salesVal = (float) $periodOrders->sum('total_amount');
+            
+            $totalSales += $salesVal;
+            $totalPurchases += $incomingCost;
+
+            $reportData[] = [
+                'label' => $interval['label'],
+                'incoming_goods' => $incomingCost,
+                'customer_sales' => $salesVal,
+                'difference' => $salesVal - $incomingCost,
+            ];
+        }
+
+        $pdf = \PDF::loadView('backend.reports.sales_purchases_pdf', compact(
+            'reportData', 'totalSales', 'totalPurchases', 'startDate', 'endDate', 'groupBy'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->download('sales_purchases_comparison_report_'.date('Y-m-d').'.pdf');
     }
 
     public function payables()

@@ -752,10 +752,10 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
         Route::get('/sales/pdf', 'ReportController@salesPdf')->name('reports.sales.pdf');
         Route::get('/stock', 'ReportController@stock')->name('reports.stock');
         Route::get('/stock/pdf', 'ReportController@stockPdf')->name('reports.stock.pdf');
-        Route::get('/dead-products', 'ReportController@deadProducts')->name('reports.dead-products');
-        Route::get('/dead-products/pdf', 'ReportController@deadProductsPdf')->name('reports.dead-products.pdf');
-        Route::get('/profit-loss', 'ReportController@profitLoss')->name('reports.profit-loss');
-        Route::get('/profit-loss/pdf', 'ReportController@profitLossPdf')->name('reports.profit-loss.pdf');
+        Route::get('/cash-flow', 'ReportController@cashFlow')->name('reports.cash-flow');
+        Route::get('/cash-flow/pdf', 'ReportController@cashFlowPdf')->name('reports.cash-flow.pdf');
+        Route::get('/sales-purchases', 'ReportController@salesPurchases')->name('reports.sales-purchases');
+        Route::get('/sales-purchases/pdf', 'ReportController@salesPurchasesPdf')->name('reports.sales-purchases.pdf');
         Route::get('/payables', 'ReportController@payables')->name('reports.payables');
         Route::get('/receivables', 'ReportController@receivables')->name('reports.receivables');
         Route::get('/product-analysis', 'ReportController@productAnalysis')->name('reports.product-analysis');

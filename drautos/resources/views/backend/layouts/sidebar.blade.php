@@ -306,8 +306,8 @@
           <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
             <a class="collapse-item" href="{{route('reports.sales')}}">Sales Reports</a>
             <a class="collapse-item" href="{{route('reports.stock')}}">Stock Reports</a>
-            <a class="collapse-item" href="{{route('reports.dead-products')}}">Dead Products</a>
-            <a class="collapse-item" href="{{route('reports.profit-loss')}}">Profit & Loss</a>
+            <a class="collapse-item text-wrap" href="{{route('reports.cash-flow')}}">Cash Flow Report</a>
+            <a class="collapse-item text-wrap" href="{{route('reports.sales-purchases')}}">Sales vs Purchases</a>
             <a class="collapse-item" href="{{route('reports.payables')}}">Payable Charts</a>
             <a class="collapse-item" href="{{route('reports.receivables')}}">Receivable Charts</a>
             <a class="collapse-item" href="{{route('reports.product-analysis')}}">Product Analysis</a>
