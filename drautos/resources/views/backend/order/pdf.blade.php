@@ -250,7 +250,16 @@
  
     <div class="clearfix">
         <div class="payment-info" style="direction: rtl; text-align: right; width: 50%;">
-            <img src="{{ base_path('../backend/img/urdu_terms.png') }}" style="width: 100%; max-width: 290px; height: auto; display: block; float: right;" alt="شرائط و ضوابط">
+            @php
+                $termsPath = base_path('../backend/img/urdu_terms.png');
+                $base64Terms = '';
+                if (file_exists($termsPath)) {
+                    $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
+                }
+            @endphp
+            @if($base64Terms)
+                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 290px; height: auto; display: block; float: right;" alt="شرائط و ضوابط">
+            @endif
         </div>
         
         <table class="totals-table">
