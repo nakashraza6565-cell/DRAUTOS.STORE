@@ -25,7 +25,9 @@
             <button data-toggle="modal" data-target="#quickBiltyModal" class="btn btn-sm rounded-pill px-3 shadow-sm font-weight-bold mr-0 mr-md-2 w-100 w-md-auto mb-2 mb-md-0 d-md-none" style="font-size: 11px; height: 32px; background: #083259; color: #fff; border: 1px solid #fff;">
                 <i class="fas fa-truck mr-1"></i> DELIVERY RECEIPT
             </button>
+        </div>
 
+        <div class="col-lg-6 d-flex flex-column flex-md-row align-items-center justify-content-lg-end justify-content-center">
             <!-- Staff Attendance Glass Card -->
             <a href="javascript:void(0)" data-toggle="modal" data-target="#quickAttendanceModal" class="text-decoration-none w-100 w-md-auto mb-2 mb-md-0">
                 <div class="glass-card px-3 py-2 mr-0 mr-md-3 d-flex align-items-center shadow-sm justify-content-center" style="cursor: pointer; transition: transform 0.2s;">
