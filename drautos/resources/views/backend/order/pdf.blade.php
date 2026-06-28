@@ -1,3 +1,23 @@
+@php
+    if (!function_exists('renderUrduPdf')) {
+        function renderUrduPdf($text) {
+            $text = str_replace('(Order Number)', '__ORDER_NUMBER__', $text);
+            $shaped = Helper::reshapeUrdu($text);
+            $words = explode(' ', $shaped);
+            $reversedWords = [];
+            foreach ($words as $word) {
+                if (preg_match('/^[a-zA-Z0-9\(\)\%\.\-\:\,\/\_]+$/', $word)) {
+                    $reversedWords[] = $word;
+                } else {
+                    preg_match_all('/./us', $word, $ar);
+                    $reversedWords[] = implode('', array_reverse($ar[0]));
+                }
+            }
+            $reversedSentence = implode(' ', array_reverse($reversedWords));
+            return str_replace('__ORDER_NUMBER__', '(Order Number)', $reversedSentence);
+        }
+    }
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -340,36 +360,36 @@
     <!-- شرائط و ضوابط -->
     <div style="clear: both; margin-top: 20px; width: 100%; border: 1px solid #ddd; background: #fafafa; border-radius: 4px; padding: 10px; font-family: 'DejaVu Sans', sans-serif; direction: rtl; text-align: right;">
         <div style="font-size: 11px; font-weight: bold; color: #d32f2f; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 3px; text-align: right;">
-            {{ Helper::reshapeUrdu('شرائط و ضوابط') }}
+            {{ renderUrduPdf('شرائط و ضوابط') }}
         </div>
         <table style="width: 100%; direction: rtl; font-size: 9px; line-height: 1.5; border: none; border-collapse: collapse;">
             <tr>
                 <td style="width: 3%; vertical-align: top; text-align: right; border: none; padding: 2px 0;">1.</td>
-                <td style="width: 97%; vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') }}</td>
+                <td style="width: 97%; vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">2.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">3.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش) یا سٹور کریڈٹ کی شکل میں کی جائے گی۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش) یا سٹور کریڈٹ کی شکل میں کی جائے گی۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">4.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ ہونے کی صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ ہونے کی صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">5.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">6.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی صورت میں اسے کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ سامان اپنی اصل پیکنگ میں ہو۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی صورت میں اسے کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ سامان اپنی اصل پیکنگ میں ہو۔') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">7.</td>
-                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ Helper::reshapeUrdu('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') }}</td>
+                <td style="vertical-align: top; text-align: right; border: none; padding: 2px 0;">{{ renderUrduPdf('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') }}</td>
             </tr>
         </table>
     </div>
