@@ -20,6 +20,9 @@ try {
         echo "Warning: No Admin user found in database.\n";
     }
     
+    // Share $errors variable to views (normally done by web middleware group)
+    view()->share('errors', new \Illuminate\Support\ViewErrorBag());
+    
     echo "Rendering backend.index view...\n";
     
     // Renders the view and outputs it or catches error
