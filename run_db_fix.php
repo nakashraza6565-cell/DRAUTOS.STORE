@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: text/plain; charset=utf-8');
+set_time_limit(300);
+ini_set('memory_limit', '512M');
+
 echo "=== DATABASE SHIFT & SETTLEMENT SYSTEM ===\n\n";
 
 // Bootstrap Laravel
@@ -62,11 +65,11 @@ try {
     }
     
     // 5. Recalculate balances for both users to settle the accounts
-    echo "\n5. Settle and recalculate balances...\n";
+    echo "\n5. Settle and recalculate balances (this may take a moment)...\n";
     $oldUserBalance = \App\Models\CustomerLedger::updateBalance($fromUserId);
     $newUserBalance = \App\Models\CustomerLedger::updateBalance($toUserId);
     
-    // Also recalculate any other touched user IDs to keep the DB clean (e.g. 540 from the accidental test earlier)
+    // Also recalculate any other touched user IDs to keep the DB clean (e.g. 540 and 80 from the accidental test earlier)
     \App\Models\CustomerLedger::updateBalance(540);
     \App\Models\CustomerLedger::updateBalance(80);
     
