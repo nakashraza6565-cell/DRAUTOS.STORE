@@ -395,8 +395,6 @@
             .sidebar-ghost-mode { transform: translateX(-100%); }
             .sidebar-ghost-mode.reveal { transform: translateX(0); }
         }
-            margin: 0.2rem 0.8rem;
-        }
 
         .sidebar-dark .nav-item.active .nav-link::before {
             content: '';
