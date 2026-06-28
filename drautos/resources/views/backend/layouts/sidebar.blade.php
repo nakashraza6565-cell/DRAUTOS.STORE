@@ -304,14 +304,14 @@
         </a>
         <div id="reportsCollapse" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded-lg shadow-sm">
-            <a class="collapse-item" href="{{route('reports.sales')}}">Sales Reports</a>
-            <a class="collapse-item" href="{{route('reports.stock')}}">Stock Reports</a>
-            <a class="collapse-item text-wrap" href="{{route('reports.cash-flow')}}">Cash Flow Report</a>
-            <a class="collapse-item text-wrap" href="{{route('reports.sales-purchases')}}">Sales vs Purchases</a>
-            <a class="collapse-item" href="{{route('reports.payables')}}">Payable Charts</a>
-            <a class="collapse-item" href="{{route('reports.receivables')}}">Receivable Charts</a>
-            <a class="collapse-item" href="{{route('reports.product-analysis')}}">Product Analysis</a>
-            <a class="collapse-item" href="{{route('reports.customer')}}">Customer Reports</a>
+            <a class="collapse-item" href="{{route('reports.sales')}}"><i class="fas fa-chart-bar fa-fw mr-1 text-primary"></i> Sales Reports</a>
+            <a class="collapse-item" href="{{route('reports.stock')}}"><i class="fas fa-boxes-stacked fa-fw mr-1 text-primary"></i> Stock Reports</a>
+            <a class="collapse-item" href="{{route('reports.cash-flow')}}"><i class="fas fa-water fa-fw mr-1 text-success"></i> Cash Flow Report</a>
+            <a class="collapse-item" href="{{route('reports.sales-purchases')}}"><i class="fas fa-arrow-right-arrow-left fa-fw mr-1 text-warning"></i> Sales vs Purchases</a>
+            <a class="collapse-item" href="{{route('reports.payables')}}"><i class="fas fa-file-invoice-dollar fa-fw mr-1 text-danger"></i> Payable Charts</a>
+            <a class="collapse-item" href="{{route('reports.receivables')}}"><i class="fas fa-hand-holding-dollar fa-fw mr-1 text-info"></i> Receivable Charts</a>
+            <a class="collapse-item" href="{{route('reports.product-analysis')}}"><i class="fas fa-magnifying-glass-chart fa-fw mr-1 text-primary"></i> Product Analysis</a>
+            <a class="collapse-item" href="{{route('reports.customer')}}"><i class="fas fa-user-tie fa-fw mr-1 text-primary"></i> Customer Reports</a>
           </div>
         </div>
     </li>

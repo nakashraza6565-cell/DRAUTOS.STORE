@@ -197,7 +197,7 @@
                         @forelse($transactions as $txn)
                         <tr>
                             <td data-title="Date">{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
-                            <td data-title="Account" class="font-weight-bold">{{ $txn->financialAccount->name ?? 'N/A' }}</td>
+                            <td data-title="Account" class="font-weight-bold">{{ $txn->account->name ?? 'N/A' }}</td>
                             <td data-title="Description" class="text-muted" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 {{ $txn->description ?: 'No details' }}
                             </td>

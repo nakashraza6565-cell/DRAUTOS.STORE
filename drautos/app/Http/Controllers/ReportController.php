@@ -162,7 +162,7 @@ class ReportController extends Controller
         $wallets = \App\Models\FinancialAccount::where('status', 'active')->get();
         $totalWalletBalance = $wallets->sum('current_balance');
 
-        $transactions = \App\Models\AccountTransaction::with('financialAccount')
+        $transactions = \App\Models\AccountTransaction::with('account')
             ->whereBetween('transaction_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->orderBy('transaction_date', 'DESC')
             ->orderBy('id', 'DESC')
