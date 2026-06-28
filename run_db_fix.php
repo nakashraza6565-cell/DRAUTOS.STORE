@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: text/plain; charset=utf-8');
-echo "=== DATABASE DIAGNOSTIC SYSTEM ===\n\n";
+echo "=== GLOBAL DATABASE SEARCH ===\n\n";
 
 // Bootstrap Laravel
 define('LARAVEL_START', microtime(true));
@@ -8,50 +8,47 @@ require __DIR__.'/drautos/vendor/autoload.php';
 $app = require_once __DIR__.'/drautos/bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
+$searchStr = '2806213043';
+echo "Searching for '$searchStr' across all tables...\n\n";
+
 try {
-    // 1. Revert Order ID 1297 if it is still pointing to User ID 80
-    echo "--- Checking Order ID 1297 ---\n";
-    $order1297 = \App\Models\Order::find(1297);
-    if ($order1297) {
-        echo "  Order 1297 current owner ID: {$order1297->user_id}\n";
-        if ($order1297->user_id == 80) {
-            $oldUser = \App\User::find(540);
-            if ($oldUser) {
-                $order1297->user_id = 540;
-                $order1297->first_name = $oldUser->name;
-                $order1297->last_name = '';
-                $order1297->save();
-                \App\Models\Cart::where('order_id', 1297)->update(['user_id' => 540]);
-                echo "  Successfully reverted Order ID 1297 back to User ID 540 ({$oldUser->name}).\n";
-            }
+    $pdo = \DB::connection()->getPdo();
+    $tablesResult = $pdo->query("SHOW TABLES");
+    $tables = $tablesResult->fetchAll(\PDO::FETCH_COLUMN);
+
+    $found = false;
+    foreach ($tables as $table) {
+        // Get all columns of the table
+        $columnsResult = $pdo->query("DESCRIBE `$table`");
+        $columns = $columnsResult->fetchAll(\PDO::FETCH_COLUMN);
+        
+        // Build a search query for this table
+        $conditions = [];
+        foreach ($columns as $column) {
+            $conditions[] = "`$column` LIKE " . $pdo->quote("%$searchStr%");
         }
-    } else {
-        echo "  Order ID 1297 not found.\n";
+        
+        if (empty($conditions)) continue;
+        
+        $sql = "SELECT * FROM `$table` WHERE " . implode(" OR ", $conditions) . " LIMIT 10";
+        $stmt = $pdo->query($sql);
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        
+        if (!empty($results)) {
+            $found = true;
+            echo "Table: $table\n";
+            echo "  Found " . count($results) . " matching row(s):\n";
+            foreach ($results as $row) {
+                echo "    " . json_encode($row) . "\n";
+            }
+            echo "\n";
+        }
     }
-
-    // 2. Find all orders for Makkah Autos (User ID 64)
-    echo "\n--- All Orders for Makkah Autos (User ID 64) ---\n";
-    $orders64 = \App\Models\Order::where('user_id', 64)->orderBy('id', 'desc')->get();
-    echo "Found " . $orders64->count() . " orders:\n";
-    foreach ($orders64 as $o) {
-        echo "  ID: {$o->id} | Number: {$o->order_number} | Total: {$o->total_amount} | Date: {$o->created_at}\n";
-    }
-
-    // 3. Find all orders created on June 28, 2026 (today)
-    echo "\n--- All Orders Created Today (2026-06-28) ---\n";
-    $ordersToday = \App\Models\Order::whereDate('created_at', '2026-06-28')->get();
-    echo "Found " . $ordersToday->count() . " orders:\n";
-    foreach ($ordersToday as $o) {
-        echo "  ID: {$o->id} | Number: {$o->order_number} | User ID: {$o->user_id} | Total: {$o->total_amount} | Date: {$o->created_at}\n";
-    }
-
-    // 4. Output a summary of last 10 orders
-    echo "\n--- Last 10 Orders in Database ---\n";
-    $last10 = \App\Models\Order::orderBy('id', 'desc')->limit(10)->get();
-    foreach ($last10 as $o) {
-        echo "  ID: {$o->id} | Number: {$o->order_number} | User ID: {$o->user_id} | Total: {$o->total_amount} | Date: {$o->created_at}\n";
+    
+    if (!$found) {
+        echo "No matches found for '$searchStr' in the entire database.\n";
     }
 
 } catch (\Exception $e) {
-    echo "\n❌ Database Error: " . $e->getMessage() . "\n";
+    echo "❌ Search Error: " . $e->getMessage() . "\n";
 }
