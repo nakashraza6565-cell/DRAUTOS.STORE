@@ -249,13 +249,17 @@
     </table>
  
     <div class="clearfix">
-        <div class="payment-info">
-            <div class="info-title">{{ Helper::translateLabel('Payment Instructions') }}</div>
-            {{ Helper::translateLabel('Bank Name:') }} Meezan Bank<br>
-            {{ Helper::translateLabel('Beneficiary:') }} Sheikh Imtiaz ali tahir<br>
-            {{ Helper::translateLabel('Account No:') }} 0256 0103847320<br>
-            <br>
-            <em>{{ Helper::translateLabel('Please include the Order # with your payment.') }}</em>
+        <div class="payment-info" style="direction: rtl; text-align: right; font-size: 8px; line-height: 1.4; color: #111; font-family: 'DejaVu Sans', sans-serif;">
+            <div class="info-title" style="text-align: right; font-size: 9px; font-weight: bold; color: #d32f2f; margin-bottom: 5px; border-bottom: 1px solid #ddd; padding-bottom: 2px;">{{ Helper::translateLabel('شرائط و ضوابط') }}</div>
+            <ol style="margin: 0; padding-right: 15px; text-align: right; direction: rtl; list-style-position: outside;">
+                <li style="margin-bottom: 2px;">خریدے گئے سامان کی واپسی یا تبدیلی <strong>15 یوم</strong> کے اندر ممکن ہے۔</li>
+                <li style="margin-bottom: 2px;">15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ پیش نہ کرنے کی صورت میں، رقم سے <strong>25 فیصد کٹوتی</strong> کی جائے گی۔</li>
+                <li style="margin-bottom: 2px;">گاہک کی خواہش کے مطابق رقم کی واپسی <strong>نقد (کیش)</strong> یا <strong>سٹور کریڈٹ</strong> کی شکل میں کی جائے گی۔</li>
+                <li style="margin-bottom: 2px;">واپسی کے وقت اصل بل پیش کرنا <strong>ضروری ہے</strong>۔ بل نہ ہونے کی صورت میں <strong>آرڈر نمبر (Order Number)</strong> فراہم کرنا لازمی ہے۔</li>
+                <li style="margin-bottom: 2px;">درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔</li>
+                <li style="margin-bottom: 2px;">اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی صورت میں اسے <strong>کسی بھی وقت</strong> واپس کیا جا سکتا ہے، بشرطیکہ سامان اپنی <strong>اصل پیکنگ</strong> میں ہو۔</li>
+                <li style="margin-bottom: 2px;">تمام <strong>پائپ</strong> وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔</li>
+            </ol>
         </div>
         
         <table class="totals-table">
