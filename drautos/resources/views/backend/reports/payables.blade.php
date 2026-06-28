@@ -16,6 +16,9 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Outstanding Payables</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{number_format($totalPayable, 2)}}</div>
+                            <div class="mt-2 text-xs font-weight-bold text-muted" style="background: rgba(40, 167, 69, 0.08); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(40, 167, 69, 0.15); display: inline-block;">
+                                <i class="fas fa-hand-holding-dollar text-success mr-1"></i> Advance Paid: <span class="text-success">Rs. {{number_format($totalAdvancePaid, 2)}}</span>
+                            </div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-arrow-up fa-2x text-gray-300"></i>

@@ -566,6 +566,7 @@ class ReportController extends Controller
             ->get();
 
         $totalPayable = $suppliers->sum('current_balance');
+        $totalAdvancePaid = abs(Supplier::where('current_balance', '<', 0)->sum('current_balance'));
 
         // Map to the format expected by the existing view to avoid breaking it
         $bySupplier = $suppliers->map(function($supplier) {
@@ -589,7 +590,7 @@ class ReportController extends Controller
         $chartLabels = $suppliers->pluck('name')->values();
         $chartData = $suppliers->pluck('current_balance')->values();
 
-        return view('backend.reports.payables', compact('totalPayable', 'bySupplier', 'chartLabels', 'chartData', 'chartTitle'));
+        return view('backend.reports.payables', compact('totalPayable', 'totalAdvancePaid', 'bySupplier', 'chartLabels', 'chartData', 'chartTitle'));
     }
 
     public function receivables(Request $request)
@@ -621,6 +622,7 @@ class ReportController extends Controller
 
         $byCustomer = $query->orderBy('current_balance', 'desc')->get();
         $totalReceivable = $byCustomer->sum('current_balance');
+        $totalAdvanceReceived = abs(\App\User::whereIn('role', ['user', 'customer'])->where('current_balance', '<', 0)->sum('current_balance'));
 
         // Get unique cities for the dropdown filter (only for customers that have receivables)
         $cities = \App\User::whereIn('role', ['user', 'customer'])
@@ -689,7 +691,7 @@ class ReportController extends Controller
             $current = $next;
         }
 
-        return view('backend.reports.receivables', compact('totalReceivable', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData', 'interval', 'startDate', 'endDate'));
+        return view('backend.reports.receivables', compact('totalReceivable', 'totalAdvanceReceived', 'byCustomer', 'cities', 'city', 'cityChartLabels', 'cityChartData', 'customerChartLabels', 'customerChartData', 'trendLabels', 'trendData', 'interval', 'startDate', 'endDate'));
     }
 
     public function productAnalysis(Request $request)

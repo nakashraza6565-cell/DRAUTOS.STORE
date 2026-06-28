@@ -16,6 +16,9 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Outstanding Receivables</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">Rs. {{number_format($totalReceivable, 2)}}</div>
+                            <div class="mt-2 text-xs font-weight-bold text-muted" style="background: rgba(220, 53, 69, 0.08); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(220, 53, 69, 0.15); display: inline-block;">
+                                <i class="fas fa-hand-holding-dollar text-danger mr-1"></i> Advance Received: <span class="text-danger">Rs. {{number_format($totalAdvanceReceived, 2)}}</span>
+                            </div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-arrow-down fa-2x text-gray-300"></i>
