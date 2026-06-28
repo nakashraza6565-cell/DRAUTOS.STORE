@@ -59,6 +59,9 @@
               padding: 0;
               margin: auto 4px;
               transition: all 0.2s ease-in-out;
+              background-color: #f8fafc;
+              border: 1px solid #cbd5e1;
+              position: relative;
           }
           .btn-nav-action:hover {
               background-color: #f1f5f9;
@@ -70,42 +73,70 @@
           }
           .btn-nav-expense:hover {
               color: #b91c1c !important;
+              background-color: rgba(220, 38, 38, 0.05);
+              border-color: rgba(220, 38, 38, 0.2);
           }
           .btn-nav-bilty {
               color: #0284c7 !important;
           }
           .btn-nav-bilty:hover {
               color: #0369a1 !important;
+              background-color: rgba(2, 132, 199, 0.05);
+              border-color: rgba(2, 132, 199, 0.2);
+          }
+          .btn-nav-cache {
+              color: #083259 !important;
+          }
+          .btn-nav-cache:hover {
+              color: #062038 !important;
+              background-color: rgba(8, 50, 89, 0.05);
+              border-color: rgba(8, 50, 89, 0.2);
+          }
+          .btn-nav-alerts {
+              color: #475569 !important;
+          }
+          .btn-nav-alerts:hover {
+              color: #1e293b !important;
+              background-color: rgba(71, 85, 105, 0.05);
+              border-color: rgba(71, 85, 105, 0.2);
+          }
+          .btn-nav-messages {
+              color: #475569 !important;
+          }
+          .btn-nav-messages:hover {
+              color: #1e293b !important;
+              background-color: rgba(71, 85, 105, 0.05);
+              border-color: rgba(71, 85, 105, 0.2);
           }
       </style>
 
-      <li class="nav-item mx-1 d-none d-md-inline-flex">
+      <li class="nav-item mx-1 d-none d-md-inline-flex align-items-center">
           <a class="nav-link btn-nav-action btn-nav-expense" href="#" data-toggle="modal" data-target="#quickExpenseModal" role="button" title="Quick Expense">
               <i class="fas fa-minus-circle fa-fw"></i>
           </a>
       </li>
 
-      <li class="nav-item mx-1 d-none d-md-inline-flex">
+      <li class="nav-item mx-1 d-none d-md-inline-flex align-items-center">
           <a class="nav-link btn-nav-action btn-nav-bilty" href="#" data-toggle="modal" data-target="#quickBiltyModal" role="button" title="Quick Delivery Receipt">
               <i class="fas fa-truck fa-fw"></i>
           </a>
       </li>
 
-      <li class="nav-item mr-3">
-          <a href="{{route('cache.clear')}}" class="btn btn-sm d-none d-md-inline-flex align-items-center" style="background:#f0f4f8; border:1px solid #e2e8f0; color:#083259; font-size:11px; font-weight:700; border-radius:6px; padding:5px 12px;">
-              <i class="fas fa-sync-alt mr-1" style="font-size:10px;"></i> Clear Cache
+      <li class="nav-item mx-1 d-none d-md-inline-flex align-items-center">
+          <a class="nav-link btn-nav-action btn-nav-cache" href="{{route('cache.clear')}}" role="button" title="Clear Cache">
+              <i class="fas fa-sync-alt fa-fw"></i>
           </a>
       </li>
 
       <!-- Removed icons per request -->
       
       <!-- Alerts -->
-      <li class="nav-item dropdown no-arrow mx-1">
+      <li class="nav-item dropdown no-arrow mx-1 d-inline-flex align-items-center">
        @include('backend.notification.show')
       </li>
 
       <!-- Messages -->
-      <li class="nav-item dropdown no-arrow mx-1" id="messageT" data-url="{{route('messages.five')}}">
+      <li class="nav-item dropdown no-arrow mx-1 d-inline-flex align-items-center" id="messageT" data-url="{{route('messages.five')}}">
         @include('backend.message.message')
       </li>
 

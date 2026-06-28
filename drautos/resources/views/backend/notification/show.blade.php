@@ -1,8 +1,8 @@
-<div id="notifications">
-    <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<div id="notifications" class="d-inline-flex align-items-center">
+    <a class="nav-link dropdown-toggle btn-nav-action btn-nav-alerts" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 0;">
         <i class="fas fa-bell fa-fw"></i>
         <!-- Counter - Alerts -->
-        <span class="badge badge-danger badge-counter">
+        <span class="badge badge-danger badge-counter" style="position: absolute; top: -2px; right: -2px; transform: scale(0.85);">
             @if(count(Auth::user()->unreadNotifications) >5 )<span data-count="5" class="count">5+</span>
             @else 
                 <span class="count" data-count="{{count(Auth::user()->unreadNotifications)}}">{{count(Auth::user()->unreadNotifications)}}</span>

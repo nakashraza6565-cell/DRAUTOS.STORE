@@ -221,6 +221,23 @@
             </div>
         </div>
 
+        <!-- Customer Sales Volume Bar Chart -->
+        @if($selectedProduct && count($chartBarLabels) > 0)
+            <div class="card glass-card border-0 mb-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="font-weight-bold text-slate-800 mb-0"><i class="fas fa-chart-bar mr-2 text-indigo-600"></i>Customer Sales Volume Analysis</h5>
+                        <p class="text-xs text-slate-400 mb-0">Quantities sold per customer with timeline details ({{ $selectedProduct->unit ?: 'Pc' }})</p>
+                    </div>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div style="height: 380px; position: relative;">
+                        <canvas id="customerSalesBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Trend Chart Container -->
         @if($selectedProduct && count($chartLabels) > 0)
             <div class="card glass-card border-0 mb-5">
@@ -897,6 +914,109 @@
                    "<'row'<'col-sm-12'tr>>" +
                    "<'row mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 text-right'p>>"
         });
+
+        @if($selectedProduct && count($chartBarLabels) > 0)
+        // Setup Customer Sales Bar Chart
+        const barCtx = document.getElementById('customerSalesBarChart').getContext('2d');
+        const gradientBar = barCtx.createLinearGradient(0, 0, 0, 300);
+        gradientBar.addColorStop(0, 'rgba(99, 102, 241, 0.85)');
+        gradientBar.addColorStop(1, 'rgba(129, 140, 248, 0.85)');
+
+        new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: @json($chartBarLabels),
+                datasets: [{
+                    label: 'Volume Unit ({{ $selectedProduct->unit ?: "Pc" }})',
+                    data: @json($chartBarQuantities),
+                    backgroundColor: gradientBar,
+                    borderColor: '#4f46e5',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    barPercentage: 0.6,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#f1f5f9',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 11,
+                                weight: 500
+                            },
+                            callback: function(value) {
+                                return value + ' {{ $selectedProduct->unit ?: "Pc" }}';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#64748b',
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 10,
+                                weight: 600
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Plus Jakarta Sans', sans-serif",
+                                size: 11,
+                                weight: 600
+                            }
+                        }
+                    },
+                    tooltip: {
+                        padding: 14,
+                        backgroundColor: '#1e293b',
+                        titleFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
+                            size: 13,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            family: "'Plus Jakarta Sans', sans-serif",
+                            size: 12
+                        },
+                        cornerRadius: 12,
+                        boxPadding: 6,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                const details = @json($chartBarDetails)[index];
+                                return [
+                                    'Customer: ' + details.customer,
+                                    'Timeline: ' + details.date,
+                                    'Volume: ' + details.qty + ' ' + details.unit,
+                                    'Order Ref: #' + details.order
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        @endif
 
         @if($selectedProduct && count($chartLabels) > 0)
         // Setup Chart

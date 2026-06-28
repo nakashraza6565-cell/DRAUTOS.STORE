@@ -734,6 +734,9 @@ class ReportController extends Controller
         $chartSalesData = [];
         $chartPurchasesData = [];
         $chartReturnsData = [];
+        $chartBarLabels = [];
+        $chartBarQuantities = [];
+        $chartBarDetails = [];
 
         if ($productId) {
             $selectedProduct = Product::find($productId);
@@ -757,7 +760,22 @@ class ReportController extends Controller
                     'orders.user_id',
                     'users.name as user_name'
                 )
+                ->orderBy('orders.created_at', 'ASC')
                 ->get();
+
+            foreach ($sales as $sale) {
+                $custName = $sale->user_name ?: ($sale->first_name . ' ' . $sale->last_name);
+                $dateStr = Carbon::parse($sale->created_at)->format('d M y');
+                $chartBarLabels[] = $custName . ' (' . $dateStr . ')';
+                $chartBarQuantities[] = (int)$sale->quantity;
+                $chartBarDetails[] = [
+                    'customer' => $custName,
+                    'date' => Carbon::parse($sale->created_at)->format('d M Y, h:i A'),
+                    'qty' => (int)$sale->quantity,
+                    'order' => $sale->order_number,
+                    'unit' => $selectedProduct->unit ?: 'Pc'
+                ];
+            }
 
             // 2. Returns
             $returns = DB::table('sale_return_items')
@@ -1031,7 +1049,8 @@ class ReportController extends Controller
 
         return view('backend.reports.product_analysis', compact(
             'products', 'selectedProduct', 'stats', 'salesHistory', 'startDate', 'endDate',
-            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData', 'topProducts', 'isAllTime'
+            'chartLabels', 'chartSalesData', 'chartPurchasesData', 'chartReturnsData', 'topProducts', 'isAllTime',
+            'chartBarLabels', 'chartBarQuantities', 'chartBarDetails'
         ));
     }
 

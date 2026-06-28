@@ -1,13 +1,11 @@
-<div id="messages">
-    <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<div id="messages" class="d-inline-flex align-items-center">
+    <a class="nav-link dropdown-toggle btn-nav-action btn-nav-messages" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: 0;">
         <i class="fas fa-envelope fa-fw"></i>
         <!-- Counter - Messages -->
         @if(count(Helper::messageList())>5)
-            <span data-count="5" class="badge badge-danger badge-counter">5+</span>
+            <span data-count="5" class="badge badge-danger badge-counter" style="position: absolute; top: -2px; right: -2px; transform: scale(0.85);">5+</span>
         @else 
-
-    <span data-count="{{count(Helper::messageList())}}" class="badge badge-danger badge-counter">{{count(Helper::messageList())}}</span>
-
+            <span data-count="{{count(Helper::messageList())}}" class="badge badge-danger badge-counter" style="position: absolute; top: -2px; right: -2px; transform: scale(0.85);">{{count(Helper::messageList())}}</span>
         @endif
     </a>
     <!-- Dropdown - Messages -->
