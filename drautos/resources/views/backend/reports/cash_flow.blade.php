@@ -187,8 +187,9 @@
                     <thead class="thead-light">
                         <tr>
                             <th>Date</th>
-                            <th>Account</th>
-                            <th>Description</th>
+                            <th>Detail (Who & What)</th>
+                            <th>Wallet / Account</th>
+                            <th>Operator</th>
                             <th>Type</th>
                             <th class="text-right">Amount</th>
                         </tr>
@@ -197,9 +198,16 @@
                         @forelse($transactions as $txn)
                         <tr>
                             <td data-title="Date">{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
-                            <td data-title="Account" class="font-weight-bold">{{ $txn->account->name ?? 'N/A' }}</td>
-                            <td data-title="Description" class="text-muted" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                {{ $txn->description ?: 'No details' }}
+                            <td data-title="Detail" class="font-weight-bold text-gray-800">
+                                {{ $txn->resolved_details }}
+                            </td>
+                            <td data-title="Wallet" class="text-muted small">
+                                <i class="fas fa-wallet mr-1 text-secondary"></i> {{ $txn->account->name ?? 'N/A' }}
+                            </td>
+                            <td data-title="Operator">
+                                <span class="badge badge-light text-primary px-2 py-1.5 border" style="border-radius: 6px; font-weight: 700; font-size: 0.75rem;">
+                                    <i class="fas fa-user-circle mr-1"></i> {{ $txn->resolved_operator }}
+                                </span>
                             </td>
                             <td data-title="Type">
                                 <span class="badge {{ $txn->type == 'in' ? 'bg-success-light text-success' : 'bg-danger-light text-danger' }} px-2 py-1" style="border-radius: 6px; font-weight: 700; font-size: 0.75rem;">
