@@ -50,14 +50,14 @@
 
       <style>
           .btn-nav-action {
-              width: 36px;
-              height: 36px;
-              border-radius: 50%;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              padding: 0;
-              margin: auto 4px;
+              width: 36px !important;
+              height: 36px !important;
+              border-radius: 50% !important;
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 0 !important;
+              margin: auto 4px !important;
               transition: all 0.2s ease-in-out;
               background-color: #f8fafc;
               border: 1px solid #cbd5e1;
