@@ -110,6 +110,10 @@
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");
         }
+        @font-face {
+            font-family: 'TahomaUrdu';
+            src: url("{{ str_replace('\\', '/', public_path('revue/tahoma.ttf')) }}") format("truetype");
+        }
         
     </style>
 </head>
@@ -358,7 +362,7 @@
     </div>
 
     <!-- شرائط و ضوابط -->
-    <div style="clear: both; margin-top: 20px; width: 100%; border: 1px solid #ddd; background: #fafafa; border-radius: 4px; padding: 10px; font-family: 'DejaVu Sans', sans-serif; direction: rtl; text-align: right;">
+    <div style="clear: both; margin-top: 20px; width: 100%; border: 1px solid #ddd; background: #fafafa; border-radius: 4px; padding: 10px; font-family: 'TahomaUrdu', sans-serif; direction: rtl; text-align: right;">
         <div style="font-size: 11px; font-weight: bold; color: #d32f2f; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 3px; text-align: right;">
             {{ renderUrduPdf('شرائط و ضوابط') }}
         </div>
