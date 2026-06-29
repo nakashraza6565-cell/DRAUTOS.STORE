@@ -166,7 +166,7 @@ class ReportController extends Controller
             ->whereBetween('transaction_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->orderBy('transaction_date', 'DESC')
             ->orderBy('id', 'DESC')
-            ->paginate(50);
+            ->get();
 
         // Batch resolve references for human-friendly party and operator details
         $customerLedgerIds = [];

@@ -73,7 +73,7 @@
                             <i class="fas fa-arrow-down text-success"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder text-gray-900 mb-1">Rs. {{ number_format($totalMoneyIn) }}</h3>
+                    <h3 class="font-weight-bolder text-gray-900 mb-1" id="total-money-in-val">Rs. {{ number_format($totalMoneyIn) }}</h3>
                     <p class="text-muted small mb-0">Total cash inflows</p>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                             <i class="fas fa-arrow-up text-danger"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder text-gray-900 mb-1">Rs. {{ number_format($totalMoneyOut) }}</h3>
+                    <h3 class="font-weight-bolder text-gray-900 mb-1" id="total-money-out-val">Rs. {{ number_format($totalMoneyOut) }}</h3>
                     <p class="text-muted small mb-0">Total expenses & payouts</p>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                             <i class="fas fa-scale-balanced text-primary"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder mb-1 {{ ($totalMoneyIn - $totalMoneyOut) >= 0 ? 'text-success' : 'text-danger' }}">
+                    <h3 class="font-weight-bolder mb-1 {{ ($totalMoneyIn - $totalMoneyOut) >= 0 ? 'text-success' : 'text-danger' }}" id="net-cash-flow-val">
                         Rs. {{ number_format($totalMoneyIn - $totalMoneyOut) }}
                     </h3>
                     <p class="text-muted small mb-0">Net period balance difference</p>
@@ -214,7 +214,8 @@
                         <tr class="transaction-row" 
                             data-wallet="{{ trim($txn->account->name ?? 'N/A') }}"
                             data-operator="{{ trim($txn->resolved_operator ?? 'System') }}"
-                            data-type="{{ $txn->type == 'in' ? 'Inflow' : 'Outflow' }}">
+                            data-type="{{ $txn->type == 'in' ? 'Inflow' : 'Outflow' }}"
+                            data-amount="{{ $txn->amount }}">
                             <td data-title="Date">{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
                             <td data-title="Detail" class="font-weight-bold text-gray-800">
                                 {{ $txn->resolved_details }}
@@ -247,11 +248,7 @@
                     </tbody>
                 </table>
             </div>
-            @if($transactions->hasPages())
-            <div class="card-footer bg-white border-0 py-3 d-flex justify-content-center">
-                {{ $transactions->appends(request()->input())->links() }}
-            </div>
-            @endif
+
         </div>
     </div>
 </div>
@@ -337,10 +334,14 @@
                 const selectedOperator = operatorSelect.value;
                 const selectedType = typeSelect.value;
 
+                let inflowSum = 0;
+                let outflowSum = 0;
+
                 rows.forEach(row => {
                     const w = row.getAttribute('data-wallet');
                     const o = row.getAttribute('data-operator');
                     const t = row.getAttribute('data-type');
+                    const amt = parseFloat(row.getAttribute('data-amount')) || 0;
 
                     const walletMatch = !selectedWallet || w === selectedWallet;
                     const operatorMatch = !selectedOperator || o === selectedOperator;
@@ -348,10 +349,35 @@
 
                     if (walletMatch && operatorMatch && typeMatch) {
                         row.style.display = '';
+                        if (t === 'Inflow') {
+                            inflowSum += amt;
+                        } else if (t === 'Outflow') {
+                            outflowSum += amt;
+                        }
                     } else {
                         row.style.display = 'none';
                     }
                 });
+
+                // Update summary metrics cards dynamically
+                const inflowEl = document.getElementById('total-money-in-val');
+                const outflowEl = document.getElementById('total-money-out-val');
+                const netEl = document.getElementById('net-cash-flow-val');
+
+                if (inflowEl) inflowEl.textContent = 'Rs. ' + Math.round(inflowSum).toLocaleString();
+                if (outflowEl) outflowEl.textContent = 'Rs. ' + Math.round(outflowSum).toLocaleString();
+
+                if (netEl) {
+                    const netFlow = inflowSum - outflowSum;
+                    netEl.textContent = 'Rs. ' + Math.round(netFlow).toLocaleString();
+
+                    // Dynamically toggle green/red classes based on negative or positive flow
+                    if (netFlow >= 0) {
+                        netEl.className = 'font-weight-bolder mb-1 text-success';
+                    } else {
+                        netEl.className = 'font-weight-bolder mb-1 text-danger';
+                    }
+                }
             }
 
             walletSelect.addEventListener('change', applyFilters);
