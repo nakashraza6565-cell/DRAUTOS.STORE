@@ -188,15 +188,33 @@
                         <tr>
                             <th>Date</th>
                             <th>Detail (Who & What)</th>
-                            <th>Wallet / Account</th>
-                            <th>Operator</th>
-                            <th>Type</th>
+                            <th>
+                                Wallet / Account
+                                <select id="filter-wallet" class="form-control form-control-sm d-inline-block w-auto ml-1 p-0" style="height: 18px; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 0 4px; line-height: 1; vertical-align: middle; background: #fff; cursor: pointer; color: #495057;">
+                                    <option value="">All</option>
+                                </select>
+                            </th>
+                            <th>
+                                Operator
+                                <select id="filter-operator" class="form-control form-control-sm d-inline-block w-auto ml-1 p-0" style="height: 18px; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 0 4px; line-height: 1; vertical-align: middle; background: #fff; cursor: pointer; color: #495057;">
+                                    <option value="">All</option>
+                                </select>
+                            </th>
+                            <th>
+                                Type
+                                <select id="filter-type" class="form-control form-control-sm d-inline-block w-auto ml-1 p-0" style="height: 18px; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 0 4px; line-height: 1; vertical-align: middle; background: #fff; cursor: pointer; color: #495057;">
+                                    <option value="">All</option>
+                                </select>
+                            </th>
                             <th class="text-right">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($transactions as $txn)
-                        <tr>
+                        <tr class="transaction-row" 
+                            data-wallet="{{ trim($txn->account->name ?? 'N/A') }}"
+                            data-operator="{{ trim($txn->resolved_operator ?? 'System') }}"
+                            data-type="{{ $txn->type == 'in' ? 'Inflow' : 'Outflow' }}">
                             <td data-title="Date">{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
                             <td data-title="Detail" class="font-weight-bold text-gray-800">
                                 {{ $txn->resolved_details }}
@@ -220,7 +238,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="fas fa-receipt fa-2x mb-3 text-gray-300"></i>
                                 <p class="mb-0">No transactions recorded in this period.</p>
                             </td>
@@ -270,6 +288,78 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // Header filtering logic for Detailed Transaction Ledger
+        const rows = document.querySelectorAll('.transaction-row');
+        const walletSelect = document.getElementById('filter-wallet');
+        const operatorSelect = document.getElementById('filter-operator');
+        const typeSelect = document.getElementById('filter-type');
+
+        if (walletSelect && operatorSelect && typeSelect) {
+            const wallets = new Set();
+            const operators = new Set();
+            const types = new Set();
+
+            rows.forEach(row => {
+                const w = row.getAttribute('data-wallet');
+                const o = row.getAttribute('data-operator');
+                const t = row.getAttribute('data-type');
+                if (w) wallets.add(w);
+                if (o) operators.add(o);
+                if (t) types.add(t);
+            });
+
+            // Populate Wallet Options
+            Array.from(wallets).sort().forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w;
+                opt.textContent = w;
+                walletSelect.appendChild(opt);
+            });
+
+            // Populate Operator Options
+            Array.from(operators).sort().forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o;
+                opt.textContent = o;
+                operatorSelect.appendChild(opt);
+            });
+
+            // Populate Type Options
+            Array.from(types).sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                typeSelect.appendChild(opt);
+            });
+
+            function applyFilters() {
+                const selectedWallet = walletSelect.value;
+                const selectedOperator = operatorSelect.value;
+                const selectedType = typeSelect.value;
+
+                rows.forEach(row => {
+                    const w = row.getAttribute('data-wallet');
+                    const o = row.getAttribute('data-operator');
+                    const t = row.getAttribute('data-type');
+
+                    const walletMatch = !selectedWallet || w === selectedWallet;
+                    const operatorMatch = !selectedOperator || o === selectedOperator;
+                    const typeMatch = !selectedType || t === selectedType;
+
+                    if (walletMatch && operatorMatch && typeMatch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            walletSelect.addEventListener('change', applyFilters);
+            operatorSelect.addEventListener('change', applyFilters);
+            typeSelect.addEventListener('change', applyFilters);
+        }
+
+        // Chart.js render code
         var chartData = {!! json_encode($reportData) !!};
         var labels = chartData.map(function(item) { return item.label; });
         var moneyIn = chartData.map(function(item) { return item.money_in; });
