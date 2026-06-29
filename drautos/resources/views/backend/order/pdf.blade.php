@@ -2,15 +2,15 @@
     $termsPath = base_path('../backend/img/urdu_terms.png');
     // Automatically generate or update the Urdu terms image on-the-fly when PDF is compiled
     if (function_exists('imagecreatetruecolor')) {
-        $width = 250;
-        $height = 330;
+        $width = 320;
+        $height = 320;
         $im = imagecreatetruecolor($width, $height);
         $white = imagecolorallocate($im, 255, 255, 255);
         $dark = imagecolorallocate($im, 34, 41, 47);
         $red = imagecolorallocate($im, 211, 47, 47);
         imagefilledrectangle($im, 0, 0, $width, $height, $white);
         
-        $fontPath = base_path('../revue/tahoma.ttf');
+        $fontPath = base_path('../revue/noto_urdu.ttf');
         if (file_exists($fontPath)) {
             if (!function_exists('prepForGd')) {
                 function prepForGd($text) {
@@ -33,60 +33,48 @@
             
             // Title
             $title = prepForGd('شرائط و ضوابط');
-            $bbox = imagettfbbox(10, 0, $fontPath, $title);
+            $bbox = imagettfbbox(12, 0, $fontPath, $title);
             $textWidth = $bbox[2] - $bbox[0];
-            imagettftext($im, 10, 0, $width - $textWidth - 5, 22, $red, $fontPath, $title);
+            imagettftext($im, 12, 0, $width - $textWidth - 5, 25, $red, $fontPath, $title);
             
-            // 7 Points
+            // 7 Points loosely wrapped for 320px width
             $lines = [
                 [
-                    prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی') . ' .1',
-                    prepForGd('15 یوم کے اندر ممکن ہے۔') . '   '
+                    prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') . ' .1'
                 ],
                 [
-                    prepForGd('15 دن گزر جانے کے بعد، یا واپسی') . ' .2',
-                    prepForGd('کی کوئی واضح وجہ پیش نہ کرنے کی') . '   ',
-                    prepForGd('صورت میں، رقم سے 25 فیصد') . '   ',
-                    prepForGd('کٹوتی کی جائے گی۔') . '   '
+                    prepForGd('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ') . ' .2',
+                    prepForGd('پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') . '   '
                 ],
                 [
-                    prepForGd('گاہک کی خواہش کے مطابق رقم کی') . ' .3',
-                    prepForGd('واپسی نقد (کیش) یا سٹور') . '   ',
+                    prepForGd('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش) یا سٹور') . ' .3',
                     prepForGd('کریڈٹ کی شکل میں کی جائے گی۔') . '   '
                 ],
                 [
-                    prepForGd('واپسی کے وقت اصل بل پیش کرنا') . ' .4',
-                    prepForGd('ضروری ہے۔ بل نہ ہونے کی صورت') . '   ',
-                    prepForGd('میں آرڈر نمبر (Order Number)') . '   ',
-                    prepForGd('فراہم کرنا لازمی ہے۔') . '   '
+                    prepForGd('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ ہونے کی') . ' .4',
+                    prepForGd('صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') . '   '
                 ],
                 [
-                    prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ') . ' .5',
-                    prepForGd('پھوٹ کا شکار اشیاء ہرگز واپس') . '   ',
-                    prepForGd('نہیں لی جائیں گی۔') . '   '
+                    prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') . ' .5'
                 ],
                 [
-                    prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے') . ' .6',
-                    prepForGd('مطابق کام نہ کرے تو نقص کی') . '   ',
-                    prepForGd('صورت میں اسے کسی بھی وقت واپس') . '   ',
-                    prepForGd('کیا جا سکتا ہے، بشرطیکہ سامان') . '   ',
-                    prepForGd('اپنی اصل پیکنگ میں ہو۔') . '   '
+                    prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی صورت میں اسے') . ' .6',
+                    prepForGd('کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ سامان اپنی اصل پیکنگ میں ہو۔') . '   '
                 ],
                 [
-                    prepForGd('تمام پائپ وارنٹی کے حامل ہیں') . ' .7',
-                    prepForGd('اور ان کا کلیم قابلِ قبول ہے۔') . '   '
+                    prepForGd('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') . ' .7'
                 ]
             ];
             
-            $y = 44;
+            $y = 55;
             foreach ($lines as $group) {
                 foreach ($group as $line) {
-                    $bbox = imagettfbbox(7.5, 0, $fontPath, $line);
+                    $bbox = imagettfbbox(9, 0, $fontPath, $line);
                     $textWidth = $bbox[2] - $bbox[0];
-                    imagettftext($im, 7.5, 0, $width - $textWidth - 5, $y, $dark, $fontPath, $line);
-                    $y += 13;
+                    imagettftext($im, 9, 0, $width - $textWidth - 5, $y, $dark, $fontPath, $line);
+                    $y += 20;
                 }
-                $y += 4;
+                $y += 6; // Space between points
             }
             
             if (!is_dir(dirname($termsPath))) {
@@ -354,7 +342,7 @@
     <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 10px; direction: {{ request('lang') === 'ur' ? 'rtl' : 'ltr' }};">
         <tr>
             <!-- Left/Right depending on direction: Terms Image -->
-            <td style="width: 50%; vertical-align: top; border: none; padding: 0; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};">
+            <td style="width: 55%; vertical-align: top; border: none; padding: 0; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};">
                 @php
                     $termsPath = base_path('../backend/img/urdu_terms.png');
                     $base64Terms = '';
@@ -363,11 +351,11 @@
                     }
                 @endphp
                 @if($base64Terms)
-                    <img src="{{ $base64Terms }}" style="width: 100%; max-width: 250px; height: auto; display: inline-block;" alt="شرائط و ضوابط">
+                    <img src="{{ $base64Terms }}" style="width: 100%; max-width: 320px; height: auto; display: inline-block;" alt="شرائط و ضوابط">
                 @endif
             </td>
             <!-- Left/Right depending on direction: Totals Table -->
-            <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
+            <td style="width: 45%; vertical-align: top; border: none; padding: 0;">
                 <table class="totals-table" style="width: 100%; float: none; margin: 0;">
                     @php
                         $gross_subtotal = 0;
