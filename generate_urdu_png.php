@@ -20,8 +20,8 @@ function prepForGd($text) {
     return str_replace('__ORDER_NUMBER__', '(Order Number)', $reversedSentence);
 }
 
-$width = 600;
-$height = 350;
+$width = 330;
+$height = 290;
 $im = imagecreatetruecolor($width, $height);
 $white = imagecolorallocate($im, 255, 255, 255);
 $dark = imagecolorallocate($im, 34, 41, 47);
@@ -37,34 +37,48 @@ if (!file_exists($fontPath)) {
 
 // Title
 $title = prepForGd('شرائط و ضوابط');
-$bbox = imagettfbbox(14, 0, $fontPath, $title);
+$bbox = imagettfbbox(11, 0, $fontPath, $title);
 $textWidth = $bbox[2] - $bbox[0];
-$x = $width - $textWidth - 20;
-imagettftext($im, 14, 0, $x, 40, $red, $fontPath, $title);
+$x = $width - $textWidth - 10;
+imagettftext($im, 11, 0, $x, 25, $red, $fontPath, $title);
 
-// 7 Points
+// 7 Points split manually for 330px width
 $lines = [
-    prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') . ' .1',
-    prepForGd('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') . ' .2',
-    prepForGd('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش) یا سٹور کریڈٹ کی شکل میں کی جائے گی۔') . ' .3',
-    prepForGd('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ ہونے کی صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') . ' .4',
-    prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') . ' .5',
-    prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی صورت میں اسے کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ سامان اپنی اصل پیکنگ میں ہو۔') . ' .6',
-    prepForGd('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') . ' .7'
+    [prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') . ' .1'],
+    [
+        prepForGd('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ') . ' .2',
+        prepForGd('پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') . '   '
+    ],
+    [
+        prepForGd('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش)') . ' .3',
+        prepForGd('یا سٹور کریڈٹ کی شکل میں کی جائے گی۔') . '   '
+    ],
+    [
+        prepForGd('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ') . ' .4',
+        prepForGd('ہونے کی صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') . '   '
+    ],
+    [prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') . ' .5'],
+    [
+        prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی') . ' .6',
+        prepForGd('صورت میں اسے کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ') . '   ',
+        prepForGd('سامان اپنی اصل پیکنگ میں ہو۔') . '   '
+    ],
+    [prepForGd('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') . ' .7']
 ];
 
-$y = 80;
-foreach ($lines as $line) {
-    // For proper right alignment in GD LTR canvas:
-    $bbox = imagettfbbox(10, 0, $fontPath, $line);
-    $textWidth = $bbox[2] - $bbox[0];
-    $x = $width - $textWidth - 20;
-    
-    imagettftext($im, 10, 0, $x, $y, $dark, $fontPath, $line);
-    $y += 35;
+$y = 52;
+foreach ($lines as $group) {
+    foreach ($group as $line) {
+        $bbox = imagettfbbox(8, 0, $fontPath, $line);
+        $textWidth = $bbox[2] - $bbox[0];
+        $x = $width - $textWidth - 10;
+        
+        imagettftext($im, 8, 0, $x, $y, $dark, $fontPath, $line);
+        $y += 18;
+    }
+    $y += 4; // Extra space between bullet points
 }
 
-// Create dir if not exists
 if (!is_dir(__DIR__ . '/backend/img')) {
     mkdir(__DIR__ . '/backend/img', 0755, true);
 }
