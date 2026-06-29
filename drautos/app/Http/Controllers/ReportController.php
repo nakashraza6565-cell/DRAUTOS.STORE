@@ -350,8 +350,109 @@ class ReportController extends Controller
             ];
         }
 
+        // Fetch transactions for the detailed transaction ledger inside the PDF
+        $transactions = \App\Models\AccountTransaction::with('account')
+            ->whereBetween('transaction_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->orderBy('transaction_date', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get();
+
+        // Resolve party and operator details for PDF rendering
+        $customerLedgerIds = [];
+        $supplierLedgerIds = [];
+        $expenseIds = [];
+        
+        foreach ($transactions as $txn) {
+            if ($txn->reference_type === 'CustomerLedger' || $txn->reference_type === 'App\Models\CustomerLedger') {
+                $customerLedgerIds[] = $txn->reference_id;
+            } elseif ($txn->reference_type === 'SupplierLedger' || $txn->reference_type === 'App\Models\SupplierLedger') {
+                $supplierLedgerIds[] = $txn->reference_id;
+            } elseif ($txn->reference_type === 'Expense' || $txn->reference_type === 'App\Models\Expense') {
+                $expenseIds[] = $txn->reference_id;
+            }
+        }
+        
+        $customerLedgers = [];
+        if (!empty($customerLedgerIds)) {
+            $customerLedgers = \App\Models\CustomerLedger::with(['user'])->whereIn('id', $customerLedgerIds)->get()->keyBy('id');
+        }
+        
+        $supplierLedgers = [];
+        if (!empty($supplierLedgerIds)) {
+            $supplierLedgers = \App\Models\SupplierLedger::with(['supplier'])->whereIn('id', $supplierLedgerIds)->get()->keyBy('id');
+        }
+        
+        $expenses = [];
+        if (!empty($expenseIds)) {
+            $expenses = \App\Models\Expense::with(['user'])->whereIn('id', $expenseIds)->get()->keyBy('id');
+        }
+
+        foreach ($transactions as $txn) {
+            $party = 'N/A';
+            $operator = 'System';
+            $details = $txn->description ?: '';
+            
+            if ($txn->account) {
+                $accountName = strtolower($txn->account->name);
+                if (str_contains($accountName, 'tamoor') || str_contains($accountName, 'tamoo')) {
+                    $operator = 'Tamoor';
+                } elseif (str_contains($accountName, 'danial') || str_contains($accountName, 'danyal')) {
+                    $operator = 'Danial';
+                } elseif (str_contains($accountName, 'naqash')) {
+                    $operator = 'Naqash';
+                } else {
+                    $parts = explode(' ', trim($txn->account->name));
+                    $operator = count($parts) > 0 ? ucfirst($parts[0]) : $txn->account->name;
+                }
+            }
+
+            if ($txn->reference_type === 'CustomerLedger' || $txn->reference_type === 'App\Models\CustomerLedger') {
+                $ledger = $customerLedgers->get($txn->reference_id);
+                if ($ledger) {
+                    $party = $ledger->user ? $ledger->user->name : 'Walk-in Customer';
+                    if ($txn->type === 'in') {
+                        $details = 'Received from Customer: ' . $party;
+                    } else {
+                        $details = 'Refund paid to Customer: ' . $party;
+                    }
+                    if ($ledger->description) {
+                        $details .= ' (' . $ledger->description . ')';
+                    }
+                }
+            } elseif ($txn->reference_type === 'SupplierLedger' || $txn->reference_type === 'App\Models\SupplierLedger') {
+                $ledger = $supplierLedgers->get($txn->reference_id);
+                if ($ledger) {
+                    $party = $ledger->supplier ? $ledger->supplier->name : 'N/A';
+                    if ($txn->type === 'out') {
+                        $details = 'Paid to Supplier: ' . $party;
+                    } else {
+                        $details = 'Refund from Supplier: ' . $party;
+                    }
+                    if ($ledger->description) {
+                        $details .= ' (' . $ledger->description . ')';
+                    }
+                }
+            } elseif ($txn->reference_type === 'Expense' || $txn->reference_type === 'App\Models\Expense') {
+                $exp = $expenses->get($txn->reference_id);
+                if ($exp) {
+                    $party = $exp->title;
+                    $details = 'Shop Expense: ' . $exp->title;
+                    if ($exp->description) {
+                        $details .= ' (' . $exp->description . ')';
+                    }
+                    if ($exp->user) {
+                        $operator = $exp->user->name;
+                    }
+                }
+            }
+
+            $txn->resolved_party = $party;
+            $txn->resolved_operator = $operator;
+            $txn->resolved_details = $details;
+        }
+
         $pdf = \PDF::loadView('backend.reports.cash_flow_pdf', compact(
-            'reportData', 'totalMoneyIn', 'totalMoneyOut', 'startDate', 'endDate', 'groupBy'
+            'reportData', 'totalMoneyIn', 'totalMoneyOut', 'startDate', 'endDate', 'groupBy', 'transactions'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->download('cash_flow_report_'.date('Y-m-d').'.pdf');

@@ -133,27 +133,39 @@
         </table>
     </div>
 
-    <h4 style="color: #083259; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Periodic Breakdown</h4>
+    <h4 style="color: #083259; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Detailed Transaction Ledger</h4>
     <table class="data-table">
         <thead>
             <tr>
-                <th>Period</th>
-                <th>Money In (Inflow)</th>
-                <th>Money Out (Outflow)</th>
-                <th>Net Flow</th>
+                <th style="width: 12%;">Date</th>
+                <th style="width: 43%; text-align: left;">Detail (Who & What)</th>
+                <th style="width: 15%;">Wallet / Account</th>
+                <th style="width: 10%;">Operator</th>
+                <th style="width: 10%;">Type</th>
+                <th style="width: 10%; text-align: right;">Amount</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($reportData as $data)
+            @forelse($transactions as $txn)
             <tr>
-                <td style="font-weight: bold;">{{ $data['label'] }}</td>
-                <td class="text-success">Rs. {{ number_format($data['money_in']) }}</td>
-                <td class="text-danger">Rs. {{ number_format($data['money_out']) }}</td>
-                <td style="font-weight: bold;" class="{{ $data['net_flow'] >= 0 ? 'text-primary' : 'text-danger' }}">
-                    Rs. {{ number_format($data['net_flow']) }}
+                <td>{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
+                <td style="text-align: left; font-weight: bold; color: #1e293b; font-size: 11px;">{{ $txn->resolved_details }}</td>
+                <td style="color: #475569; font-size: 11px;">{{ $txn->account->name ?? 'N/A' }}</td>
+                <td style="font-size: 11px; font-weight: bold; color: #083259;">{{ $txn->resolved_operator }}</td>
+                <td>
+                    <span style="font-weight: bold; font-size: 10px;" class="{{ $txn->type == 'in' ? 'text-success' : 'text-danger' }}">
+                        {{ strtoupper($txn->type == 'in' ? 'Inflow' : 'Outflow') }}
+                    </span>
+                </td>
+                <td style="text-align: right; font-weight: bold;" class="{{ $txn->type == 'in' ? 'text-success' : 'text-danger' }}">
+                    {{ $txn->type == 'in' ? '+' : '-' }} Rs. {{ number_format($txn->amount) }}
                 </td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="6" style="padding: 20px; color: #94a3b8; text-align: center;">No transactions recorded in this period.</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
 
