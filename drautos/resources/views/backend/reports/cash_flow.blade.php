@@ -215,7 +215,8 @@
                             data-wallet="{{ trim($txn->account->name ?? 'N/A') }}"
                             data-operator="{{ trim($txn->resolved_operator ?? 'System') }}"
                             data-type="{{ $txn->type == 'in' ? 'Inflow' : 'Outflow' }}"
-                            data-amount="{{ $txn->amount }}">
+                            data-amount="{{ $txn->amount }}"
+                            data-interval="{{ $txn->interval_label }}">
                             <td data-title="Date">{{ Carbon\Carbon::parse($txn->transaction_date)->format('M d, Y') }}</td>
                             <td data-title="Detail" class="font-weight-bold text-gray-800">
                                 {{ $txn->resolved_details }}
@@ -378,6 +379,38 @@
                         netEl.className = 'font-weight-bolder mb-1 text-danger';
                     }
                 }
+
+                // Update chart datasets dynamically based on visible/filtered rows
+                if (window.cashFlowChart) {
+                    const intervalSums = {};
+                    chartData.forEach(item => {
+                        intervalSums[item.label] = { money_in: 0, money_out: 0 };
+                    });
+
+                    rows.forEach(row => {
+                        if (row.style.display !== 'none') {
+                            const lbl = row.getAttribute('data-interval');
+                            const t = row.getAttribute('data-type');
+                            const amt = parseFloat(row.getAttribute('data-amount')) || 0;
+
+                            if (lbl && intervalSums[lbl]) {
+                                if (t === 'Inflow') {
+                                    intervalSums[lbl].money_in += amt;
+                                } else if (t === 'Outflow') {
+                                    intervalSums[lbl].money_out += amt;
+                                }
+                            }
+                        }
+                    });
+
+                    // Map updated values to chart data arrays
+                    const updatedMoneyIn = chartData.map(item => intervalSums[item.label].money_in);
+                    const updatedMoneyOut = chartData.map(item => intervalSums[item.label].money_out);
+
+                    window.cashFlowChart.data.datasets[0].data = updatedMoneyIn;
+                    window.cashFlowChart.data.datasets[1].data = updatedMoneyOut;
+                    window.cashFlowChart.update();
+                }
             }
 
             walletSelect.addEventListener('change', applyFilters);
@@ -392,7 +425,7 @@
         var moneyOut = chartData.map(function(item) { return item.money_out; });
 
         var ctx = document.getElementById("cashFlowReportChart").getContext('2d');
-        new Chart(ctx, {
+        window.cashFlowChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,

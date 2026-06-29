@@ -199,6 +199,16 @@ class ReportController extends Controller
         }
 
         foreach ($transactions as $txn) {
+            $resolvedLabel = '';
+            $txnDateStr = $txn->transaction_date;
+            foreach ($intervals as $interval) {
+                if ($txnDateStr >= $interval['start']->format('Y-m-d') && $txnDateStr <= $interval['end']->format('Y-m-d')) {
+                    $resolvedLabel = $interval['label'];
+                    break;
+                }
+            }
+            $txn->interval_label = $resolvedLabel;
+
             $party = 'N/A';
             $operator = 'System';
             $details = $txn->description ?: '';
