@@ -258,7 +258,7 @@
             <!-- Left/Right depending on direction: Terms Image -->
             <td style="width: 55%; vertical-align: top; border: none; padding: 0; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};">
                 @php
-                    $termsPath = base_path('../backend/img/urdu_terms.png');
+                    $termsPath = base_path('../backend/img/urdu_terms_v2.png');
                     $base64Terms = '';
                     if (file_exists($termsPath)) {
                         $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
