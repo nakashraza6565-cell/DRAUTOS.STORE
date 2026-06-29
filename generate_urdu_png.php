@@ -20,8 +20,8 @@ function prepForGd($text) {
     return str_replace('__ORDER_NUMBER__', '(Order Number)', $reversedSentence);
 }
 
-$width = 330;
-$height = 290;
+$width = 250;
+$height = 330;
 $im = imagecreatetruecolor($width, $height);
 $white = imagecolorallocate($im, 255, 255, 255);
 $dark = imagecolorallocate($im, 34, 41, 47);
@@ -37,46 +37,63 @@ if (!file_exists($fontPath)) {
 
 // Title
 $title = prepForGd('شرائط و ضوابط');
-$bbox = imagettfbbox(11, 0, $fontPath, $title);
+$bbox = imagettfbbox(10, 0, $fontPath, $title);
 $textWidth = $bbox[2] - $bbox[0];
-$x = $width - $textWidth - 10;
-imagettftext($im, 11, 0, $x, 25, $red, $fontPath, $title);
+$x = $width - $textWidth - 5;
+imagettftext($im, 10, 0, $x, 22, $red, $fontPath, $title);
 
-// 7 Points split manually for 330px width
+// 7 Points split manually for 250px width
 $lines = [
-    [prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی 15 یوم کے اندر ممکن ہے۔') . ' .1'],
     [
-        prepForGd('15 دن گزر جانے کے بعد، یا واپسی کی کوئی واضح وجہ') . ' .2',
-        prepForGd('پیش نہ کرنے کی صورت میں، رقم سے 25 فیصد کٹوتی کی جائے گی۔') . '   '
+        prepForGd('خریدے گئے سامان کی واپسی یا تبدیلی') . ' .1',
+        prepForGd('15 یوم کے اندر ممکن ہے۔') . '   '
     ],
     [
-        prepForGd('گاہک کی خواہش کے مطابق رقم کی واپسی نقد (کیش)') . ' .3',
-        prepForGd('یا سٹور کریڈٹ کی شکل میں کی جائے گی۔') . '   '
+        prepForGd('15 دن گزر جانے کے بعد، یا واپسی') . ' .2',
+        prepForGd('کی کوئی واضح وجہ پیش نہ کرنے کی') . '   ',
+        prepForGd('صورت میں، رقم سے 25 فیصد') . '   ',
+        prepForGd('کٹوتی کی جائے گی۔') . '   '
     ],
     [
-        prepForGd('واپسی کے وقت اصل بل پیش کرنا ضروری ہے۔ بل نہ') . ' .4',
-        prepForGd('ہونے کی صورت میں آرڈر نمبر (Order Number) فراہم کرنا لازمی ہے۔') . '   '
+        prepForGd('گاہک کی خواہش کے مطابق رقم کی') . ' .3',
+        prepForGd('واپسی نقد (کیش) یا سٹور') . '   ',
+        prepForGd('کریڈٹ کی شکل میں کی جائے گی۔') . '   '
     ],
-    [prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ پھوٹ کا شکار اشیاء ہرگز واپس نہیں لی جائیں گی۔') . ' .5'],
     [
-        prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے مطابق کام نہ کرے تو نقص کی') . ' .6',
-        prepForGd('صورت میں اسے کسی بھی وقت واپس کیا جا سکتا ہے، بشرطیکہ') . '   ',
-        prepForGd('سامان اپنی اصل پیکنگ میں ہو۔') . '   '
+        prepForGd('واپسی کے وقت اصل بل پیش کرنا') . ' .4',
+        prepForGd('ضروری ہے۔ بل نہ ہونے کی صورت') . '   ',
+        prepForGd('میں آرڈر نمبر (Order Number)') . '   ',
+        prepForGd('فراہم کرنا لازمی ہے۔') . '   '
     ],
-    [prepForGd('تمام پائپ وارنٹی کے حامل ہیں اور ان کا کلیم قابلِ قبول ہے۔') . ' .7']
+    [
+        prepForGd('درآمد شدہ (امپورٹڈ) سامان اور ٹوٹ') . ' .5',
+        prepForGd('پھوٹ کا شکار اشیاء ہرگز واپس') . '   ',
+        prepForGd('نہیں لی جائیں گی۔') . '   '
+    ],
+    [
+        prepForGd('اگر کوئی پراڈکٹ اپنے مقصد کے') . ' .6',
+        prepForGd('مطابق کام نہ کرے تو نقص کی') . '   ',
+        prepForGd('صورت میں اسے کسی بھی وقت واپس') . '   ',
+        prepForGd('کیا جا سکتا ہے، بشرطیکہ سامان') . '   ',
+        prepForGd('اپنی اصل پیکنگ میں ہو۔') . '   '
+    ],
+    [
+        prepForGd('تمام پائپ وارنٹی کے حامل ہیں') . ' .7',
+        prepForGd('اور ان کا کلیم قابلِ قبول ہے۔') . '   '
+    ]
 ];
 
-$y = 52;
+$y = 44;
 foreach ($lines as $group) {
     foreach ($group as $line) {
-        $bbox = imagettfbbox(8, 0, $fontPath, $line);
+        $bbox = imagettfbbox(7.5, 0, $fontPath, $line);
         $textWidth = $bbox[2] - $bbox[0];
-        $x = $width - $textWidth - 10;
+        $x = $width - $textWidth - 5;
         
-        imagettftext($im, 8, 0, $x, $y, $dark, $fontPath, $line);
-        $y += 18;
+        imagettftext($im, 7.5, 0, $x, $y, $dark, $fontPath, $line);
+        $y += 13;
     }
-    $y += 4; // Extra space between bullet points
+    $y += 4; // Space between points
 }
 
 if (!is_dir(__DIR__ . '/backend/img')) {

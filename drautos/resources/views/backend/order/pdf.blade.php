@@ -273,7 +273,7 @@
     </table>
  
     <div class="clearfix">
-        <div class="payment-info" style="direction: rtl; text-align: right; width: 50%;">
+        <div class="payment-info" style="direction: rtl; text-align: right; width: 50%; float: left; padding-top: 5px;">
             @php
                 $termsPath = base_path('../backend/img/urdu_terms.png');
                 $base64Terms = '';
@@ -282,7 +282,7 @@
                 }
             @endphp
             @if($base64Terms)
-                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 290px; height: auto; display: block; float: right;" alt="شرائط و ضوابط">
+                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 250px; height: auto; display: block; float: right;" alt="شرائط و ضوابط">
             @endif
         </div>
         
