@@ -351,103 +351,101 @@
         </tbody>
     </table>
  
-    <div class="clearfix">
-        <div class="payment-info" style="direction: rtl; text-align: right; width: 50%; float: left; padding-top: 5px;">
-            @php
-                $termsPath = base_path('../backend/img/urdu_terms.png');
-                $base64Terms = '';
-                if (file_exists($termsPath)) {
-                    $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
-                }
-            @endphp
-            @if($base64Terms)
-                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 250px; height: auto; display: block; float: right;" alt="شرائط و ضوابط">
-            @endif
-        </div>
-        
-        <table class="totals-table">
-            @php
-                $gross_subtotal = 0;
-                $item_discounts = 0;
-                foreach($order->cart_info as $ci) {
-                    $actual_price = $ci->product->price ?? ($ci->bundle->price ?? $ci->price);
-                    if($actual_price > $ci->price) {
-                        $gross_subtotal += ($actual_price * $ci->quantity);
-                        $item_discounts += ($actual_price - $ci->price) * $ci->quantity;
-                    } else {
-                        $gross_subtotal += ($ci->price * $ci->quantity);
+    <table style="width: 100%; border: none; border-collapse: collapse; margin-top: 10px; direction: {{ request('lang') === 'ur' ? 'rtl' : 'ltr' }};">
+        <tr>
+            <!-- Left/Right depending on direction: Terms Image -->
+            <td style="width: 50%; vertical-align: top; border: none; padding: 0; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }};">
+                @php
+                    $termsPath = base_path('../backend/img/urdu_terms.png');
+                    $base64Terms = '';
+                    if (file_exists($termsPath)) {
+                        $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
                     }
-                }
-            @endphp
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Sub Total') }}</td>
-                <td class="value">Rs. {{ number_format($gross_subtotal, 2) }}</td>
-            </tr>
-            @if($item_discounts > 0)
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Item Discounts') }}</td>
-                <td class="value">- Rs. {{ number_format($item_discounts, 2) }}</td>
-            </tr>
-            @endif
-            @if($order->coupon > 0)
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Coupon Discount') }}</td>
-                <td class="value">- Rs. {{ number_format($order->coupon, 2) }}</td>
-            </tr>
-            @endif
-            @if($order->shipping && $order->shipping->price > 0)
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Shipping') }}</td>
-                <td class="value">Rs. {{ number_format($order->shipping->price, 2) }}</td>
-            </tr>
-            @endif
-            <tr class="grand-total">
-                <td class="label" style="font-weight:bold;">{{ Helper::translateLabel('Grand Total') }}</td>
-                <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
-            </tr>
-            @php
-                $amount_paid = $order->amount_paid ?? 0;
-                $current_bill_unpaid = $order->total_amount - $amount_paid;
-                
-                if($order->user_id == 1) {
-                    $previous_balance = 0;
-                    $final_balance_due = $current_bill_unpaid;
-                } else {
-                    // Get Current Ledger Balance
-                    $current_user_balance = $order->user->current_balance ?? 0;
-                    
-                    // Check if this order is already recorded in the ledger
-                    $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
-                    
-                    // If it's in the ledger, the current_balance already includes this bill.
-                    // We subtract the unpaid portion to find what the balance was BEFORE this bill.
-                    if($is_in_ledger) {
-                        $previous_balance = $current_user_balance - $current_bill_unpaid;
-                    } else {
-                        $previous_balance = $current_user_balance;
-                    }
-                    
-                    $final_balance_due = $previous_balance + $current_bill_unpaid;
-                }
-            @endphp
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Current Bill Total') }}</td>
-                <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
-            </tr>
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Amount Paid') }}</td>
-                <td class="value">Rs. {{ number_format($amount_paid, 2) }}</td>
-            </tr>
-            <tr>
-                <td class="label">{{ Helper::translateLabel('Previous Balance') }}</td>
-                <td class="value">Rs. {{ number_format($previous_balance, 2) }}</td>
-            </tr>
-            <tr class="grand-total">
-                <td class="label" style="font-weight:bold; color:#d32f2f;">{{ Helper::translateLabel('Balance Due') }}</td>
-                <td class="value" style="color:#d32f2f;">Rs. {{ number_format($final_balance_due, 2) }}</td>
-            </tr>
-        </table>
-    </div>
+                @endphp
+                @if($base64Terms)
+                    <img src="{{ $base64Terms }}" style="width: 100%; max-width: 250px; height: auto; display: inline-block;" alt="شرائط و ضوابط">
+                @endif
+            </td>
+            <!-- Left/Right depending on direction: Totals Table -->
+            <td style="width: 50%; vertical-align: top; border: none; padding: 0;">
+                <table class="totals-table" style="width: 100%; float: none; margin: 0;">
+                    @php
+                        $gross_subtotal = 0;
+                        $item_discounts = 0;
+                        foreach($order->cart_info as $ci) {
+                            $actual_price = $ci->product->price ?? ($ci->bundle->price ?? $ci->price);
+                            if($actual_price > $ci->price) {
+                                $gross_subtotal += ($actual_price * $ci->quantity);
+                                $item_discounts += ($actual_price - $ci->price) * $ci->quantity;
+                            } else {
+                                $gross_subtotal += ($ci->price * $ci->quantity);
+                            }
+                        }
+                    @endphp
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Sub Total') }}</td>
+                        <td class="value">Rs. {{ number_format($gross_subtotal, 2) }}</td>
+                    </tr>
+                    @if($item_discounts > 0)
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Item Discounts') }}</td>
+                        <td class="value">- Rs. {{ number_format($item_discounts, 2) }}</td>
+                    </tr>
+                    @endif
+                    @if($order->coupon > 0)
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Coupon Discount') }}</td>
+                        <td class="value">- Rs. {{ number_format($order->coupon, 2) }}</td>
+                    </tr>
+                    @endif
+                    @if($order->shipping && $order->shipping->price > 0)
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Shipping') }}</td>
+                        <td class="value">Rs. {{ number_format($order->shipping->price, 2) }}</td>
+                    </tr>
+                    @endif
+                    <tr class="grand-total">
+                        <td class="label" style="font-weight:bold;">{{ Helper::translateLabel('Grand Total') }}</td>
+                        <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
+                    </tr>
+                    @php
+                        $amount_paid = $order->amount_paid ?? 0;
+                        $current_bill_unpaid = $order->total_amount - $amount_paid;
+                        
+                        if($order->user_id == 1) {
+                            $previous_balance = 0;
+                            $final_balance_due = $current_bill_unpaid;
+                        } else {
+                            $current_user_balance = $order->user->current_balance ?? 0;
+                            $is_in_ledger = \App\Models\CustomerLedger::where('reference_id', $order->id)->where('category', 'order')->exists();
+                            if($is_in_ledger) {
+                                $previous_balance = $current_user_balance - $current_bill_unpaid;
+                            } else {
+                                $previous_balance = $current_user_balance;
+                            }
+                            $final_balance_due = $previous_balance + $current_bill_unpaid;
+                        }
+                    @endphp
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Current Bill Total') }}</td>
+                        <td class="value">Rs. {{ number_format($order->total_amount, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Amount Paid') }}</td>
+                        <td class="value">Rs. {{ number_format($amount_paid, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">{{ Helper::translateLabel('Previous Balance') }}</td>
+                        <td class="value">Rs. {{ number_format($previous_balance, 2) }}</td>
+                    </tr>
+                    <tr class="grand-total">
+                        <td class="label" style="font-weight:bold; color:#d32f2f;">{{ Helper::translateLabel('Balance Due') }}</td>
+                        <td class="value" style="color:#d32f2f;">Rs. {{ number_format($final_balance_due, 2) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
     <div class="footer">
         <strong>{{ Helper::translateLabel('THANK YOU FOR YOUR BUSINESS!') }}</strong><br>
         {{ Helper::translateLabel('This is a computer generated document. | Danyal Autos') }} &copy; {{ date('Y') }}
