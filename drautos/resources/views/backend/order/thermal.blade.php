@@ -320,9 +320,23 @@
                 $secureToken = hash_hmac('sha256', $order->id . $order->order_number, config('app.key'));
                 $invoiceUrl = route('order.pdf', ['id' => $order->id, 'token' => $secureToken]);
             @endphp
-            <div class="text-center" style="margin: 15px 0; padding: 10px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #000;">
-                <div style="font-size: 10px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">{{ $isUrdu ? 'پی ڈی ایف انوائس دیکھنے کے لیے اسکین کریں' : 'Scan to View PDF Invoice' }}</div>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode($invoiceUrl) }}" alt="Invoice QR" style="width: 120px; height: 120px; display: block; margin: 0 auto;">
+            <div class="text-center" style="margin: 10px 0; padding: 6px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #000;">
+                <div style="font-size: 8px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;">{{ $isUrdu ? 'پی ڈی ایف انوائس دیکھنے کے لیے اسکین کریں' : 'Scan to View PDF Invoice' }}</div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data={{ urlencode($invoiceUrl) }}" alt="Invoice QR" style="width: 80px; height: 80px; display: block; margin: 0 auto;">
+            </div>
+
+            <!-- Urdu Terms Card -->
+            <div style="text-align: center; margin: 15px 0;">
+                @php
+                    $termsPath = base_path('../backend/img/urdu_terms_v2.png');
+                    $base64Terms = '';
+                    if (file_exists($termsPath)) {
+                        $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
+                    }
+                @endphp
+                @if($base64Terms)
+                    <img src="{{ $base64Terms }}" style="width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; border: 1px solid #000; border-radius: 4px;" alt="شرائط و ضوابط">
+                @endif
             </div>
 
             <div class="footer-note">
