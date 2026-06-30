@@ -73,7 +73,7 @@
                             <i class="fas fa-shopping-bag text-warning"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder text-gray-900 mb-1">Rs. {{ number_format($totalSales) }}</h3>
+                    <h3 class="font-weight-bolder text-gray-900 mb-1" id="total-sales-val">Rs. {{ number_format($totalSales) }}</h3>
                     <p class="text-muted small mb-0">Total revenue generated</p>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                             <i class="fas fa-truck" style="color: #a3b1c6;"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder text-gray-900 mb-1">Rs. {{ number_format($totalPurchases) }}</h3>
+                    <h3 class="font-weight-bolder text-gray-900 mb-1" id="total-purchases-val">Rs. {{ number_format($totalPurchases) }}</h3>
                     <p class="text-muted small mb-0">Total wholesale stock value received</p>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                             <i class="fas fa-right-left text-success"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder mb-1 {{ ($totalSales - $totalPurchases) >= 0 ? 'text-success' : 'text-danger' }}">
+                    <h3 class="font-weight-bolder mb-1 {{ ($totalSales - $totalPurchases) >= 0 ? 'text-success' : 'text-danger' }}" id="stock-diff-val">
                         Rs. {{ number_format($totalSales - $totalPurchases) }}
                     </h3>
                     <p class="text-muted small mb-0">Sales vs Purchases difference</p>
@@ -123,7 +123,7 @@
                             <i class="fas fa-percent" style="color: #083259;"></i>
                         </div>
                     </div>
-                    <h3 class="font-weight-bolder text-gray-900 mb-1">
+                    <h3 class="font-weight-bolder text-gray-900 mb-1" id="ratio-val">
                         {{ $totalPurchases > 0 ? number_format(($totalSales / $totalPurchases) * 100, 1) : '100+' }}%
                     </h3>
                     <p class="text-muted small mb-0">Sales as percentage of purchases</p>
@@ -178,90 +178,64 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Goods Received Log -->
-        <div class="col-xl-6 mb-4 mb-xl-0">
-            <div class="card shadow-sm border-0" style="border-radius: 16px;">
-                <div class="card-header bg-white border-0 py-4">
-                    <h5 class="m-0 font-weight-bold text-gray-900"><i class="fas fa-receipt mr-2 text-primary"></i> Recent Incoming Goods</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-items-center mb-0 responsive-table-to-cards" style="width: 100%;">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Supplier</th>
-                                    <th class="text-right">Total Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($incomingGoods->take(15) as $goods)
-                                <tr>
-                                    <td data-title="Date">{{ Carbon\Carbon::parse($goods->received_date)->format('M d, Y') }}</td>
-                                    <td data-title="Supplier" class="font-weight-bold">{{ $goods->supplier->name ?? 'N/A' }}</td>
-                                    <td data-title="Total Cost" class="font-weight-bold text-right text-muted">
-                                        Rs. {{ number_format($goods->items->sum('total_cost') + ($goods->shipping_cost ?? 0)) }}
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="text-center py-5 text-muted">
-                                        <i class="fas fa-truck fa-2x mb-3 text-gray-300"></i>
-                                        <p class="mb-0">No incoming shipments in this period.</p>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <!-- Detailed Sales & Purchases Ledger -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px;">
+        <div class="card-header bg-white border-0 py-4">
+            <h5 class="m-0 font-weight-bold text-gray-900"><i class="fas fa-list mr-2 text-primary"></i> Detailed Sales & Purchases Ledger</h5>
         </div>
-
-        <!-- Customer Sales Log -->
-        <div class="col-xl-6">
-            <div class="card shadow-sm border-0" style="border-radius: 16px;">
-                <div class="card-header bg-white border-0 py-4">
-                    <h5 class="m-0 font-weight-bold text-gray-900"><i class="fas fa-shopping-bag mr-2 text-primary"></i> Recent Customer Sales</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-items-center mb-0 responsive-table-to-cards" style="width: 100%;">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Order #</th>
-                                    <th>Customer</th>
-                                    <th>Status</th>
-                                    <th class="text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($orders->take(15) as $order)
-                                <tr>
-                                    <td data-title="Order #">{{ $order->order_number }}</td>
-                                    <td data-title="Customer" class="font-weight-bold">{{ $order->user->name ?? $order->first_name }}</td>
-                                    <td data-title="Status">
-                                        <span class="badge badge-{{ $order->status == 'delivered' ? 'success' : 'warning' }} px-2 py-1" style="border-radius: 6px;">
-                                            {{ strtoupper($order->status) }}
-                                        </span>
-                                    </td>
-                                    <td data-title="Amount" class="font-weight-bold text-right text-warning">
-                                        Rs. {{ number_format($order->total_amount) }}
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center py-5 text-muted">
-                                        <i class="fas fa-shopping-cart fa-2x mb-3 text-gray-300"></i>
-                                        <p class="mb-0">No sales orders in this period.</p>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-items-center mb-0 responsive-table-to-cards" style="width: 100%;">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Detail (Reference & Info)</th>
+                            <th>
+                                Party
+                                <select id="filter-party" class="form-control form-control-sm d-inline-block w-auto ml-1 p-0" style="height: 18px; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 0 4px; line-height: 1; vertical-align: middle; background: #fff; cursor: pointer; color: #495057;">
+                                    <option value="">All</option>
+                                </select>
+                            </th>
+                            <th>
+                                Type
+                                <select id="filter-type" class="form-control form-control-sm d-inline-block w-auto ml-1 p-0" style="height: 18px; font-size: 9px; font-weight: bold; border-radius: 4px; padding: 0 4px; line-height: 1; vertical-align: middle; background: #fff; cursor: pointer; color: #495057;">
+                                    <option value="">All</option>
+                                </select>
+                            </th>
+                            <th>Items Qty</th>
+                            <th class="text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($detailedTransactions as $txn)
+                        <tr class="transaction-row" 
+                            data-type="{{ $txn->type == 'sale' ? 'Sale' : 'Purchase' }}"
+                            data-party="{{ trim($txn->party) }}"
+                            data-amount="{{ $txn->amount }}"
+                            data-interval="{{ $txn->interval_label }}">
+                            <td data-title="Date">{{ $txn->date_label }}</td>
+                            <td data-title="Detail" class="font-weight-bold text-gray-800">{{ $txn->details }}</td>
+                            <td data-title="Party" class="font-weight-bold text-primary">{{ $txn->party }}</td>
+                            <td data-title="Type">
+                                <span class="badge {{ $txn->type == 'sale' ? 'bg-warning-light text-warning' : 'bg-secondary-light text-secondary' }} px-2 py-1" style="border-radius: 6px; font-weight: 700; font-size: 0.75rem;">
+                                    {{ strtoupper($txn->type == 'sale' ? 'Sale' : 'Purchase') }}
+                                </span>
+                            </td>
+                            <td data-title="Items Qty" class="text-muted">{{ $txn->items_count }} items</td>
+                            <td data-title="Amount" class="font-weight-bold text-right {{ $txn->type == 'sale' ? 'text-warning' : 'text-secondary' }}">
+                                Rs. {{ number_format($txn->amount) }}
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="fas fa-list fa-2x mb-3 text-gray-300"></i>
+                                <p class="mb-0">No transactions recorded in this period.</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -272,7 +246,10 @@
 <style>
     .bg-success-light { background-color: rgba(16, 185, 129, 0.1); }
     .bg-danger-light { background-color: rgba(239, 68, 68, 0.1); }
+    .bg-warning-light { background-color: rgba(250, 204, 21, 0.1); }
+    .bg-secondary-light { background-color: rgba(100, 116, 139, 0.1); }
     .text-success { color: #10b981 !important; }
+    .text-secondary { color: #64748b !important; }
     .text-danger { color: #ef4444 !important; }
     .text-primary { color: #083259 !important; }
     .text-warning { color: #facc15 !important; }
@@ -300,13 +277,136 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.transaction-row');
+        const partySelect = document.getElementById('filter-party');
+        const typeSelect = document.getElementById('filter-type');
+
         var chartData = {!! json_encode($reportData) !!};
+
+        if (partySelect && typeSelect) {
+            const parties = new Set();
+            const types = new Set();
+
+            rows.forEach(row => {
+                const p = row.getAttribute('data-party');
+                const t = row.getAttribute('data-type');
+                if (p) parties.add(p);
+                if (t) types.add(t);
+            });
+
+            // Populate Party Select Options
+            Array.from(parties).sort().forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                partySelect.appendChild(opt);
+            });
+
+            // Populate Type Select Options
+            Array.from(types).sort().forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                typeSelect.appendChild(opt);
+            });
+
+            function applyFilters() {
+                const selectedParty = partySelect.value;
+                const selectedType = typeSelect.value;
+
+                let saleSum = 0;
+                let purchaseSum = 0;
+
+                rows.forEach(row => {
+                    const p = row.getAttribute('data-party');
+                    const t = row.getAttribute('data-type');
+                    const amt = parseFloat(row.getAttribute('data-amount')) || 0;
+
+                    const partyMatch = !selectedParty || p === selectedParty;
+                    const typeMatch = !selectedType || t === selectedType;
+
+                    if (partyMatch && typeMatch) {
+                        row.style.display = '';
+                        if (t === 'Sale') {
+                            saleSum += amt;
+                        } else if (t === 'Purchase') {
+                            purchaseSum += amt;
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Update summary metrics cards dynamically
+                const salesEl = document.getElementById('total-sales-val');
+                const purchasesEl = document.getElementById('total-purchases-val');
+                const diffEl = document.getElementById('stock-diff-val');
+                const ratioEl = document.getElementById('ratio-val');
+
+                if (salesEl) salesEl.textContent = 'Rs. ' + Math.round(saleSum).toLocaleString();
+                if (purchasesEl) purchasesEl.textContent = 'Rs. ' + Math.round(purchaseSum).toLocaleString();
+
+                if (diffEl) {
+                    const diff = saleSum - purchaseSum;
+                    diffEl.textContent = 'Rs. ' + Math.round(diff).toLocaleString();
+
+                    // Toggle color classes based on margin difference
+                    if (diff >= 0) {
+                        diffEl.className = 'font-weight-bolder mb-1 text-success';
+                    } else {
+                        diffEl.className = 'font-weight-bolder mb-1 text-danger';
+                    }
+                }
+
+                if (ratioEl) {
+                    const ratio = purchaseSum > 0 ? ((saleSum / purchaseSum) * 100).toFixed(1) : '100+';
+                    ratioEl.textContent = ratio + '%';
+                }
+
+                // Update Chart.js datasets dynamically based on visible/filtered rows
+                if (window.salesPurchasesChart) {
+                    const intervalSums = {};
+                    chartData.forEach(item => {
+                        intervalSums[item.label] = { incoming_goods: 0, customer_sales: 0 };
+                    });
+
+                    rows.forEach(row => {
+                        if (row.style.display !== 'none') {
+                            const lbl = row.getAttribute('data-interval');
+                            const t = row.getAttribute('data-type');
+                            const amt = parseFloat(row.getAttribute('data-amount')) || 0;
+
+                            if (lbl && intervalSums[lbl]) {
+                                if (t === 'Sale') {
+                                    intervalSums[lbl].customer_sales += amt;
+                                } else if (t === 'Purchase') {
+                                    intervalSums[lbl].incoming_goods += amt;
+                                }
+                            }
+                        }
+                    });
+
+                    // Map updated values to chart data arrays
+                    const updatedIncoming = chartData.map(item => intervalSums[item.label].incoming_goods);
+                    const updatedSales = chartData.map(item => intervalSums[item.label].customer_sales);
+
+                    window.salesPurchasesChart.data.datasets[0].data = updatedIncoming;
+                    window.salesPurchasesChart.data.datasets[1].data = updatedSales;
+                    window.salesPurchasesChart.update();
+                }
+            }
+
+            partySelect.addEventListener('change', applyFilters);
+            typeSelect.addEventListener('change', applyFilters);
+        }
+
+        // Chart.js render code
         var labels = chartData.map(function(item) { return item.label; });
         var incoming = chartData.map(function(item) { return item.incoming_goods; });
         var sales = chartData.map(function(item) { return item.customer_sales; });
 
         var ctx = document.getElementById("salesPurchasesReportChart").getContext('2d');
-        
+
         var gradientIncoming = ctx.createLinearGradient(0, 0, 0, 400);
         gradientIncoming.addColorStop(0, "rgba(163, 177, 198, 0.4)");
         gradientIncoming.addColorStop(1, "rgba(163, 177, 198, 0.05)");
@@ -315,7 +415,7 @@
         gradientSales.addColorStop(0, "rgba(250, 204, 21, 0.4)");
         gradientSales.addColorStop(1, "rgba(250, 204, 21, 0.05)");
 
-        new Chart(ctx, {
+        window.salesPurchasesChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,

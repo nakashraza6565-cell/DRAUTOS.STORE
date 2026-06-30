@@ -562,9 +562,57 @@ class ReportController extends Controller
             ];
         }
 
+        $detailedTransactions = collect();
+
+        foreach ($orders as $order) {
+            $detailedTransactions->push((object)[
+                'date' => $order->created_at->format('Y-m-d H:i:s'),
+                'date_label' => $order->created_at->format('M d, Y'),
+                'type' => 'sale',
+                'reference_no' => $order->order_number,
+                'party' => ($order->user && $order->user->name) ? $order->user->name : ($order->first_name . ' ' . $order->last_name),
+                'items_count' => $order->cart_info->sum('quantity'),
+                'amount' => (float) $order->total_amount,
+                'details' => 'Customer Sale Order #' . $order->order_number,
+                'interval_label' => ''
+            ]);
+        }
+
+        foreach ($incomingGoods as $incoming) {
+            $cost = (float) $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
+            $date = Carbon\Carbon::parse($incoming->received_date);
+            $detailedTransactions->push((object)[
+                'date' => $date->format('Y-m-d H:i:s'),
+                'date_label' => $date->format('M d, Y'),
+                'type' => 'purchase',
+                'reference_no' => $incoming->reference_no,
+                'party' => $incoming->supplier ? $incoming->supplier->name : 'N/A',
+                'items_count' => $incoming->items->sum('quantity'),
+                'amount' => $cost,
+                'details' => 'Supplier Purchase #' . $incoming->reference_no,
+                'interval_label' => ''
+            ]);
+        }
+
+        // Sort by date DESC
+        $detailedTransactions = $detailedTransactions->sortByDesc('date')->values();
+
+        // Assign interval labels
+        foreach ($detailedTransactions as $txn) {
+            $txnDateStr = substr($txn->date, 0, 10);
+            $resolvedLabel = '';
+            foreach ($intervals as $interval) {
+                if ($txnDateStr >= $interval['start']->format('Y-m-d') && $txnDateStr <= $interval['end']->format('Y-m-d')) {
+                    $resolvedLabel = $interval['label'];
+                    break;
+                }
+            }
+            $txn->interval_label = $resolvedLabel;
+        }
+
         return view('backend.reports.sales_purchases', compact(
             'reportData', 'totalSales', 'totalPurchases', 'incomingGoods', 'orders',
-            'startDate', 'endDate', 'groupBy'
+            'startDate', 'endDate', 'groupBy', 'detailedTransactions'
         ));
     }
 
@@ -662,8 +710,56 @@ class ReportController extends Controller
             ];
         }
 
+        $detailedTransactions = collect();
+
+        foreach ($orders as $order) {
+            $detailedTransactions->push((object)[
+                'date' => $order->created_at->format('Y-m-d H:i:s'),
+                'date_label' => $order->created_at->format('M d, Y'),
+                'type' => 'sale',
+                'reference_no' => $order->order_number,
+                'party' => ($order->user && $order->user->name) ? $order->user->name : ($order->first_name . ' ' . $order->last_name),
+                'items_count' => $order->cart_info->sum('quantity'),
+                'amount' => (float) $order->total_amount,
+                'details' => 'Customer Sale Order #' . $order->order_number,
+                'interval_label' => ''
+            ]);
+        }
+
+        foreach ($incomingGoods as $incoming) {
+            $cost = (float) $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
+            $date = Carbon\Carbon::parse($incoming->received_date);
+            $detailedTransactions->push((object)[
+                'date' => $date->format('Y-m-d H:i:s'),
+                'date_label' => $date->format('M d, Y'),
+                'type' => 'purchase',
+                'reference_no' => $incoming->reference_no,
+                'party' => $incoming->supplier ? $incoming->supplier->name : 'N/A',
+                'items_count' => $incoming->items->sum('quantity'),
+                'amount' => $cost,
+                'details' => 'Supplier Purchase #' . $incoming->reference_no,
+                'interval_label' => ''
+            ]);
+        }
+
+        // Sort by date DESC
+        $detailedTransactions = $detailedTransactions->sortByDesc('date')->values();
+
+        // Assign interval labels
+        foreach ($detailedTransactions as $txn) {
+            $txnDateStr = substr($txn->date, 0, 10);
+            $resolvedLabel = '';
+            foreach ($intervals as $interval) {
+                if ($txnDateStr >= $interval['start']->format('Y-m-d') && $txnDateStr <= $interval['end']->format('Y-m-d')) {
+                    $resolvedLabel = $interval['label'];
+                    break;
+                }
+            }
+            $txn->interval_label = $resolvedLabel;
+        }
+
         $pdf = \PDF::loadView('backend.reports.sales_purchases_pdf', compact(
-            'reportData', 'totalSales', 'totalPurchases', 'startDate', 'endDate', 'groupBy'
+            'reportData', 'totalSales', 'totalPurchases', 'startDate', 'endDate', 'groupBy', 'detailedTransactions'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->download('sales_purchases_comparison_report_'.date('Y-m-d').'.pdf');

@@ -82,6 +82,7 @@
         .text-danger { color: #ef4444; }
         .text-primary { color: #083259; }
         .text-warning { color: #d97706; }
+        .text-secondary { color: #64748b; }
         .footer {
             position: fixed;
             bottom: 0;
@@ -134,27 +135,37 @@
         </table>
     </div>
 
-    <h4 style="color: #083259; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Periodic Breakdown</h4>
+    <h4 style="color: #083259; margin-bottom: 10px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">Detailed Sales & Purchases Ledger</h4>
     <table class="data-table">
         <thead>
             <tr>
-                <th>Period</th>
-                <th>Incoming Goods Cost</th>
-                <th>Customer Sales</th>
-                <th>Difference</th>
+                <th style="width: 15%;">Date</th>
+                <th style="width: 40%; text-align: left;">Detail (Reference & Info)</th>
+                <th style="width: 20%; text-align: left;">Party</th>
+                <th style="width: 10%;">Type</th>
+                <th style="width: 15%; text-align: right;">Amount</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($reportData as $data)
+            @forelse($detailedTransactions as $txn)
             <tr>
-                <td style="font-weight: bold;">{{ $data['label'] }}</td>
-                <td style="color: #64748b;">Rs. {{ number_format($data['incoming_goods']) }}</td>
-                <td class="text-warning">Rs. {{ number_format($data['customer_sales']) }}</td>
-                <td style="font-weight: bold;" class="{{ $data['difference'] >= 0 ? 'text-success' : 'text-danger' }}">
-                    Rs. {{ number_format($data['difference']) }}
+                <td>{{ $txn->date_label }}</td>
+                <td style="text-align: left; font-weight: bold; color: #1e293b; font-size: 11px;">{{ $txn->details }}</td>
+                <td style="text-align: left; font-weight: bold; color: #083259; font-size: 11px;">{{ $txn->party }}</td>
+                <td>
+                    <span style="font-weight: bold; font-size: 10px;" class="{{ $txn->type == 'sale' ? 'text-warning' : 'text-secondary' }}">
+                        {{ strtoupper($txn->type == 'sale' ? 'Sale' : 'Purchase') }}
+                    </span>
+                </td>
+                <td style="text-align: right; font-weight: bold;" class="{{ $txn->type == 'sale' ? 'text-warning' : 'text-secondary' }}">
+                    Rs. {{ number_format($txn->amount) }}
                 </td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="5" style="padding: 20px; color: #94a3b8; text-align: center;">No transactions recorded in this period.</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
 
