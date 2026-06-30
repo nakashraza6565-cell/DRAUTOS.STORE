@@ -580,7 +580,7 @@ class ReportController extends Controller
 
         foreach ($incomingGoods as $incoming) {
             $cost = (float) $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
-            $date = Carbon\Carbon::parse($incoming->received_date);
+            $date = Carbon::parse($incoming->received_date);
             $detailedTransactions->push((object)[
                 'date' => $date->format('Y-m-d H:i:s'),
                 'date_label' => $date->format('M d, Y'),
@@ -728,7 +728,7 @@ class ReportController extends Controller
 
         foreach ($incomingGoods as $incoming) {
             $cost = (float) $incoming->items->sum('total_cost') + ($incoming->shipping_cost ?? 0);
-            $date = Carbon\Carbon::parse($incoming->received_date);
+            $date = Carbon::parse($incoming->received_date);
             $detailedTransactions->push((object)[
                 'date' => $date->format('Y-m-d H:i:s'),
                 'date_label' => $date->format('M d, Y'),
