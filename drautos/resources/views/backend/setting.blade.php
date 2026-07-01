@@ -100,6 +100,7 @@
 
         <div class="form-group mb-3">
            <button class="btn btn-success" type="submit">Update</button>
+           <a href="{{ route('invoice.backpage.pdf') }}" target="_blank" class="btn btn-primary ml-2"><i class="fa fa-print"></i> Print Backpage PDF (A5)</a>
         </div>
       </form>
     </div>

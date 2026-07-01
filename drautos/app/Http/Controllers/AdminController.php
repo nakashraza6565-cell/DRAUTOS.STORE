@@ -475,6 +475,14 @@ class AdminController extends Controller
         return redirect()->route('admin');
     }
 
+    public function invoiceBackpagePDF()
+    {
+        $settings = Settings::first();
+        $pdf = \PDF::loadView('backend.order.backpage', compact('settings'));
+        $pdf->setPaper('a5', 'portrait');
+        return $pdf->stream('danyal-autos-invoice-backpage.pdf');
+    }
+
     public function changePassword()
     {
         return view('backend.layouts.changePassword');

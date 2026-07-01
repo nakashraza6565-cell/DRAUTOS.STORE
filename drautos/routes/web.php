@@ -442,6 +442,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     // Settings
     Route::get('settings', [AdminController::class, 'settings'])->name('settings');
     Route::post('setting/update', [AdminController::class, 'settingsUpdate'])->name('settings.update');
+    Route::get('invoice-backpage/pdf', [AdminController::class, 'invoiceBackpagePDF'])->name('invoice.backpage.pdf');
     Route::get('whatsapp-settings', [AdminController::class, 'whatsappSettings'])->name('admin.whatsapp-settings');
     Route::post('whatsapp-settings', [AdminController::class, 'whatsappSettingsUpdate'])->name('admin.whatsapp-settings.update');
 
