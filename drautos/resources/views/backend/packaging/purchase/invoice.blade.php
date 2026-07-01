@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Purchase Invoice {{ $purchase->invoice_no }} | Danyal Autos</title>
     <style>
-        @page { margin: 10mm; size: a5; }
+        @page { margin: 4mm; size: a5; }
         body {
             font-family: 'DejaVu Sans', sans-serif;
             margin: 0;

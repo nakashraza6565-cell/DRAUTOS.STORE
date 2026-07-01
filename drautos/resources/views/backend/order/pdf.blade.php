@@ -6,7 +6,7 @@
     <title>Invoice {{ $order->order_number ?? '' }} | Danyal Autos</title>
     <style>
         /* International Minimalist Invoice Design */
-        @page { margin: 10mm; size: a5; }
+        @page { margin: 4mm; size: a5; }
         body { 
             font-family: {{ request('lang') === 'ur' ? "'DejaVu Sans'" : "'Helvetica', 'Arial'" }}, sans-serif; 
             direction: {{ request('lang') === 'ur' ? 'rtl' : 'ltr' }};

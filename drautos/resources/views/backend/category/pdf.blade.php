@@ -3,7 +3,7 @@
 <head>
     <title>Digital Catalog</title>
     <style>
-        @page { margin: 10mm; size: a5; }
+        @page { margin: 4mm; size: a5; }
         body { font-family: sans-serif; font-size: 12px; color: #333; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #4e73df; padding-bottom: 10px; }
         .header h1 { color: #4e73df; margin-bottom: 5px; }

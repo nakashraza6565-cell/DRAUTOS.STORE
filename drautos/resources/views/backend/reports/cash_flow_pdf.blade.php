@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Cash Flow Report</title>
     <style>
-        @page { margin: 10mm; size: a5; }
+        @page { margin: 4mm; size: a5; }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #333;
