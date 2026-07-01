@@ -459,6 +459,8 @@ class AdminController extends Controller
             'address' => 'required|string',
             'email' => 'required|email',
             'phone' => 'required|string',
+            'terms_urdu' => 'nullable|string',
+            'terms_english' => 'nullable|string',
         ]);
         $data = $request->all();
         // return $data;

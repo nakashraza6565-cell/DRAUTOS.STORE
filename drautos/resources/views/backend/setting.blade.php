@@ -80,6 +80,24 @@
           @enderror
         </div>
 
+        <div class="form-group">
+          <label for="terms_urdu" class="col-form-label">Terms & Conditions (Urdu)</label>
+          <div style="direction: rtl; text-align: right;">
+            <textarea class="form-control" id="terms_urdu" name="terms_urdu">{{$data->terms_urdu}}</textarea>
+          </div>
+          @error('terms_urdu')
+          <span class="text-danger">{{$message}}</span>
+          @enderror
+        </div>
+
+        <div class="form-group">
+          <label for="terms_english" class="col-form-label">Terms & Conditions (English)</label>
+          <textarea class="form-control" id="terms_english" name="terms_english">{{$data->terms_english}}</textarea>
+          @error('terms_english')
+          <span class="text-danger">{{$message}}</span>
+          @enderror
+        </div>
+
         <div class="form-group mb-3">
            <button class="btn btn-success" type="submit">Update</button>
         </div>
@@ -120,6 +138,18 @@
     $(document).ready(function() {
       $('#description').summernote({
         placeholder: "Write detail description.....",
+          tabsize: 2,
+          height: 150
+      });
+    });
+    $(document).ready(function() {
+      $('#terms_urdu').summernote({
+        placeholder: "یہاں اردو شرائط و ضوابط لکھیں.....",
+          tabsize: 2,
+          height: 150
+      });
+      $('#terms_english').summernote({
+        placeholder: "Write English terms & conditions here.....",
           tabsize: 2,
           height: 150
       });
