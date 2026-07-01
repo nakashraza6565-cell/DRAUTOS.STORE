@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Product Analysis Report - {{ date('Y-m-d') }}</title>
     <style>
+        @page { margin: 10mm; size: a5; }
         body {
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;

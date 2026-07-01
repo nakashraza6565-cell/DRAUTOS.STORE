@@ -3,6 +3,7 @@
 <head>
     <title>{{$bundle->name}} - Packing List</title>
     <style>
+        @page { margin: 10mm; size: a5; }
         body { font-family: sans-serif; }
         .header { text-align: center; margin-bottom: 20px; }
         .bundle-info { margin-bottom: 20px; border: 1px solid #ddd; padding: 10px; }

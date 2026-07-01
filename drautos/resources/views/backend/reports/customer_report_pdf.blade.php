@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Report — {{ $selectedCustomer->name }}</title>
     <style>
+        @page { margin: 10mm; size: a5; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #333; background: #fff; }
         .header { background: linear-gradient(135deg, #4e73df, #224abe); color: #fff; padding: 18px 24px; }

@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Purchase Order {{ $purchaseOrder->po_number }} | Dr Auto Store</title>
     <style>
-        @page { margin: 10mm; size: a4; }
+        @page { margin: 10mm; size: a5; }
         @font-face {
             font-family: 'Revue';
             src: url("{{ str_replace('\\', '/', public_path('revue/reve.ttf')) }}") format("truetype");

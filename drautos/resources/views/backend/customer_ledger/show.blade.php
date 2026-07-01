@@ -541,14 +541,14 @@
                 htmlText = htmlText.replace(/onload\s*=\s*['"]window\.print\(\)['"]/gi, '');
                 htmlText = htmlText.replace(/window\.onload\s*=\s*function\(\)\s*\{\s*window\.print\(\);\s*\}/gi, '');
                 
-                const isA4 = url.includes('print');
+                const isA5 = url.includes('print');
 
                 // Create a temporary hidden iframe
                 const iframe = document.createElement('iframe');
                 iframe.style.position = 'fixed';
                 iframe.style.right = '-9999px';
-                iframe.style.width = isA4 ? '800px' : '80mm';
-                iframe.style.height = isA4 ? '2500px' : '1200px';
+                iframe.style.width = isA5 ? '560px' : '80mm';
+                iframe.style.height = isA5 ? '2500px' : '1200px';
                 document.body.appendChild(iframe);
                 
                 // Inject HTML into iframe

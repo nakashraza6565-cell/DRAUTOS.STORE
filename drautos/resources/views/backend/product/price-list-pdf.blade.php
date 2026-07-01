@@ -3,6 +3,7 @@
 <head>
     <title>Price List - {{ date('d M, Y') }}</title>
     <style>
+        @page { margin: 10mm; size: a5; }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             font-size: 11px;

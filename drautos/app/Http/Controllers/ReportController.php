@@ -463,7 +463,7 @@ class ReportController extends Controller
 
         $pdf = \PDF::loadView('backend.reports.cash_flow_pdf', compact(
             'reportData', 'totalMoneyIn', 'totalMoneyOut', 'startDate', 'endDate', 'groupBy', 'transactions'
-        ))->setPaper('a4', 'portrait');
+        ))->setPaper('a5', 'portrait');
 
         return $pdf->download('cash_flow_report_'.date('Y-m-d').'.pdf');
     }
@@ -760,7 +760,7 @@ class ReportController extends Controller
 
         $pdf = \PDF::loadView('backend.reports.sales_purchases_pdf', compact(
             'reportData', 'totalSales', 'totalPurchases', 'startDate', 'endDate', 'groupBy', 'detailedTransactions'
-        ))->setPaper('a4', 'portrait');
+        ))->setPaper('a5', 'portrait');
 
         return $pdf->download('sales_purchases_comparison_report_'.date('Y-m-d').'.pdf');
     }
@@ -1753,7 +1753,7 @@ class ReportController extends Controller
 
         $pdf = \PDF::loadView('backend.reports.customer_report_pdf', compact(
             'selectedCustomer', 'lifetimeStats', 'orders', 'ledger', 'startDate', 'endDate'
-        ))->setPaper('a4', 'portrait');
+        ))->setPaper('a5', 'portrait');
 
         $filename = 'customer_report_' . str_replace(' ', '_', strtolower($selectedCustomer->name)) . '_' . date('Y-m-d') . '.pdf';
         return $pdf->download($filename);

@@ -4,6 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Supplier Ledger | {{ $supplier->name }}</title>
     <style>
+        @page { margin: 10mm; size: a5; }
         body { font-family: 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; line-height: 1.5; }
         .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
         .company-name { font-size: 24px; font-weight: bold; color: #2c3e50; text-transform: uppercase; }
