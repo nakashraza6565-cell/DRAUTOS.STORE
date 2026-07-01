@@ -10,12 +10,10 @@ $appFile = __DIR__ . '/drautos/bootstrap/app.php';
 if (file_exists($appFile)) {
     echo "Laravel bootstrap found. Booting application...\n";
     $app = require_once $appFile;
-    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    $response = $kernel->handle(
-        $request = Illuminate\Http\Request::capture()
-    );
+    $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    $kernel->bootstrap();
     
-    echo "Laravel booted successfully!\n\n";
+    echo "Laravel booted successfully via Console Kernel!\n\n";
     
     // Check paths
     $paths = [
