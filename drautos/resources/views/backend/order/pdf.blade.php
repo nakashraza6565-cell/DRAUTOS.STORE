@@ -19,38 +19,38 @@
         table { width: 100%; border-collapse: collapse; }
         td, th { vertical-align: top; }
         
-        .header-table { margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .company-name { font-size: 24px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .company-details { font-size: 10px; color: #555; margin-top: 4px; }
+        .header-table { margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+        .company-name { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .company-details { font-size: 9px; color: #555; margin-top: 2px; }
         
         .invoice-title { 
-            font-size: 28px; 
+            font-size: 20px; 
             font-weight: bold; 
             text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
             text-transform: uppercase; 
         }
         .invoice-meta { 
             text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; 
-            font-size: 10px; 
+            font-size: 9px; 
             color: #333; 
-            margin-top: 4px; 
+            margin-top: 2px; 
         }
         
-        .info-table { margin-bottom: 15px; }
-        .info-title { font-size: 10px; font-weight: bold; color: #777; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 2px; margin-bottom: 4px; }
-        .info-content { font-size: 11px; line-height: 1.3; }
+        .info-table { margin-bottom: 8px; }
+        .info-title { font-size: 9px; font-weight: bold; color: #777; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 1px; margin-bottom: 2px; }
+        .info-content { font-size: 10px; line-height: 1.2; }
         
-        .item-table { margin-bottom: 15px; }
+        .item-table { margin-bottom: 8px; }
         .item-table th { 
             background-color: #f4f4f4; 
             border-top: 1px solid #000; 
             border-bottom: 1px solid #000; 
-            padding: 6px 4px; 
+            padding: 4px 4px; 
             font-size: 9px; 
             text-transform: uppercase; 
             text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }}; 
         }
-        .item-table td { padding: 5px 4px; border-bottom: 1px solid #eee; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }}; }
+        .item-table td { padding: 3px 4px; border-bottom: 1px solid #eee; text-align: {{ request('lang') === 'ur' ? 'right' : 'left' }}; }
         .item-table th.text-right, .item-table td.text-right { text-align: {{ request('lang') === 'ur' ? 'left' : 'right' }}; }
         .item-table th.text-center, .item-table td.text-center { text-align: center; }
         
@@ -99,7 +99,7 @@
     </style>
 </head>
 <body>
-    <div id="invoice-wrapper" style="position: relative; background: #fff; padding: 20px;">
+    <div id="invoice-wrapper" style="position: relative; background: #fff; padding: 5px;">
         @include('backend.layouts.watermark', ['type' => 'pdf'])
     
     <table class="header-table">
@@ -128,9 +128,13 @@
                 <div class="info-title">{{ Helper::translateLabel('Billed To') }}</div>
                 <div class="info-content">
                     <strong>{{ $order->first_name . ' ' . $order->last_name }}</strong><br>
-                    {{ $order->address1 }}<br>
-                    {{ Helper::translateLabel('Phone:') }} {{ $order->phone }}<br>
-                    {{ Helper::translateLabel('Email:') }} {{ $order->email }}
+                    @if($order->address1 && strtolower(trim($order->address1)) !== 'pos counter')
+                        {{ $order->address1 }}<br>
+                    @endif
+                    {{ Helper::translateLabel('Phone:') }} {{ $order->phone }}
+                    @if($order->email && strpos($order->email, '@local.com') === false)
+                        <br>{{ Helper::translateLabel('Email:') }} {{ $order->email }}
+                    @endif
                 </div>
             </td>
             <td width="35%" style="padding-{{ request('lang') === 'ur' ? 'left' : 'right' }}: 15px;">
@@ -160,12 +164,12 @@
     <table class="item-table">
         <thead>
             <tr>
-                <th width="5%">#</th>
-                <th width="33%">{{ Helper::translateLabel('DESCRIPTION') }}</th>
+                <th width="4%">#</th>
+                <th width="31%">{{ Helper::translateLabel('DESCRIPTION') }}</th>
                 <th width="8%" class="text-center">{{ Helper::translateLabel('QTY') }}</th>
-                <th width="13%" class="text-right">{{ Helper::translateLabel('PRICE') }}</th>
-                <th width="13%" class="text-right">{{ Helper::translateLabel('DISCOUNT') }}</th>
-                <th width="13%" class="text-right">{{ Helper::translateLabel('DISC. PRICE') }}</th>
+                <th width="12%" class="text-right">{{ Helper::translateLabel('PRICE') }}</th>
+                <th width="14%" class="text-right">{{ Helper::translateLabel('DISCOUNT') }}</th>
+                <th width="16%" class="text-right" style="white-space: nowrap;">{{ Helper::translateLabel('DISC. PRICE') }}</th>
                 <th width="15%" class="text-right">{{ Helper::translateLabel('TOTAL') }}</th>
             </tr>
         </thead>
