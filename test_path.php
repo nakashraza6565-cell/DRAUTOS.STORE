@@ -11,5 +11,17 @@ echo "public_path(): " . public_path() . "\n";
 echo "base_path(): " . base_path() . "\n";
 echo "tahoma.ttf in public_path(): " . (file_exists(public_path('revue/tahoma.ttf')) ? 'YES' : 'NO') . "\n";
 echo "tahoma.ttf in base_path(): " . (file_exists(base_path('revue/tahoma.ttf')) ? 'YES' : 'NO') . "\n";
-echo "tahoma.ttf in relative path: " . (file_exists(__DIR__ . '/public_html/revue/tahoma.ttf') ? 'YES' : 'NO') . "\n";
-echo "reve.ttf in public_path(): " . (file_exists(public_path('revue/reve.ttf')) ? 'YES' : 'NO') . "\n";
+echo "tahoma.ttf in base_path('../revue/tahoma.ttf'): " . (file_exists(base_path('../revue/tahoma.ttf')) ? 'YES' : 'NO') . "\n";
+echo "reve.ttf in base_path('../revue/reve.ttf'): " . (file_exists(base_path('../revue/reve.ttf')) ? 'YES' : 'NO') . "\n";
+
+$settings = \App\Models\Settings::first();
+echo "\n=== SETTINGS DATABASE VALUES ===\n";
+if ($settings) {
+    echo "logo: " . $settings->logo . "\n";
+    echo "logo file exists at base_path('../' . logo): " . (file_exists(base_path('../' . $settings->logo)) ? 'YES' : 'NO') . "\n";
+    echo "logo file exists at public_path(logo): " . (file_exists(public_path($settings->logo)) ? 'YES' : 'NO') . "\n";
+    echo "terms_urdu length: " . strlen($settings->terms_urdu) . "\n";
+    echo "terms_english length: " . strlen($settings->terms_english) . "\n";
+} else {
+    echo "No settings row found in database!\n";
+}
