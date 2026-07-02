@@ -73,6 +73,12 @@
                                             Balance is clear
                                         @endif
                                     </div>
+                                    <form method="POST" action="{{ route('admin.customer-ledger.recalculate', $user->id) }}" class="mt-2 d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-xs btn-outline-secondary" style="font-size:0.7rem; padding: 2px 8px;" title="Fix balance if it looks incorrect">
+                                            <i class="fas fa-sync-alt"></i> Recalculate
+                                        </button>
+                                    </form>
                                 </div>
                                 <div class="col-auto">
                                     <i class="fas fa-wallet fa-2x text-gray-300"></i>

@@ -526,6 +526,7 @@ Route::group(['prefix' => '/admin', 'middleware' => ['auth', 'admin']], function
     Route::get('/customer-ledger/transaction/{id}/voucher', [App\Http\Controllers\CustomerLedgerController::class, 'printTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher');
     Route::get('/customer-ledger/transaction/{id}/voucher/pdf', [App\Http\Controllers\CustomerLedgerController::class, 'pdfTransactionVoucher'])->name('admin.customer-ledger.transaction-voucher.pdf');
     Route::post('/customer-ledger/{user}/whatsapp', [App\Http\Controllers\CustomerLedgerController::class, 'sendWhatsApp'])->name('admin.customer-ledger.whatsapp');
+    Route::post('/customer-ledger/{user}/recalculate', [App\Http\Controllers\CustomerLedgerController::class, 'recalculate'])->name('admin.customer-ledger.recalculate');
 
     // Financial Accounts (Bank/Wallets)
     Route::resource('financial-accounts', 'FinancialAccountController');

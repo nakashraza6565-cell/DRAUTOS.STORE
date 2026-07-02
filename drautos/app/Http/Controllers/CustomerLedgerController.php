@@ -222,4 +222,16 @@ class CustomerLedgerController extends Controller
         $pdf = \PDF::loadView('backend.customer_ledger.thermal-voucher', compact('transaction'));
         return $pdf->download('Receipt_' . $transaction->id . '.pdf');
     }
+
+    public function recalculate(User $user)
+    {
+        try {
+            $newBalance = CustomerLedger::updateBalance($user->id);
+            return redirect()->back()->with('success', 
+                'Balance recalculated successfully. Correct balance: Rs. ' . number_format($newBalance, 2)
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Recalculate Error: ' . $e->getMessage());
+        }
+    }
 }
