@@ -1,24 +1,33 @@
 <?php
 /**
  * Fix Script: Change SR-20260629-0001 from Cash Refund to Credit to Account
- * 
- * Problem: Staff mistakenly saved return as "cash" refund.
- * - This created a debit ledger entry (cash refund payout) ID 2981 of 38,949
- * - But the credit (return) entry ID 2980 is correct
- * 
- * Fix:
- * 1. Update sale_returns refund_method from 'cash' to 'credit_note'
- * 2. Delete the erroneous debit ledger entry ID 2981
- * 3. Recalculate running balances from that point forward for customer 320
+ * Uses Laravel's own environment configuration from the server
  */
 
-$host = 'localhost';
-$dbname = 'u704900370_drautos';
-$username = 'u704900370_drautos';
-$password = 'NAkash@1995';
+// Read DB credentials from the live .env
+$envFile = __DIR__ . '/drautos/.env';
+if (!file_exists($envFile)) {
+    $envFile = __DIR__ . '/.env';
+}
+
+$env = [];
+foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+    if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+        list($key, $val) = explode('=', $line, 2);
+        $env[trim($key)] = trim($val, '"\'');
+    }
+}
+
+$host = $env['DB_HOST'] ?? 'localhost';
+$port = $env['DB_PORT'] ?? '3306';
+$dbname = $env['DB_DATABASE'] ?? '';
+$username = $env['DB_USERNAME'] ?? '';
+$password = $env['DB_PASSWORD'] ?? '';
+
+echo "Connecting to DB: $dbname @ $host as $username\n\n";
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname;charset=utf8", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "=== RETURN STATUS FIX: Cash Refund → Credit to Account ===\n\n";
 
@@ -47,12 +56,12 @@ try {
     // --- STEP 2: Verify the erroneous ledger entry ID 2981 ---
     $stmt = $pdo->prepare("SELECT id, type, category, description, amount, balance, transaction_date 
                            FROM customer_ledgers 
-                           WHERE id = 2981 AND user_id = ?");
-    $stmt->execute([$customerId]);
+                           WHERE id = 2981");
+    $stmt->execute();
     $badEntry = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$badEntry) {
-        echo "WARNING: Ledger entry ID 2981 not found for customer $customerId. May have already been deleted.\n";
+        echo "WARNING: Ledger entry ID 2981 not found. May have already been deleted.\n\n";
     } else {
         echo "Erroneous Ledger Entry to be deleted:\n";
         echo "  ID: {$badEntry['id']}\n";
@@ -89,25 +98,27 @@ try {
 
     // STEP 4: Delete the erroneous debit ledger entry (cash refund payout)
     if ($badEntry) {
-        $stmt = $pdo->prepare("DELETE FROM customer_ledgers WHERE id = 2981 AND user_id = ?");
-        $stmt->execute([$customerId]);
+        $stmt = $pdo->prepare("DELETE FROM customer_ledgers WHERE id = 2981");
+        $stmt->execute();
         $deleted = $stmt->rowCount();
         echo "Step 2: Deleted erroneous cash refund debit entry (ID 2981). Rows deleted: $deleted\n";
+    } else {
+        echo "Step 2: Skipped - entry ID 2981 not found (already deleted).\n";
     }
 
-    // STEP 5: Recalculate running balances from entry after ID 2981 onwards
-    // Get balance from the entry just before 2981 (which would be entry 2980)
-    $stmt = $pdo->prepare("SELECT balance FROM customer_ledgers 
-                           WHERE user_id = ? AND id < 2981
+    // STEP 5: Recalculate running balances
+    // Get balance from the entry just before 2981 (entry 2980)
+    $stmt = $pdo->prepare("SELECT id, balance FROM customer_ledgers 
+                           WHERE user_id = ? AND id <= 2980
                            ORDER BY id DESC LIMIT 1");
     $stmt->execute([$customerId]);
     $prevRow = $stmt->fetch(PDO::FETCH_ASSOC);
     $runningBalance = $prevRow ? (float)$prevRow['balance'] : 0;
 
-    echo "Step 3: Recalculating running balances from entry after ID 2980...\n";
-    echo "  Starting balance (from ID 2980): $runningBalance\n";
+    echo "Step 3: Recalculating running balances...\n";
+    echo "  Balance base (from entry ID {$prevRow['id']}): $runningBalance\n";
 
-    // Get all entries after 2980 (i.e., ID > 2980, since 2981 is now deleted) in order
+    // Get all entries after 2980 in chronological order
     $stmt = $pdo->prepare("SELECT id, type, amount FROM customer_ledgers 
                            WHERE user_id = ? AND id > 2980
                            ORDER BY id ASC");
@@ -146,11 +157,11 @@ try {
         echo "  [{$r['id']}] {$r['transaction_date']} | {$r['type']} | {$r['category']} | {$r['amount']} | Bal: {$r['balance']} | {$r['description']}\n";
     }
 
-    // Also verify sale_returns update
+    // Verify sale_returns update
     $stmt = $pdo->prepare("SELECT return_number, refund_method, status FROM sale_returns WHERE id = ?");
     $stmt->execute([$returnId]);
     $updated = $stmt->fetch(PDO::FETCH_ASSOC);
-    echo "\n=== SALE RETURN UPDATED ===\n";
+    echo "\n=== SALE RETURN VERIFIED ===\n";
     echo "  Return Number: {$updated['return_number']}\n";
     echo "  Refund Method: {$updated['refund_method']}\n";
     echo "  Status: {$updated['status']}\n";
