@@ -1,6 +1,10 @@
 <?php
-echo "Script hash check: " . md5_file(__FILE__) . "\n";
-echo "Script modified: " . date('Y-m-d H:i:s', filemtime(__FILE__)) . "\n";
-echo "First 200 chars:\n";
-echo substr(file_get_contents(__FILE__), 0, 200) . "\n";
+echo "Fix script content check:\n";
+$content = file_get_contents(__DIR__ . '/fix_return_to_credit.php');
+echo "Length: " . strlen($content) . "\n";
+echo "Contains u909342762: " . (strpos($content, 'u909342762') !== false ? 'YES' : 'NO') . "\n";
+echo "Contains u704900370: " . (strpos($content, 'u704900370') !== false ? 'YES' : 'NO') . "\n";
+echo "Contains VERSION 4: " . (strpos($content, 'VERSION 4') !== false ? 'YES' : 'NO') . "\n";
+echo "First 300 chars:\n";
+echo substr($content, 0, 300) . "\n";
 ?>
