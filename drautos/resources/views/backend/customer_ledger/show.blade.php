@@ -253,7 +253,7 @@
                         <label>Financial Account (Optional)</label>
                         <div class="input-group">
                             <select name="financial_account_id" id="financial_account_id" class="form-control">
-                                <option value="">-- Auto-detect Active Register --</option>
+                                <option value="">-- No Cash Flow (Ledger Only) / Auto-detect for Payments --</option>
                                 @foreach($accounts as $acc)
                                     <option value="{{$acc->id}}">{{$acc->name}} (Bal: Rs. {{number_format($acc->current_balance, 0)}})</option>
                                 @endforeach

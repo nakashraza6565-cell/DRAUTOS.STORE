@@ -82,7 +82,7 @@ class CustomerLedgerController extends Controller
             $description = $validated['description'];
 
             // Auto-detect active register if no account selected for cash transactions
-            if (!$financialAccountId && in_array($validated['category'], ['payment', 'manual'])) {
+            if (!$financialAccountId && $validated['category'] === 'payment') {
                 $financialAccountId = \App\Models\FinancialAccount::getStaffAccount();
                 
                 if ($financialAccountId) {
