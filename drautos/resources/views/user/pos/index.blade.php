@@ -565,6 +565,11 @@
                 title: 'Added to cart'
             });
         }
+        
+        // Auto-focus and highlight the search bar so next input overrides immediately
+        setTimeout(() => {
+            $('#product-search').focus().select();
+        }, 150);
     }
 
     function removeFromCart(index) {
