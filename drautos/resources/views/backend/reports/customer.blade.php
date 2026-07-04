@@ -48,6 +48,11 @@
             </div>
         </div>
         <div class="collapse show" id="rankingsSection">
+            @php
+                $cities = $customerRankings->pluck('city')->map('trim')->filter()->map(function($c) {
+                    return ucwords(strtolower($c));
+                })->unique()->sort();
+            @endphp
             <div class="card-body p-0">
                 {{-- Leaderboard Search Bar --}}
                 <div class="px-3 py-2 bg-light border-bottom d-flex align-items-center flex-wrap" style="gap:10px;">
@@ -59,6 +64,15 @@
                         </div>
                         <input type="text" id="leaderboardSearch" class="form-control border-left-0" placeholder="Search customer, phone, city...">
                     </div>
+
+                    {{-- City Filter Dropdown --}}
+                    <select id="leaderboardCityFilter" class="form-control form-control-sm custom-select custom-select-sm" style="max-width:180px; height: 31px;">
+                        <option value="">All Cities</option>
+                        @foreach($cities as $city)
+                            <option value="{{ strtolower($city) }}">{{ $city }}</option>
+                        @endforeach
+                    </select>
+
                     <div class="ml-auto text-muted small" id="leaderboardSearchCount" style="font-size:11px; font-weight:600;">
                         Showing {{ $customerRankings->count() }} of {{ $customerRankings->count() }}
                     </div>
@@ -85,7 +99,7 @@
                                 $medalColor = $rank == 1 ? '#FFD700' : ($rank == 2 ? '#C0C0C0' : ($rank == 3 ? '#CD7F32' : '#aaa'));
                                 $medalIcon  = $rank <= 3 ? 'fas fa-medal' : 'fas fa-hashtag';
                             @endphp
-                            <tr class="leaderboard-row" data-search="{{ strtolower($rc->name) }} {{ strtolower($rc->phone ?? '') }} {{ strtolower($rc->city ?? '') }} {{ strtolower($rc->customer_type ?? '') }} {{ strtolower($rc->health_label ?? '') }}" style="border-left:3px solid {{ $rc->health_color }};">
+                            <tr class="leaderboard-row" data-search="{{ strtolower($rc->name) }} {{ strtolower($rc->phone ?? '') }} {{ strtolower($rc->city ?? '') }} {{ strtolower($rc->customer_type ?? '') }} {{ strtolower($rc->health_label ?? '') }}" data-city="{{ strtolower(trim($rc->city ?? '')) }}" style="border-left:3px solid {{ $rc->health_color }};">
                                 <td class="text-center font-weight-bold" style="color:{{ $medalColor }};">
                                     <i class="{{ $medalIcon }}" style="font-size:{{ $rank<=3?'14px':'11px' }};"></i>
                                     {{ $rank }}
@@ -1024,15 +1038,21 @@ $(document).ready(function () {
         width: '100%'
     });
 
-    // ── Leaderboard Search ──────────────────────────────────────
-    $('#leaderboardSearch').on('input', function () {
-        var query = $(this).val().toLowerCase().trim();
+    // ── Leaderboard Search & City Filter ────────────────────────
+    function filterLeaderboard() {
+        var query = $('#leaderboardSearch').val().toLowerCase().trim();
+        var selectedCity = $('#leaderboardCityFilter').val() || '';
         var rows = $('.leaderboard-row');
         var visibleCount = 0;
 
         rows.each(function () {
             var searchData = $(this).attr('data-search') || '';
-            if (searchData.indexOf(query) > -1) {
+            var rowCity = $(this).attr('data-city') || '';
+
+            var matchesQuery = searchData.indexOf(query) > -1;
+            var matchesCity = selectedCity === '' || rowCity === selectedCity;
+
+            if (matchesQuery && matchesCity) {
                 $(this).removeClass('d-none');
                 visibleCount++;
             } else {
@@ -1041,7 +1061,10 @@ $(document).ready(function () {
         });
 
         $('#leaderboardSearchCount').text('Showing ' + visibleCount + ' of ' + rows.length);
-    });
+    }
+
+    $('#leaderboardSearch').on('input', filterLeaderboard);
+    $('#leaderboardCityFilter').on('change', filterLeaderboard);
 
     // ── Expandable order rows ────────────────────────────────────
     $(document).on('click', '.order-main-row', function () {
