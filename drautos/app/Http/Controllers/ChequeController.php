@@ -80,7 +80,9 @@ class ChequeController extends Controller
             'overdue' => Cheque::overdue()->count(),
         ];
 
-        return view('backend.cheques.index', compact('cheques', 'stats'));
+        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+
+        return view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'));
     }
 
     /**
@@ -209,10 +211,11 @@ class ChequeController extends Controller
      */
     public function markCleared(Request $request, Cheque $cheque)
     {
-        $actual_date = $request->actual_clearing_date ?: date('Y-m-d');
+        $actual_date        = $request->actual_clearing_date ?: date('Y-m-d');
+        $financialAccountId = $request->financial_account_id ?: null;
 
         $cheque->update([
-            'status' => 'cleared',
+            'status'               => 'cleared',
             'actual_clearing_date' => $actual_date,
         ]);
 
@@ -224,29 +227,91 @@ class ChequeController extends Controller
             ->where('related_id', $cheque->id)
             ->update(['status' => 'completed']);
 
-        // Update Ledger Entry to "Cleared"
+        // ── RECEIVED cheque (Customer → You) ────────────────────────────────
         if ($cheque->type === 'received' && $cheque->party_type === 'App\\User') {
+            // Update ledger description & date
             \App\Models\CustomerLedger::where('category', 'payment')
                 ->where('reference_id', $cheque->id)
                 ->update([
-                    'description' => "Cheque #{$cheque->cheque_number} Cleared - {$cheque->bank_name}",
-                    'transaction_date' => $actual_date
+                    'description'      => "Cheque #{$cheque->cheque_number} Cleared - {$cheque->bank_name}",
+                    'transaction_date' => $actual_date,
+                    'financial_account_id' => $financialAccountId,
                 ]);
             \App\Models\CustomerLedger::updateBalance($cheque->party_id);
+
+            // Record Cash IN on the selected account
+            if ($financialAccountId) {
+                \App\Models\AccountTransaction::record(
+                    $financialAccountId,
+                    $cheque->amount,
+                    'in',
+                    'Cheque',
+                    $cheque->id,
+                    "Cheque Cleared #{$cheque->cheque_number} - {$cheque->party->name ?? ''} ({$cheque->bank_name})",
+                    $actual_date
+                );
+            }
         }
 
+        // ── PAID cheque (You → Supplier) ────────────────────────────────────
         if ($cheque->type === 'paid' && $cheque->party_type === 'App\\Models\\Supplier') {
+            // Update ledger description & date
             \App\Models\SupplierLedger::where('category', 'payment')
                 ->where('reference_id', $cheque->id)
                 ->update([
-                    'description' => "Cheque #{$cheque->cheque_number} Cleared - {$cheque->bank_name}",
+                    'description'      => "Cheque #{$cheque->cheque_number} Cleared - {$cheque->bank_name}",
                     'transaction_date' => $actual_date,
-                    'payment_details' => json_encode(['cheque_no' => $cheque->cheque_number, 'bank_name' => $cheque->bank_name, 'status' => 'cleared'])
+                    'payment_details'  => json_encode([
+                        'cheque_no'  => $cheque->cheque_number,
+                        'bank_name'  => $cheque->bank_name,
+                        'status'     => 'cleared',
+                    ]),
                 ]);
             \App\Models\SupplierLedger::updateBalance($cheque->party_id);
+
+            // Record Cash OUT from the selected account
+            if ($financialAccountId) {
+                \App\Models\AccountTransaction::record(
+                    $financialAccountId,
+                    $cheque->amount,
+                    'out',
+                    'Cheque',
+                    $cheque->id,
+                    "Cheque Paid #{$cheque->cheque_number} - {$cheque->party->name ?? ''} ({$cheque->bank_name})",
+                    $actual_date
+                );
+            }
         }
 
-        session()->flash('success', 'Cheque marked as cleared');
+        // ── TRANSFERRED cheque (Customer cheque → Supplier) ─────────────────
+        // A customer's cheque was handed directly to a supplier.
+        // On clearing: record both a Cash IN (customer paid) and Cash OUT (supplier paid)
+        // through the same account so the net is zero but both legs are visible.
+        if ($cheque->status === 'cleared' && $cheque->transferred_to_id && $financialAccountId) {
+            // Cash IN – customer's payment received
+            \App\Models\AccountTransaction::record(
+                $financialAccountId,
+                $cheque->amount,
+                'in',
+                'Cheque',
+                $cheque->id,
+                "Transferred Cheque Cleared #{$cheque->cheque_number} - Received from {$cheque->party->name ?? ''}",
+                $actual_date
+            );
+
+            // Cash OUT – supplier paid via transferred cheque
+            \App\Models\AccountTransaction::record(
+                $financialAccountId,
+                $cheque->amount,
+                'out',
+                'Cheque',
+                $cheque->id,
+                "Transferred Cheque Cleared #{$cheque->cheque_number} - Paid to supplier via endorsement",
+                $actual_date
+            );
+        }
+
+        session()->flash('success', 'Cheque marked as cleared and cash flow updated.');
         return back();
     }
 

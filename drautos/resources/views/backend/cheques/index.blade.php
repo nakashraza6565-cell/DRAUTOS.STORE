@@ -138,12 +138,19 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if($cheque->status == 'pending')
-                                        <form method="POST" action="{{route('cheques.mark-cleared',$cheque->id)}}" class="act-cleared" style="display:inline; margin:0;" onsubmit="return confirm('Mark this cheque as cleared?')">
-                                        @csrf
-                                        <button class="btn btn-success btn-sm btn-circle" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" title="Mark Cleared">
+                                        <button type="button"
+                                            class="btn btn-success btn-sm btn-circle btn-mark-cleared"
+                                            style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;"
+                                            title="Mark Cleared"
+                                            data-id="{{ $cheque->id }}"
+                                            data-number="{{ $cheque->cheque_number }}"
+                                            data-amount="{{ number_format($cheque->amount, 2) }}"
+                                            data-party="{{ $cheque->party->name ?? 'N/A' }}"
+                                            data-type="{{ $cheque->type }}"
+                                            data-transferred="{{ $cheque->transferred_to_id ? '1' : '0' }}"
+                                            data-toggle="modal" data-target="#clearChequeModal">
                                             <i class="fas fa-check"></i>
                                         </button>
-                                        </form>
                                         <form method="POST" action="{{route('cheques.mark-bounced',$cheque->id)}}" class="act-bounced" style="display:inline; margin:0;" onsubmit="return confirm('Mark this cheque as bounced?')">
                                         @csrf
                                         <button class="btn btn-danger btn-sm btn-circle" style="height:28px; width:28px; padding:0; display:flex; align-items:center; justify-content:center; font-size: 11px;" title="Mark Bounced">
@@ -182,6 +189,86 @@
         </div>
     </div>
 </div>
+
+{{-- ─── Mark Cleared Modal ────────────────────────────────────────────── --}}
+<div class="modal fade" id="clearChequeModal" tabindex="-1" role="dialog" aria-labelledby="clearChequeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:16px; border:none; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+
+            <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg,#10b981,#059669); border-radius:16px 16px 0 0; padding:24px 28px;">
+                <div>
+                    <h5 class="modal-title text-white font-weight-bold mb-1" id="clearChequeModalLabel">
+                        <i class="fas fa-check-circle mr-2"></i>Mark Cheque as Cleared
+                    </h5>
+                    <p class="text-white-50 mb-0" id="modal-cheque-subtitle" style="font-size:0.85rem;"></p>
+                </div>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity:0.8;">
+                    <span aria-hidden="true" style="font-size:1.5rem;">&times;</span>
+                </button>
+            </div>
+
+            <form id="clearChequeForm" method="POST" action="">
+                @csrf
+                <div class="modal-body" style="padding:28px;">
+
+                    {{-- Info badge --}}
+                    <div class="rounded-lg p-3 mb-4" id="modal-info-box" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+                        <div class="d-flex align-items-center">
+                            <div style="width:42px;height:42px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fas fa-money-check-alt text-white"></i>
+                            </div>
+                            <div class="ml-3">
+                                <div class="font-weight-bold text-dark" id="modal-cheque-info">—</div>
+                                <div class="small text-muted" id="modal-flow-info">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Account Selection --}}
+                    <div class="form-group">
+                        <label class="font-weight-bold text-dark mb-2">
+                            <i class="fas fa-university mr-1 text-primary"></i>
+                            Select Account <span class="text-danger">*</span>
+                        </label>
+                        <select name="financial_account_id" id="modal-account-select"
+                            class="form-control" style="border-radius:10px; border:2px solid #e2e8f0; padding:10px 14px;" required>
+                            <option value="">-- Select Account --</option>
+                            @foreach($financialAccounts as $account)
+                                <option value="{{ $account->id }}">
+                                    {{ $account->name }}
+                                    ({{ ucfirst($account->type) }})
+                                    — Balance: Rs. {{ number_format($account->current_balance, 2) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted mt-1 d-block" id="modal-account-hint"></small>
+                    </div>
+
+                    {{-- Actual Clearing Date --}}
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold text-dark mb-2">
+                            <i class="fas fa-calendar-check mr-1 text-primary"></i>
+                            Actual Clearing Date <span class="text-danger">*</span>
+                        </label>
+                        <input type="date" name="actual_clearing_date" id="modal-clearing-date"
+                            class="form-control" style="border-radius:10px; border:2px solid #e2e8f0; padding:10px 14px;"
+                            value="{{ date('Y-m-d') }}" required>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer border-0" style="padding:0 28px 24px;">
+                    <button type="button" class="btn btn-light rounded-pill px-4 border" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-5 font-weight-bold shadow-sm">
+                        <i class="fas fa-check-circle mr-1"></i> Confirm & Update Cash Flow
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')
@@ -235,6 +322,49 @@ $(document).ready(function() {
         eventClick: function(info) {
             window.location.href = "{{ url('admin/cheques') }}/" + info.event.extendedProps.cheque_id;
         }
+    });
+
+    // ─── Mark Cleared Modal Population ────────────────────────────────────────
+    $(document).on('click', '.btn-mark-cleared', function () {
+        var id          = $(this).data('id');
+        var number      = $(this).data('number');
+        var amount      = $(this).data('amount');
+        var party       = $(this).data('party');
+        var type        = $(this).data('type');
+        var transferred = $(this).data('transferred');
+
+        // Set form action dynamically
+        var baseUrl = "{{ url('admin/cheques') }}";
+        $('#clearChequeForm').attr('action', baseUrl + '/' + id + '/mark-cleared');
+
+        // Set subtitle in header
+        $('#modal-cheque-subtitle').text('Cheque #' + number + ' — Rs. ' + amount);
+
+        // Set info box
+        $('#modal-cheque-info').text('Cheque #' + number + ' | Rs. ' + amount + ' | ' + party);
+
+        // Set cash flow direction hint
+        var flowText = '';
+        var hintText = '';
+        if (transferred == '1') {
+            flowText = '↕ This is a transferred cheque — both a Cash IN (customer paid) and Cash OUT (supplier paid) will be recorded on the selected account.';
+            hintText = 'Net effect on account balance = Rs. 0 (both legs shown for audit trail)';
+            $('#modal-info-box').css({'background':'#eff6ff','border-color':'#bfdbfe'});
+        } else if (type === 'received') {
+            flowText = '↑ Cash IN — Rs. ' + amount + ' will be added to the selected account on the clearing date.';
+            hintText = 'Money received from customer via cheque';
+            $('#modal-info-box').css({'background':'#f0fdf4','border-color':'#bbf7d0'});
+        } else {
+            flowText = '↓ Cash OUT — Rs. ' + amount + ' will be deducted from the selected account on the clearing date.';
+            hintText = 'Payment to supplier via cheque';
+            $('#modal-info-box').css({'background':'#fff7ed','border-color':'#fed7aa'});
+        }
+        $('#modal-flow-info').text(flowText);
+        $('#modal-account-hint').text(hintText);
+
+        // Reset date to today
+        $('#modal-clearing-date').val('{{ date("Y-m-d") }}');
+        $('#modal-account-select').val('');
     });
 });
 </script>
