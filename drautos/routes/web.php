@@ -23,26 +23,53 @@ use App\Http\Controllers\ChequeController;
 
 // TEMP DEBUG — remove after diagnosis
 Route::get('/debug-cheque-error', function () {
+    $steps = [];
     try {
-        // Replicate full index() logic
-        $query = \App\Models\Cheque::with(['party', 'creator', 'transferredTo']);
-        $cheques = $query->orderBy('cheque_date', 'desc')->paginate(5000);
+        // Step 1: auto-migration for transferred_to_id
+        $steps[] = 'step1_start';
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('cheques', 'transferred_to_id')) {
+            \Illuminate\Support\Facades\Schema::table('cheques', function ($table) {
+                $table->unsignedBigInteger('transferred_to_id')->nullable()->after('created_by');
+            });
+            $steps[] = 'step1_migrated';
+        } else {
+            $steps[] = 'step1_already_exists';
+        }
+
+        // Step 2: ALTER TABLE enum
+        $steps[] = 'step2_start';
+        try {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE cheques MODIFY COLUMN status ENUM('pending', 'cleared', 'bounced', 'cancelled', 'transferred') DEFAULT 'pending'");
+            $steps[] = 'step2_ok';
+        } catch (\Throwable $e2) {
+            $steps[] = 'step2_fail: ' . $e2->getMessage();
+        }
+
+        // Step 3: Full query + view render
+        $steps[] = 'step3_start';
+        $cheques = \App\Models\Cheque::with(['party', 'creator', 'transferredTo'])->orderBy('cheque_date', 'desc')->paginate(5000);
         $stats = [
             'pending_received' => \App\Models\Cheque::where('type', 'received')->where('status', 'pending')->sum('amount'),
             'pending_paid'     => \App\Models\Cheque::where('type', 'paid')->where('status', 'pending')->sum('amount'),
             'cleared_today'    => \App\Models\Cheque::whereDate('clearing_date', today())->where('status', 'pending')->count(),
             'overdue'          => \App\Models\Cheque::overdue()->count(),
         ];
-        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
-        // Try rendering the view
+        if (\Illuminate\Support\Facades\Schema::hasColumn('financial_accounts', 'status')) {
+            $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        } else {
+            $financialAccounts = \App\Models\FinancialAccount::all();
+        }
+        $steps[] = 'step3_query_ok';
         $html = view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'))->render();
-        return response()->json(['ok' => true, 'html_length' => strlen($html)]);
+        $steps[] = 'step3_render_ok';
+
+        return response()->json(['ok' => true, 'html_length' => strlen($html), 'steps' => $steps]);
     } catch (\Throwable $e) {
         return response()->json([
-            'error' => $e->getMessage(),
-            'file'  => str_replace(base_path(), '', $e->getFile()),
-            'line'  => $e->getLine(),
-            'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray()
+            'error'  => $e->getMessage(),
+            'file'   => str_replace(base_path(), '', $e->getFile()),
+            'line'   => $e->getLine(),
+            'steps'  => $steps,
         ]);
     }
 });
