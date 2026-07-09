@@ -24,12 +24,26 @@ use App\Http\Controllers\ChequeController;
 // TEMP DEBUG — remove after diagnosis
 Route::get('/debug-cheque-error', function () {
     try {
-        $cheques = \App\Models\Cheque::with(['party', 'creator', 'transferredTo'])->limit(1)->get();
-        $accounts = \App\Models\FinancialAccount::limit(5)->get();
-        $cols = \Illuminate\Support\Facades\Schema::getColumnListing('financial_accounts');
-        return response()->json(['ok' => true, 'cheques_count' => $cheques->count(), 'accounts' => $accounts->count(), 'fa_columns' => $cols]);
+        // Replicate full index() logic
+        $query = \App\Models\Cheque::with(['party', 'creator', 'transferredTo']);
+        $cheques = $query->orderBy('cheque_date', 'desc')->paginate(5000);
+        $stats = [
+            'pending_received' => \App\Models\Cheque::where('type', 'received')->where('status', 'pending')->sum('amount'),
+            'pending_paid'     => \App\Models\Cheque::where('type', 'paid')->where('status', 'pending')->sum('amount'),
+            'cleared_today'    => \App\Models\Cheque::whereDate('clearing_date', today())->where('status', 'pending')->count(),
+            'overdue'          => \App\Models\Cheque::overdue()->count(),
+        ];
+        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        // Try rendering the view
+        $html = view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'))->render();
+        return response()->json(['ok' => true, 'html_length' => strlen($html)]);
     } catch (\Throwable $e) {
-        return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file'  => str_replace(base_path(), '', $e->getFile()),
+            'line'  => $e->getLine(),
+            'trace' => collect($e->getTrace())->take(5)->map(fn($t) => ($t['file'] ?? '') . ':' . ($t['line'] ?? ''))->toArray()
+        ]);
     }
 });
 
