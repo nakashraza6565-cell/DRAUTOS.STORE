@@ -166,7 +166,7 @@
                         <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">Receivables</div>
                         <i class="fas fa-hand-holding-dollar fa-lg opacity-50"></i>
                     </div>
-                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($total_receivables) }}</div>
+                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate blur-sensitive">Rs. {{ number_format($total_receivables) }}</div>
                     <div class="mt-2 small opacity-75 d-none d-md-block">
                         <i class="fas fa-arrow-up mr-1"></i> Money owed to you
                     </div>
@@ -183,7 +183,7 @@
                         <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">Payables</div>
                         <i class="fas fa-money-bill-transfer fa-lg opacity-50"></i>
                     </div>
-                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($total_payables) }}</div>
+                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate blur-sensitive">Rs. {{ number_format($total_payables) }}</div>
                     <div class="mt-2 small opacity-75 d-none d-md-block">
                         <i class="fas fa-arrow-down mr-1"></i> Money you owe
                     </div>
@@ -200,7 +200,7 @@
                         <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">All Wallets</div>
                         <i class="fas fa-wallet fa-lg opacity-50"></i>
                     </div>
-                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($total_wallet_balance) }}</div>
+                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate blur-sensitive">Rs. {{ number_format($total_wallet_balance) }}</div>
                     <div class="mt-2 small font-weight-bold">
                         <span class="badge badge-light text-primary px-2 py-1" style="font-size: 0.7rem; font-weight: 800;">
                             <i class="fas fa-cash-register mr-1" style="font-size: 0.65rem;"></i> Register: {{ $active_register ? 'OPEN' : 'CLOSED' }}
@@ -219,7 +219,7 @@
                         <div class="text-xs font-weight-bold text-uppercase opacity-75 d-md-none">Stock</div>
                         <i class="fas fa-boxes-stacked fa-lg opacity-50"></i>
                     </div>
-                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate">Rs. {{ number_format($total_stock_value / 1000) }}k</div>
+                    <div class="h4 h2-md mb-0 font-weight-bolder text-truncate blur-sensitive">Rs. {{ number_format($total_stock_value / 1000) }}k</div>
                     <div class="mt-2 small opacity-75 d-none d-md-block">
                         {{ $product_count }} Active Items
                     </div>
@@ -432,7 +432,7 @@
     <!-- Row 4: Cash Flow Chart -->
     <div class="row">
         <div class="col-12 mb-4">
-            <div class="premium-panel shadow-sm border-left-primary">
+            <div class="premium-panel shadow-sm border-left-primary blur-sensitive">
                 <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
                         <div class="icon-box bg-success-light mr-3"><i class="fas fa-money-bill-trend-up text-success"></i></div>
@@ -479,7 +479,7 @@
     <!-- Row 5: Incoming Goods vs Customer Sales Comparison Chart -->
     <div class="row">
         <div class="col-12 mb-4">
-            <div class="premium-panel shadow-sm border-left-info">
+            <div class="premium-panel shadow-sm border-left-info blur-sensitive">
                 <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
                         <div class="icon-box bg-info-light mr-3"><i class="fas fa-boxes-packing text-info"></i></div>
@@ -582,6 +582,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
 <style>
+    /* Blur sensitive styling for privacy */
+    .blur-sensitive {
+        filter: blur(15px);
+        transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+    }
+    .blur-sensitive.unblurred {
+        filter: none !important;
+        user-select: auto;
+    }
+    
     /* Premium Dashboard Styles */
     body {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
@@ -1088,6 +1099,10 @@
                     }
                 },
                 onClick: function(evt, activeElements) {
+                    var $panel = $('#cashFlowChart').closest('.premium-panel');
+                    if ($panel.hasClass('blur-sensitive') && !$panel.hasClass('unblurred')) {
+                        return;
+                    }
                     if (activeElements.length > 0) {
                         var index = activeElements[0]._index;
                         openChartDetails(rawDates[index], 'cash_flow');
@@ -1175,12 +1190,48 @@
                     }
                 },
                 onClick: function(evt, activeElements) {
+                    var $panel = $('#incomingVsSalesChart').closest('.premium-panel');
+                    if ($panel.hasClass('blur-sensitive') && !$panel.hasClass('unblurred')) {
+                        return;
+                    }
                     if (activeElements.length > 0) {
                         var index = activeElements[0]._index;
                         openChartDetails(rawDates[index], 'incoming_sales');
                     }
                 }
             }
+        });
+
+        // Double-click/Double-tap handler to toggle blur for premium cards and panels
+        $('.premium-card').on('dblclick', function() {
+            $(this).find('.blur-sensitive').toggleClass('unblurred');
+        });
+
+        $('.premium-panel.blur-sensitive').on('dblclick', function() {
+            $(this).toggleClass('unblurred');
+        });
+
+        // Double-tap handler for touch devices
+        var lastTapCard = 0;
+        $('.premium-card').on('touchend', function(e) {
+            var currentTime = new Date().getTime();
+            var tapLength = currentTime - lastTapCard;
+            if (tapLength < 350 && tapLength > 0) {
+                e.preventDefault();
+                $(this).find('.blur-sensitive').toggleClass('unblurred');
+            }
+            lastTapCard = currentTime;
+        });
+
+        var lastTapPanel = 0;
+        $('.premium-panel.blur-sensitive').on('touchend', function(e) {
+            var currentTime = new Date().getTime();
+            var tapLength = currentTime - lastTapPanel;
+            if (tapLength < 350 && tapLength > 0) {
+                e.preventDefault();
+                $(this).toggleClass('unblurred');
+            }
+            lastTapPanel = currentTime;
         });
     });
 </script>
