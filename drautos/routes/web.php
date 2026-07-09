@@ -23,69 +23,28 @@ use App\Http\Controllers\ChequeController;
 
 // TEMP DEBUG — remove after diagnosis
 Route::get('/debug-cheque-error', function () {
-    $steps = [];
+    $output = [];
     try {
-        // Auth simulation: find admin user and act as them
-        $steps[] = 'auth_check';
-        $adminUser = \App\User::where('role', 'admin')->first();
-        if ($adminUser) {
-            \Illuminate\Support\Facades\Auth::login($adminUser);
-            $steps[] = 'auth_logged_in_as_' . $adminUser->id;
-        } else {
-            $steps[] = 'no_admin_user_found';
-        }
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        $output[] = 'view:clear OK - ' . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Throwable $e) { $output[] = 'view:clear FAIL: ' . $e->getMessage(); }
 
-        // Step 1: auto-migration
-        $steps[] = 'step1_start';
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('cheques', 'transferred_to_id')) {
-            \Illuminate\Support\Facades\Schema::table('cheques', function ($table) {
-                $table->unsignedBigInteger('transferred_to_id')->nullable()->after('created_by');
-            });
-            $steps[] = 'step1_migrated';
-        } else {
-            $steps[] = 'step1_already_exists';
-        }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        $output[] = 'config:clear OK';
+    } catch (\Throwable $e) { $output[] = 'config:clear FAIL: ' . $e->getMessage(); }
 
-        // Step 2: ALTER TABLE enum
-        $steps[] = 'step2_start';
-        try {
-            \Illuminate\Support\Facades\DB::statement("ALTER TABLE cheques MODIFY COLUMN status ENUM('pending', 'cleared', 'bounced', 'cancelled', 'transferred') DEFAULT 'pending'");
-            $steps[] = 'step2_ok';
-        } catch (\Throwable $e2) {
-            $steps[] = 'step2_fail: ' . $e2->getMessage();
-        }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        $output[] = 'route:clear OK';
+    } catch (\Throwable $e) { $output[] = 'route:clear FAIL: ' . $e->getMessage(); }
 
-        // Step 3: queries
-        $steps[] = 'step3_start';
-        $cheques = \App\Models\Cheque::with(['party', 'creator', 'transferredTo'])->orderBy('cheque_date', 'desc')->paginate(5000);
-        $stats = [
-            'pending_received' => \App\Models\Cheque::where('type', 'received')->where('status', 'pending')->sum('amount'),
-            'pending_paid'     => \App\Models\Cheque::where('type', 'paid')->where('status', 'pending')->sum('amount'),
-            'cleared_today'    => \App\Models\Cheque::whereDate('clearing_date', today())->where('status', 'pending')->count(),
-            'overdue'          => \App\Models\Cheque::overdue()->count(),
-        ];
-        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
-        $steps[] = 'step3_ok';
+    try {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        $output[] = 'cache:clear OK';
+    } catch (\Throwable $e) { $output[] = 'cache:clear FAIL: ' . $e->getMessage(); }
 
-        // Step 4: cash register query (what cart_drawer does with auth)
-        $steps[] = 'step4_start';
-        $activeReg = \App\Models\CashRegister::where('status', 'open')->where('user_id', \Illuminate\Support\Facades\Auth::id())->first();
-        $steps[] = 'step4_cash_register_ok_reg=' . ($activeReg ? $activeReg->id : 'null');
-
-        // Step 5: render view
-        $steps[] = 'step5_render_start';
-        $html = view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'))->render();
-        $steps[] = 'step5_render_ok';
-
-        return response()->json(['ok' => true, 'html_length' => strlen($html), 'steps' => $steps]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'error'  => $e->getMessage(),
-            'file'   => str_replace(base_path(), '', $e->getFile()),
-            'line'   => $e->getLine(),
-            'steps'  => $steps,
-        ]);
-    }
+    return response()->json(['cleared' => true, 'output' => $output]);
 });
 
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
