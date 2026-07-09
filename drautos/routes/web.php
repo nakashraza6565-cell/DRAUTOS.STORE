@@ -21,6 +21,18 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\ChequeController;
 
+// TEMP DEBUG — remove after diagnosis
+Route::get('/debug-cheque-error', function () {
+    try {
+        $cheques = \App\Models\Cheque::with(['party', 'creator', 'transferredTo'])->limit(1)->get();
+        $accounts = \App\Models\FinancialAccount::limit(5)->get();
+        $cols = \Illuminate\Support\Facades\Schema::getColumnListing('financial_accounts');
+        return response()->json(['ok' => true, 'cheques_count' => $cheques->count(), 'accounts' => $accounts->count(), 'fa_columns' => $cols]);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+    }
+});
+
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
 Route::post('/direct-user-update/{id}', 'UsersController@posUpdate')->name('users.pos-update');
 

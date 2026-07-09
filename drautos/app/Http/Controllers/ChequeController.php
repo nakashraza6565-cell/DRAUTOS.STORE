@@ -80,7 +80,16 @@ class ChequeController extends Controller
             'overdue' => Cheque::overdue()->count(),
         ];
 
-        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        try {
+            // Try with status filter first (column may not exist on older DBs)
+            if (\Illuminate\Support\Facades\Schema::hasColumn('financial_accounts', 'status')) {
+                $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+            } else {
+                $financialAccounts = \App\Models\FinancialAccount::all();
+            }
+        } catch (\Throwable $e) {
+            $financialAccounts = collect();
+        }
 
         return view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'));
     }
