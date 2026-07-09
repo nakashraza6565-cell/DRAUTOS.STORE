@@ -21,31 +21,6 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\ChequeController;
 
-// TEMP DEBUG — remove after diagnosis
-Route::get('/debug-cheque-error', function () {
-    $output = [];
-    try {
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
-        $output[] = 'view:clear OK - ' . \Illuminate\Support\Facades\Artisan::output();
-    } catch (\Throwable $e) { $output[] = 'view:clear FAIL: ' . $e->getMessage(); }
-
-    try {
-        \Illuminate\Support\Facades\Artisan::call('config:clear');
-        $output[] = 'config:clear OK';
-    } catch (\Throwable $e) { $output[] = 'config:clear FAIL: ' . $e->getMessage(); }
-
-    try {
-        \Illuminate\Support\Facades\Artisan::call('route:clear');
-        $output[] = 'route:clear OK';
-    } catch (\Throwable $e) { $output[] = 'route:clear FAIL: ' . $e->getMessage(); }
-
-    try {
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        $output[] = 'cache:clear OK';
-    } catch (\Throwable $e) { $output[] = 'cache:clear FAIL: ' . $e->getMessage(); }
-
-    return response()->json(['cleared' => true, 'output' => $output]);
-});
 
 Route::post('/direct-user-store', 'UsersController@store')->name('users.direct-store');
 Route::post('/direct-user-update/{id}', 'UsersController@posUpdate')->name('users.pos-update');

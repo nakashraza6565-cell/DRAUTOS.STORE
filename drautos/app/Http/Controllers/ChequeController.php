@@ -250,13 +250,14 @@ class ChequeController extends Controller
 
             // Record Cash IN on the selected account
             if ($financialAccountId) {
+                $partyName = $cheque->party ? $cheque->party->name : '';
                 \App\Models\AccountTransaction::record(
                     $financialAccountId,
                     $cheque->amount,
                     'in',
                     'Cheque',
                     $cheque->id,
-                    "Cheque Cleared #{$cheque->cheque_number} - {$cheque->party->name ?? ''} ({$cheque->bank_name})",
+                    "Cheque Cleared #{$cheque->cheque_number} - {$partyName} ({$cheque->bank_name})",
                     $actual_date
                 );
             }
@@ -280,13 +281,14 @@ class ChequeController extends Controller
 
             // Record Cash OUT from the selected account
             if ($financialAccountId) {
+                $partyName = $cheque->party ? $cheque->party->name : '';
                 \App\Models\AccountTransaction::record(
                     $financialAccountId,
                     $cheque->amount,
                     'out',
                     'Cheque',
                     $cheque->id,
-                    "Cheque Paid #{$cheque->cheque_number} - {$cheque->party->name ?? ''} ({$cheque->bank_name})",
+                    "Cheque Paid #{$cheque->cheque_number} - {$partyName} ({$cheque->bank_name})",
                     $actual_date
                 );
             }
@@ -298,13 +300,14 @@ class ChequeController extends Controller
         // through the same account so the net is zero but both legs are visible.
         if ($cheque->status === 'cleared' && $cheque->transferred_to_id && $financialAccountId) {
             // Cash IN – customer's payment received
+            $partyName = $cheque->party ? $cheque->party->name : '';
             \App\Models\AccountTransaction::record(
                 $financialAccountId,
                 $cheque->amount,
                 'in',
                 'Cheque',
                 $cheque->id,
-                "Transferred Cheque Cleared #{$cheque->cheque_number} - Received from {$cheque->party->name ?? ''}",
+                "Transferred Cheque Cleared #{$cheque->cheque_number} - Received from {$partyName}",
                 $actual_date
             );
 
