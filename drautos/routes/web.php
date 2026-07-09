@@ -25,7 +25,17 @@ use App\Http\Controllers\ChequeController;
 Route::get('/debug-cheque-error', function () {
     $steps = [];
     try {
-        // Step 1: auto-migration for transferred_to_id
+        // Auth simulation: find admin user and act as them
+        $steps[] = 'auth_check';
+        $adminUser = \App\User::where('role', 'admin')->first();
+        if ($adminUser) {
+            \Illuminate\Support\Facades\Auth::login($adminUser);
+            $steps[] = 'auth_logged_in_as_' . $adminUser->id;
+        } else {
+            $steps[] = 'no_admin_user_found';
+        }
+
+        // Step 1: auto-migration
         $steps[] = 'step1_start';
         if (!\Illuminate\Support\Facades\Schema::hasColumn('cheques', 'transferred_to_id')) {
             \Illuminate\Support\Facades\Schema::table('cheques', function ($table) {
@@ -45,7 +55,7 @@ Route::get('/debug-cheque-error', function () {
             $steps[] = 'step2_fail: ' . $e2->getMessage();
         }
 
-        // Step 3: Full query + view render
+        // Step 3: queries
         $steps[] = 'step3_start';
         $cheques = \App\Models\Cheque::with(['party', 'creator', 'transferredTo'])->orderBy('cheque_date', 'desc')->paginate(5000);
         $stats = [
@@ -54,14 +64,18 @@ Route::get('/debug-cheque-error', function () {
             'cleared_today'    => \App\Models\Cheque::whereDate('clearing_date', today())->where('status', 'pending')->count(),
             'overdue'          => \App\Models\Cheque::overdue()->count(),
         ];
-        if (\Illuminate\Support\Facades\Schema::hasColumn('financial_accounts', 'status')) {
-            $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
-        } else {
-            $financialAccounts = \App\Models\FinancialAccount::all();
-        }
-        $steps[] = 'step3_query_ok';
+        $financialAccounts = \App\Models\FinancialAccount::where('status', 'active')->get();
+        $steps[] = 'step3_ok';
+
+        // Step 4: cash register query (what cart_drawer does with auth)
+        $steps[] = 'step4_start';
+        $activeReg = \App\Models\CashRegister::where('status', 'open')->where('user_id', \Illuminate\Support\Facades\Auth::id())->first();
+        $steps[] = 'step4_cash_register_ok_reg=' . ($activeReg ? $activeReg->id : 'null');
+
+        // Step 5: render view
+        $steps[] = 'step5_render_start';
         $html = view('backend.cheques.index', compact('cheques', 'stats', 'financialAccounts'))->render();
-        $steps[] = 'step3_render_ok';
+        $steps[] = 'step5_render_ok';
 
         return response()->json(['ok' => true, 'html_length' => strlen($html), 'steps' => $steps]);
     } catch (\Throwable $e) {
