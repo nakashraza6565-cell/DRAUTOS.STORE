@@ -335,7 +335,7 @@ $(document).ready(function() {
 
         // Set form action dynamically
         var baseUrl = "{{ url('admin/cheques') }}";
-        $('#clearChequeForm').attr('action', baseUrl + '/' + id + '/mark-cleared');
+        $('#clearChequeForm').attr('action', baseUrl + '/' + id + '/clear');
 
         // Set subtitle in header
         $('#modal-cheque-subtitle').text('Cheque #' + number + ' — Rs. ' + amount);
