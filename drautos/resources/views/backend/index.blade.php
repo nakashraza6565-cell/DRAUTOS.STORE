@@ -433,12 +433,12 @@
     <div class="row">
         <div class="col-12 mb-4">
             <div class="premium-panel shadow-sm border-left-primary blur-sensitive">
-                <div class="panel-header d-flex justify-content-between align-items-center bg-light-soft">
+                <div class="panel-header d-flex justify-content-between align-items-start align-items-md-center bg-light-soft flex-wrap" style="gap: 8px;">
                     <h5 class="m-0 font-weight-bolder text-gray-800">
                         <div class="icon-box bg-success-light mr-3"><i class="fas fa-money-bill-trend-up text-success"></i></div>
                         Money In vs Money Out (Cash Flow)
                     </h5>
-                    <div class="text-right">
+                    <div class="text-right" style="flex: 1 1 auto; min-width: 0;">
                         <div class="small text-muted font-weight-bold mb-1">
                             @if(request('start_date') && request('end_date'))
                                 {{ \Carbon\Carbon::parse(request('start_date'))->format('M d') }} - {{ \Carbon\Carbon::parse(request('end_date'))->format('M d, Y') }}
@@ -446,11 +446,11 @@
                                 Last 7 Days Analysis
                             @endif
                         </div>
-                        <form action="{{ route('admin') }}" method="GET" class="d-flex align-items-center mb-2 justify-content-end" style="gap: 5px;">
-                            <input type="date" name="start_date" value="{{ request('start_date', \Carbon\Carbon::today()->subDays(6)->format('Y-m-d')) }}" class="form-control form-control-sm" style="width: auto; height: 26px; padding: 2px 6px; font-size: 11px;">
+                        <form action="{{ route('admin') }}" method="GET" class="d-flex align-items-center mb-2 justify-content-end flex-wrap" style="gap: 5px;">
+                            <input type="date" name="start_date" value="{{ request('start_date', \Carbon\Carbon::today()->subDays(6)->format('Y-m-d')) }}" class="form-control form-control-sm" style="min-width: 120px; max-width: 150px; flex: 1 1 120px; height: 26px; padding: 2px 6px; font-size: 11px;">
                             <span class="small text-muted">to</span>
-                            <input type="date" name="end_date" value="{{ request('end_date', \Carbon\Carbon::today()->format('Y-m-d')) }}" class="form-control form-control-sm" style="width: auto; height: 26px; padding: 2px 6px; font-size: 11px;">
-                            <button type="submit" class="btn btn-sm btn-primary" style="height: 26px; padding: 2px 8px; font-size: 11px;">Filter</button>
+                            <input type="date" name="end_date" value="{{ request('end_date', \Carbon\Carbon::today()->format('Y-m-d')) }}" class="form-control form-control-sm" style="min-width: 120px; max-width: 150px; flex: 1 1 120px; height: 26px; padding: 2px 6px; font-size: 11px;">
+                            <button type="submit" class="btn btn-sm btn-primary" style="height: 26px; padding: 2px 10px; font-size: 11px; white-space: nowrap;">Filter</button>
                             @if(request('start_date'))
                                 <a href="{{ route('admin') }}" class="btn btn-sm btn-light" style="height: 26px; padding: 2px 8px; font-size: 11px;"><i class="fas fa-times"></i></a>
                             @endif
