@@ -330,7 +330,7 @@
             @if($base64Terms)
             <!-- Combined Terms & QR Code Box -->
             <div style="border: 1px solid #000; border-radius: 6px; padding: 10px; margin: 15px 0; background: #fff; text-align: center;">
-                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto;" alt="شرائط و ضوابط">
+                <img src="{{ $base64Terms }}" style="width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; filter: contrast(300%) grayscale(1) brightness(0.4); -webkit-filter: contrast(300%) grayscale(1) brightness(0.4); -webkit-print-color-adjust: exact; print-color-adjust: exact;" alt="شرائط و ضوابط">
                 
                 <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
                 
