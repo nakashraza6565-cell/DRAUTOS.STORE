@@ -320,51 +320,22 @@
                 $secureToken = hash_hmac('sha256', $order->id . $order->order_number, config('app.key'));
                 $invoiceUrl = route('order.pdf', ['id' => $order->id, 'token' => $secureToken]);
 
-                // Load terms from database settings
-                $settings = \App\Models\Settings::first();
-                $termsUrdu    = $settings && $settings->terms_urdu    ? strip_tags($settings->terms_urdu)    : '';
-                $termsEnglish = $settings && $settings->terms_english ? strip_tags($settings->terms_english) : '';
-
-                // Fallback hardcoded terms if DB is empty
-                $defaultTerms = [
-                    ['ur' => 'خریدے گئے سامان کی واپسی بلاشرطی 15 دن کے اندر ممکن ہے۔',             'en' => 'Returns or exchanges accepted within 15 days.'],
-                    ['ur' => '15 دن کے بعد واپسی پر 25% کٹوتی لاگو ہوگی۔',                         'en' => 'A 25% deduction applies to returns after 15 days.'],
-                    ['ur' => 'ادائیگی نقد یا اسٹور کریڈٹ میں کی جائے گی۔',                          'en' => 'Payment issued in Cash or Store Credit.'],
-                    ['ur' => 'واپسی کے لیے اصل بل پیش کرنا ضروری ہے۔',                              'en' => 'Original bill must be presented for returns.'],
-                    ['ur' => 'درآمد شدہ اور خراب اشیاء واپس نہیں ہوں گی۔',                         'en' => 'Imported and damaged items are non-returnable.'],
-                    ['ur' => 'خراب مصنوعات اصل پیکنگ میں واپس کی جا سکتی ہیں۔',                    'en' => 'Defective products can be returned in original packaging.'],
-                    ['ur' => 'تمام پائپوں پر وارنٹی ہے اور دعوے قابل قبول ہیں۔',                   'en' => 'All pipes carry a warranty and claims are acceptable.'],
-                ];
-                $useDefault = empty($termsUrdu) && empty($termsEnglish);
+                $termsPath = base_path('../backend/img/urdu_terms_v2.png');
+                $base64Terms = '';
+                if (file_exists($termsPath)) {
+                    $base64Terms = 'data:image/png;base64,' . base64_encode(file_get_contents($termsPath));
+                }
             @endphp
 
-            {{-- Terms & Conditions rendered as pure HTML text (always prints clearly) --}}
-            <div style="border: 1px solid #000; border-radius: 4px; padding: 8px 10px; margin: 12px 0; background: #fff;">
-                <div style="font-size: 11px; font-weight: 900; text-align: center; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    @if($isUrdu) شرائط و ضوابط @else Terms &amp; Conditions @endif
-                </div>
-
-                @if($useDefault)
-                    {{-- Hardcoded default terms --}}
-                    <table style="width: 100%; border-collapse: collapse;">
-                        @foreach($defaultTerms as $i => $term)
-                        <tr>
-                            <td style="font-size: 9px; font-weight: 700; color: #000; vertical-align: top; padding: 2px 4px 2px 0; width: 14px;">{{ $i + 1 }}.</td>
-                            <td style="font-size: 9px; font-weight: 700; color: #000; vertical-align: top; padding: 2px 0; line-height: 1.4; direction: {{ $isUrdu ? 'rtl' : 'ltr' }}; text-align: {{ $isUrdu ? 'right' : 'left' }};">
-                                {{ $isUrdu ? $term['ur'] : $term['en'] }}
-                            </td>
-                        </tr>
-                        @endforeach
-                    </table>
-                @else
-                    {{-- Terms from database --}}
-                    @if($isUrdu && $termsUrdu)
-                        <div style="font-size: 9px; font-weight: 700; color: #000; direction: rtl; text-align: right; line-height: 1.6; white-space: pre-line;">{{ $termsUrdu }}</div>
-                    @elseif($termsEnglish)
-                        <div style="font-size: 9px; font-weight: 700; color: #000; direction: ltr; text-align: left; line-height: 1.6; white-space: pre-line;">{{ $termsEnglish }}</div>
-                    @endif
-                @endif
+            @if($base64Terms)
+            {{-- Terms image (clean white background Urdu PNG) --}}
+            <div style="border: 1px solid #000; border-radius: 4px; padding: 6px; margin: 12px 0; background: #fff; text-align: center;">
+                <img src="{{ $base64Terms }}"
+                     style="width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto;
+                            -webkit-print-color-adjust: exact; print-color-adjust: exact;"
+                     alt="شرائط و ضوابط">
             </div>
+            @endif
 
             {{-- QR Code --}}
             <div style="text-align: center; margin: 8px 0; padding: 6px; border: 1px dashed #000;">
