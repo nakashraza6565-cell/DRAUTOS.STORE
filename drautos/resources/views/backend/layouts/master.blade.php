@@ -253,5 +253,132 @@
   @include('backend.layouts.cart_drawer')
   @include('backend.layouts.chat_widget')
   @include('backend.layouts.global_modals')
+
+  {{-- ============================================================
+       SMART SUBMIT PROTECTION
+       Prevents duplicate form submissions when internet drops.
+       • Disables submit buttons immediately on first click
+       • Shows "Saving..." spinner
+       • Auto re-enables after 15s timeout if server never responds
+       • GET forms (search/filter) are automatically excluded
+       • Exposes window.smartSubmitReset() for AJAX error handlers
+  ============================================================ --}}
+  <div id="smart-submit-toast"></div>
+  <script>
+  (function() {
+      // --- Styles ---
+      var s = document.createElement('style');
+      s.textContent = [
+          '#smart-submit-toast{',
+              'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);',
+              'background:#dc2626;color:#fff;padding:12px 22px;border-radius:12px;',
+              'font-weight:700;font-size:0.85rem;z-index:999999;display:none;',
+              'box-shadow:0 6px 20px rgba(0,0,0,0.25);max-width:340px;text-align:center;',
+              'pointer-events:none;',
+          '}',
+          '#smart-submit-toast.ssp-show{display:block;animation:sspUp .3s ease;}',
+          '@keyframes sspUp{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}',
+          '.ssp-saving{opacity:.75!important;cursor:not-allowed!important;pointer-events:none!important;}',
+      ].join('');
+      document.head.appendChild(s);
+
+      var toast = document.getElementById('smart-submit-toast');
+      var toastTimer;
+
+      function showToast(msg, color) {
+          toast.textContent = msg;
+          toast.style.background = color || '#dc2626';
+          toast.classList.add('ssp-show');
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(function(){ toast.classList.remove('ssp-show'); }, 5000);
+      }
+
+      var TIMEOUT_MS = 15000; // 15 seconds safety net
+
+      // --- Global form submit listener ---
+      document.addEventListener('submit', function(e) {
+          var form = e.target;
+
+          // Skip GET forms entirely (search, filter, date pickers — they don't save data)
+          if ((form.getAttribute('method') || 'get').toLowerCase() === 'get') return;
+
+          // Skip forms that opt-out
+          if (form.hasAttribute('data-no-ssp')) return;
+
+          var buttons = form.querySelectorAll('[type="submit"]:not([disabled]), button:not([type="button"]):not([type="reset"]):not([disabled])');
+          if (!buttons.length) return;
+
+          buttons.forEach(function(btn) {
+              btn.dataset.sspOrigHtml = btn.innerHTML;
+
+              // Disable + spinner
+              btn.disabled = true;
+              btn.classList.add('ssp-saving');
+              btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>Saving...';
+
+              // Safety timer — re-enable if page never navigates away
+              var timer = setTimeout(function() {
+                  sspReset(btn);
+                  showToast('⚠️ No response from server — check your internet and try again.');
+              }, TIMEOUT_MS);
+
+              btn._sspTimer = timer;
+          });
+
+      }, true); // capture phase so it fires before any other handler
+
+      // --- Re-enable a single button ---
+      function sspReset(btn, errorMsg) {
+          if (!btn) return;
+          if (btn._sspTimer) { clearTimeout(btn._sspTimer); btn._sspTimer = null; }
+          btn.disabled = false;
+          btn.classList.remove('ssp-saving');
+          if (btn.dataset.sspOrigHtml) btn.innerHTML = btn.dataset.sspOrigHtml;
+          if (errorMsg) showToast('⚠️ ' + errorMsg);
+      }
+
+      // --- Public API for AJAX handlers ---
+
+      // Call on AJAX error to re-enable button and show message
+      // Usage: window.sspReset('#my-btn', 'Failed to save. Try again.');
+      window.sspReset = function(selector, errorMsg) {
+          document.querySelectorAll(selector).forEach(function(btn) { sspReset(btn, errorMsg); });
+      };
+
+      // Call on AJAX success (for modal forms that need the button enabled for next use)
+      // Usage: window.sspSuccess('#my-btn');
+      window.sspSuccess = function(selector) {
+          document.querySelectorAll(selector).forEach(function(btn) {
+              if (btn._sspTimer) { clearTimeout(btn._sspTimer); btn._sspTimer = null; }
+              btn.disabled = false;
+              btn.classList.remove('ssp-saving');
+              if (btn.dataset.sspOrigHtml) btn.innerHTML = btn.dataset.sspOrigHtml;
+          });
+      };
+
+      // --- Offline banner ---
+      var offlineBanner = null;
+      window.addEventListener('offline', function() {
+          if (!offlineBanner) {
+              offlineBanner = document.createElement('div');
+              offlineBanner.style.cssText = [
+                  'position:fixed;top:0;left:0;right:0;z-index:9999999;',
+                  'background:#b91c1c;color:#fff;text-align:center;',
+                  'padding:10px;font-weight:700;font-size:0.85rem;',
+                  'letter-spacing:0.3px;',
+              ].join('');
+              offlineBanner.innerHTML = '🔴 &nbsp;You are offline — do NOT press Save until connection is restored.';
+              document.body.prepend(offlineBanner);
+          }
+      });
+      window.addEventListener('online', function() {
+          if (offlineBanner) { offlineBanner.remove(); offlineBanner = null; }
+          showToast('✅ Back online — you can save now.', '#16a34a');
+      });
+
+  })();
+  </script>
+
 </body>
 </html>
+
