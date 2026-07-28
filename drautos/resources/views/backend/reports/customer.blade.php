@@ -73,8 +73,73 @@
                         @endforeach
                     </select>
 
+                    <!-- Advanced Filters Toggle -->
+                    <button type="button" id="advFiltersToggle" class="btn btn-sm btn-outline-secondary" style="height:31px; padding:0 10px; font-size:12px; white-space:nowrap;">
+                        <i class="fas fa-sliders-h mr-1"></i> Filters
+                        <span id="advFiltersCount" class="badge badge-primary ml-1" style="display:none; font-size:9px;">0</span>
+                    </button>
+
                     <div class="ml-auto text-muted small" id="leaderboardSearchCount" style="font-size:11px; font-weight:600;">
                         Showing {{ $customerRankings->count() }} of {{ $customerRankings->count() }}
+                    </div>
+                </div>
+
+                <!-- Advanced Filters Panel -->
+                <div id="advFiltersPanel" style="display:none; padding:10px 15px 12px; background:#f8f9fc; border-bottom:1px solid #e3e6f0;">
+                    <div class="row align-items-end" style="gap:0;">
+
+                        <!-- Total Sales Range -->
+                        <div class="col-12 col-md-4 mb-2">
+                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#4e73df; margin-bottom:4px;">
+                                <i class="fas fa-chart-bar mr-1"></i> Total Sales (Rs.)
+                            </label>
+                            <div class="d-flex align-items-center" style="gap:6px;">
+                                <input type="number" id="filterSalesMin" placeholder="Min e.g. 100000"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                                <span class="text-muted" style="font-size:11px; white-space:nowrap;">to</span>
+                                <input type="number" id="filterSalesMax" placeholder="Max e.g. 500000"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <!-- Outstanding Range -->
+                        <div class="col-12 col-md-3 mb-2">
+                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#e74a3b; margin-bottom:4px;">
+                                <i class="fas fa-exclamation-circle mr-1"></i> Outstanding (Rs.)
+                            </label>
+                            <div class="d-flex align-items-center" style="gap:6px;">
+                                <input type="number" id="filterOsMin" placeholder="Min e.g. 0"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                                <span class="text-muted" style="font-size:11px; white-space:nowrap;">to</span>
+                                <input type="number" id="filterOsMax" placeholder="Max e.g. 50000"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <!-- Last Order Days Range -->
+                        <div class="col-12 col-md-3 mb-2">
+                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#1cc88a; margin-bottom:4px;">
+                                <i class="fas fa-clock mr-1"></i> Last Order (days ago)
+                            </label>
+                            <div class="d-flex align-items-center" style="gap:6px;">
+                                <input type="number" id="filterDaysMin" placeholder="Min e.g. 0"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                                <span class="text-muted" style="font-size:11px; white-space:nowrap;">to</span>
+                                <input type="number" id="filterDaysMax" placeholder="Max e.g. 30"
+                                    class="form-control form-control-sm" style="font-size:12px; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <!-- Clear Button -->
+                        <div class="col-12 col-md-auto mb-2 d-flex align-items-end">
+                            <button type="button" id="clearAdvFilters" class="btn btn-sm btn-outline-danger" style="height:31px; padding:0 12px; font-size:12px; border-radius:6px; white-space:nowrap;">
+                                <i class="fas fa-times mr-1"></i> Clear Filters
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:10px;">
+                        <i class="fas fa-info-circle mr-1"></i> Leave a field empty to skip that filter. Results update instantly as you type.
                     </div>
                 </div>
 
@@ -99,7 +164,13 @@
                                 $medalColor = $rank == 1 ? '#FFD700' : ($rank == 2 ? '#C0C0C0' : ($rank == 3 ? '#CD7F32' : '#aaa'));
                                 $medalIcon  = $rank <= 3 ? 'fas fa-medal' : 'fas fa-hashtag';
                             @endphp
-                            <tr class="leaderboard-row" data-search="{{ strtolower($rc->name) }} {{ strtolower($rc->phone ?? '') }} {{ strtolower($rc->city ?? '') }} {{ strtolower($rc->customer_type ?? '') }} {{ strtolower($rc->health_label ?? '') }}" data-city="{{ strtolower(trim($rc->city ?? '')) }}" style="border-left:3px solid {{ $rc->health_color }};">
+                            <tr class="leaderboard-row"
+                                data-search="{{ strtolower($rc->name) }} {{ strtolower($rc->phone ?? '') }} {{ strtolower($rc->city ?? '') }} {{ strtolower($rc->customer_type ?? '') }} {{ strtolower($rc->health_label ?? '') }}"
+                                data-city="{{ strtolower(trim($rc->city ?? '')) }}"
+                                data-total-sales="{{ intval($rc->total_sales) }}"
+                                data-outstanding="{{ intval($rc->outstanding) }}"
+                                data-days="{{ $rc->days_since_last !== null ? intval($rc->days_since_last) : '' }}"
+                                style="border-left:3px solid {{ $rc->health_color }};">
                                 <td class="text-center font-weight-bold" style="color:{{ $medalColor }};">
                                     <i class="{{ $medalIcon }}" style="font-size:{{ $rank<=3?'14px':'11px' }};"></i>
                                     {{ $rank }}
@@ -1038,21 +1109,65 @@ $(document).ready(function () {
         width: '100%'
     });
 
-    // ── Leaderboard Search & City Filter ────────────────────────
+    // ── Leaderboard Search, City & Advanced Range Filters ────────
     function filterLeaderboard() {
-        var query = $('#leaderboardSearch').val().toLowerCase().trim();
+        var query       = $('#leaderboardSearch').val().toLowerCase().trim();
         var selectedCity = $('#leaderboardCityFilter').val() || '';
+
+        // Advanced range filters
+        var salesMin = $('#filterSalesMin').val() !== '' ? parseFloat($('#filterSalesMin').val()) : null;
+        var salesMax = $('#filterSalesMax').val() !== '' ? parseFloat($('#filterSalesMax').val()) : null;
+        var osMin    = $('#filterOsMin').val()    !== '' ? parseFloat($('#filterOsMin').val())    : null;
+        var osMax    = $('#filterOsMax').val()    !== '' ? parseFloat($('#filterOsMax').val())    : null;
+        var daysMin  = $('#filterDaysMin').val()  !== '' ? parseFloat($('#filterDaysMin').val())  : null;
+        var daysMax  = $('#filterDaysMax').val()  !== '' ? parseFloat($('#filterDaysMax').val())  : null;
+
         var rows = $('.leaderboard-row');
         var visibleCount = 0;
 
+        // Count active advanced filters for badge
+        var activeCount = [salesMin, salesMax, osMin, osMax, daysMin, daysMax].filter(function(v){ return v !== null; }).length;
+        if (activeCount > 0) {
+            $('#advFiltersCount').text(activeCount).show();
+            $('#advFiltersToggle').addClass('btn-primary').removeClass('btn-outline-secondary');
+        } else {
+            $('#advFiltersCount').hide();
+            $('#advFiltersToggle').addClass('btn-outline-secondary').removeClass('btn-primary');
+        }
+
         rows.each(function () {
-            var searchData = $(this).attr('data-search') || '';
-            var rowCity = $(this).attr('data-city') || '';
+            var searchData  = $(this).attr('data-search') || '';
+            var rowCity     = $(this).attr('data-city')   || '';
+            var totalSales  = parseFloat($(this).attr('data-total-sales') || 0);
+            var outstanding = parseFloat($(this).attr('data-outstanding')  || 0);
+            var daysRaw     = $(this).attr('data-days');
+            var days        = daysRaw !== '' && daysRaw !== undefined ? parseFloat(daysRaw) : null;
 
-            var matchesQuery = searchData.indexOf(query) > -1;
-            var matchesCity = selectedCity === '' || rowCity === selectedCity;
+            var matchesQuery = !query || searchData.indexOf(query) > -1;
+            var matchesCity  = !selectedCity || rowCity === selectedCity;
 
-            if (matchesQuery && matchesCity) {
+            // Sales range
+            var matchesSales = true;
+            if (salesMin !== null && totalSales < salesMin) matchesSales = false;
+            if (salesMax !== null && totalSales > salesMax) matchesSales = false;
+
+            // Outstanding range
+            var matchesOs = true;
+            if (osMin !== null && outstanding < osMin) matchesOs = false;
+            if (osMax !== null && outstanding > osMax) matchesOs = false;
+
+            // Last Order days range
+            var matchesDays = true;
+            if (daysMin !== null || daysMax !== null) {
+                if (days === null) {
+                    matchesDays = false; // no order on record — exclude from days filter
+                } else {
+                    if (daysMin !== null && days < daysMin) matchesDays = false;
+                    if (daysMax !== null && days > daysMax) matchesDays = false;
+                }
+            }
+
+            if (matchesQuery && matchesCity && matchesSales && matchesOs && matchesDays) {
                 $(this).removeClass('d-none');
                 visibleCount++;
             } else {
@@ -1065,6 +1180,18 @@ $(document).ready(function () {
 
     $('#leaderboardSearch').on('input', filterLeaderboard);
     $('#leaderboardCityFilter').on('change', filterLeaderboard);
+    $('#filterSalesMin, #filterSalesMax, #filterOsMin, #filterOsMax, #filterDaysMin, #filterDaysMax').on('input', filterLeaderboard);
+
+    // Toggle Advanced Filters Panel
+    $('#advFiltersToggle').on('click', function() {
+        $('#advFiltersPanel').slideToggle(200);
+    });
+
+    // Clear Advanced Filters
+    $('#clearAdvFilters').on('click', function() {
+        $('#filterSalesMin, #filterSalesMax, #filterOsMin, #filterOsMax, #filterDaysMin, #filterDaysMax').val('');
+        filterLeaderboard();
+    });
 
     // ── Expandable order rows ────────────────────────────────────
     $(document).on('click', '.order-main-row', function () {
