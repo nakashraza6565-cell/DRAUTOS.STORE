@@ -36,6 +36,26 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+
+    // ── Fix: supplier modal z-index when opened from inside another modal ──
+    // Bootstrap only properly supports 1 modal at a time, so when a second
+    // modal opens, it gets stuck behind the first modal's backdrop.
+    // We fix this by bumping the z-index dynamically on show.
+    $('#addSupplierModal').on('show.bs.modal', function() {
+        var baseZ = 1080 + (10 * $('.modal:visible').length);
+        $(this).css('z-index', baseZ + 10);
+        // Move the newly added backdrop on top too
+        setTimeout(function() {
+            $('.modal-backdrop').last().css('z-index', baseZ);
+        }, 5);
+    });
+
+    // Reset z-index when closed so it doesn't interfere next time
+    $('#addSupplierModal').on('hidden.bs.modal', function() {
+        $(this).css('z-index', '');
+    });
+
+    // ── Save Supplier ──────────────────────────────────────────────
     $('#quickAddSupplierForm').on('submit', function(e) {
         e.preventDefault();
         let $form = $(this);
@@ -49,15 +69,21 @@ $(document).ready(function() {
             success: function(res) {
                 if(res.status === 'success') {
                     let response = res.supplier;
+
+                    // Add to the main page supplier dropdown (e.g. on Incoming Goods form)
                     let newOption = new Option(response.name + ' (' + (response.phone || '') + ')', response.id, true, true);
                     $(newOption).data('phone', response.phone || '');
                     $(newOption).data('balance', '0.00');
                     $(newOption).data('name', response.name);
-                    
                     $('#supplier_id').append(newOption).trigger('change');
+
+                    // Also add to the Quick Add Product modal's supplier select
+                    let productModalOption = new Option(response.name + ' (' + (response.phone || '') + ')', response.id, true, true);
+                    $('#qa-supplier-select').append(productModalOption).trigger('change');
+
                     $('#addSupplierModal').modal('hide');
                     $form[0].reset();
-                    
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Supplier Added',
@@ -66,10 +92,10 @@ $(document).ready(function() {
                         showConfirmButton: false
                     });
                 }
-                $btn.prop('disabled', false).text('Register Supplier');
+                $btn.prop('disabled', false).html('<i class="fas fa-plus-circle mr-1"></i> Register Supplier');
             },
             error: function(err) {
-                $btn.prop('disabled', false).text('Register Supplier');
+                $btn.prop('disabled', false).html('<i class="fas fa-plus-circle mr-1"></i> Register Supplier');
                 let msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error adding supplier';
                 Swal.fire('Error', msg, 'error');
             }
