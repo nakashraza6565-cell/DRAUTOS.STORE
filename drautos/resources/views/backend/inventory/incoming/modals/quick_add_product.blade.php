@@ -110,10 +110,32 @@
                                     <option value="{{$supplier->id}}">{{$supplier->name}}</option>
                                 @endforeach
                             </select>
-                            <button type="button" class="btn-action-plus mt-2" style="background: #22d3ee;" data-toggle="modal" data-target="#addSupplierModal">
+                            {{-- Inline Add Supplier — no nested modal needed --}}
+                            <button type="button" id="qa-add-supplier-toggle" class="btn-action-plus mt-2" style="background: #22d3ee;" title="Add New Supplier">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
+                    </div>
+
+                    {{-- ══ Inline Quick-Add Supplier Panel ══ --}}
+                    <div id="qa-supplier-panel" style="display:none; background:#f0fdf4; border:1.5px solid #22d3ee; border-radius:14px; padding:14px 16px; margin-bottom:10px;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span style="font-size:11px; font-weight:800; color:#0891b2; text-transform:uppercase; letter-spacing:0.8px;">
+                                <i class="fas fa-truck mr-1"></i> Quick Add Supplier
+                            </span>
+                            <button type="button" id="qa-supplier-panel-close" style="background:none; border:none; color:#94a3b8; font-size:16px; line-height:1; padding:0;">&times;</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-7 pr-1">
+                                <input type="text" id="qa-sup-name" class="form-control form-control-sm" placeholder="Supplier Name *" style="border-radius:8px; height:38px; font-size:13px;">
+                            </div>
+                            <div class="col-5 pl-1">
+                                <input type="text" id="qa-sup-phone" class="form-control form-control-sm" placeholder="Phone" style="border-radius:8px; height:38px; font-size:13px;">
+                            </div>
+                        </div>
+                        <button type="button" id="qa-sup-save" class="btn btn-sm mt-2 w-100 font-weight-700" style="background:#22d3ee; color:#fff; border-radius:10px; height:36px; font-weight:700; font-size:13px;">
+                            <i class="fas fa-check mr-1"></i> Save Supplier
+                        </button>
                     </div>
                 </div>
                 {{-- Sticky footer: always visible even when form is long --}}
@@ -334,6 +356,86 @@ $(document).ready(function() {
                 Swal.fire('Error', msg, 'error');
             }
         });
+    });
+    // ── Inline Quick-Add Supplier Panel ─────────────────────────
+    $('#qa-add-supplier-toggle').on('click', function() {
+        var $panel = $('#qa-supplier-panel');
+        $panel.slideToggle(200, function() {
+            if ($panel.is(':visible')) {
+                $('#qa-sup-name').focus();
+            }
+        });
+        // Toggle icon
+        var $icon = $(this).find('i');
+        $icon.toggleClass('fa-plus fa-times');
+    });
+
+    $('#qa-supplier-panel-close').on('click', function() {
+        $('#qa-supplier-panel').slideUp(200);
+        $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
+    });
+
+    $('#qa-sup-save').on('click', function() {
+        var name = $('#qa-sup-name').val().trim();
+        if (!name) {
+            $('#qa-sup-name').focus().css('border-color', '#e74a3b');
+            return;
+        }
+        $('#qa-sup-name').css('border-color', '');
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+
+        $.ajax({
+            url: "{{ route('supplier.quick-store') }}",
+            type: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                name: name,
+                phone: $('#qa-sup-phone').val().trim(),
+                status: 'active'
+            },
+            success: function(res) {
+                if (res.status === 'success') {
+                    var s = res.supplier;
+                    var label = s.name + (s.phone ? ' (' + s.phone + ')' : '');
+
+                    // Add to the qa-supplier-select inside product modal
+                    var opt = new Option(label, s.id, true, true);
+                    $('#qa-supplier-select').append(opt).trigger('change');
+
+                    // Also add to main page supplier_id if it exists
+                    if ($('#supplier_id').length) {
+                        var mainOpt = new Option(label, s.id, false, false);
+                        $('#supplier_id').append(mainOpt);
+                    }
+
+                    // Reset and close panel
+                    $('#qa-sup-name').val('');
+                    $('#qa-sup-phone').val('');
+                    $('#qa-supplier-panel').slideUp(200);
+                    $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
+
+                    $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Save Supplier');
+
+                    // Small success indicator
+                    $btn.css('background', '#16a34a');
+                    setTimeout(function() { $btn.css('background', '#22d3ee'); }, 1500);
+                }
+            },
+            error: function(err) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Save Supplier');
+                var msg = err.responseJSON && err.responseJSON.message ? err.responseJSON.message : 'Error saving supplier';
+                alert(msg);
+            }
+        });
+    });
+
+    // Reset inline panel when product modal is closed
+    $('#addProductModal').on('hidden.bs.modal', function() {
+        $('#qa-supplier-panel').hide();
+        $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
+        $('#qa-sup-name, #qa-sup-phone').val('');
     });
 });
 </script>
