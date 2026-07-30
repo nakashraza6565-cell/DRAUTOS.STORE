@@ -363,6 +363,10 @@ $(document).ready(function() {
         $panel.slideToggle(200, function() {
             if ($panel.is(':visible')) {
                 $('#qa-sup-name').focus();
+                // Auto-scroll the modal body so the panel + Save button are fully visible
+                setTimeout(function() {
+                    $panel[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
             }
         });
         // Toggle icon
