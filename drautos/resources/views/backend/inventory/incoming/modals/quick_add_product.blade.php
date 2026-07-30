@@ -116,27 +116,6 @@
                             </button>
                         </div>
                     </div>
-
-                    {{-- ══ Inline Quick-Add Supplier Panel ══ --}}
-                    <div id="qa-supplier-panel" style="display:none; background:#f0fdf4; border:1.5px solid #22d3ee; border-radius:14px; padding:14px 16px; margin-bottom:10px;">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span style="font-size:11px; font-weight:800; color:#0891b2; text-transform:uppercase; letter-spacing:0.8px;">
-                                <i class="fas fa-truck mr-1"></i> Quick Add Supplier
-                            </span>
-                            <button type="button" id="qa-supplier-panel-close" style="background:none; border:none; color:#94a3b8; font-size:16px; line-height:1; padding:0;">&times;</button>
-                        </div>
-                        <div class="row">
-                            <div class="col-7 pr-1">
-                                <input type="text" id="qa-sup-name" class="form-control form-control-sm" placeholder="Supplier Name *" style="border-radius:8px; height:38px; font-size:13px;">
-                            </div>
-                            <div class="col-5 pl-1">
-                                <input type="text" id="qa-sup-phone" class="form-control form-control-sm" placeholder="Phone" style="border-radius:8px; height:38px; font-size:13px;">
-                            </div>
-                        </div>
-                        <button type="button" id="qa-sup-save" class="btn btn-sm mt-2 w-100 font-weight-700" style="background:#22d3ee; color:#fff; border-radius:10px; height:36px; font-weight:700; font-size:13px;">
-                            <i class="fas fa-check mr-1"></i> Save Supplier
-                        </button>
-                    </div>
                 </div>
                 {{-- Sticky footer: always visible even when form is long --}}
                 <div class="modal-footer border-0 bg-white justify-content-between" style="padding:12px 20px; position:sticky; bottom:0; z-index:10; border-top:1px solid #f1f5f9 !important; flex-shrink:0;">
@@ -148,6 +127,30 @@
             </form>
         </div>
     </div>
+{{-- ══ Supplier Quick-Add: Fixed Bottom Sheet (floats over modal, no scroll needed) ══ --}}
+<div id="qa-supplier-backdrop" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000;"></div>
+<div id="qa-supplier-panel" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:2001;
+     background:#fff; border-radius:22px 22px 0 0; padding:20px 20px 28px;
+     box-shadow:0 -6px 32px rgba(0,0,0,0.18);">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <span style="font-size:13px; font-weight:800; color:#0891b2; text-transform:uppercase; letter-spacing:0.8px;">
+            <i class="fas fa-truck mr-2"></i> Quick Add Supplier
+        </span>
+        <button type="button" id="qa-supplier-panel-close"
+            style="background:none; border:none; color:#94a3b8; font-size:22px; line-height:1; padding:0;">&times;</button>
+    </div>
+    <div class="mb-2">
+        <input type="text" id="qa-sup-name" class="form-control" placeholder="Supplier Name *"
+            style="border-radius:10px; height:44px; font-size:14px; border:1.5px solid #e2e8f0;">
+    </div>
+    <div class="mb-3">
+        <input type="text" id="qa-sup-phone" class="form-control" placeholder="Phone Number (optional)"
+            style="border-radius:10px; height:44px; font-size:14px; border:1.5px solid #e2e8f0;">
+    </div>
+    <button type="button" id="qa-sup-save" class="btn w-100"
+        style="background:#22d3ee; color:#fff; border-radius:12px; height:46px; font-weight:700; font-size:14px;">
+        <i class="fas fa-check mr-2"></i> Save Supplier
+    </button>
 </div>
 
 <style>
@@ -357,26 +360,43 @@ $(document).ready(function() {
             }
         });
     });
-    // ── Inline Quick-Add Supplier Panel ─────────────────────────
+    // ── Inline Quick-Add Supplier Panel (fixed bottom sheet) ────
+    function openSupplierSheet() {
+        $('#qa-supplier-backdrop').fadeIn(150);
+        $('#qa-supplier-panel').show().css({ transform: 'translateY(100%)' });
+        // Animate slide up
+        setTimeout(function() {
+            $('#qa-supplier-panel').css({ transition: 'transform 0.25s ease', transform: 'translateY(0)' });
+            setTimeout(function() { $('#qa-sup-name').focus(); }, 260);
+        }, 10);
+        $('#qa-add-supplier-toggle').find('i').removeClass('fa-plus').addClass('fa-times');
+    }
+
+    function closeSupplierSheet() {
+        $('#qa-supplier-panel').css({ transition: 'transform 0.2s ease', transform: 'translateY(100%)' });
+        setTimeout(function() {
+            $('#qa-supplier-panel').hide().css({ transform: '', transition: '' });
+            $('#qa-supplier-backdrop').fadeOut(150);
+        }, 200);
+        $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
+        $('#qa-sup-name, #qa-sup-phone').val('');
+        $('#qa-sup-name').css('border-color', '');
+    }
+
     $('#qa-add-supplier-toggle').on('click', function() {
-        var $panel = $('#qa-supplier-panel');
-        $panel.slideToggle(200, function() {
-            if ($panel.is(':visible')) {
-                $('#qa-sup-name').focus();
-                // Auto-scroll the modal body so the panel + Save button are fully visible
-                setTimeout(function() {
-                    $panel[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 50);
-            }
-        });
-        // Toggle icon
-        var $icon = $(this).find('i');
-        $icon.toggleClass('fa-plus fa-times');
+        if ($('#qa-supplier-panel').is(':visible')) {
+            closeSupplierSheet();
+        } else {
+            openSupplierSheet();
+        }
     });
 
-    $('#qa-supplier-panel-close').on('click', function() {
-        $('#qa-supplier-panel').slideUp(200);
-        $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
+    // Close on backdrop or X click
+    $('#qa-supplier-panel-close, #qa-supplier-backdrop').on('click', closeSupplierSheet);
+
+    // Close sheet when product modal closes
+    $('#addProductModal').on('hidden.bs.modal', function() {
+        closeSupplierSheet();
     });
 
     $('#qa-sup-save').on('click', function() {
@@ -437,10 +457,6 @@ $(document).ready(function() {
 
     // Reset inline panel when product modal is closed
     $('#addProductModal').on('hidden.bs.modal', function() {
-        $('#qa-supplier-panel').hide();
-        $('#qa-add-supplier-toggle').find('i').removeClass('fa-times').addClass('fa-plus');
-        $('#qa-sup-name, #qa-sup-phone').val('');
-    });
 });
 </script>
 @endpush
