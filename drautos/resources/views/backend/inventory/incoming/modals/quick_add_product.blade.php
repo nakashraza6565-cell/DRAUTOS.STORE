@@ -1,16 +1,17 @@
 <!-- Quick Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px; overflow: hidden;">
-            <div class="modal-header py-4 border-0" style="background: #f97316;">
-                <h5 class="modal-title font-weight-bold text-white" style="font-size: 1.2rem;">Add Quick Product</h5>
+        {{-- NOTE: NO overflow:hidden here — it blocks mobile scrolling --}}
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 25px;">
+            <div class="modal-header py-3 border-0" style="background: #f97316; border-radius: 25px 25px 0 0; flex-shrink:0;">
+                <h5 class="modal-title font-weight-bold text-white" style="font-size: 1.1rem;">Add Quick Product</h5>
                 <button type="button" class="close text-white opacity-10" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
                 </button>
             </div>
             <form id="quickAddProductForm">
                 @csrf
-                <div class="modal-body p-4 bg-white">
+                <div class="modal-body p-4 bg-white" style="overflow-y:auto; -webkit-overflow-scrolling:touch;">
                     <!-- PRODUCT TITLE -->
                     <div class="form-group mb-4">
                         <label class="premium-label">PRODUCT TITLE (SEARCH TO AVOID DUPLICATES) <span class="text-danger">*</span></label>
@@ -21,7 +22,7 @@
 
                     <div class="row">
                         <!-- CATEGORY -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">CATEGORY <span class="text-danger">*</span></label>
                             <select name="cat_id" id="qa-cat-select" class="premium-input form-control" required>
                                 <option value="">Select or Type</option>
@@ -35,7 +36,7 @@
                         </div>
 
                         <!-- BRAND -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">BRAND</label>
                             <select name="brand_id" id="qa-brand-select" class="premium-input form-control">
                                 <option value="">Select or Type</option>
@@ -51,7 +52,7 @@
 
                     <div class="row">
                         <!-- MODEL -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">MODEL</label>
                             <select name="model" id="qa-model-select" class="premium-input form-control">
                                 <option value="">Select or Type</option>
@@ -65,7 +66,7 @@
                         </div>
 
                         <!-- UNIT -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">UNIT / PACKAGING</label>
                             <select name="unit" id="qa-unit-select" class="premium-input form-control">
                                 <option value="piece">Piece</option>
@@ -81,13 +82,13 @@
 
                     <div class="row">
                         <!-- INITIAL STOCK -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">INITIAL STOCK <span class="text-danger">*</span></label>
                             <input type="number" name="stock" class="premium-input form-control" value="0" required>
                         </div>
-                        
+
                         <!-- PURCHASE PRICE -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">PURCHASE PRICE</label>
                             <input type="number" name="purchase_price" step="0.01" class="premium-input form-control" placeholder="0.00">
                         </div>
@@ -95,13 +96,13 @@
 
                     <div class="row">
                         <!-- SELLING PRICE -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">SELLING PRICE <span class="text-danger">*</span></label>
                             <input type="number" name="price" step="0.01" class="premium-input form-control" placeholder="0.00" required>
                         </div>
 
                         <!-- PRIMARY SUPPLIER -->
-                        <div class="col-md-6 mb-4">
+                        <div class="col-6 mb-3">
                             <label class="premium-label">PRIMARY SUPPLIER</label>
                             <select name="supplier_id" id="qa-supplier-select" class="premium-input form-control">
                                 <option value="">Select Supplier(s)</option>
@@ -115,9 +116,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 p-4 bg-white justify-content-between">
-                    <button type="button" class="btn btn-secondary px-5" data-dismiss="modal" style="border-radius: 100px; height: 55px; background: #94a3b8; border: none; font-weight: 700;">Cancel</button>
-                    <button type="submit" id="save-product-btn-qa" class="btn btn-orange px-5 shadow-lg" style="border-radius: 100px; height: 55px; font-weight: 700;">
+                {{-- Sticky footer: always visible even when form is long --}}
+                <div class="modal-footer border-0 bg-white justify-content-between" style="padding:12px 20px; position:sticky; bottom:0; z-index:10; border-top:1px solid #f1f5f9 !important; flex-shrink:0;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius:100px; height:46px; padding:0 24px; background:#94a3b8; border:none; font-weight:700; font-size:0.85rem;">Cancel</button>
+                    <button type="submit" id="save-product-btn-qa" class="btn btn-orange shadow-lg" style="border-radius:100px; height:46px; padding:0 28px; font-weight:700; font-size:0.85rem;">
                         <i class="fas fa-lock mr-2"></i> SAVE PRODUCT
                     </button>
                 </div>
@@ -127,27 +129,28 @@
 </div>
 
 <style>
+    /* ── Base styles ─────────────────── */
     .premium-label {
         font-weight: 800;
         font-size: 0.7rem;
         color: #475569;
         letter-spacing: 0.5px;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         display: block;
         text-transform: uppercase;
     }
     .premium-input {
         border-radius: 12px !important;
         border: 1px solid #e2e8f0 !important;
-        padding: 12px 18px !important;
-        height: 50px !important;
+        padding: 10px 16px !important;
+        height: 46px !important;
         font-weight: 500 !important;
         color: #1e293b !important;
         background: #fff !important;
     }
     .btn-action-plus {
-        width: 45px;
-        height: 35px;
+        width: 40px;
+        height: 32px;
         border: none;
         border-radius: 8px;
         color: white;
@@ -164,19 +167,97 @@
         border: none;
     }
     .btn-orange:hover { background: #ea580c !important; }
-    
-    /* Select2 Unification */
-    .select2-container--default .select2-selection--single {
+
+    /* ── Select2 Unification ─────────── */
+    #addProductModal .select2-container--default .select2-selection--single {
         border-radius: 12px !important;
-        height: 50px !important;
+        height: 46px !important;
         border: 1px solid #e2e8f0 !important;
     }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 50px !important;
-        padding-left: 18px !important;
+    #addProductModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 46px !important;
+        padding-left: 16px !important;
+        font-size: 0.9rem;
     }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 48px !important;
+    #addProductModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+    }
+
+    /* ── Mobile Fixes ────────────────── */
+    @media (max-width: 767px) {
+        /* Modal positioning */
+        #addProductModal .modal-dialog {
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            position: fixed !important;
+            bottom: 0 !important;
+            top: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+        }
+        #addProductModal .modal-content {
+            border-radius: 20px 20px 0 0 !important;
+            max-height: 92vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        #addProductModal .modal-header {
+            border-radius: 20px 20px 0 0 !important;
+            padding: 14px 18px !important;
+        }
+        /* Scrollable body */
+        #addProductModal .modal-body {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            flex: 1 1 auto !important;
+            padding: 14px 14px 6px !important;
+        }
+        /* Smaller inputs on mobile */
+        #addProductModal .premium-input,
+        #addProductModal .form-control {
+            height: 42px !important;
+            font-size: 0.88rem !important;
+            padding: 8px 12px !important;
+        }
+        #addProductModal .select2-container--default .select2-selection--single {
+            height: 42px !important;
+        }
+        #addProductModal .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 42px !important;
+            font-size: 0.88rem !important;
+        }
+        #addProductModal .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+        }
+        /* Compact labels */
+        #addProductModal .premium-label {
+            font-size: 0.65rem !important;
+            margin-bottom: 4px !important;
+        }
+        /* Compact spacing */
+        #addProductModal .mb-3 {
+            margin-bottom: 10px !important;
+        }
+        #addProductModal .modal-body .form-group {
+            margin-bottom: 10px !important;
+        }
+        /* Sticky footer buttons */
+        #addProductModal .modal-footer {
+            padding: 10px 14px !important;
+            flex-shrink: 0 !important;
+        }
+        #addProductModal .modal-footer .btn {
+            height: 44px !important;
+            font-size: 0.85rem !important;
+            padding: 0 20px !important;
+        }
+        /* Plus buttons */
+        #addProductModal .btn-action-plus {
+            width: 36px !important;
+            height: 30px !important;
+            margin-top: 6px !important;
+        }
     }
 </style>
 
